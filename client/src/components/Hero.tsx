@@ -18,8 +18,8 @@ const slides = [
   {
     type: "video" as const,
     media: video1,
-    thumbnail: hero1, // For thumbnail preview
-    title: "A Legacy of Global Hospitality",
+    thumbnail: hero1,
+    title: "A Legacy of Global Hospitality & Timeless Luxury", // Made title longer to test wrapping
     subtitle: "Kennedia Groups",
     cta: "Know More",
   },
@@ -32,8 +32,8 @@ const slides = [
     cta: "Know More",
   },
   {
-    type: "image" as const,
-    media: hero3,
+    type: "video" as const,
+    media: video1,
     thumbnail: hero3,
     title: "Built on Passion and Purpose",
     subtitle: "Kennedia Groups",
@@ -61,15 +61,11 @@ export default function Hero() {
         loop={true}
         onSwiper={setSwiperInstance}
         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-        navigation={{
-          nextEl: ".custom-next",
-          prevEl: ".custom-prev",
-        }}
         className="w-full h-full"
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={index} className="relative w-full h-full">
-            {/* Background Media - Video or Image */}
+            {/* Background Media */}
             <div className="absolute inset-0 w-full h-full overflow-hidden">
               {slide.type === "video" ? (
                 <video
@@ -88,19 +84,24 @@ export default function Hero() {
                   className="w-full h-full object-cover"
                 />
               )}
-              {/* Dark Overlay - Adjusted for better text contrast */}
-              <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-transparent" />
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/40 to-transparent" />
             </div>
 
-            {/* Content - Left Aligned */}
-            <div className="absolute inset-0 z-10">
+            {/* Content - Left Aligned & Width Restricted */}
+            <div className="absolute inset-0 z-10 pointer-events-none">
               <div className="container mx-auto h-full px-8 md:px-16 lg:px-24 flex items-center">
-                <div className="max-w-3xl pt-20">
+                {/* WIDTH FIX: 
+                  w-full md:w-3/4 xl:w-1/2 
+                  This ensures text never crosses the 50% mark on large screens,
+                  preventing overlap with thumbnails.
+                */}
+                <div className="w-full md:w-3/4 xl:w-[50%] pt-10 pointer-events-auto">
                   <motion.h1
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
-                    className="text-4xl md:text-6xl lg:text-7xl font-serif font-medium text-[#FDFBF7] mb-6 leading-[1.1] tracking-tight"
+                    className="text-4xl md:text-6xl lg:text-6xl font-serif font-medium text-[#FDFBF7] mb-6 leading-[1.1] tracking-tight wrap-break-word"
                   >
                     {slide.title}
                   </motion.h1>
@@ -124,16 +125,15 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Decorative Wave Element - Glass/Cream Style */}
-            <div className="absolute bottom-0 left-0 w-full h-32 md:h-48 z-5 pointer-events-none">
+            {/* Decorative Wave Element */}
+            <div className="absolute bottom-0 left-0 w-full h-32 md:h-48 z-10 pointer-events-none">
               <svg
                 viewBox="0 0 1440 320"
                 className="w-full h-full drop-shadow-lg"
                 preserveAspectRatio="none"
               >
                 <path
-                  fill="rgba(253, 251, 247, 0.75)"
-                  style={{ backdropFilter: "blur(8px)" }}
+                  fill="#FDFBF7"
                   d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,128C1248,117,1344,107,1392,101.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                 />
               </svg>
@@ -142,31 +142,31 @@ export default function Hero() {
         ))}
       </Swiper>
 
-      {/* Thumbnail Preview */}
-      <div className="hidden xl:flex absolute right-12 top-1/2 -translate-y-1/2 z-20 flex-col gap-5">
+      {/* --- THUMBNAIL PREVIEW SECTION --- */}
+      {/* Positioned higher (bottom-48) to avoid wave overlap */}
+      <div className="hidden xl:flex absolute right-12 bottom-48 z-20 flex-row items-end gap-4">
         {slides.map((slide, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.15 + 0.5 }}
             onClick={() => handleThumbnailClick(index)}
-            className={`relative w-56 h-36 cursor-pointer overflow-hidden transition-all duration-500 ${
+            className={`relative w-40 h-64 cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${
               activeIndex === index
-                ? "ring-2 ring-[#FDFBF7] shadow-2xl shadow-black/50 grayscale-0"
-                : "ring-1 ring-white/10 hover:ring-white/30 opacity-50 hover:opacity-80 grayscale"
+                ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
+                : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
             }`}
           >
             <img
               src={slide.thumbnail}
               alt={`Preview ${index + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
-            {/* Video indicator for first slide */}
             {slide.type === "video" && (
-              <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
+              <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
                 <svg
-                  className="w-4 h-4 text-white"
+                  className="w-3 h-3 text-white"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -174,64 +174,67 @@ export default function Hero() {
                 </svg>
               </div>
             )}
-            {/* Overlay */}
+            <div className="absolute bottom-0 left-0 w-full p-3 bg-linear-to-t from-black/90 to-transparent">
+              <p className="text-xs text-white/90 font-medium truncate">
+                {slide.subtitle}
+              </p>
+            </div>
             <div
               className={`absolute inset-0 transition-all duration-300 ${
                 activeIndex === index
                   ? "bg-transparent"
-                  : "bg-black/40 hover:bg-black/20"
+                  : "bg-black/20 group-hover:bg-transparent"
               }`}
             />
           </motion.div>
         ))}
       </div>
 
-      {/* Progress Bars & Navigation */}
-      <div className="hidden xl:flex absolute bottom-20 right-12 z-20 items-center gap-8">
-        {/* Progress Indicators */}
-        <div className="flex items-center gap-3">
+      {/* --- CONTROLS SECTION --- */}
+      <div className="hidden xl:flex absolute bottom-48 right-136 z-20 items-center gap-6 mr-8">
+        <div className="flex items-center gap-2">
           {slides.map((_, index) => (
             <div
               key={index}
               onClick={() => handleThumbnailClick(index)}
-              className={`
-          cursor-pointer rounded-full transition-all duration-500 ease-out
-          ${
-            activeIndex === index
-              ? "w-20 h-[5px] bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 shadow-[0_0_12px_rgba(168,85,247,0.7)]"
-              : "w-10 h-[3px] bg-white/30 hover:bg-white/50 hover:w-14"
-          }
-        `}
+              className={`cursor-pointer h-[3px] transition-all duration-500 rounded-full ${
+                activeIndex === index
+                  ? "w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                  : "w-6 bg-white/30 hover:bg-white/60"
+              }`}
             />
           ))}
         </div>
 
-        {/* Prev Button */}
-        <button
-          className="custom-prev w-12 h-12 flex items-center justify-center rounded-full
-      border border-white/30 text-white backdrop-blur-md
-      hover:bg-white hover:text-black hover:scale-110
-      transition-all duration-300"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
-        </button>
-
-        {/* Next Button */}
-        <button
-          className="custom-next w-12 h-12 flex items-center justify-center rounded-full
-      border border-white/30 text-white backdrop-blur-md
-      hover:bg-white hover:text-black hover:scale-110
-      transition-all duration-300"
-          aria-label="Next slide"
-        >
-          <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
-        </button>
+        <div className="flex gap-3">
+          {/* Direct Slide Control via Instance */}
+          <button
+            onClick={() => swiperInstance?.slidePrev()}
+            className="w-10 h-10 flex items-center justify-center rounded-full
+            border border-white/30 text-white backdrop-blur-md
+            hover:bg-white hover:text-black hover:scale-110
+            transition-all duration-300 cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => swiperInstance?.slideNext()}
+            className="w-10 h-10 flex items-center justify-center rounded-full
+            border border-white/30 text-white backdrop-blur-md
+            hover:bg-white hover:text-black hover:scale-110
+            transition-all duration-300 cursor-pointer"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}
-      <div className="xl:hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
-        <button className="custom-prev w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md">
+      <div className="xl:hidden absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+        <button 
+          onClick={() => swiperInstance?.slidePrev()}
+          className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md"
+        >
           <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
         </button>
 
@@ -249,7 +252,10 @@ export default function Hero() {
           ))}
         </div>
 
-        <button className="custom-next w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md">
+        <button 
+          onClick={() => swiperInstance?.slideNext()}
+          className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md"
+        >
           <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
         </button>
       </div>
