@@ -21,13 +21,13 @@ const slides = [
     cta: "Know More",
   },
   {
-    image: hero1,
+    image: hero2,
     title: "Where Luxury Meets Experience",
     subtitle: "Kennedia Hotels & Resorts",
     cta: "Know More",
   },
   {
-    image: hero3,
+    image: hero2,
     title: "Built on Passion and Purpose",
     subtitle: "Kennedia Hotels & Resorts",
     cta: "Know More",

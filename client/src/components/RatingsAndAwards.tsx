@@ -1,110 +1,169 @@
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
-
-// Assets
-import awardImg from "@assets/generated_images/luxury_hotel_awards_trophy.png";
+import { Award, Star, Trophy } from "lucide-react";
 
 const ratings = [
   {
     source: "Condé Nast Traveler",
-    score: "98/100",
+    score: "98",
     label: "Gold List 2024",
-    quote: "Unparalleled service in an architectural marvel.",
+    icon: Trophy,
   },
   {
     source: "Forbes Travel Guide",
-    score: "5 Star",
-    label: "Global Rating",
-    quote: "The definition of modern luxury hospitality.",
+    score: "5",
+    label: "Star Rating",
+    icon: Star,
   },
   {
     source: "Michelin Guide",
-    score: "3 Keys",
-    label: "Hotel Selection",
-    quote: "An exceptional stay that becomes the destination itself.",
+    score: "3",
+    label: "Keys",
+    icon: Award,
   },
 ];
 
 export default function RatingsAndAwards() {
   return (
-    <section className="py-24 bg-background relative">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Image Side */}
-          <div className="lg:col-span-5 order-2 lg:order-1">
+    <section className="py-20 bg-linear-to-br from-gray-50 to-white relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-block text-primary text-xs font-semibold uppercase tracking-[0.25em] mb-4"
+          >
+            Acclaimed Excellence
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-5xl font-light text-foreground mb-4 tracking-tight"
+            style={{ fontFamily: 'serif' }}
+          >
+            Recognized Globally
+          </motion.h2>
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            whileInView={{ opacity: 1, scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="w-20 h-0.5 bg-linear-to-r from-primary to-purple-500 mx-auto"
+          />
+        </div>
+
+        {/* Awards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {ratings.map((item, index) => (
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              key={item.source}
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
-              className="relative aspect-[4/5] overflow-hidden"
+              transition={{ 
+                delay: index * 0.15,
+                duration: 0.5,
+                type: "spring",
+                stiffness: 100
+              }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              className="group relative"
             >
-              <div className="absolute inset-0 border border-primary/20 translate-x-4 translate-y-4 z-0" />
-              <img
-                src={awardImg}
-                alt="Award Trophy"
-                className="w-full h-full object-cover relative z-10 grayscale hover:grayscale-0 transition-all duration-700 mix-blend-multiply"
-              />
-            </motion.div>
-          </div>
-
-          {/* Content Side */}
-          <div className="lg:col-span-7 order-1 lg:order-2 lg:pl-12">
-            <motion.span
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-primary text-xs font-bold uppercase tracking-[0.2em] mb-4 block"
-            >
-              World Class Recognition
-            </motion.span>
-            <motion.h2
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-3xl md:text-5xl font-serif text-foreground mb-12"
-            >
-              Excellence is our <br />
-              <span className="text-foreground/50 italic">Only Standard</span>
-            </motion.h2>
-
-            <div className="space-y-8">
-              {ratings.map((item, index) => (
+              {/* Card */}
+              <div className="relative bg-white/80 backdrop-blur-sm border border-gray-200/50 p-8 text-center overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-xl">
+                {/* Hover Gradient Background */}
+                <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                {/* Icon */}
                 <motion.div
-                  key={item.source}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ scale: 0, rotate: -180 }}
+                  whileInView={{ scale: 1, rotate: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.15 + 0.3, type: "spring", stiffness: 200 }}
+                  className="relative z-10 mb-6 flex justify-center"
+                >
+                  <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary/10 to-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <item.icon className="w-8 h-8 text-primary" strokeWidth={1.5} />
+                  </div>
+                </motion.div>
+
+                {/* Score */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.15 + 0.4 }}
+                  className="relative z-10 mb-3"
+                >
+                  <div className="text-5xl font-light text-foreground mb-1" style={{ fontFamily: 'serif' }}>
+                    {item.score}
+                  </div>
+                  <div className="text-xs uppercase tracking-widest text-primary font-semibold">
+                    {item.label}
+                  </div>
+                </motion.div>
+
+                {/* Divider */}
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.15 + 0.5, duration: 0.4 }}
+                  className="relative z-10 w-12 h-px bg-linear-to-r from-transparent via-primary to-transparent mx-auto mb-4"
+                />
+
+                {/* Source */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.2 + index * 0.1 }}
-                  className="bg-card/30 border border-primary/10 p-6 hover:bg-card/50 transition-colors duration-300"
+                  transition={{ delay: index * 0.15 + 0.6 }}
+                  className="relative z-10"
                 >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-serif text-foreground">{item.source}</h3>
-                      <p className="text-xs uppercase tracking-widest text-primary mt-1">
-                        {item.label}
-                      </p>
-                    </div>
-                    <div className="text-3xl font-light text-foreground/90 mt-2 md:mt-0">
-                      {item.score}
-                    </div>
-                  </div>
-                  <div className="flex gap-1 mb-3">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className="w-4 h-4 fill-primary text-primary"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground italic font-serif text-lg">
-                    "{item.quote}"
+                  <p className="text-sm text-muted-foreground font-light">
+                    {item.source}
                   </p>
                 </motion.div>
+
+                {/* Decorative Corner */}
+                <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              </div>
+
+              {/* Shadow Effect */}
+              <div className="absolute inset-0 bg-linear-to-br from-primary/10 to-purple-500/10 blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-500 -z-10" />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Bottom Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.8 }}
+          className="mt-16 text-center"
+        >
+          <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/50 backdrop-blur-sm border border-primary/10 rounded-full">
+            <div className="flex -space-x-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className="w-4 h-4 fill-primary text-primary"
+                />
               ))}
             </div>
+            <span className="text-sm text-muted-foreground font-light ml-2">
+              Rated 5.0 from 2,500+ reviews
+            </span>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
