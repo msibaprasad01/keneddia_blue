@@ -12,24 +12,31 @@ import "swiper/css/navigation";
 import hero1 from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png";
 import hero2 from "@assets/generated_images/luxury_hotel_lobby_interior.png";
 import hero3 from "@assets/generated_images/exclusive_rooftop_lounge_at_night.png";
+import video1 from "@assets/video/video1.mp4";
 
 const slides = [
   {
-    image: hero2,
+    type: "video" as const,
+    media: video1,
+    thumbnail: hero1, // For thumbnail preview
     title: "A Legacy of Global Hospitality",
-    subtitle: "Kennedia Hotels & Resorts",
+    subtitle: "Kennedia Groups",
     cta: "Know More",
   },
   {
-    image: hero2,
+    type: "image" as const,
+    media: hero2,
+    thumbnail: hero2,
     title: "Where Luxury Meets Experience",
-    subtitle: "Kennedia Hotels & Resorts",
+    subtitle: "Kennedia Groups",
     cta: "Know More",
   },
   {
-    image: hero2,
+    type: "image" as const,
+    media: hero3,
+    thumbnail: hero3,
     title: "Built on Passion and Purpose",
-    subtitle: "Kennedia Hotels & Resorts",
+    subtitle: "Kennedia Groups",
     cta: "Know More",
   },
 ];
@@ -62,13 +69,25 @@ export default function Hero() {
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={index} className="relative w-full h-full">
-            {/* Background Image */}
+            {/* Background Media - Video or Image */}
             <div className="absolute inset-0 w-full h-full overflow-hidden">
-              <img
-                src={slide.image}
-                alt={slide.title}
-                className="w-full h-full object-cover"
-              />
+              {slide.type === "video" ? (
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                >
+                  <source src={slide.media} type="video/mp4" />
+                </video>
+              ) : (
+                <img
+                  src={slide.media}
+                  alt={slide.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
               {/* Dark Overlay - Adjusted for better text contrast */}
               <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-transparent" />
             </div>
@@ -105,7 +124,7 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Decorative Wave Element - UPDATED to Glass/Cream Style */}
+            {/* Decorative Wave Element - Glass/Cream Style */}
             <div className="absolute bottom-0 left-0 w-full h-32 md:h-48 z-5 pointer-events-none">
               <svg
                 viewBox="0 0 1440 320"
@@ -113,9 +132,7 @@ export default function Hero() {
                 preserveAspectRatio="none"
               >
                 <path
-                  // Updated Fill: Soft Cream with transparency
                   fill="rgba(253, 251, 247, 0.75)"
-                  // Adding backdrop-filter via style for the frosted glass effect
                   style={{ backdropFilter: "blur(8px)" }}
                   d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,128C1248,117,1344,107,1392,101.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                 />
@@ -125,7 +142,7 @@ export default function Hero() {
         ))}
       </Swiper>
 
-      {/* Thumbnail Preview - UPDATED Colors */}
+      {/* Thumbnail Preview */}
       <div className="hidden xl:flex absolute right-12 top-1/2 -translate-y-1/2 z-20 flex-col gap-5">
         {slides.map((slide, index) => (
           <motion.div
@@ -141,10 +158,22 @@ export default function Hero() {
             }`}
           >
             <img
-              src={slide.image}
+              src={slide.thumbnail}
               alt={`Preview ${index + 1}`}
               className="w-full h-full object-cover"
             />
+            {/* Video indicator for first slide */}
+            {slide.type === "video" && (
+              <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                </svg>
+              </div>
+            )}
             {/* Overlay */}
             <div
               className={`absolute inset-0 transition-all duration-300 ${
@@ -157,7 +186,7 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Progress Bars & Navigation - UPDATED Colors */}
+      {/* Progress Bars & Navigation */}
       <div className="hidden xl:flex absolute bottom-20 right-12 z-20 items-center gap-8">
         {/* Progress Indicators */}
         <div className="flex items-center gap-3">
@@ -200,7 +229,7 @@ export default function Hero() {
         </button>
       </div>
 
-      {/* Mobile Navigation - UPDATED Colors */}
+      {/* Mobile Navigation */}
       <div className="xl:hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
         <button className="custom-prev w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md">
           <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
