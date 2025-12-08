@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import { ArrowRight, Sparkles } from "lucide-react";
-
 // Assets
 import hotelImg from "@assets/generated_images/architectural_detail_of_hotel.png";
 import cafeImg from "@assets/generated_images/upscale_cafe_interior.png";
@@ -13,6 +12,7 @@ const verticals = [
     id: "hotels",
     title: "Hotels & Resorts",
     image: hotelImg,
+    route: "/hotels",
     subcategories: [
       "Luxury Hotels",
       "Beach Resorts",
@@ -25,6 +25,7 @@ const verticals = [
     id: "cafes",
     title: "Cafes & Dining",
     image: cafeImg,
+    route: "/cafes",
     subcategories: [
       "Fine Dining",
       "Casual Cafes",
@@ -36,6 +37,7 @@ const verticals = [
     id: "bars",
     title: "Bars & Lounges",
     image: barImg,
+    route: "/bars",
     subcategories: [
       "Cocktail Bars",
       "Wine Lounges",
@@ -47,6 +49,7 @@ const verticals = [
     id: "events",
     title: "Events & Conferences",
     image: cafeImg,
+    route: "/events",
     subcategories: [
       "Banquet Halls",
       "Conference Centers",
@@ -58,6 +61,7 @@ const verticals = [
     id: "entertainment",
     title: "Entertainment",
     image: barImg,
+    route: "/entertainment",
     subcategories: [
       "Nightclubs",
       "Live Music Venues",
@@ -97,8 +101,13 @@ export default function BusinessVerticals() {
   };
 
   const handleSubcategoryClick = (subcategory: string) => {
-    console.log("Navigate to:", subcategory);
-    // Add navigation logic here
+    // Navigate to the active vertical's route
+    setLocation(activeVertical.route);
+  };
+
+  const handleVerticalNavigate = (vertical: typeof verticals[0]) => {
+    // Navigate to the vertical's route
+    setLocation(vertical.route);
   };
 
   return (
@@ -141,7 +150,8 @@ export default function BusinessVerticals() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                onClick={() => handleCardClick(vertical)}
+                onMouseEnter={() => handleCardClick(vertical)}
+                onClick={() => handleVerticalNavigate(vertical)}
                 className="relative aspect-4/3 overflow-hidden cursor-pointer group"
               >
                 {/* Background Image */}

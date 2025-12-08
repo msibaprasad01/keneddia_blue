@@ -75,13 +75,13 @@ export default function Bars() {
       {/* Header / Filter Section */}
       <div className="pt-32 pb-12 px-6 bg-secondary/20 border-b border-primary/5">
         <div className="container mx-auto">
-          <motion.h1
+          {/* <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-6xl font-serif text-foreground mb-8"
           >
             Exclusive Nightlife
-          </motion.h1>
+          </motion.h1> */}
           
           {/* Search Bar */}
           <motion.div 
