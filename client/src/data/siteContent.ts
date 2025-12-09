@@ -13,9 +13,7 @@ import hotelBengaluru from "@assets/generated_images/modern_hotel_suite_in_tokyo
 import hotelDelhi from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png"; // Reuse Hero
 import hotelKolkata from "@assets/generated_images/chic_hotel_room_in_paris.png"; // Generic Chic Room
 import hotelHyderabad from "@assets/generated_images/rooftop_pool_in_singapore.png"; // Generic Pool
-import hotelChennai from "@assets/generated_images/luxury_hotel_room_interior_in_london.png"; // Generic Luxury Room
-
-// Bars
+import hotelChennai from "@assets/generated_images/luxury_hotel_room_interior_in_london.png";
 import barSpeakeasy from "@assets/generated_images/speakeasy_jazz_bar.png";
 import barRooftop from "@assets/generated_images/rooftop_cocktail_bar.png";
 import barWhiskey from "@assets/generated_images/classic_whiskey_lounge.png";
