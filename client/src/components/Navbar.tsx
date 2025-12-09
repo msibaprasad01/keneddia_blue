@@ -183,16 +183,37 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Careers */}
+            {/* Events */}
             <div
               className="relative"
-              onMouseEnter={() => handleMouseEnter("careers")}
+              onMouseEnter={() => handleMouseEnter("events")}
               onMouseLeave={handleMouseLeave}
             >
-              <Link href="/careers">
+              <Link href="/events">
                 <a onClick={handleLinkClick} className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors relative">
-                  CAREERS
-                  {activeDropdown === "careers" && (
+                  EVENTS
+                  {activeDropdown === "events" && (
+                    <motion.div
+                      layoutId="activeNav"
+                      className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600"
+                      initial={false}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                </a>
+              </Link>
+            </div>
+
+            {/* Reviews */}
+            <div
+              className="relative"
+              onMouseEnter={() => handleMouseEnter("reviews")}
+              onMouseLeave={handleMouseLeave}
+            >
+              <Link href="/reviews">
+                <a onClick={handleLinkClick} className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors relative">
+                  REVIEWS
+                  {activeDropdown === "reviews" && (
                     <motion.div
                       layoutId="activeNav"
                       className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600"
@@ -368,10 +389,17 @@ export default function Navbar() {
                   </a>
                 </Link>
 
-                {/* Careers */}
-                <Link href="/careers">
+                {/* Events */}
+                <Link href="/events">
                   <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors border-b border-gray-100">
-                    CAREERS
+                    EVENTS
+                  </a>
+                </Link>
+
+                {/* Reviews */}
+                <Link href="/reviews">
+                  <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors border-b border-gray-100">
+                    REVIEWS
                   </a>
                 </Link>
 

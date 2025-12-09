@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Calendar, Users, Search, Star, ArrowRight, X, Clock, Coffee } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 // Assets
 import parisianImg from "@assets/generated_images/parisian_style_cafe_interior.png";
@@ -14,24 +15,24 @@ import libraryImg from "@assets/generated_images/cozy_library_cafe.png";
 const allCafes = [
   {
     id: "parisian",
-    name: "The Parisian",
-    location: "Paris, France",
-    city: "Paris",
+    name: "The Pâtisserie",
+    location: "Pondicherry",
+    city: "Pondicherry",
     image: parisianImg,
     cuisine: "French Patisserie",
     rating: "4.9",
     reviews: 876,
-    description: "A classic experience featuring artisanal croissants and rich espresso in a marble-clad setting.",
+    description: "A classic experience featuring artisanal croissants and rich espresso in a marine-side setting.",
     specialties: ["Croissants", "Macarons", "Espresso", "Pain au Chocolat"],
     openingHours: "7:00 AM - 8:00 PM",
     reservations: true,
-    avgPrice: "€15-25",
+    avgPrice: "₹1,200-2,000",
   },
   {
     id: "zenith",
     name: "Zenith Brew",
-    location: "Tokyo, Japan",
-    city: "Tokyo",
+    location: "Indiranagar, Bengaluru",
+    city: "Bengaluru",
     image: modernImg,
     cuisine: "Specialty Coffee",
     rating: "4.8",
@@ -40,13 +41,13 @@ const allCafes = [
     specialties: ["Pour Over", "Cold Brew", "Matcha Latte", "Single Origin"],
     openingHours: "8:00 AM - 7:00 PM",
     reservations: false,
-    avgPrice: "¥800-1500",
+    avgPrice: "₹800-1,500",
   },
   {
     id: "hearth",
     name: "Hearth & Grain",
-    location: "Copenhagen, Denmark",
-    city: "Copenhagen",
+    location: "Kala Ghoda, Mumbai",
+    city: "Mumbai",
     image: bakeryImg,
     cuisine: "Artisan Bakery",
     rating: "4.9",
@@ -55,13 +56,13 @@ const allCafes = [
     specialties: ["Sourdough", "Cinnamon Rolls", "Rye Bread", "Danish Pastries"],
     openingHours: "6:00 AM - 6:00 PM",
     reservations: true,
-    avgPrice: "DKK 50-120",
+    avgPrice: "₹500-1,200",
   },
   {
     id: "orchid",
     name: "The Orchid Room",
-    location: "London, UK",
-    city: "London",
+    location: "New Delhi",
+    city: "New Delhi",
     image: teaImg,
     cuisine: "High Tea",
     rating: "5.0",
@@ -70,13 +71,13 @@ const allCafes = [
     specialties: ["Afternoon Tea", "Scones", "Tea Selection", "Finger Sandwiches"],
     openingHours: "12:00 PM - 6:00 PM",
     reservations: true,
-    avgPrice: "£35-55",
+    avgPrice: "₹2,500-4,500",
   },
   {
     id: "eden",
     name: "Eden Terrace",
-    location: "Singapore",
-    city: "Singapore",
+    location: "Jubilee Hills, Hyderabad",
+    city: "Hyderabad",
     image: terraceImg,
     cuisine: "Garden Brunch",
     rating: "4.7",
@@ -85,13 +86,13 @@ const allCafes = [
     specialties: ["Avocado Toast", "Smoothie Bowls", "Eggs Benedict", "Fresh Juices"],
     openingHours: "8:00 AM - 4:00 PM",
     reservations: true,
-    avgPrice: "S$20-35",
+    avgPrice: "₹1,200-2,500",
   },
   {
     id: "study",
     name: "The Study",
-    location: "Boston, USA",
-    city: "Boston",
+    location: "Park Street, Kolkata",
+    city: "Kolkata",
     image: libraryImg,
     cuisine: "Literary Lounge",
     rating: "4.8",
@@ -100,11 +101,11 @@ const allCafes = [
     specialties: ["Dark Roast", "Cappuccino", "Book Club Specials", "Pastries"],
     openingHours: "7:00 AM - 10:00 PM",
     reservations: false,
-    avgPrice: "$8-18",
+    avgPrice: "₹800-1,800",
   },
 ];
 
-const cities = ["All Cities", "Paris", "Tokyo", "Copenhagen", "London", "Singapore", "Boston"];
+const cities = ["All Cities", "Pondicherry", "Bengaluru", "Mumbai", "New Delhi", "Hyderabad", "Kolkata"];
 
 export default function Cafes() {
   const [selectedCafe, setSelectedCafe] = useState<typeof allCafes[0] | null>(null);
@@ -430,16 +431,7 @@ export default function Cafes() {
       </AnimatePresence>
       
       {/* Footer */}
-      <footer className="py-12 border-t border-foreground/5 mt-12">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center opacity-50 hover:opacity-100 transition-opacity">
-          <p className="text-xs uppercase tracking-widest">© 2025 Kennedian Hotels</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="text-xs uppercase tracking-widest hover:text-primary">Privacy</a>
-            <a href="#" className="text-xs uppercase tracking-widest hover:text-primary">Terms</a>
-            <a href="#" className="text-xs uppercase tracking-widest hover:text-primary">Contact</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

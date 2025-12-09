@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Calendar, Users, Search, Star, ArrowRight, X, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 // Assets
 import londonImg from "@assets/generated_images/luxury_hotel_room_interior_in_london.png";
@@ -13,90 +14,90 @@ import sydneyImg from "@assets/generated_images/harbour_view_hotel_in_sydney.png
 
 const allHotels = [
   {
-    id: "london",
-    name: "The Kennedian London",
-    location: "Westminster, London",
-    city: "London",
+    id: "mumbai",
+    name: "The Kennedian Mumbai",
+    location: "Colaba, Mumbai",
+    city: "Mumbai",
     image: londonImg,
-    price: "£450",
+    price: "₹35,000",
     rating: "4.9",
     reviews: 1240,
-    description: "A historic landmark transformed into a sanctuary of modern luxury, overlooking the Thames.",
+    description: "A historic landmark transformed into a sanctuary of modern luxury, overlooking the Gateway of India.",
     amenities: ["Free WiFi", "Spa", "Restaurant", "Bar", "Gym", "Room Service"],
     rooms: 156,
-    checkIn: "3:00 PM",
-    checkOut: "12:00 PM",
-  },
-  {
-    id: "tokyo",
-    name: "Kennedian Ginza",
-    location: "Ginza, Tokyo",
-    city: "Tokyo",
-    image: tokyoImg,
-    price: "¥65,000",
-    rating: "4.8",
-    reviews: 892,
-    description: "Minimalist perfection in the heart of Tokyo's most exclusive shopping district.",
-    amenities: ["Free WiFi", "Traditional Tea Room", "Michelin Restaurant", "Zen Garden"],
-    rooms: 98,
-    checkIn: "3:00 PM",
+    checkIn: "2:00 PM",
     checkOut: "11:00 AM",
   },
   {
-    id: "dubai",
-    name: "Kennedian Royal",
-    location: "Downtown Dubai",
-    city: "Dubai",
+    id: "bengaluru",
+    name: "Kennedian Bengaluru",
+    location: "Indiranagar, Bengaluru",
+    city: "Bengaluru",
+    image: tokyoImg,
+    price: "₹18,000",
+    rating: "4.8",
+    reviews: 892,
+    description: "Minimalist perfection in the heart of Bengaluru's most exclusive tech and lifestyle district.",
+    amenities: ["Free WiFi", "Traditional Tea Room", "Michelin Restaurant", "Zen Garden"],
+    rooms: 98,
+    checkIn: "2:00 PM",
+    checkOut: "11:00 AM",
+  },
+  {
+    id: "delhi",
+    name: "Kennedian Delhi",
+    location: "Connaught Place, Delhi",
+    city: "Delhi",
     image: dubaiImg,
-    price: "AED 2,200",
+    price: "₹25,000",
     rating: "5.0",
     reviews: 2156,
-    description: "Opulence redefined with unparalleled views of the Burj Khalifa and fountains.",
+    description: "Opulence redefined with unparalleled views of the capital's heritage.",
     amenities: ["Infinity Pool", "Spa", "5 Restaurants", "Butler Service", "Helipad"],
     rooms: 342,
     checkIn: "2:00 PM",
     checkOut: "12:00 PM",
   },
   {
-    id: "paris",
-    name: "Le Kennedian",
-    location: "1st Arrondissement, Paris",
-    city: "Paris",
+    id: "kolkata",
+    name: "Le Kennedian Kolkata",
+    location: "Park Street, Kolkata",
+    city: "Kolkata",
     image: parisImg,
-    price: "€550",
+    price: "₹20,000",
     rating: "4.9",
     reviews: 1567,
-    description: "Classic French elegance meets contemporary comfort steps from the Louvre.",
+    description: "Classic colonial elegance meets contemporary comfort in the City of Joy.",
     amenities: ["Michelin Star Restaurant", "Wine Cellar", "Art Gallery", "Concierge"],
     rooms: 124,
-    checkIn: "3:00 PM",
-    checkOut: "12:00 PM",
+    checkIn: "2:00 PM",
+    checkOut: "11:00 AM",
   },
   {
-    id: "singapore",
-    name: "Kennedian Bay",
-    location: "Marina Bay, Singapore",
-    city: "Singapore",
+    id: "hyderabad",
+    name: "Kennedian Hyderabad",
+    location: "Banjara Hills, Hyderabad",
+    city: "Hyderabad",
     image: singaporeImg,
-    price: "S$600",
+    price: "₹22,000",
     rating: "4.8",
     reviews: 1023,
     description: "An urban oasis featuring our signature infinity pool and lush sky gardens.",
     amenities: ["Rooftop Pool", "Sky Gardens", "3 Restaurants", "Spa", "Business Center"],
     rooms: 287,
-    checkIn: "3:00 PM",
+    checkIn: "2:00 PM",
     checkOut: "11:00 AM",
   },
   {
-    id: "sydney",
-    name: "Kennedian Harbour",
-    location: "The Rocks, Sydney",
-    city: "Sydney",
+    id: "chennai",
+    name: "Kennedian Chennai",
+    location: "ECR, Chennai",
+    city: "Chennai",
     image: sydneyImg,
-    price: "A$580",
+    price: "₹19,000",
     rating: "4.9",
     reviews: 934,
-    description: "Waterfront luxury with commanding views of the Opera House and Harbour Bridge.",
+    description: "Waterfront luxury with commanding views of the Bay of Bengal.",
     amenities: ["Harbour Views", "Fine Dining", "Pool", "Gym", "Yacht Charter"],
     rooms: 198,
     checkIn: "2:00 PM",
@@ -104,7 +105,7 @@ const allHotels = [
   },
 ];
 
-const cities = ["All Cities", "London", "Tokyo", "Dubai", "Paris", "Singapore", "Sydney"];
+const cities = ["All Cities", "Mumbai", "Bengaluru", "Delhi", "Kolkata", "Hyderabad", "Chennai"];
 
 export default function Hotels() {
   const [selectedHotel, setSelectedHotel] = useState<typeof allHotels[0] | null>(null);
@@ -434,16 +435,7 @@ export default function Hotels() {
       </AnimatePresence>
       
       {/* Footer */}
-      <footer className="py-12 border-t border-foreground/5 mt-12">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center opacity-50 hover:opacity-100 transition-opacity">
-          <p className="text-xs uppercase tracking-widest">© 2025 Kennedian Hotels</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="text-xs uppercase tracking-widest hover:text-primary">Privacy</a>
-            <a href="#" className="text-xs uppercase tracking-widest hover:text-primary">Terms</a>
-            <a href="#" className="text-xs uppercase tracking-widest hover:text-primary">Contact</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

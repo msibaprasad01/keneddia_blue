@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Users, Search, Star, ArrowRight, Wine } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 // Assets
 import speakeasyImg from "@assets/generated_images/speakeasy_jazz_bar.png";
@@ -13,8 +14,8 @@ import exclusiveLoungeImg from "@assets/generated_images/exclusive_rooftop_loung
 const bars = [
   {
     id: "bluenote",
-    name: "The Blue Note",
-    location: "Chicago, USA",
+    name: "The Blue Note Mumbai",
+    location: "Bandra West, Mumbai",
     image: speakeasyImg,
     type: "Jazz Speakeasy",
     rating: "4.9",
@@ -23,16 +24,16 @@ const bars = [
   {
     id: "skyline",
     name: "Skyline High",
-    location: "Bangkok, Thailand",
+    location: "UB City, Bengaluru",
     image: rooftopImg,
     type: "Rooftop Lounge",
     rating: "4.8",
-    description: "Suspend reality 60 floors up. Neon lights meet starlight with panoramic views of the electric city below.",
+    description: "Suspend reality 20 floors up. Neon lights meet starlight with panoramic views of the electric city below.",
   },
   {
     id: "amber",
     name: "The Amber Vault",
-    location: "Edinburgh, Scotland",
+    location: "Connaught Place, Delhi",
     image: whiskeyImg,
     type: "Whiskey Library",
     rating: "5.0",
@@ -41,7 +42,7 @@ const bars = [
   {
     id: "sunset",
     name: "Sunset Point",
-    location: "Maldives",
+    location: "Varkala, Kerala",
     image: beachImg,
     type: "Beach Club",
     rating: "4.9",
@@ -50,7 +51,7 @@ const bars = [
   {
     id: "obsidian",
     name: "Obsidian Room",
-    location: "New York, USA",
+    location: "Koregaon Park, Pune",
     image: moodyBarImg,
     type: "Modern Mixology",
     rating: "4.7",
@@ -59,7 +60,7 @@ const bars = [
   {
     id: "vertex",
     name: "Vertex Lounge",
-    location: "Shanghai, China",
+    location: "Banjara Hills, Hyderabad",
     image: exclusiveLoungeImg,
     type: "VIP Sky Bar",
     rating: "4.9",
@@ -177,16 +178,7 @@ export default function Bars() {
       </div>
       
       {/* Minimal Footer */}
-      <footer className="py-12 border-t border-foreground/5 mt-12">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center opacity-50 hover:opacity-100 transition-opacity">
-          <p className="text-xs uppercase tracking-widest">© 2025 Kennedian Hotels</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="text-xs uppercase tracking-widest hover:text-primary">Privacy</a>
-            <a href="#" className="text-xs uppercase tracking-widest hover:text-primary">Terms</a>
-            <a href="#" className="text-xs uppercase tracking-widest hover:text-primary">Contact</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
