@@ -112,7 +112,7 @@ export default function Navbar() {
               onMouseEnter={() => handleMouseEnter("business")}
               onMouseLeave={handleMouseLeave}
             >
-              <button className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors relative group">
+              <button className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-gray-700 hover:text-primary transition-colors relative group whitespace-nowrap">
                 BUSINESSES
                 <ChevronDown className="w-4 h-4" />
                 {/* Active Indicator */}
@@ -170,7 +170,7 @@ export default function Navbar() {
               onMouseLeave={handleMouseLeave}
             >
               <Link href="/about">
-                <a onClick={handleLinkClick} className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors relative">
+                <a onClick={handleLinkClick} className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-gray-700 hover:text-primary transition-colors relative whitespace-nowrap">
                   ABOUT US
                   {activeDropdown === "about" && (
                     <motion.div
@@ -191,7 +191,7 @@ export default function Navbar() {
               onMouseLeave={handleMouseLeave}
             >
               <Link href="/events">
-                <a onClick={handleLinkClick} className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors relative">
+                <a onClick={handleLinkClick} className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-gray-700 hover:text-primary transition-colors relative whitespace-nowrap">
                   EVENTS
                   {activeDropdown === "events" && (
                     <motion.div
@@ -212,7 +212,7 @@ export default function Navbar() {
               onMouseLeave={handleMouseLeave}
             >
               <Link href="/reviews">
-                <a onClick={handleLinkClick} className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors relative">
+                <a onClick={handleLinkClick} className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-gray-700 hover:text-primary transition-colors relative whitespace-nowrap">
                   REVIEWS
                   {activeDropdown === "reviews" && (
                     <motion.div
@@ -232,7 +232,7 @@ export default function Navbar() {
               onMouseEnter={() => handleMouseEnter("joinus")}
               onMouseLeave={handleMouseLeave}
             >
-              <button className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors relative group">
+              <button className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-gray-700 hover:text-primary transition-colors relative group whitespace-nowrap">
                 JOIN US
                 <ChevronDown className="w-4 h-4" />
                 {/* Active Indicator */}
