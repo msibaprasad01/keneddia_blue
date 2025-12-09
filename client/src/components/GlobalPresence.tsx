@@ -2,8 +2,7 @@ import { motion, useInView } from "framer-motion";
 import { MapPin, Star, Award, Users, Building2, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-// Assets
-import mapBg from "@assets/generated_images/world_map_with_golden_pins.png";
+import { siteContent } from "@/data/siteContent";
 
 const stats = [
   {
@@ -130,7 +129,7 @@ export default function GlobalPresence() {
       {/* Background Image with Parallax feel */}
       <div className="absolute inset-0 opacity-5 pointer-events-none mix-blend-multiply">
         <img
-          src={mapBg}
+          src={siteContent.images.globalPresence.map}
           alt="India Presence Map"
           className="w-full h-full object-cover grayscale invert"
         />

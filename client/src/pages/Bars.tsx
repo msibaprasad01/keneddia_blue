@@ -4,19 +4,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 // Assets
-import speakeasyImg from "@assets/generated_images/speakeasy_jazz_bar.png";
-import rooftopImg from "@assets/generated_images/rooftop_cocktail_bar.png";
-import whiskeyImg from "@assets/generated_images/classic_whiskey_lounge.png";
-import beachImg from "@assets/generated_images/beachside_sunset_bar.png";
-import moodyBarImg from "@assets/generated_images/moody_luxury_bar_interior.png";
-import exclusiveLoungeImg from "@assets/generated_images/exclusive_rooftop_lounge_at_night.png";
+import { siteContent } from "@/data/siteContent";
 
 const bars = [
   {
     id: "bluenote",
     name: "The Blue Note Mumbai",
     location: "Bandra West, Mumbai",
-    image: speakeasyImg,
+    image: siteContent.images.bars.speakeasy,
     type: "Jazz Speakeasy",
     rating: "4.9",
     description: "Hidden behind an unmarked door, discover a world of vintage velvet, live sax, and prohibition-era cocktails.",
@@ -25,7 +20,7 @@ const bars = [
     id: "skyline",
     name: "Skyline High",
     location: "UB City, Bengaluru",
-    image: rooftopImg,
+    image: siteContent.images.bars.rooftop,
     type: "Rooftop Lounge",
     rating: "4.8",
     description: "Suspend reality 20 floors up. Neon lights meet starlight with panoramic views of the electric city below.",
@@ -34,7 +29,7 @@ const bars = [
     id: "amber",
     name: "The Amber Vault",
     location: "Connaught Place, Delhi",
-    image: whiskeyImg,
+    image: siteContent.images.bars.whiskey,
     type: "Whiskey Library",
     rating: "5.0",
     description: "A gentleman's retreat featuring rare single malts, crackling fireplaces, and deep leather armchairs.",
@@ -43,7 +38,7 @@ const bars = [
     id: "sunset",
     name: "Sunset Point",
     location: "Varkala, Kerala",
-    image: beachImg,
+    image: siteContent.images.bars.beach,
     type: "Beach Club",
     rating: "4.9",
     description: "Barefoot luxury where the ocean meets the sky. Signature rum punches served as the sun dips below the horizon.",
@@ -52,7 +47,7 @@ const bars = [
     id: "obsidian",
     name: "Obsidian Room",
     location: "Koregaon Park, Pune",
-    image: moodyBarImg,
+    image: siteContent.images.bars.jazz,
     type: "Modern Mixology",
     rating: "4.7",
     description: "Dark, dramatic, and designed for the night. Experimental cocktails served in crystal amidst avant-garde decor.",
@@ -61,7 +56,7 @@ const bars = [
     id: "vertex",
     name: "Vertex Lounge",
     location: "Banjara Hills, Hyderabad",
-    image: exclusiveLoungeImg,
+    image: siteContent.images.bars.lounge,
     type: "VIP Sky Bar",
     rating: "4.9",
     description: "The pinnacle of exclusivity. Private tables, bottle service, and an atmosphere of unmatched sophistication.",

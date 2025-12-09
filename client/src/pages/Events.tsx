@@ -3,10 +3,7 @@ import { Calendar, MapPin, Clock, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-// Asset placeholders (using reliable images)
-import eventImg1 from "@assets/generated_images/speakeasy_jazz_bar.png"; 
-import eventImg2 from "@assets/generated_images/rooftop_cocktail_bar.png"; 
-import eventImg3 from "@assets/generated_images/luxury_high_tea_lounge.png";
+import { siteContent } from "@/data/siteContent";
 
 const events = [
   {
@@ -16,7 +13,7 @@ const events = [
     date: "Dec 15, 2025",
     time: "7:00 PM - 11:00 PM",
     location: "The Blue Note Mumbai",
-    image: eventImg1,
+    image: siteContent.images.events.jazz,
     description: "An evening of smooth jazz performance by the 'Midnight Quartet' accompanied by a curated selection of vintage wines.",
   },
   {
@@ -26,7 +23,7 @@ const events = [
     date: "Dec 31, 2025",
     time: "8:00 PM onwards",
     location: "Skyline High, Bengaluru",
-    image: eventImg2,
+    image: siteContent.images.events.gala,
     description: "Welcome 2026 under the stars. Champagne toast, gourmet buffet, and a spectacular view of the city fireworks.",
   },
   {
@@ -36,7 +33,7 @@ const events = [
     date: "Jan 10, 2026",
     time: "3:00 PM - 6:00 PM",
     location: "The Orchid Room, New Delhi",
-    image: eventImg3,
+    image: siteContent.images.events.highTea,
     description: "Experience the art of tea blending with our master sommeliers, paired with floral-inspired pastries.",
   },
 ];

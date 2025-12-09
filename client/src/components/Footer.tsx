@@ -1,6 +1,7 @@
 import { Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
+import { siteContent } from "@/data/siteContent";
 
 const footerSections = [
   {
@@ -84,7 +85,7 @@ export default function Footer() {
                 className="text-foreground font-light text-3xl tracking-[0.2em] uppercase hover:text-primary transition-colors inline-block" 
                 style={{ fontFamily: 'serif' }}
               >
-                Kennedia Blu
+                {siteContent.brand.logo.text}
               </a>
             </Link>
 
@@ -137,7 +138,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Copyright */}
             <p className="text-sm text-gray-600">
-              © {new Date().getFullYear()} Kennedia Blu. All rights reserved.
+              © {new Date().getFullYear()} {siteContent.brand.name}. All rights reserved.
             </p>
 
             {/* Legal Links */}

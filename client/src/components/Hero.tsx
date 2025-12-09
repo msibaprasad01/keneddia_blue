@@ -8,35 +8,34 @@ import "swiper/css";
 import "swiper/css/effect-fade";
 import "swiper/css/navigation";
 
+import { siteContent } from "@/data/siteContent";
+
 // Assets
-import hero1 from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png";
-import hero2 from "@assets/generated_images/luxury_hotel_lobby_interior.png";
-import hero3 from "@assets/generated_images/exclusive_rooftop_lounge_at_night.png";
 import video1 from "@assets/video/video1.mp4";
 
 const slides = [
   {
     type: "video" as const,
     media: video1,
-    thumbnail: hero1,
-    title: "A Legacy of Global Hospitality & Timeless Luxury", // Made title longer to test wrapping
-    subtitle: "Kennedia Blu Group",
+    thumbnail: siteContent.images.hero.slide1,
+    title: siteContent.text.hero.slides[0].title,
+    subtitle: siteContent.text.hero.slides[0].subtitle,
     cta: "Know More",
   },
   {
     type: "image" as const,
-    media: hero2,
-    thumbnail: hero2,
-    title: "Where Luxury Meets Experience",
-    subtitle: "Kennedia Blu Group",
+    media: siteContent.images.hero.slide2,
+    thumbnail: siteContent.images.hero.slide2,
+    title: siteContent.text.hero.slides[1].title,
+    subtitle: siteContent.text.hero.slides[1].subtitle,
     cta: "Know More",
   },
   {
-    type: "video" as const,
-    media: video1,
-    thumbnail: hero3,
-    title: "Built on Passion and Purpose",
-    subtitle: "Kennedia Blu Group",
+    type: "image" as const,
+    media: siteContent.images.hero.slide3,
+    thumbnail: siteContent.images.hero.slide3,
+    title: siteContent.text.hero.slides[2].title,
+    subtitle: siteContent.text.hero.slides[2].subtitle,
     cta: "Know More",
   },
 ];

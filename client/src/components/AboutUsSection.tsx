@@ -2,27 +2,12 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Shield, Award, Users } from "lucide-react";
 import { Link } from "wouter";
+import { siteContent } from "@/data/siteContent";
 
-// Asset
-import aboutImg from "@assets/generated_images/opulent_hotel_lobby_in_dubai.png";
-
-const slides = [
-  {
-    title: "Trusted Hospitality Brand",
-    description: "Kennedia Blu is built on trust and excellence, delivering premium hospitality experiences that exceed customer expectations.",
-    icon: Shield,
-  },
-  {
-    title: "Commitment to Quality",
-    description: "We focus on top-class service standards, attention to detail, and customer satisfaction across every touchpoint.",
-    icon: Award,
-  },
-  {
-    title: "Leadership Excellence",
-    description: "Led by industry veterans with decades of experience in hospitality, driving innovation and consistent service quality.",
-    icon: Users,
-  },
-];
+const slides = siteContent.text.about.carousel.map((slide, index) => ({
+  ...slide,
+  icon: [Shield, Award, Users][index] // Keeping icons hardcoded for now or move to data if needed
+}));
 
 export default function AboutUsSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -54,7 +39,7 @@ export default function AboutUsSection() {
             <div className="relative aspect-[4/3] rounded-lg overflow-hidden shadow-xl group">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
               <img 
-                src={aboutImg} 
+                src={siteContent.images.about.main} 
                 alt="Luxury hospitality environment" 
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
               />
@@ -69,8 +54,8 @@ export default function AboutUsSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="w-full lg:w-1/2"
           >
-            <h2 className="text-sm font-bold text-primary uppercase tracking-widest mb-2">Discover Kennedia Blu</h2>
-            <h3 className="text-3xl md:text-4xl font-serif text-foreground mb-8">About Kennedia Blu</h3>
+            <h2 className="text-sm font-bold text-primary uppercase tracking-widest mb-2">{siteContent.text.about.discoverTitle}</h2>
+            <h3 className="text-3xl md:text-4xl font-serif text-foreground mb-8">{siteContent.text.about.sectionTitle}</h3>
             
             <div 
               className="relative min-h-[220px] mb-8"

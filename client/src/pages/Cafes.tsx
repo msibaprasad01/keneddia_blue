@@ -5,12 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 // Assets
-import parisianImg from "@assets/generated_images/parisian_style_cafe_interior.png";
-import modernImg from "@assets/generated_images/modern_minimalist_coffee_shop.png";
-import bakeryImg from "@assets/generated_images/artisan_bakery_cafe.png";
-import teaImg from "@assets/generated_images/luxury_high_tea_lounge.png";
-import terraceImg from "@assets/generated_images/garden_terrace_cafe.png";
-import libraryImg from "@assets/generated_images/cozy_library_cafe.png";
+import { siteContent } from "@/data/siteContent";
 
 const allCafes = [
   {
@@ -18,7 +13,7 @@ const allCafes = [
     name: "The Pâtisserie",
     location: "Pondicherry",
     city: "Pondicherry",
-    image: parisianImg,
+    image: siteContent.images.cafes.parisian,
     cuisine: "French Patisserie",
     rating: "4.9",
     reviews: 876,
@@ -33,7 +28,7 @@ const allCafes = [
     name: "Zenith Brew",
     location: "Indiranagar, Bengaluru",
     city: "Bengaluru",
-    image: modernImg,
+    image: siteContent.images.cafes.minimalist,
     cuisine: "Specialty Coffee",
     rating: "4.8",
     reviews: 654,
@@ -48,7 +43,7 @@ const allCafes = [
     name: "Hearth & Grain",
     location: "Kala Ghoda, Mumbai",
     city: "Mumbai",
-    image: bakeryImg,
+    image: siteContent.images.cafes.bakery,
     cuisine: "Artisan Bakery",
     rating: "4.9",
     reviews: 1023,
@@ -63,7 +58,7 @@ const allCafes = [
     name: "The Orchid Room",
     location: "New Delhi",
     city: "New Delhi",
-    image: teaImg,
+    image: siteContent.images.cafes.highTea,
     cuisine: "High Tea",
     rating: "5.0",
     reviews: 1456,
@@ -78,7 +73,7 @@ const allCafes = [
     name: "Eden Terrace",
     location: "Jubilee Hills, Hyderabad",
     city: "Hyderabad",
-    image: terraceImg,
+    image: siteContent.images.cafes.garden,
     cuisine: "Garden Brunch",
     rating: "4.7",
     reviews: 789,
@@ -93,7 +88,7 @@ const allCafes = [
     name: "The Study",
     location: "Park Street, Kolkata",
     city: "Kolkata",
-    image: libraryImg,
+    image: siteContent.images.cafes.library,
     cuisine: "Literary Lounge",
     rating: "4.8",
     reviews: 567,

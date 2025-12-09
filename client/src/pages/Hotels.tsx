@@ -5,12 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 // Assets
-import londonImg from "@assets/generated_images/opulent_hotel_lobby_in_dubai.png";
-import tokyoImg from "@assets/generated_images/modern_hotel_suite_in_tokyo.png";
-import dubaiImg from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png";
-import parisImg from "@assets/generated_images/luxury_hotel_lobby_interior.png";
-import singaporeImg from "@assets/generated_images/rooftop_pool_in_singapore.png";
-import sydneyImg from "@assets/generated_images/harbour_view_hotel_in_sydney.png";
+import { siteContent } from "@/data/siteContent";
 
 const allHotels = [
   {
@@ -18,7 +13,7 @@ const allHotels = [
     name: "Kennedia Blu Mumbai",
     location: "Colaba, Mumbai",
     city: "Mumbai",
-    image: londonImg,
+    image: siteContent.images.hotels.mumbai,
     price: "₹35,000",
     rating: "4.9",
     reviews: 1240,
@@ -33,7 +28,7 @@ const allHotels = [
     name: "Kennedia Blu Bengaluru",
     location: "Indiranagar, Bengaluru",
     city: "Bengaluru",
-    image: tokyoImg,
+    image: siteContent.images.hotels.bengaluru,
     price: "₹18,000",
     rating: "4.8",
     reviews: 892,
@@ -48,7 +43,7 @@ const allHotels = [
     name: "Kennedia Blu Delhi",
     location: "Connaught Place, Delhi",
     city: "Delhi",
-    image: dubaiImg,
+    image: siteContent.images.hotels.delhi,
     price: "₹25,000",
     rating: "5.0",
     reviews: 2156,
@@ -63,7 +58,7 @@ const allHotels = [
     name: "Kennedia Blu Kolkata",
     location: "Park Street, Kolkata",
     city: "Kolkata",
-    image: parisImg,
+    image: siteContent.images.hotels.kolkata,
     price: "₹20,000",
     rating: "4.9",
     reviews: 1567,
@@ -78,7 +73,7 @@ const allHotels = [
     name: "Kennedia Blu Hyderabad",
     location: "Banjara Hills, Hyderabad",
     city: "Hyderabad",
-    image: singaporeImg,
+    image: siteContent.images.hotels.hyderabad,
     price: "₹22,000",
     rating: "4.8",
     reviews: 1023,
@@ -93,7 +88,7 @@ const allHotels = [
     name: "Kennedia Blu Chennai",
     location: "ECR, Chennai",
     city: "Chennai",
-    image: sydneyImg,
+    image: siteContent.images.hotels.chennai,
     price: "₹19,000",
     rating: "4.9",
     reviews: 934,

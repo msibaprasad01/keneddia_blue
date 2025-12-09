@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, LogIn } from "lucide-react";
+import { siteContent } from "@/data/siteContent";
 
 // Business mega menu data
 const businessCategories = [
@@ -99,7 +100,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/">
             <a onClick={handleLinkClick} className="text-foreground font-light text-3xl tracking-[0.2em] uppercase hover:text-primary transition-colors" style={{ fontFamily: 'serif' }}>
-              Kennedia Blu
+              {siteContent.brand.logo.text}
             </a>
           </Link>
 

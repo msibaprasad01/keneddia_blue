@@ -2,9 +2,7 @@ import { motion } from "framer-motion";
 import { Users, Award, Shield, Target, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
-// Reusing existing high-quality asset for header
-import aboutHeaderImg from "@assets/generated_images/opulent_hotel_lobby_in_dubai.png";
+import { siteContent } from "@/data/siteContent";
 
 const values = [
   {
@@ -51,7 +49,7 @@ export default function About() {
       <div className="relative h-[60vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src={aboutHeaderImg}
+            src={siteContent.images.about.main}
             alt="Kennedia Blu Lobby"
             className="w-full h-full object-cover brightness-50"
           />

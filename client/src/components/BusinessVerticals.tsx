@@ -3,15 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import { ArrowRight, Sparkles } from "lucide-react";
 // Assets
-import hotelImg from "@assets/generated_images/architectural_detail_of_hotel.png";
-import cafeImg from "@assets/generated_images/upscale_cafe_interior.png";
-import barImg from "@assets/generated_images/moody_luxury_bar_interior.png";
+import { siteContent } from "@/data/siteContent";
 
 const verticals = [
   {
     id: "hotels",
     title: "Hotels & Resorts",
-    image: hotelImg,
+    image: siteContent.images.businessVerticals.hotel,
     route: "/hotels",
     subcategories: [
       "Luxury Hotels",
@@ -24,7 +22,7 @@ const verticals = [
   {
     id: "cafes",
     title: "Cafes & Dining",
-    image: cafeImg,
+    image: siteContent.images.businessVerticals.cafe,
     route: "/cafes",
     subcategories: [
       "Fine Dining",
@@ -36,7 +34,7 @@ const verticals = [
   {
     id: "bars",
     title: "Bars & Lounges",
-    image: barImg,
+    image: siteContent.images.businessVerticals.bar,
     route: "/bars",
     subcategories: [
       "Cocktail Bars",
@@ -48,7 +46,7 @@ const verticals = [
   {
     id: "events",
     title: "Events & Conferences",
-    image: cafeImg,
+    image: siteContent.images.businessVerticals.cafe,
     route: "/events",
     subcategories: [
       "Banquet Halls",
@@ -60,7 +58,7 @@ const verticals = [
   {
     id: "entertainment",
     title: "Entertainment",
-    image: barImg,
+    image: siteContent.images.businessVerticals.bar,
     route: "/entertainment",
     subcategories: [
       "Nightclubs",
