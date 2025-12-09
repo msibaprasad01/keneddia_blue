@@ -5,17 +5,17 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 // Assets
-import londonImg from "@assets/generated_images/luxury_hotel_room_interior_in_london.png";
+import londonImg from "@assets/generated_images/opulent_hotel_lobby_in_dubai.png";
 import tokyoImg from "@assets/generated_images/modern_hotel_suite_in_tokyo.png";
-import dubaiImg from "@assets/generated_images/opulent_hotel_lobby_in_dubai.png";
-import parisImg from "@assets/generated_images/chic_hotel_room_in_paris.png";
+import dubaiImg from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png";
+import parisImg from "@assets/generated_images/luxury_hotel_lobby_interior.png";
 import singaporeImg from "@assets/generated_images/rooftop_pool_in_singapore.png";
 import sydneyImg from "@assets/generated_images/harbour_view_hotel_in_sydney.png";
 
 const allHotels = [
   {
     id: "mumbai",
-    name: "The Kennedian Mumbai",
+    name: "Kennedia Blu Mumbai",
     location: "Colaba, Mumbai",
     city: "Mumbai",
     image: londonImg,
@@ -30,7 +30,7 @@ const allHotels = [
   },
   {
     id: "bengaluru",
-    name: "Kennedian Bengaluru",
+    name: "Kennedia Blu Bengaluru",
     location: "Indiranagar, Bengaluru",
     city: "Bengaluru",
     image: tokyoImg,
@@ -45,7 +45,7 @@ const allHotels = [
   },
   {
     id: "delhi",
-    name: "Kennedian Delhi",
+    name: "Kennedia Blu Delhi",
     location: "Connaught Place, Delhi",
     city: "Delhi",
     image: dubaiImg,
@@ -60,7 +60,7 @@ const allHotels = [
   },
   {
     id: "kolkata",
-    name: "Le Kennedian Kolkata",
+    name: "Kennedia Blu Kolkata",
     location: "Park Street, Kolkata",
     city: "Kolkata",
     image: parisImg,
@@ -75,7 +75,7 @@ const allHotels = [
   },
   {
     id: "hyderabad",
-    name: "Kennedian Hyderabad",
+    name: "Kennedia Blu Hyderabad",
     location: "Banjara Hills, Hyderabad",
     city: "Hyderabad",
     image: singaporeImg,
@@ -90,7 +90,7 @@ const allHotels = [
   },
   {
     id: "chennai",
-    name: "Kennedian Chennai",
+    name: "Kennedia Blu Chennai",
     location: "ECR, Chennai",
     city: "Chennai",
     image: sydneyImg,

@@ -52,7 +52,7 @@ export default function About() {
         <div className="absolute inset-0 z-0">
           <img
             src={aboutHeaderImg}
-            alt="Kennedia Hotels Lobby"
+            alt="Kennedia Blu Lobby"
             className="w-full h-full object-cover brightness-50"
           />
         </div>

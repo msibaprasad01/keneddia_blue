@@ -20,7 +20,7 @@ const slides = [
     media: video1,
     thumbnail: hero1,
     title: "A Legacy of Global Hospitality & Timeless Luxury", // Made title longer to test wrapping
-    subtitle: "Kennedia Groups",
+    subtitle: "Kennedia Blu Group",
     cta: "Know More",
   },
   {
@@ -28,7 +28,7 @@ const slides = [
     media: hero2,
     thumbnail: hero2,
     title: "Where Luxury Meets Experience",
-    subtitle: "Kennedia Groups",
+    subtitle: "Kennedia Blu Group",
     cta: "Know More",
   },
   {
@@ -36,7 +36,7 @@ const slides = [
     media: video1,
     thumbnail: hero3,
     title: "Built on Passion and Purpose",
-    subtitle: "Kennedia Groups",
+    subtitle: "Kennedia Blu Group",
     cta: "Know More",
   },
 ];

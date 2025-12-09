@@ -56,7 +56,7 @@ export default function Events() {
             Events & Happenings
           </motion.h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Discover upcoming showcases, culinary experiences, and exclusive brand activities at Kennedia.
+            Discover upcoming showcases, culinary experiences, and exclusive brand activities at Kennedia Blu.
           </p>
         </div>
       </div>

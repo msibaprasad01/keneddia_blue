@@ -166,7 +166,7 @@ export default function GlobalPresence() {
               className="text-muted-foreground font-light leading-relaxed mb-10 max-w-lg"
             >
               From the tech hub of Bangalore to the spiritual heart of Varanasi, 
-              Kennedia Hotels creates experiences that honor India's rich heritage 
+              Kennedia Blu Hotels creates experiences that honor India's rich heritage 
               while delivering world-class hospitality standards.
             </motion.p>
 
@@ -205,7 +205,7 @@ export default function GlobalPresence() {
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-5 h-5 text-primary" />
                 <h3 className="text-lg font-semibold text-foreground">
-                  Why Choose Kennedia
+                  Why Choose Kennedia Blu
                 </h3>
               </div>
               {highlights.map((highlight, index) => (

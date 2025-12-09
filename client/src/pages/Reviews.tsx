@@ -32,7 +32,7 @@ const testimonials = [
 const videos = [
   {
     id: "v1",
-    title: "Customer Experience: The Kennedia Difference",
+    title: "Customer Experience: The Kennedia Blu Difference",
     embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Rick Roll placeholder - commonly used for demo, replacing with generic if needed
   },
   {
@@ -94,7 +94,7 @@ export default function Reviews() {
       {/* Video Section */}
       <section className="bg-gray-900 text-white py-20 px-6">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-serif text-center mb-16">Experience Kennedia</h2>
+          <h2 className="text-3xl font-serif text-center mb-16">Experience Kennedia Blu</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {videos.map((video, index) => (

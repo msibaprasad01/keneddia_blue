@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import AboutUsSection from "@/components/AboutUsSection";
 import BusinessVerticals from "@/components/BusinessVerticals";
 import GlobalPresence from "@/components/GlobalPresence";
 import RatingsAndAwards from "@/components/RatingsAndAwards";
@@ -10,6 +11,7 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
+        <AboutUsSection />
         <BusinessVerticals />
         <GlobalPresence />
         <RatingsAndAwards />

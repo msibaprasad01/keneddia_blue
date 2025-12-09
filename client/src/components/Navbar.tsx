@@ -99,7 +99,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/">
             <a onClick={handleLinkClick} className="text-foreground font-light text-3xl tracking-[0.2em] uppercase hover:text-primary transition-colors" style={{ fontFamily: 'serif' }}>
-              Kennedia
+              Kennedia Blu
             </a>
           </Link>
 
