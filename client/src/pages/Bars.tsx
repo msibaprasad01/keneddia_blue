@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 
 // Assets
 import { siteContent } from "@/data/siteContent";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const bars = [
   {
@@ -135,13 +136,16 @@ export default function Bars() {
                   <Star className="w-3 h-3 text-primary fill-primary mr-1" />
                   <span className="text-xs font-bold text-foreground">{bar.rating}</span>
                 </div>
-                <motion.img
+                <motion.div
+                  className="w-full h-full"
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.6 }}
-                  src={bar.image}
-                  alt={bar.name}
-                  className="w-full h-full object-cover"
-                />
+                >
+                  <OptimizedImage
+                    {...bar.image}
+                    className="w-full h-full object-cover"
+                  />
+                </motion.div>
               </div>
               
               <div className="space-y-2">

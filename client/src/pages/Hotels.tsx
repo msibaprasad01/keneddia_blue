@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 
 // Assets
 import { siteContent } from "@/data/siteContent";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const allHotels = [
   {
@@ -283,13 +284,16 @@ export default function Hotels() {
                     <Star className="w-3 h-3 text-primary fill-primary mr-1" />
                     <span className="text-xs font-bold text-foreground">{hotel.rating}</span>
                   </div>
-                  <motion.img
+                  <motion.div
+                    className="w-full h-full"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.6 }}
-                    src={hotel.image}
-                    alt={hotel.name}
-                    className="w-full h-full object-cover"
-                  />
+                  >
+                    <OptimizedImage
+                      {...hotel.image}
+                      className="w-full h-full object-cover"
+                    />
+                  </motion.div>
                 </div>
                 
                 <div className="space-y-2">
@@ -349,9 +353,8 @@ export default function Hotels() {
 
               {/* Image */}
               <div className="relative aspect-[16/9] overflow-hidden">
-                <img
-                  src={selectedHotel.image}
-                  alt={selectedHotel.name}
+                <OptimizedImage
+                  {...selectedHotel.image}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 flex items-center rounded-full">

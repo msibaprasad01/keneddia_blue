@@ -9,6 +9,7 @@ import "swiper/css/effect-fade";
 import "swiper/css/navigation";
 
 import { siteContent } from "@/data/siteContent";
+import { OptimizedImage } from "./ui/OptimizedImage";
 
 // Assets
 import video1 from "@assets/video/video1.mp4";
@@ -24,16 +25,16 @@ const slides = [
   },
   {
     type: "image" as const,
-    media: siteContent.images.hero.slide2,
-    thumbnail: siteContent.images.hero.slide2,
+    media: siteContent.images.hero.slide2, // Now an object
+    thumbnail: siteContent.images.hero.slide2, // Now an object
     title: siteContent.text.hero.slides[1].title,
     subtitle: siteContent.text.hero.slides[1].subtitle,
     cta: "Know More",
   },
   {
     type: "image" as const,
-    media: siteContent.images.hero.slide3,
-    thumbnail: siteContent.images.hero.slide3,
+    media: siteContent.images.hero.slide3, // Now an object
+    thumbnail: siteContent.images.hero.slide3, // Now an object
     title: siteContent.text.hero.slides[2].title,
     subtitle: siteContent.text.hero.slides[2].subtitle,
     cta: "Know More",
@@ -72,14 +73,15 @@ export default function Hero() {
                   loop
                   muted
                   playsInline
+                  preload="metadata"
+                  poster={slide.thumbnail.src}
                   className="w-full h-full object-cover"
                 >
                   <source src={slide.media} type="video/mp4" />
                 </video>
               ) : (
-                <img
-                  src={slide.media}
-                  alt={slide.title}
+                <OptimizedImage
+                  {...slide.media} // Spreads src, alt, priority
                   className="w-full h-full object-cover"
                 />
               )}
@@ -157,9 +159,8 @@ export default function Hero() {
                 : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
             }`}
           >
-            <img
-              src={slide.thumbnail}
-              alt={`Preview ${index + 1}`}
+            <OptimizedImage
+              {...slide.thumbnail}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
             {slide.type === "video" && (

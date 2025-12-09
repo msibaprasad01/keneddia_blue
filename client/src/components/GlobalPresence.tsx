@@ -1,7 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { MapPin, Star, Award, Users, Building2, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
+import { OptimizedImage } from "./ui/OptimizedImage";
 import { siteContent } from "@/data/siteContent";
 
 const stats = [
@@ -128,9 +128,8 @@ export default function GlobalPresence() {
     <section className="py-24 bg-secondary/30 relative overflow-hidden">
       {/* Background Image with Parallax feel */}
       <div className="absolute inset-0 opacity-5 pointer-events-none mix-blend-multiply">
-        <img
-          src={siteContent.images.globalPresence.map}
-          alt="India Presence Map"
+        <OptimizedImage
+          {...siteContent.images.globalPresence.map}
           className="w-full h-full object-cover grayscale invert"
         />
       </div>

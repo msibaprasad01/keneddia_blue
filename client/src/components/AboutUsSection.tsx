@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Shield, Award, Users } from "lucide-react";
 import { Link } from "wouter";
 import { siteContent } from "@/data/siteContent";
+import { OptimizedImage } from "./ui/OptimizedImage";
 
 const slides = siteContent.text.about.carousel.map((slide, index) => ({
   ...slide,
@@ -38,9 +39,8 @@ export default function AboutUsSection() {
           >
             <div className="relative aspect-[4/3] rounded-lg overflow-hidden shadow-xl group">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
-              <img 
-                src={siteContent.images.about.main} 
-                alt="Luxury hospitality environment" 
+              <OptimizedImage 
+                {...siteContent.images.about.main}
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
               />
             </div>

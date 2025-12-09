@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 import { siteContent } from "@/data/siteContent";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const events = [
   {
@@ -69,9 +70,8 @@ export default function Events() {
               className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow group"
             >
               <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={event.image} 
-                  alt={event.title} 
+                <OptimizedImage 
+                  {...event.image}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4 bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">

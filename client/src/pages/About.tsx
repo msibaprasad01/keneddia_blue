@@ -3,6 +3,7 @@ import { Users, Award, Shield, Target, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { siteContent } from "@/data/siteContent";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const values = [
   {
@@ -48,9 +49,8 @@ export default function About() {
       {/* Hero Section */}
       <div className="relative h-[60vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img
-            src={siteContent.images.about.main}
-            alt="Kennedia Blu Lobby"
+          <OptimizedImage
+            {...siteContent.images.about.main}
             className="w-full h-full object-cover brightness-50"
           />
         </div>

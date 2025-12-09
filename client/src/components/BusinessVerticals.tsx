@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { ArrowRight, Sparkles } from "lucide-react";
 // Assets
 import { siteContent } from "@/data/siteContent";
+import { OptimizedImage } from "./ui/OptimizedImage";
 
 const verticals = [
   {
@@ -153,9 +154,8 @@ export default function BusinessVerticals() {
                 className="relative aspect-4/3 overflow-hidden cursor-pointer group"
               >
                 {/* Background Image */}
-                <img
-                  src={vertical.image}
-                  alt={vertical.title}
+                <OptimizedImage
+                  {...vertical.image}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 
@@ -205,9 +205,8 @@ export default function BusinessVerticals() {
                 className="relative h-full min-h-[400px] lg:min-h-[550px] overflow-hidden"
               >
                 {/* Background Image */}
-                <img
-                  src={activeVertical.image}
-                  alt={activeVertical.title}
+                <OptimizedImage
+                  {...activeVertical.image}
                   className="w-full h-full object-cover"
                 />
                 
