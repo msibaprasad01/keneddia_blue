@@ -1,5 +1,5 @@
 import placeholderImg from "@assets/placeholder.svg";
-import brandLogo from "@assets/logo/kb-logo4.jpg";
+import brandLogo from "@assets/logo/kb-logo2.jpg";
 
 // Import Best Available Assets (Generic Luxury / Neutral)
 import heroExterior from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png";
