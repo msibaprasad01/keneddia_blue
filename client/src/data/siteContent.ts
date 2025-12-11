@@ -1,4 +1,5 @@
 import placeholderImg from "@assets/placeholder.svg";
+import brandLogo from "@assets/logo/kb-logo4.jpg";
 
 // Import Best Available Assets (Generic Luxury / Neutral)
 import heroExterior from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png";
@@ -39,6 +40,8 @@ export const siteContent = {
     tagline: "Redefining luxury hospitality with a commitment to excellence, comfort, and authentic experiences.",
     logo: {
       text: "Kennedia Blu",
+      image: { src: brandLogo, alt: "Kennedia Blu - Hotel | Restaurant | Cafe", priority: true },
+      fallbackText: "KENNEDIA BLU"
     }
   },
   images: {

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, LogIn } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Business mega menu data
 const businessCategories = [
@@ -33,24 +34,67 @@ const businessCategories = [
       "Pool Bars",
     ],
   },
+  // {
+  //   title: "Events & Conferences",
+  //   items: [
+  //     "Banquet Halls",
+  //     "Conference Centers",
+  //     "Wedding Venues",
+  //     "Exhibition Spaces",
+  //   ],
+  // },
+  // {
+  //   title: "Wellness & Spa",
+  //   items: [
+  //     "Day Spas",
+  //     "Wellness Centers",
+  //     "Fitness Studios",
+  //     "Yoga Retreats",
+  //   ],
+  // },
+];
+
+type NavItem =
+  | { type: 'link'; label: string; href: string; key: string }
+  | { type: 'dropdown'; label: string; key: string; items: { label: string; href: string }[] }
+  | { type: 'mega'; label: string; key: string; items: typeof businessCategories };
+
+const navItems: NavItem[] = [
   {
-    title: "Events & Conferences",
-    items: [
-      "Banquet Halls",
-      "Conference Centers",
-      "Wedding Venues",
-      "Exhibition Spaces",
-    ],
+    type: 'mega',
+    label: 'BUSINESSES',
+    key: 'business',
+    items: businessCategories
   },
   {
-    title: "Wellness & Spa",
-    items: [
-      "Day Spas",
-      "Wellness Centers",
-      "Fitness Studios",
-      "Yoga Retreats",
-    ],
+    type: 'link',
+    label: 'ABOUT US',
+    key: 'about',
+    href: '/about'
   },
+  {
+    type: 'link',
+    label: 'EVENTS',
+    key: 'events',
+    href: '/events'
+  },
+  {
+    type: 'link',
+    label: 'REVIEWS',
+    key: 'reviews',
+    href: '/reviews'
+  },
+  {
+    type: 'dropdown',
+    label: 'JOIN US',
+    key: 'joinus',
+    items: [
+      { label: 'Become a Partner', href: '/join/partner' },
+      { label: 'Franchise Opportunities', href: '/join/franchise' },
+      { label: 'Investor Relations', href: '/join/investor' },
+      { label: 'Supplier Registration', href: '/join/supplier' },
+    ]
+  }
 ];
 
 export default function Navbar() {
@@ -89,206 +133,142 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-white shadow-md"
-          : "bg-white/95 backdrop-blur-sm"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+        ? "bg-[#FAFAFA] shadow-md"
+        : "bg-[#FAFAFA]/95 backdrop-blur-sm"
+        }`}
     >
       <div className="container mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/">
-            <a onClick={handleLinkClick} className="text-foreground font-light text-3xl tracking-[0.2em] uppercase hover:text-primary transition-colors" style={{ fontFamily: 'serif' }}>
-              {siteContent.brand.logo.text}
+            <a onClick={handleLinkClick} className="block hover:opacity-90 transition-opacity shrink-0">
+              {siteContent.brand.logo.image ? (
+                <img
+                  src={siteContent.brand.logo.image.src}
+                  alt={siteContent.brand.logo.image.alt}
+                  className="h-16 lg:h-20 w-auto max-w-[450px] lg:max-w-[720px] object-contain mix-blend-multiply"
+                />
+              ) : (
+                <span className="text-[#2B2B2B] font-light text-3xl tracking-[0.2em] uppercase hover:text-[#B11226] transition-colors" style={{ fontFamily: 'serif' }}>
+                  {siteContent.brand.logo.text}
+                </span>
+              )}
             </a>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
-            {/* Business Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => handleMouseEnter("business")}
-              onMouseLeave={handleMouseLeave}
-            >
-              <button className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-gray-700 hover:text-primary transition-colors relative group whitespace-nowrap">
-                BUSINESSES
-                <ChevronDown className="w-4 h-4" />
-                {/* Active Indicator */}
-                {activeDropdown === "business" && (
-                  <motion.div
-                    layoutId="activeNav"
-                    className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                )}
-              </button>
+            {navItems.map((item) => (
+              <div
+                key={item.key}
+                className="relative"
+                onMouseEnter={() => item.type !== 'link' && handleMouseEnter(item.key)}
+                onMouseLeave={handleMouseLeave}
+              >
+                {item.type === 'link' ? (
+                  <Link href={item.href}>
+                    <a onClick={handleLinkClick} className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-[#2B2B2B] hover:text-[#B11226] transition-colors relative whitespace-nowrap">
+                      {item.label}
+                      {activeDropdown === item.key && (
+                        <motion.div
+                          layoutId="activeNav"
+                          className="absolute bottom-0 left-0 right-0 h-1 bg-[#B11226]"
+                          initial={false}
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                    </a>
+                  </Link>
+                ) : (
+                  <>
+                    <button className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-[#2B2B2B] hover:text-[#B11226] transition-colors relative group whitespace-nowrap">
+                      {item.label}
+                      <ChevronDown className="w-4 h-4" />
+                      {activeDropdown === item.key && (
+                        <motion.div
+                          layoutId="activeNav"
+                          className="absolute bottom-0 left-0 right-0 h-1 bg-[#B11226]"
+                          initial={false}
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                    </button>
 
-              {/* Mega Menu Dropdown */}
-              <AnimatePresence>
-                {activeDropdown === "business" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute left-1/2 -translate-x-1/2 top-full mt-0 w-screen max-w-5xl bg-white shadow-2xl border-t-4 border-gradient-to-r from-blue-600 via-purple-600 to-pink-600"
-                  >
-                    <div className="p-8">
-                      <div className="grid grid-cols-5 gap-8">
-                        {businessCategories.map((category, index) => (
-                          <div key={index}>
-                            <h3 className="font-bold text-sm text-gray-900 mb-4 pb-2 border-b border-gray-200">
-                              {category.title}
-                            </h3>
-                            <ul className="space-y-2.5">
-                              {category.items.map((item, itemIndex) => (
-                                <li key={itemIndex}>
-                                  <Link href={`/business/${item.toLowerCase().replace(/\s+/g, "-")}`}>
-                                    <a onClick={handleLinkClick} className="text-sm text-gray-600 hover:text-primary transition-colors block">
-                                      {item}
-                                    </a>
-                                  </Link>
-                                </li>
+                    {/* Dropdown/Mega Menu */}
+                    <AnimatePresence>
+                      {activeDropdown === item.key && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className={`absolute top-full mt-0 bg-[#FAFAFA] shadow-xl border-t-4 border-[#B11226] ${item.type === 'mega'
+                            ? "left-1/2 -translate-x-1/2 shadow-2xl"
+                            : "right-0 w-64"
+                            }`}
+                          style={
+                            item.type === 'mega'
+                              ? {
+                                width: 'max-content',
+                                maxWidth: '90vw',
+                              }
+                              : undefined
+                          }
+                        >
+                          {item.type === 'mega' ? (
+                            <div className="p-8">
+                              <div
+                                className="grid gap-8"
+                                style={{
+                                  gridTemplateColumns: `repeat(${item.items.length}, minmax(180px, 1fr))`
+                                }}
+                              >
+                                {item.items.map((category, index) => (
+                                  <div key={index}>
+                                    <h3 className="font-bold text-sm text-gray-900 mb-4 pb-2 border-b border-gray-200">
+                                      {category.title}
+                                    </h3>
+                                    <ul className="space-y-2.5">
+                                      {category.items.map((subItem, itemIndex) => (
+                                        <li key={itemIndex}>
+                                          <Link href={`/business/${subItem.toLowerCase().replace(/\s+/g, "-")}`}>
+                                            <a onClick={handleLinkClick} className="text-sm text-[#2B2B2B]/80 hover:text-[#B11226] transition-colors block">
+                                              {subItem}
+                                            </a>
+                                          </Link>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : item.type === 'dropdown' ? (
+                            <div className="py-3">
+                              {item.items.map((subItem, idx) => (
+                                <Link key={idx} href={subItem.href}>
+                                  <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-[#2B2B2B] hover:bg-gray-50 hover:text-[#B11226] transition-colors">
+                                    {subItem.label}
+                                  </a>
+                                </Link>
                               ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
+                            </div>
+                          ) : null}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
                 )}
-              </AnimatePresence>
-            </div>
-
-            {/* About */}
-            <div
-              className="relative"
-              onMouseEnter={() => handleMouseEnter("about")}
-              onMouseLeave={handleMouseLeave}
-            >
-              <Link href="/about">
-                <a onClick={handleLinkClick} className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-gray-700 hover:text-primary transition-colors relative whitespace-nowrap">
-                  ABOUT US
-                  {activeDropdown === "about" && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                </a>
-              </Link>
-            </div>
-
-            {/* Events */}
-            <div
-              className="relative"
-              onMouseEnter={() => handleMouseEnter("events")}
-              onMouseLeave={handleMouseLeave}
-            >
-              <Link href="/events">
-                <a onClick={handleLinkClick} className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-gray-700 hover:text-primary transition-colors relative whitespace-nowrap">
-                  EVENTS
-                  {activeDropdown === "events" && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                </a>
-              </Link>
-            </div>
-
-            {/* Reviews */}
-            <div
-              className="relative"
-              onMouseEnter={() => handleMouseEnter("reviews")}
-              onMouseLeave={handleMouseLeave}
-            >
-              <Link href="/reviews">
-                <a onClick={handleLinkClick} className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-gray-700 hover:text-primary transition-colors relative whitespace-nowrap">
-                  REVIEWS
-                  {activeDropdown === "reviews" && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                </a>
-              </Link>
-            </div>
-
-            {/* Join Us Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => handleMouseEnter("joinus")}
-              onMouseLeave={handleMouseLeave}
-            >
-              <button className="flex items-center gap-1 px-2 lg:px-3 xl:px-4 py-2 text-xs lg:text-sm font-medium text-gray-700 hover:text-primary transition-colors relative group whitespace-nowrap">
-                JOIN US
-                <ChevronDown className="w-4 h-4" />
-                {/* Active Indicator */}
-                {activeDropdown === "joinus" && (
-                  <motion.div
-                    layoutId="activeNav"
-                    className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                )}
-              </button>
-
-              {/* Join Us Dropdown Menu */}
-              <AnimatePresence>
-                {activeDropdown === "joinus" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-full mt-0 w-64 bg-white shadow-xl border-t-4 border-gradient-to-r from-blue-600 via-purple-600 to-pink-600"
-                  >
-                    <div className="py-3">
-                      <Link href="/join/partner">
-                        <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">
-                          Become a Partner
-                        </a>
-                      </Link>
-                      <Link href="/join/franchise">
-                        <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">
-                          Franchise Opportunities
-                        </a>
-                      </Link>
-                      <Link href="/join/investor">
-                        <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">
-                          Investor Relations
-                        </a>
-                      </Link>
-                      <Link href="/join/supplier">
-                        <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">
-                          Supplier Registration
-                        </a>
-                      </Link>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+              </div>
+            ))}
           </div>
 
           {/* Right Side Actions */}
           <div className="hidden lg:flex items-center gap-4">
             {/* Login Button - Minimalistic transparent design */}
             <Link href="/login">
-              <a onClick={handleLinkClick} className="flex items-center gap-2 px-5 py-2 bg-transparent border border-gray-300/50 text-gray-700 text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-300">
+              <a onClick={handleLinkClick} className="flex items-center gap-2 px-5 py-2 bg-transparent border border-gray-300/50 text-[#2B2B2B] text-sm font-medium rounded-full hover:border-[#B11226] hover:text-[#B11226] hover:bg-[#B11226]/5 transition-all duration-300">
                 <LogIn className="w-4 h-4" />
                 LOGIN
               </a>
@@ -296,9 +276,9 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             onClick={toggleMobileMenu}
-            className="lg:hidden text-gray-700 hover:text-primary transition-colors"
+            className="lg:hidden text-[#2B2B2B] hover:text-[#B11226] transition-colors"
             aria-label="Toggle menu"
           >
             <svg
@@ -337,125 +317,74 @@ export default function Navbar() {
               className="lg:hidden border-t border-gray-200 overflow-hidden"
             >
               <div className="py-4 max-h-[70vh] overflow-y-auto">
-                {/* Business Menu with Submenu */}
-                <div className="border-b border-gray-100">
-                  <button
-                    onClick={() => toggleMobileSubmenu("business")}
-                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
-                  >
-                    <span>BUSINESSES</span>
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-300 ${
-                        mobileExpandedMenu === "business" ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  
-                  <AnimatePresence>
-                    {mobileExpandedMenu === "business" && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="bg-gray-50 overflow-hidden"
+                {navItems.map((item) => (
+                  item.type === 'link' ? (
+                    <Link key={item.key} href={item.href}>
+                      <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-[#2B2B2B] hover:bg-gray-50 hover:text-[#B11226] transition-colors border-b border-gray-100">
+                        {item.label}
+                      </a>
+                    </Link>
+                  ) : (
+                    <div key={item.key} className="border-b border-gray-100">
+                      <button
+                        onClick={() => toggleMobileSubmenu(item.key)}
+                        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[#2B2B2B] hover:bg-gray-50 hover:text-[#B11226] transition-colors"
                       >
-                        {businessCategories.map((category, index) => (
-                          <div key={index} className="px-6 py-3 border-b border-gray-100 last:border-0">
-                            <h4 className="font-semibold text-xs text-gray-900 mb-2 uppercase tracking-wider">
-                              {category.title}
-                            </h4>
-                            <ul className="space-y-1.5">
-                              {category.items.map((item, itemIndex) => (
-                                <li key={itemIndex}>
-                                  <Link href={`/business/${item.toLowerCase().replace(/\s+/g, "-")}`}>
-                                    <a onClick={handleLinkClick} className="block text-sm text-gray-600 hover:text-primary py-1 transition-colors">
-                                      {item}
-                                    </a>
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                        <span>{item.label}</span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-300 ${mobileExpandedMenu === item.key ? "rotate-180" : ""
+                            }`}
+                        />
+                      </button>
 
-                {/* About Us */}
-                <Link href="/about">
-                  <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors border-b border-gray-100">
-                    ABOUT US
-                  </a>
-                </Link>
-
-                {/* Events */}
-                <Link href="/events">
-                  <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors border-b border-gray-100">
-                    EVENTS
-                  </a>
-                </Link>
-
-                {/* Reviews */}
-                <Link href="/reviews">
-                  <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors border-b border-gray-100">
-                    REVIEWS
-                  </a>
-                </Link>
-
-                {/* Join Us Menu with Submenu */}
-                <div className="border-b border-gray-100">
-                  <button
-                    onClick={() => toggleMobileSubmenu("joinus")}
-                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
-                  >
-                    <span>JOIN US</span>
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-300 ${
-                        mobileExpandedMenu === "joinus" ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  
-                  <AnimatePresence>
-                    {mobileExpandedMenu === "joinus" && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="bg-gray-50 overflow-hidden"
-                      >
-                        <Link href="/join/partner">
-                          <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-gray-600 hover:text-primary hover:bg-gray-100 transition-colors">
-                            Become a Partner
-                          </a>
-                        </Link>
-                        <Link href="/join/franchise">
-                          <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-gray-600 hover:text-primary hover:bg-gray-100 transition-colors">
-                            Franchise Opportunities
-                          </a>
-                        </Link>
-                        <Link href="/join/investor">
-                          <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-gray-600 hover:text-primary hover:bg-gray-100 transition-colors">
-                            Investor Relations
-                          </a>
-                        </Link>
-                        <Link href="/join/supplier">
-                          <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-gray-600 hover:text-primary hover:bg-gray-100 transition-colors">
-                            Supplier Registration
-                          </a>
-                        </Link>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                      <AnimatePresence>
+                        {mobileExpandedMenu === item.key && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-gray-50 overflow-hidden"
+                          >
+                            {item.type === 'mega' ? (
+                              item.items.map((category, index) => (
+                                <div key={index} className="px-6 py-3 border-b border-gray-100 last:border-0">
+                                  <h4 className="font-semibold text-xs text-gray-900 mb-2 uppercase tracking-wider">
+                                    {category.title}
+                                  </h4>
+                                  <ul className="space-y-1.5">
+                                    {category.items.map((subItem, itemIndex) => (
+                                      <li key={itemIndex}>
+                                        <Link href={`/business/${subItem.toLowerCase().replace(/\s+/g, "-")}`}>
+                                          <a onClick={handleLinkClick} className="block text-sm text-[#2B2B2B]/80 hover:text-[#B11226] py-1 transition-colors">
+                                            {subItem}
+                                          </a>
+                                        </Link>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))
+                            ) : item.type === 'dropdown' ? (
+                              item.items.map((subItem, idx) => (
+                                <Link key={idx} href={subItem.href}>
+                                  <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-[#2B2B2B]/80 hover:text-[#B11226] hover:bg-gray-100 transition-colors">
+                                    {subItem.label}
+                                  </a>
+                                </Link>
+                              ))
+                            ) : null}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )
+                ))}
 
                 {/* Login Button */}
                 <div className="px-4 pt-4">
                   <Link href="/login">
-                    <a onClick={handleLinkClick} className="flex items-center justify-center gap-2 w-full py-2.5 bg-transparent border border-gray-300/50 text-gray-700 text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-300">
+                    <a onClick={handleLinkClick} className="flex items-center justify-center gap-2 w-full py-2.5 bg-transparent border border-gray-300/50 text-[#2B2B2B] text-sm font-medium rounded-full hover:border-[#B11226] hover:text-[#B11226] hover:bg-[#B11226]/5 transition-all duration-300">
                       <LogIn className="w-4 h-4" />
                       LOGIN
                     </a>
