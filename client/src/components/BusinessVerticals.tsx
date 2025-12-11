@@ -1,280 +1,191 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "wouter";
-import { ArrowRight, Sparkles } from "lucide-react";
-// Assets
+import { motion } from "framer-motion";
+import { Link } from "wouter";
+import {
+  Building2,
+  Coffee,
+  Wine,
+  Music,
+  Drama,
+  Briefcase,
+  ArrowRight
+} from "lucide-react";
 import { siteContent } from "@/data/siteContent";
+import { useState, useEffect } from "react";
 import { OptimizedImage } from "./ui/OptimizedImage";
 
+// Lucide icon map
+const IconMap = {
+  hotels: Building2,
+  cafes: Coffee,
+  bars: Wine,
+  events: Briefcase,
+  entertainment: Music,
+};
+
 const verticals = [
-  {
-    id: "hotels",
-    title: "Hotels & Resorts",
-    image: siteContent.images.businessVerticals.hotel,
-    route: "/hotels",
-    subcategories: [
-      "Luxury Hotels",
-      "Beach Resorts",
-      "Urban Properties",
-      "Heritage Hotels",
-    ],
-    featured: true,
-  },
-  {
-    id: "cafes",
-    title: "Cafes & Dining",
-    image: siteContent.images.businessVerticals.cafe,
-    route: "/cafes",
-    subcategories: [
-      "Fine Dining",
-      "Casual Cafes",
-      "Rooftop Restaurants",
-      "Specialty Coffee",
-    ],
-  },
-  {
-    id: "bars",
-    title: "Bars & Lounges",
-    image: siteContent.images.businessVerticals.bar,
-    route: "/bars",
-    subcategories: [
-      "Cocktail Bars",
-      "Wine Lounges",
-      "Sky Bars",
-      "Pool Bars",
-    ],
-  },
-  {
-    id: "events",
-    title: "Events & Conferences",
-    image: siteContent.images.businessVerticals.cafe,
-    route: "/events",
-    subcategories: [
-      "Banquet Halls",
-      "Conference Centers",
-      "Wedding Venues",
-      "Exhibition Spaces",
-    ],
-  },
-  {
-    id: "entertainment",
-    title: "Entertainment",
-    image: siteContent.images.businessVerticals.bar,
-    route: "/entertainment",
-    subcategories: [
-      "Nightclubs",
-      "Live Music Venues",
-      "Theaters",
-      "Gaming Lounges",
-    ],
-  },
+  { id: "hotels", title: "Hotels & Resorts", icon: "hotels", description: "Luxury stays globally" },
+  { id: "cafes", title: "Cafes & Dining", icon: "cafes", description: "Artisan culinary delights" },
+  { id: "bars", title: "Bars & Lounges", icon: "bars", description: "Signature cocktails" },
+  { id: "events", title: "Events & Conf.", icon: "events", description: "Grand venues" },
+  { id: "entertainment", title: "Entertainment", icon: "entertainment", description: "Live shows & nightlife" },
 ];
 
 export default function BusinessVerticals() {
-  const [activeVertical, setActiveVertical] = useState(verticals[0]);
-  const [activeTab, setActiveTab] = useState<"verticals" | "companies">("verticals");
-  const [, setLocation] = useLocation();
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Autoplay functionality
   useEffect(() => {
-    if (!isAutoPlaying) return;
-
-    const interval = setInterval(() => {
-      setActiveVertical((current) => {
-        const currentIndex = verticals.findIndex((v) => v.id === current.id);
-        const nextIndex = (currentIndex + 1) % verticals.length;
-        return verticals[nextIndex];
-      });
-    }, 5000); // Change every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [isAutoPlaying]);
-
-  const handleCardClick = (vertical: typeof verticals[0]) => {
-    setActiveVertical(vertical);
-    setIsAutoPlaying(false); // Pause autoplay when user manually selects
-    
-    // Resume autoplay after 10 seconds
-    setTimeout(() => setIsAutoPlaying(true), 10000);
-  };
-
-  const handleSubcategoryClick = (subcategory: string) => {
-    // Navigate to the active vertical's route
-    setLocation(activeVertical.route);
-  };
-
-  const handleVerticalNavigate = (vertical: typeof verticals[0]) => {
-    // Navigate to the vertical's route
-    setLocation(vertical.route);
-  };
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
-    <section className="py-20 bg-white relative">
-      <div className="container mx-auto px-6 lg:px-12">
-        {/* Header with Tabs */}
-        <div className="flex items-center justify-between mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
-            OUR BUSINESSES
-          </h2>
-          
-          <div className="flex gap-8">
-            <button
-              onClick={() => setActiveTab("verticals")}
-              className={`text-base font-medium pb-2 transition-colors relative ${
-                activeTab === "verticals"
-                  ? "text-blue-600"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              Verticals
-              {activeTab === "verticals" && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
-                />
-              )}
-            </button>
-          </div>
+    <section className="py-12 bg-gradient-to-b from-white to-blue-50/30 overflow-hidden relative">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-blue-100/20 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="text-center mb-8">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2"
+          >
+            Kennedia Group
+          </motion.h2>
+          <p className="text-sm text-gray-500 max-w-lg mx-auto">
+            A diverse ecosystem of luxury hospitality brands.
+          </p>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Side - Card Grid (2x2) with reduced row gap */}
-          <div className="lg:col-span-5 grid grid-cols-2 gap-x-4 gap-y-1 auto-rows-fr">
-            {verticals.map((vertical, index) => (
-              <motion.div
-                key={vertical.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                onMouseEnter={() => handleCardClick(vertical)}
-                onClick={() => handleVerticalNavigate(vertical)}
-                className="relative aspect-4/3 overflow-hidden cursor-pointer group"
-              >
-                {/* Background Image */}
-                <OptimizedImage
-                  {...vertical.image}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                
-                {/* Overlay */}
-                {index === 0 ? (
-                  // First card - Gradient overlay with arrow
-                  <div className="absolute inset-0 bg-linear-to-r from-blue-600 to-purple-600 opacity-90 group-hover:opacity-95 transition-opacity" />
-                ) : (
-                  // Other cards - Dark overlay
-                  <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors" />
-                )}
-
-                {/* Content */}
-                <div className="absolute inset-0 flex items-end p-5">
-                  <div className="flex items-center justify-between w-full">
-                    <h3 className="text-white font-semibold text-lg leading-tight">
-                      {vertical.title}
-                    </h3>
-                    {index === 0 && (
-                      <ArrowRight className="w-6 h-6 text-white" />
-                    )}
-                  </div>
-                </div>
-
-                {/* Active Indicator - Dynamic based on activeVertical */}
-                {activeVertical.id === vertical.id && (
-                  <motion.div
-                    layoutId="activeCard"
-                    className="absolute inset-0 ring-4 ring-cyan-400 pointer-events-none"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                )}
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Right Side - Featured Slide with reduced height */}
-          <div className="lg:col-span-7">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeVertical.id}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.4 }}
-                className="relative h-full min-h-[400px] lg:min-h-[550px] overflow-hidden"
-              >
-                {/* Background Image */}
-                <OptimizedImage
-                  {...activeVertical.image}
-                  className="w-full h-full object-cover"
-                />
-                
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-linear-to-br from-black/70 via-black/30 to-transparent" />
-
-                {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 blur-[100px] rounded-full" />
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 blur-[100px] rounded-full" />
-
-                {/* Content */}
-                <div className="absolute inset-0 flex flex-col justify-center items-center p-8 lg:p-12">
-                  {/* Vertical Title - Large & Elegant */}
-                  <motion.div
-                    initial={{ opacity: 0, y: -30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="mb-12 text-center"
-                  >
-                    <div className="flex items-center justify-center gap-3 mb-4">
-                      <div className="w-12 h-0.5 bg-linear-to-r from-transparent via-white to-white" />
-                      <Sparkles className="w-6 h-6 text-white" />
-                      <div className="w-12 h-0.5 bg-linear-to-r from-white via-white to-transparent" />
-                    </div>
-                    <h3 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight">
-                      {activeVertical.title}
-                    </h3>
-                  </motion.div>
-
-                  {/* Subcategory Tags - Creative Layout */}
-                  <div className="relative grid grid-cols-2 gap-4 max-w-2xl w-full">
-                    {activeVertical.subcategories.map((subcategory, index) => (
-                      <motion.button
-                        key={subcategory}
-                        initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30, y: 20 }}
-                        animate={{ opacity: 1, x: 0, y: 0 }}
-                        transition={{ delay: index * 0.15, type: "spring", stiffness: 100 }}
-                        onClick={() => handleSubcategoryClick(subcategory)}
-                        className="group relative overflow-hidden"
-                      >
-                        {/* Card Background */}
-                        <div className="relative px-6 py-4 bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 hover:border-white/40 transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                          {/* Shine Effect */}
-                          <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                          
-                          {/* Diagonal Line Accent */}
-                          <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-br from-blue-500/20 to-purple-500/20 blur-2xl" />
-                          
-                          {/* Text */}
-                          <div className="relative flex items-center justify-between">
-                            <span className="text-white font-semibold text-sm md:text-base">
-                              {subcategory}
-                            </span>
-                            <ArrowRight className="w-4 h-4 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
-                          </div>
-                        </div>
-
-                        {/* Glow Effect on Hover */}
-                        <div className="absolute inset-0 bg-linear-to-r from-blue-500/0 via-blue-500/10 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl -z-10" />
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
+        {isMobile ? (
+          <MobileTimeline verticals={verticals} />
+        ) : (
+          <DesktopTree verticals={verticals} />
+        )}
       </div>
     </section>
+  );
+}
+
+function DesktopTree({ verticals }: { verticals: typeof verticals }) {
+  const midPoint = Math.ceil(verticals.length / 2);
+  const leftSide = verticals.slice(0, midPoint);
+  const rightSide = verticals.slice(midPoint);
+
+  return (
+    // Increased max-w and min-h for 10% larger size
+    <div className="relative w-full max-w-5xl mx-auto min-h-[400px] flex justify-center items-center">
+      {/* Central Root Node - Replaced text with Logo */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          className="w-30 h-30 rounded-full bg-white shadow-[0_0_35px_rgba(37,99,235,0.15)] border-4 border-blue-50 flex items-center justify-center relative z-20 overflow-hidden"
+        >
+          <div className="w-22 h-22 flex items-center justify-center">
+            <OptimizedImage
+              src={siteContent.brand.logo.image.src}
+              alt={siteContent.brand.logo.image.alt}
+              className="w-full h-full object-contain"
+            />
+          </div>
+          {/* Pulsing rings */}
+          <div className="absolute inset-0 rounded-full border border-blue-200 animate-ping opacity-20" />
+          <div className="absolute -inset-3 rounded-full border border-blue-100 opacity-20" />
+        </motion.div>
+      </div>
+
+      {/* Grid Layout - Slightly increased gap for size */}
+      <div className="grid grid-cols-3 w-full h-full gap-6">
+        {/* Left Column */}
+        <div className="flex flex-col justify-center items-end py-6 pr-10 space-y-8">
+          {leftSide.map((v, i) => (
+            <BranchNode key={v.id} item={v} align="right" delay={i * 0.1} />
+          ))}
+        </div>
+
+        {/* Center Column (Spacer) */}
+        <div className="flex items-center justify-center pointer-events-none" />
+
+        {/* Right Column */}
+        <div className="flex flex-col justify-center items-start py-6 pl-10 space-y-8">
+          {rightSide.map((v, i) => (
+            <BranchNode key={v.id} item={v} align="left" delay={0.2 + (i * 0.1)} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BranchNode({ item, align, delay }: { item: any, align: 'left' | 'right', delay: number }) {
+  const Icon = IconMap[item.icon as keyof typeof IconMap] || Building2;
+  const isRightAligned = align === 'right';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: isRightAligned ? -15 : 15 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      transition={{ delay }}
+      className={`relative group flex items-center gap-4 ${isRightAligned ? 'flex-row-reverse text-right' : 'flex-row text-left'}`}
+    >
+      {/* Connector Line - Slightly longer for scale */}
+      <div className={`absolute top-1/2 w-10 h-[1px] bg-blue-200 transition-all duration-500 group-hover:w-14 group-hover:bg-blue-400 ${isRightAligned ? '-right-14 translate-x-0' : '-left-14 translate-x-0'}`} />
+
+      {/* Content */}
+      <div className="space-y-1">
+        <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors leading-tight">
+          {item.title}
+        </h3>
+        <p className="text-xs text-gray-400 font-medium truncate max-w-[150px]">{item.description}</p>
+      </div>
+
+      {/* Node Bubble */}
+      <Link href={`/${item.id}`}>
+        <a className="relative z-20 flex-shrink-0">
+          <div className="w-14 h-14 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center group-hover:scale-105 group-hover:border-blue-400 group-hover:shadow-blue-200/50 transition-all duration-300">
+            <Icon className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+          </div>
+        </a>
+      </Link>
+    </motion.div>
+  );
+}
+
+function MobileTimeline({ verticals }: { verticals: typeof verticals }) {
+  return (
+    <div className="relative pl-6 border-l border-dashed border-blue-200 space-y-8 py-4">
+      {verticals.map((v, i) => {
+        const Icon = IconMap[v.icon as keyof typeof IconMap] || Building2;
+        return (
+          <motion.div
+            key={v.id}
+            initial={{ opacity: 0, x: -15 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="relative"
+          >
+            <div className="absolute -left-[31px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
+
+            <Link href={`/${v.id}`}>
+              <a className="block bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-50 rounded-full text-blue-600">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900">{v.title}</h3>
+                  </div>
+                  <ArrowRight className="w-4 h-4 ml-auto text-gray-300" />
+                </div>
+              </a>
+            </Link>
+          </motion.div>
+        );
+      })}
+    </div>
   );
 }

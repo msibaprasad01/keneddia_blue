@@ -127,6 +127,76 @@ export const siteContent = {
           description: "Led by industry veterans with decades of experience in hospitality, driving innovation and consistent service quality.",
         }
       ]
+    },
+    // New Sections Data
+    dailyOffers: {
+      title: "Exclusive Daily Offers",
+      offer: {
+        title: "Summer Luxury Escape",
+        description: "Experience the epitome of luxury with our special summer package. Enjoy complimentary breakfast, spa credits, and a room upgrade.",
+        couponCode: "SUMMER2025",
+        ctaText: "Book Now",
+        link: "/booking"
+      }
+    },
+    events: {
+      title: "Upcoming Events",
+      items: [
+        {
+          title: "Jazz Night Under the Stars",
+          date: "Dec 25, 2025",
+          image: { src: barSpeakeasy, alt: "Jazz Night", priority: false },
+          description: "An evening of smooth jazz and signature cocktails at our rooftop lounge.",
+          slug: "jazz-night"
+        },
+        {
+          title: "New Year's Eve Gala",
+          date: "Dec 31, 2025",
+          image: { src: heroLobby, alt: "NYE Gala", priority: false },
+          description: "Ring in the new year with a grand celebration featuring live music and gourmet dining.",
+          slug: "nye-gala"
+        },
+        {
+          title: "Culinary Masterclass",
+          date: "Jan 15, 2026",
+          image: { src: cafeParisian, alt: "Culinary Class", priority: false },
+          description: "Learn the secrets of fine dining from our executive chefs.",
+          slug: "culinary-masterclass"
+        }
+      ]
+    },
+    news: {
+      title: "News & Press",
+      items: [
+        {
+          title: "Kennedia Blu Wins Excellence Award",
+          date: "Nov 15, 2025",
+          image: { src: aboutLeader, alt: "Award Ceremony", priority: false },
+          description: "Recognized for outstanding hospitality and service excellence in the annual Hotel Awards.",
+          slug: "excellence-award"
+        },
+        {
+          title: "Expansion Plans for 2026",
+          date: "Oct 20, 2025",
+          image: { src: mapImage, alt: "Expansion Map", priority: false },
+          description: "Announcing new locations in key cities across the country as we grow our footprint.",
+          slug: "expansion-2026"
+        },
+        {
+          title: "Sustainability Initiative Launch",
+          date: "Sep 05, 2025",
+          image: { src: cafeGarden, alt: "Green Initiative", priority: false },
+          description: "Commitment to eco-friendly practices and reducing our carbon footprint.",
+          slug: "sustainability-launch"
+        }
+      ]
+    },
+    ourStory: {
+      headline: "A Journey of Excellence",
+      summary: "From humble beginnings to a renowned hospitality brand, the story of Kennedia Blu is one of passion, dedication, and a relentless pursuit of perfection. Discover how we are redefining luxury.",
+      image: { src: aboutMain, alt: "Our Story", priority: false },
+      ctaText: "Explore Our Story",
+      link: "/our-story"
     }
   }
 };
