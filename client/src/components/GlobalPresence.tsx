@@ -74,7 +74,7 @@ function useCountUp(end: number, duration: number = 2000, isDecimal: boolean = f
     const step = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
-      
+
       if (isDecimal) {
         setCount(parseFloat((progress * end).toFixed(1)));
       } else {
@@ -163,8 +163,8 @@ export default function GlobalPresence() {
               transition={{ delay: 0.2 }}
               className="text-muted-foreground font-light leading-relaxed mb-10 max-w-lg"
             >
-              From the tech hub of Bangalore to the spiritual heart of Varanasi, 
-              Kennedia Blu Hotels creates experiences that honor India's rich heritage 
+              From the tech hub of Bangalore to the spiritual heart of Varanasi,
+              Kennedia Blu Hotels creates experiences that honor India's rich heritage
               while delivering world-class hospitality standards.
             </motion.p>
 
@@ -216,7 +216,7 @@ export default function GlobalPresence() {
                   className="flex items-start gap-3"
                 >
                   <div className="mt-1.5 w-2 h-2 rounded-full bg-primary shrink-0" />
-                  <p className="text-sm text-muted-foreground font-light">
+                  <p className="text-sm text-foreground/90 font-normal">
                     {highlight}
                   </p>
                 </motion.div>
