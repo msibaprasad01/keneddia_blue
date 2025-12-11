@@ -32,48 +32,52 @@
   --radius-lg: var(--radius);
 }
 
-/* CLASSIC CANADIAN WARMTH THEME */
+/* WARM NEUTRAL MODERN THEME */
 :root {
-  /* Warm Off-White Background (#FAF7F2) */
-  --background: 37 27% 96%;
-  /* Soft Charcoal Foreground (#2B2B2B) */
-  --foreground: 0 0% 17%;
+  /* Background: #F7EEE8 */
+  --background: 22 38% 94%;
+  /* Text Primary: #3A2F28 */
+  --foreground: 24 18% 19%;
 
-  /* Warm Beige Card Background (#F3EEE8) */
-  --card: 33 27% 93%;
-  --card-foreground: 0 0% 17%;
+  /* Surface/Card: #F2E4DC */
+  --card: 22 38% 90%;
+  --card-foreground: 24 18% 19%;
 
   /* Popover - same as Card */
-  --popover: 33 27% 93%;
-  --popover-foreground: 0 0% 17%;
+  --popover: 22 38% 90%;
+  --popover-foreground: 24 18% 19%;
 
-  /* Primary - Canadian Red Accent (#C0392B) */
-  --primary: 6 63% 46%;
+  /* Primary: #C8102E (Standard Red) */
+  --primary: 350 85% 42%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary - Warm Beige (slightly darker than card) */
-  --secondary: 33 20% 90%;
-  --secondary-foreground: 0 0% 17%;
+  /* Secondary: #7B5A48 (Footer Background) */
+  --secondary: 21 26% 38%;
+  /* Secondary Text: #F7EEE8 (Light Text for dark sec bg) */
+  --secondary-foreground: 22 38% 94%;
 
-  /* Muted - Soft Grey-Beige for subtext */
-  --muted: 33 10% 85%;
-  --muted-foreground: 0 0% 40%;
+  /* Text Secondary: #6E5C53 used as muted */
+  --muted: 22 38% 90%; /* Using card color for muted bg usually, or lighter. adapting. */
+  --muted-foreground: 20 14% 38%;
 
-  /* Accent - Warm Highlight (lighter beige for hovers) */
-  --accent: 33 30% 95%;
-  --accent-foreground: 6 63% 46%;
+  /* Accent: #D9A86C */
+  --accent: 33 58% 64%;
+  --accent-foreground: 24 18% 19%;
+
+  /* Highlight: #B76E54 (used for ring/border highlights) */
+  --ring: 16 40% 52%;
+
+  /* Border: #E0CFC4 */
+  --border: 23 27% 82%;
+  --input: 23 27% 82%;
 
   /* Destructive */
   --destructive: 0 62% 40%;
   --destructive-foreground: 0 0% 98%;
 
-  /* Borders - Darker Beige for contrast */
-  --border: 33 15% 85%;
-  --input: 33 15% 85%;
-  --ring: 6 63% 46%;
-
-  --radius: 4px; /* Slightly softened corners for "warmth" */
+  --radius: 4px; 
 }
+
 
 @layer base {
   * {

@@ -60,7 +60,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 bg-[#FAFAFA] ${scrolled ? "shadow-md" : ""}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 bg-background ${scrolled ? "shadow-md" : ""}`}>
       <div className="container mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between h-22">
           {/* wrapper: allow natural logo width, don't force 10rem */}
