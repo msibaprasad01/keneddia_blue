@@ -10,10 +10,10 @@ export default function NewsPress() {
   if (!news) return null;
 
   return (
-    <section className="py-24 bg-background">
+    <section className="py-12 bg-background">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Header */}
-        <div className="flex flex-col items-center text-center mb-16">
+        <div className="flex flex-col items-center text-center mb-8">
           <span className="text-sm font-semibold text-primary tracking-[0.2em] uppercase mb-4">
             Updates & Recognition
           </span>

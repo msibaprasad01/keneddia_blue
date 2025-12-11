@@ -29,7 +29,7 @@ export default function AboutUsSection() {
       <div className="container mx-auto">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
 
-          {/* Left Column: Image */}
+          {/* Left Column: Synced Image Carousel */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -39,10 +39,23 @@ export default function AboutUsSection() {
           >
             <div className="relative aspect-[4/3] rounded-lg overflow-hidden shadow-xl group">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
-              <OptimizedImage
-                {...siteContent.images.about.main}
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-              />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentSlide}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="w-full h-full"
+                >
+                  {slides[currentSlide].image && (
+                    <OptimizedImage
+                      {...slides[currentSlide].image}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </motion.div>
 

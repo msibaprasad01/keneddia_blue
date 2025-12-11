@@ -24,14 +24,14 @@ const ratings = [
 
 export default function RatingsAndAwards() {
   return (
-    <section className="py-20 bg-linear-to-br from-gray-50 to-white relative overflow-hidden">
+    <section className="py-10 bg-linear-to-br from-gray-50 to-white relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
 
       <div className="container mx-auto px-6 relative z-10">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <div className="text-center max-w-2xl mx-auto mb-8">
           <motion.span
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -148,7 +148,7 @@ export default function RatingsAndAwards() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.8 }}
-          className="mt-16 text-center"
+          className="mt-8 text-center"
         >
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-background/50 backdrop-blur-sm border border-primary/10 rounded-full">
             <div className="flex -space-x-1">

@@ -133,14 +133,17 @@ export const siteContent = {
         {
           title: "Trusted Hospitality Brand",
           description: "Kennedia Blu is built on trust and excellence, delivering premium hospitality experiences that exceed customer expectations.",
+          image: { src: aboutMain, alt: "Leadership Excellence", priority: false }
         },
         {
           title: "Commitment to Quality",
           description: "We focus on top-class service standards, attention to detail, and customer satisfaction across every touchpoint.",
+          image: { src: heroLobby, alt: "Quality Service", priority: false }
         },
         {
           title: "Leadership Excellence",
           description: "Led by industry veterans with decades of experience in hospitality, driving innovation and consistent service quality.",
+          image: { src: aboutLeader, alt: "Industry Veterans", priority: false }
         }
       ]
     },
@@ -213,8 +216,13 @@ export const siteContent = {
       headline: "A Journey of Excellence",
       summary: "From humble beginnings to a renowned hospitality brand, the story of Kennedia Blu is one of passion, dedication, and a relentless pursuit of perfection. Discover how we are redefining luxury.",
       image: { src: aboutMain, alt: "Our Story", priority: false },
+      images: [
+        { src: aboutMain, alt: "Leadership Team", priority: false },
+        { src: heroLobby, alt: "Management Excellence", priority: false },
+        { src: aboutLeader, alt: "Award-Winning Service", priority: false }
+      ],
       ctaText: "Explore Our Story",
-      link: "/our-story"
+      link: "#"
     }
   }
 };
