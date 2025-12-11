@@ -1,5 +1,6 @@
 import placeholderImg from "@assets/placeholder.svg";
 import brandLogo from "@assets/logo/kb-logo1.jpg";
+import brandLogo2 from "@assets/logo/kb-logo2.jpg";
 // Import Best Available Assets (Generic Luxury / Neutral)
 import heroExterior from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png";
 import heroLobby from "@assets/generated_images/luxury_hotel_lobby_interior.png";
@@ -40,6 +41,11 @@ export const siteContent = {
     logo: {
       text: "Kennedia Blu",
       image: { src: brandLogo, alt: "Kennedia Blu - Hotel | Restaurant | Cafe", priority: true },
+      fallbackText: "KENNEDIA BLU"
+    },
+    logo2: {
+      text: "Kennedia Blu",
+      image: { src: brandLogo2, alt: "Kennedia Blu - Hotel | Restaurant | Cafe", priority: true },
       fallbackText: "KENNEDIA BLU"
     }
   },

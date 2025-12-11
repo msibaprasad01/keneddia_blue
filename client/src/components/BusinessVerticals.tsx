@@ -12,6 +12,7 @@ import {
 import { siteContent } from "@/data/siteContent";
 import { useState, useEffect } from "react";
 import { OptimizedImage } from "./ui/OptimizedImage";
+import { isRouteAvailable } from "@/lib/routes";
 
 // Lucide icon map
 const IconMap = {
@@ -41,12 +42,12 @@ export default function BusinessVerticals() {
   }, []);
 
   return (
-    <section className="py-12 bg-gradient-to-b from-background to-secondary/30 overflow-hidden relative">
+    <section className="py-8 bg-gradient-to-b from-background to-secondary/30 overflow-hidden relative">
       {/* Background Decor */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-blue-100/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -101,7 +102,7 @@ function DesktopTree({ verticals }: { verticals: typeof verticals }) {
       {/* Grid Layout - Slightly increased gap for size */}
       <div className="grid grid-cols-3 w-full h-full gap-6">
         {/* Left Column */}
-        <div className="flex flex-col justify-center items-end py-6 pr-10 space-y-8">
+        <div className="flex flex-col justify-center items-end py-6 pr-10 space-y-6">
           {leftSide.map((v, i) => (
             <BranchNode key={v.id} item={v} align="right" delay={i * 0.1} />
           ))}
@@ -111,7 +112,7 @@ function DesktopTree({ verticals }: { verticals: typeof verticals }) {
         <div className="flex items-center justify-center pointer-events-none" />
 
         {/* Right Column */}
-        <div className="flex flex-col justify-center items-start py-6 pl-10 space-y-8">
+        <div className="flex flex-col justify-center items-start py-6 pl-10 space-y-6">
           {rightSide.map((v, i) => (
             <BranchNode key={v.id} item={v} align="left" delay={0.2 + (i * 0.1)} />
           ))}
@@ -140,17 +141,25 @@ function BranchNode({ item, align, delay }: { item: any, align: 'left' | 'right'
         <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors leading-tight">
           {item.title}
         </h3>
-        <p className="text-xs text-gray-400 font-medium truncate max-w-[150px]">{item.description}</p>
+        <p className="text-sm text-foreground/70 font-semibold truncate max-w-[150px]">{item.description}</p>
       </div>
 
       {/* Node Bubble */}
-      <Link href={`/${item.id}`}>
-        <a className="relative z-20 flex-shrink-0">
-          <div className="w-14 h-14 rounded-full bg-card shadow-md border border-border flex items-center justify-center group-hover:scale-105 group-hover:border-primary group-hover:shadow-primary/20 transition-all duration-300">
-            <Icon className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+      {isRouteAvailable(`/${item.id}`) ? (
+        <Link href={`/${item.id}`}>
+          <a className="relative z-20 flex-shrink-0">
+            <div className="w-14 h-14 rounded-full bg-card shadow-md border border-border flex items-center justify-center group-hover:scale-105 group-hover:border-primary group-hover:shadow-primary/20 transition-all duration-300">
+              <Icon className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+            </div>
+          </a>
+        </Link>
+      ) : (
+        <div className="relative z-20 flex-shrink-0 opacity-50 cursor-not-allowed">
+          <div className="w-14 h-14 rounded-full bg-card shadow-md border border-border flex items-center justify-center">
+            <Icon className="w-5 h-5 text-gray-400" />
           </div>
-        </a>
-      </Link>
+        </div>
+      )}
     </motion.div>
   );
 }
