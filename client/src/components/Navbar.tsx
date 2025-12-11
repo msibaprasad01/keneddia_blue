@@ -27,7 +27,6 @@ type NavItem =
 
 const navItems: NavItem[] = [
   { type: 'mega', label: 'BUSINESSES', key: 'business', items: businessCategories },
-  { type: 'link', label: 'ABOUT US', key: 'about', href: '/about' },
   { type: 'link', label: 'EVENTS', key: 'events', href: '/events' },
   { type: 'link', label: 'REVIEWS', key: 'reviews', href: '/reviews' },
   {
@@ -40,7 +39,8 @@ const navItems: NavItem[] = [
       { label: 'Investor Relations', href: '/join/investor' },
       { label: 'Supplier Registration', href: '/join/supplier' },
     ]
-  }
+  },
+  { type: 'link', label: 'ABOUT US', key: 'about', href: '/about' }
 ];
 
 export default function Navbar() {
@@ -72,7 +72,6 @@ export default function Navbar() {
                   alt={siteContent.brand.logo.image.alt}
                   className="mix-blend-multiply h-16 lg:h-20 w-[8rem]"
                 />
-
               </a>
             </Link>
           </div>

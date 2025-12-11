@@ -1,7 +1,8 @@
 import placeholderImg from "@assets/placeholder.svg";
-import brandLogo from "@assets/logo/kb-logo2.jpg";
-
-// Import Best Available Assets (Generic Luxury / Neutral)
+import brandLogo from "@assets/logo/kb-logo1.png";
+import brandLogoHotel from "@assets/logo/kb-logo1.jpg";
+import brandLogoCafe from "@assets/logo/kb-logo3.jpg";
+import brandLogoBar from "@assets/logo/kb-logo4.jpg";
 import heroExterior from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png";
 import heroLobby from "@assets/generated_images/luxury_hotel_lobby_interior.png";
 import heroLounge from "@assets/generated_images/exclusive_rooftop_lounge_at_night.png";
@@ -42,6 +43,21 @@ export const siteContent = {
       text: "Kennedia Blu",
       image: { src: brandLogo, alt: "Kennedia Blu - Hotel | Restaurant | Cafe", priority: true },
       fallbackText: "KENNEDIA BLU"
+    },
+    logo_hotel: {
+      text: "Kennedia Blu Hotels",
+      image: { src: brandLogoHotel, alt: "Kennedia Blu Hotels Logo", priority: false },
+      fallbackText: "KENNEDIA BLU HOTELS"
+    },
+    logo_cafe: {
+      text: "Kennedia Blu Cafes",
+      image: { src: brandLogoCafe, alt: "Kennedia Blu Cafe Logo", priority: false },
+      fallbackText: "KENNEDIA BLU CAFES"
+    },
+    logo_bar: {
+      text: "Kennedia Blu Bars",
+      image: { src: brandLogoBar, alt: "Kennedia Blu Bar Logo", priority: false },
+      fallbackText: "KENNEDIA BLU BARS"
     }
   },
   images: {
@@ -117,28 +133,52 @@ export const siteContent = {
         {
           title: "Trusted Hospitality Brand",
           description: "Kennedia Blu is built on trust and excellence, delivering premium hospitality experiences that exceed customer expectations.",
+          image: { src: aboutMain, alt: "Leadership Excellence", priority: false }
         },
         {
           title: "Commitment to Quality",
           description: "We focus on top-class service standards, attention to detail, and customer satisfaction across every touchpoint.",
+          image: { src: heroLobby, alt: "Quality Service", priority: false }
         },
         {
           title: "Leadership Excellence",
           description: "Led by industry veterans with decades of experience in hospitality, driving innovation and consistent service quality.",
+          image: { src: aboutLeader, alt: "Industry Veterans", priority: false }
         }
       ]
     },
     // New Sections Data
     dailyOffers: {
       title: "Exclusive Daily Offers",
-      offer: {
-        title: "Winter Alpine Retreat",
-        description:
-          "Warm up this winter with our exclusive alpine getaway package. Enjoy complimentary hot cocoa evenings, fireplace lounge access, and a curated winter activity pass.",
-        couponCode: "WINTER2025",
-        ctaText: "Explore Winter Stay",
-        link: "/booking"
-      }
+      offers: [
+        {
+          title: "Winter Alpine Retreat",
+          description:
+            "Warm up this winter with our exclusive alpine getaway package. Enjoy complimentary hot cocoa evenings, fireplace lounge access, and a curated winter activity pass.",
+          couponCode: "WINTER2025",
+          ctaText: "Explore Winter Stay",
+          link: "#",
+          image: { src: heroExterior, alt: "Winter Alpine Retreat", priority: false }
+        },
+        {
+          title: "Luxury Spa Weekend",
+          description:
+            "Indulge in a rejuvenating spa experience with our exclusive weekend package. Includes full-body massage, aromatherapy, and access to our premium wellness facilities.",
+          couponCode: "SPA2025",
+          ctaText: "Book Spa Package",
+          link: "#",
+          image: { src: heroLobby, alt: "Luxury Spa Weekend", priority: false }
+        },
+        {
+          title: "Rooftop Dining Experience",
+          description:
+            "Savor exquisite cuisine under the stars with our special rooftop dining offer. Includes a 5-course meal, premium wine pairing, and live music entertainment.",
+          couponCode: "DINE2025",
+          ctaText: "Reserve Table",
+          link: "#",
+          image: { src: heroLounge, alt: "Rooftop Dining", priority: false }
+        }
+      ]
     },
 
     events: {
@@ -197,8 +237,13 @@ export const siteContent = {
       headline: "A Journey of Excellence",
       summary: "From humble beginnings to a renowned hospitality brand, the story of Kennedia Blu is one of passion, dedication, and a relentless pursuit of perfection. Discover how we are redefining luxury.",
       image: { src: aboutMain, alt: "Our Story", priority: false },
+      images: [
+        { src: aboutMain, alt: "Leadership Team", priority: false },
+        { src: heroLobby, alt: "Management Excellence", priority: false },
+        { src: aboutLeader, alt: "Award-Winning Service", priority: false }
+      ],
       ctaText: "Explore Our Story",
-      link: "/our-story"
+      link: "#"
     }
   }
 };

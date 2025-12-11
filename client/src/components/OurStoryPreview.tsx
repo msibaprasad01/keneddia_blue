@@ -1,12 +1,23 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "./ui/OptimizedImage";
+import { useState, useEffect } from "react";
 
 export default function OurStoryPreview() {
   const { ourStory } = siteContent.text;
+  const [currentImage, setCurrentImage] = useState(0);
 
   if (!ourStory) return null;
+
+  const images = ourStory.images || [ourStory.image];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [images.length]);
 
   return (
     <section className="bg-background">
@@ -41,15 +52,26 @@ export default function OurStoryPreview() {
           </motion.div>
         </div>
 
-        {/* Image Side - 50% Size & Centered */}
+        {/* Avatar Carousel Side */}
         <div className="relative h-[300px] lg:h-auto order-1 lg:order-2 flex items-center justify-center bg-secondary/30">
-          <div className="relative w-1/2 aspect-square shadow-2xl rounded-sm overflow-hidden transform">
-            <OptimizedImage
-              src={ourStory.image.src}
-              alt={ourStory.image.alt}
-              priority={false}
-              className="w-full h-full object-cover"
-            />
+          <div className="relative w-full h-full overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentImage}
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.6 }}
+                className="w-full h-full"
+              >
+                <OptimizedImage
+                  src={images[currentImage].src}
+                  alt={images[currentImage].alt}
+                  priority={false}
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>

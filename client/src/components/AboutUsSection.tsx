@@ -25,11 +25,11 @@ export default function AboutUsSection() {
   }, [isPaused]);
 
   return (
-    <section className="py-20 px-6 bg-background overflow-hidden">
+    <section className="py-10 px-6 bg-background overflow-hidden">
       <div className="container mx-auto">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
 
-          {/* Left Column: Image */}
+          {/* Left Column: Synced Image Carousel */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -39,10 +39,23 @@ export default function AboutUsSection() {
           >
             <div className="relative aspect-[4/3] rounded-lg overflow-hidden shadow-xl group">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
-              <OptimizedImage
-                {...siteContent.images.about.main}
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-              />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentSlide}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="w-full h-full"
+                >
+                  {slides[currentSlide].image && (
+                    <OptimizedImage
+                      {...slides[currentSlide].image}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </motion.div>
 
@@ -55,10 +68,10 @@ export default function AboutUsSection() {
             className="w-full lg:w-1/2"
           >
             <h2 className="text-sm font-bold text-primary uppercase tracking-widest mb-2">{siteContent.text.about.discoverTitle}</h2>
-            <h3 className="text-3xl md:text-4xl font-serif text-foreground mb-8">{siteContent.text.about.sectionTitle}</h3>
+            <h3 className="text-3xl md:text-4xl font-serif text-foreground mb-4">{siteContent.text.about.sectionTitle}</h3>
 
             <div
-              className="relative min-h-[220px] mb-8"
+              className="relative min-h-[200px] mb-6"
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
             >
@@ -92,7 +105,7 @@ export default function AboutUsSection() {
             </div>
 
             {/* Indicators */}
-            <div className="flex gap-2 mb-8">
+            <div className="flex gap-2 mb-6">
               {slides.map((_, index) => (
                 <button
                   key={index}

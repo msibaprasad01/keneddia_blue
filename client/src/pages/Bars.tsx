@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { MapPin, Calendar, Users, Search, Star, ArrowRight, Wine } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import HeaderLogo from "@/components/HeaderLogo";
 
 // Assets
 import { siteContent } from "@/data/siteContent";
@@ -68,9 +69,14 @@ export default function Bars() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
+      <HeaderLogo
+        logo={siteContent.brand.logo_bar.image}
+        text={siteContent.brand.logo_bar.text}
+        bgColor="bg-slate-900/5"
+      />
 
       {/* Header / Filter Section */}
-      <div className="pt-32 pb-12 px-6 bg-secondary/20 border-b border-primary/5">
+      <div className="pt-8 pb-12 px-6 bg-secondary/20 border-b border-primary/5">
         <div className="container mx-auto">
           {/* <motion.h1
             initial={{ opacity: 0, y: 20 }}
