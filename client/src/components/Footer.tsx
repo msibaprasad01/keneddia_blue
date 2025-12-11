@@ -77,15 +77,15 @@ export default function Footer() {
       <div className="container mx-auto px-6 lg:px-12 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 flex flex-col items-center md:items-start">
             {/* Logo */}
             <Link href="/">
-              <a
-                onClick={handleLinkClick}
-                className="text-foreground font-light text-3xl tracking-[0.2em] uppercase hover:text-primary transition-colors inline-block"
-                style={{ fontFamily: 'serif' }}
-              >
-                {siteContent.brand.logo.text}
+              <a onClick={handleLinkClick} className="inline-block">
+                <img
+                  src={siteContent.brand.logo.image.src}
+                  alt={siteContent.brand.logo.image.alt || siteContent.brand.logo.text || 'Brand Logo'}
+                  className="h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
+                />
               </a>
             </Link>
 

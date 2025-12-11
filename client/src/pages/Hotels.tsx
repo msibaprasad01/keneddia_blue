@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Calendar, Users, Search, Star, ArrowRight, X, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import HeaderLogo from "@/components/HeaderLogo";
 
 // Assets
 import { siteContent } from "@/data/siteContent";
@@ -130,9 +131,14 @@ export default function Hotels() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
+      <HeaderLogo
+        logo={siteContent.brand.logo_hotel.image}
+        text={siteContent.brand.logo_hotel.text}
+        bgColor="bg-secondary/10"
+      />
 
       {/* Search Section */}
-      <div className="pt-32 pb-12 px-6 bg-secondary/20 border-b border-primary/5">
+      <div className="pt-8 pb-12 px-6 bg-secondary/20 border-b border-primary/5">
         <div className="container mx-auto">
           {/* Search Bar */}
           <motion.div
