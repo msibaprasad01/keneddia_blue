@@ -1,7 +1,8 @@
 import placeholderImg from "@assets/placeholder.svg";
-import brandLogo from "@assets/logo/kb-logo1.jpg";
-import brandLogo2 from "@assets/logo/kb-logo2.jpg";
-// Import Best Available Assets (Generic Luxury / Neutral)
+import brandLogo from "@assets/logo/kb-logo1.png";
+import brandLogoHotel from "@assets/logo/kb-logo1.jpg";
+import brandLogoCafe from "@assets/logo/kb-logo3.jpg";
+import brandLogoBar from "@assets/logo/kb-logo4.jpg";
 import heroExterior from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png";
 import heroLobby from "@assets/generated_images/luxury_hotel_lobby_interior.png";
 import heroLounge from "@assets/generated_images/exclusive_rooftop_lounge_at_night.png";
@@ -43,10 +44,20 @@ export const siteContent = {
       image: { src: brandLogo, alt: "Kennedia Blu - Hotel | Restaurant | Cafe", priority: true },
       fallbackText: "KENNEDIA BLU"
     },
-    logo2: {
-      text: "Kennedia Blu",
-      image: { src: brandLogo2, alt: "Kennedia Blu - Hotel | Restaurant | Cafe", priority: true },
-      fallbackText: "KENNEDIA BLU"
+    logo_hotel: {
+      text: "Kennedia Blu Hotels",
+      image: { src: brandLogoHotel, alt: "Kennedia Blu Hotels Logo", priority: false },
+      fallbackText: "KENNEDIA BLU HOTELS"
+    },
+    logo_cafe: {
+      text: "Kennedia Blu Cafes",
+      image: { src: brandLogoCafe, alt: "Kennedia Blu Cafe Logo", priority: false },
+      fallbackText: "KENNEDIA BLU CAFES"
+    },
+    logo_bar: {
+      text: "Kennedia Blu Bars",
+      image: { src: brandLogoBar, alt: "Kennedia Blu Bar Logo", priority: false },
+      fallbackText: "KENNEDIA BLU BARS"
     }
   },
   images: {

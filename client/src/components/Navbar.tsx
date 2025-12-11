@@ -72,7 +72,6 @@ export default function Navbar() {
                   alt={siteContent.brand.logo.image.alt}
                   className="mix-blend-multiply h-16 lg:h-20 w-[8rem]"
                 />
-
               </a>
             </Link>
           </div>
