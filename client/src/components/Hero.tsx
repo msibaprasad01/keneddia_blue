@@ -52,7 +52,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative w-full h-screen overflow-hidden bg-black">
+    <section className="relative w-full h-screen overflow-hidden bg-background">
       <Swiper
         modules={[EffectFade, Autoplay, Navigation]}
         effect="fade"
@@ -134,7 +134,7 @@ export default function Hero() {
                 preserveAspectRatio="none"
               >
                 <path
-                  fill="#FDFBF7"
+                  className="fill-background"
                   d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,128C1248,117,1344,107,1392,101.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                 />
               </svg>
@@ -153,11 +153,10 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.15 + 0.5 }}
             onClick={() => handleThumbnailClick(index)}
-            className={`relative w-40 h-64 cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${
-              activeIndex === index
-                ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
-                : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
-            }`}
+            className={`relative w-40 h-64 cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${activeIndex === index
+              ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
+              : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+              }`}
           >
             <OptimizedImage
               {...slide.thumbnail}
@@ -180,11 +179,10 @@ export default function Hero() {
               </p>
             </div>
             <div
-              className={`absolute inset-0 transition-all duration-300 ${
-                activeIndex === index
-                  ? "bg-transparent"
-                  : "bg-black/20 group-hover:bg-transparent"
-              }`}
+              className={`absolute inset-0 transition-all duration-300 ${activeIndex === index
+                ? "bg-transparent"
+                : "bg-black/20 group-hover:bg-transparent"
+                }`}
             />
           </motion.div>
         ))}
@@ -197,11 +195,10 @@ export default function Hero() {
             <div
               key={index}
               onClick={() => handleThumbnailClick(index)}
-              className={`cursor-pointer h-[3px] transition-all duration-500 rounded-full ${
-                activeIndex === index
-                  ? "w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-                  : "w-6 bg-white/30 hover:bg-white/60"
-              }`}
+              className={`cursor-pointer h-[3px] transition-all duration-500 rounded-full ${activeIndex === index
+                ? "w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                : "w-6 bg-white/30 hover:bg-white/60"
+                }`}
             />
           ))}
         </div>
@@ -231,7 +228,7 @@ export default function Hero() {
 
       {/* Mobile Navigation */}
       <div className="xl:hidden absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
-        <button 
+        <button
           onClick={() => swiperInstance?.slidePrev()}
           className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md"
         >
@@ -243,16 +240,15 @@ export default function Hero() {
             <div
               key={index}
               onClick={() => handleThumbnailClick(index)}
-              className={`h-0.5 transition-all duration-500 cursor-pointer ${
-                activeIndex === index
-                  ? "w-10 bg-[#FDFBF7]"
-                  : "w-5 bg-[#FDFBF7]/40"
-              }`}
+              className={`h-0.5 transition-all duration-500 cursor-pointer ${activeIndex === index
+                ? "w-10 bg-[#FDFBF7]"
+                : "w-5 bg-[#FDFBF7]/40"
+                }`}
             />
           ))}
         </div>
 
-        <button 
+        <button
           onClick={() => swiperInstance?.slideNext()}
           className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md"
         >

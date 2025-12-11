@@ -72,7 +72,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-linear-to-b from-gray-50 to-white border-t border-gray-200">
+    <footer className="bg-[#E0E0E0] text-foreground border-t border-border">
       {/* Main Footer Content */}
       <div className="container mx-auto px-6 lg:px-12 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -80,9 +80,9 @@ export default function Footer() {
           <div className="space-y-6">
             {/* Logo */}
             <Link href="/">
-              <a 
+              <a
                 onClick={handleLinkClick}
-                className="text-foreground font-light text-3xl tracking-[0.2em] uppercase hover:text-primary transition-colors inline-block" 
+                className="text-foreground font-light text-3xl tracking-[0.2em] uppercase hover:text-primary transition-colors inline-block"
                 style={{ fontFamily: 'serif' }}
               >
                 {siteContent.brand.logo.text}
@@ -90,7 +90,7 @@ export default function Footer() {
             </Link>
 
             {/* Social Media Icons */}
-            <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center gap-4 pt-4 border-t border-border">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
@@ -99,7 +99,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="w-9 h-9 flex items-center justify-center text-gray-600 hover:text-primary transition-colors"
+                  className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
                 >
                   <social.icon className="w-5 h-5" strokeWidth={1.5} />
                 </a>
@@ -119,7 +119,7 @@ export default function Footer() {
                     <Link href={link.href}>
                       <a
                         onClick={handleLinkClick}
-                        className="text-sm text-gray-600 hover:text-primary transition-colors block"
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors block"
                       >
                         {link.label}
                       </a>
@@ -133,11 +133,11 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-gray-100/50 border-t border-gray-200">
+      <div className="bg-black/5 border-t border-border">
         <div className="container mx-auto px-6 lg:px-12 py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Copyright */}
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} {siteContent.brand.name}. All rights reserved.
             </p>
 
@@ -147,7 +147,7 @@ export default function Footer() {
                 <Link key={index} href={link.href}>
                   <a
                     onClick={handleLinkClick}
-                    className="text-sm text-gray-600 hover:text-primary transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
                   </a>
