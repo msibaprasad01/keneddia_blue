@@ -79,20 +79,16 @@ function DesktopTree({ verticals }: { verticals: typeof verticals }) {
   return (
     // Increased max-w and min-h for 10% larger size
     <div className="relative w-full max-w-5xl mx-auto min-h-[400px] flex justify-center items-center">
-      {/* Central Root Node - Replaced text with Logo */}
+      {/* Central Root Node - KB Text */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
-          className="w-30 h-30 rounded-full bg-card shadow-[0_0_35px_rgba(192,57,43,0.15)] border-4 border-secondary flex items-center justify-center relative z-20 overflow-hidden"
+          className="w-28 h-28 rounded-full bg-card shadow-[0_0_35px_rgba(192,57,43,0.15)] border-2 border-secondary flex items-center justify-center relative z-20"
         >
-          <div className="w-22 h-22 flex items-center justify-center">
-            <OptimizedImage
-              src={siteContent.brand.logo.image.src}
-              alt={siteContent.brand.logo.image.alt}
-              className="w-full h-full object-contain"
-            />
-          </div>
+          <h2 className="text-5xl font-serif font-bold text-foreground tracking-wider">
+            KB
+          </h2>
           {/* Pulsing rings */}
           <div className="absolute inset-0 rounded-full border border-blue-200 animate-ping opacity-20" />
           <div className="absolute -inset-3 rounded-full border border-blue-100 opacity-20" />

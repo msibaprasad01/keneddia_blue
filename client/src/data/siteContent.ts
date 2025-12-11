@@ -153,7 +153,7 @@ export const siteContent = {
           "Warm up this winter with our exclusive alpine getaway package. Enjoy complimentary hot cocoa evenings, fireplace lounge access, and a curated winter activity pass.",
         couponCode: "WINTER2025",
         ctaText: "Explore Winter Stay",
-        link: "/booking"
+        link: "#"
       }
     },
 
