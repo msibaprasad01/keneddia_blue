@@ -25,16 +25,16 @@ const slides = [
   },
   {
     type: "image" as const,
-    media: siteContent.images.hero.slide2, // Now an object
-    thumbnail: siteContent.images.hero.slide2, // Now an object
+    media: siteContent.images.hero.slide2,
+    thumbnail: siteContent.images.hero.slide2,
     title: siteContent.text.hero.slides[1].title,
     subtitle: siteContent.text.hero.slides[1].subtitle,
     cta: "Know More",
   },
   {
     type: "image" as const,
-    media: siteContent.images.hero.slide3, // Now an object
-    thumbnail: siteContent.images.hero.slide3, // Now an object
+    media: siteContent.images.hero.slide3,
+    thumbnail: siteContent.images.hero.slide3,
     title: siteContent.text.hero.slides[2].title,
     subtitle: siteContent.text.hero.slides[2].subtitle,
     cta: "Know More",
@@ -81,7 +81,7 @@ export default function Hero() {
                 </video>
               ) : (
                 <OptimizedImage
-                  {...slide.media} // Spreads src, alt, priority
+                  {...slide.media}
                   className="w-full h-full object-cover"
                 />
               )}
@@ -92,11 +92,6 @@ export default function Hero() {
             {/* Content - Left Aligned & Width Restricted */}
             <div className="absolute inset-0 z-10 pointer-events-none">
               <div className="container mx-auto h-full px-8 md:px-16 lg:px-24 flex items-center">
-                {/* WIDTH FIX: 
-                  w-full md:w-3/4 xl:w-1/2 
-                  This ensures text never crosses the 50% mark on large screens,
-                  preventing overlap with thumbnails.
-                */}
                 <div className="w-full md:w-3/4 xl:w-[50%] pt-10 pointer-events-auto">
                   <motion.h1
                     initial={{ opacity: 0, y: 30 }}
@@ -143,86 +138,87 @@ export default function Hero() {
         ))}
       </Swiper>
 
-      {/* --- THUMBNAIL PREVIEW SECTION --- */}
-      {/* Positioned higher (bottom-48) to avoid wave overlap */}
-      <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-row items-end gap-2 md:gap-3 lg:gap-4">
-        {slides.map((slide, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.15 + 0.5 }}
-            onClick={() => handleThumbnailClick(index)}
-            className={`relative w-24 h-40 md:w-32 md:h-52 lg:w-40 lg:h-64 cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${activeIndex === index
-              ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
-              : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
-              }`}
-          >
-            <OptimizedImage
-              {...slide.thumbnail}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            {slide.type === "video" && (
-              <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
-                <svg
-                  className="w-3 h-3 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                </svg>
-              </div>
-            )}
-            <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-linear-to-t from-black/90 to-transparent">
-              <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
-                {slide.subtitle}
-              </p>
-            </div>
-            <div
-              className={`absolute inset-0 transition-all duration-300 ${activeIndex === index
-                ? "bg-transparent"
-                : "bg-black/20 group-hover:bg-transparent"
-                }`}
-            />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* --- CONTROLS SECTION --- */}
-      <div className="hidden md:flex absolute bottom-48 right-[280px] md:right-[220px] lg:right-[280px] xl:right-136 z-20 items-center gap-3 md:gap-4 lg:gap-6 mr-4 md:mr-6 lg:mr-8">
-        <div className="flex items-center gap-1.5 md:gap-2">
-          {slides.map((_, index) => (
-            <div
+      {/* --- THUMBNAIL AND CONTROLS SECTION --- */}
+      <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4">
+        {/* Thumbnails */}
+        <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4">
+          {slides.map((slide, index) => (
+            <motion.div
               key={index}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.15 + 0.5 }}
               onClick={() => handleThumbnailClick(index)}
-              className={`cursor-pointer h-[3px] transition-all duration-500 rounded-full ${activeIndex === index
-                ? "w-8 md:w-10 lg:w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-                : "w-4 md:w-5 lg:w-6 bg-white/30 hover:bg-white/60"
+              className={`relative w-24 h-40 md:w-28 md:h-48 lg:w-40 lg:h-64 cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${activeIndex === index
+                ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
+                : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
                 }`}
-            />
+            >
+              <OptimizedImage
+                {...slide.thumbnail}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              {slide.type === "video" && (
+                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
+                  <svg
+                    className="w-3 h-3 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                  </svg>
+                </div>
+              )}
+              <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-linear-to-t from-black/90 to-transparent">
+                <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
+                  {slide.subtitle}
+                </p>
+              </div>
+              <div
+                className={`absolute inset-0 transition-all duration-300 ${activeIndex === index
+                  ? "bg-transparent"
+                  : "bg-black/20 group-hover:bg-transparent"
+                  }`}
+              />
+            </motion.div>
           ))}
         </div>
 
-        <div className="flex gap-2 md:gap-3">
-          {/* Direct Slide Control via Instance */}
-          <button
-            onClick={() => swiperInstance?.slidePrev()}
-            className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
-            border border-white/30 text-white backdrop-blur-md
-            hover:bg-white hover:text-black hover:scale-110
-            transition-all duration-300 cursor-pointer"
-          >
-            <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
-          </button>
-          <button
-            onClick={() => swiperInstance?.slideNext()}
-            className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
-            border border-white/30 text-white backdrop-blur-md
-            hover:bg-white hover:text-black hover:scale-110
-            transition-all duration-300 cursor-pointer"
-          >
-            <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
-          </button>
+        {/* Controls - Under Thumbnails */}
+        <div className="flex items-center gap-3 md:gap-4 lg:gap-6 pr-2">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            {slides.map((_, index) => (
+              <div
+                key={index}
+                onClick={() => handleThumbnailClick(index)}
+                className={`cursor-pointer h-[3px] transition-all duration-500 rounded-full ${activeIndex === index
+                  ? "w-8 md:w-10 lg:w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                  : "w-4 md:w-5 lg:w-6 bg-white/30 hover:bg-white/60"
+                  }`}
+              />
+            ))}
+          </div>
+
+          <div className="flex gap-2 md:gap-3">
+            <button
+              onClick={() => swiperInstance?.slidePrev()}
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
+              border border-white/30 text-white backdrop-blur-md
+              hover:bg-white hover:text-black hover:scale-110
+              transition-all duration-300 cursor-pointer"
+            >
+              <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
+            </button>
+            <button
+              onClick={() => swiperInstance?.slideNext()}
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
+              border border-white/30 text-white backdrop-blur-md
+              hover:bg-white hover:text-black hover:scale-110
+              transition-all duration-300 cursor-pointer"
+            >
+              <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
