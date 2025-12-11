@@ -37,7 +37,7 @@ export default function EventsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+              className="group bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
             >
               {/* Image Container */}
               <div className="relative aspect-4/3 overflow-hidden">
@@ -49,7 +49,7 @@ export default function EventsSection() {
                 />
 
                 {/* Date Badge */}
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-lg shadow-sm flex items-center gap-2">
+                <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-md px-4 py-2 rounded-lg shadow-sm flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-primary" />
                   <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">
                     {event.date}

@@ -130,16 +130,16 @@ export default function Cafes() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
-      
+
       {/* Search Section */}
       <div className="pt-32 pb-12 px-6 bg-secondary/20 border-b border-primary/5">
         <div className="container mx-auto">
           {/* Search Bar */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white p-4 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-5 gap-4 items-end"
+            className="bg-card p-4 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-5 gap-4 items-end"
           >
             {/* City Dropdown */}
             <div className="relative">
@@ -167,7 +167,7 @@ export default function Cafes() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full mt-1 w-full bg-white rounded-lg shadow-lg border border-border overflow-hidden z-50"
+                      className="absolute top-full mt-1 w-full bg-card rounded-lg shadow-lg border border-border overflow-hidden z-50"
                     >
                       {cities.map((city) => (
                         <button
@@ -176,9 +176,8 @@ export default function Cafes() {
                             setSelectedCity(city);
                             setShowCityDropdown(false);
                           }}
-                          className={`w-full px-3 py-2 text-left text-sm hover:bg-secondary/50 transition-colors ${
-                            selectedCity === city ? "bg-secondary/30" : ""
-                          }`}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-secondary/50 transition-colors ${selectedCity === city ? "bg-secondary/30" : ""
+                            }`}
                         >
                           {city}
                         </button>
@@ -188,35 +187,35 @@ export default function Cafes() {
                 </AnimatePresence>
               </div>
             </div>
-            
+
             {/* Date Picker */}
             <div className="relative">
               <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Date</label>
               <div className="flex items-center border border-border rounded px-3 py-2 hover:border-primary/30 transition-colors">
                 <Calendar className="w-4 h-4 text-primary mr-2" />
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   value={reservationDate}
                   onChange={(e) => setReservationDate(e.target.value)}
-                  className="w-full bg-transparent outline-none text-foreground text-sm font-medium" 
+                  className="w-full bg-transparent outline-none text-foreground text-sm font-medium"
                 />
               </div>
             </div>
-            
+
             {/* Time Picker */}
             <div className="relative">
               <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Time</label>
               <div className="flex items-center border border-border rounded px-3 py-2 hover:border-primary/30 transition-colors">
                 <Clock className="w-4 h-4 text-primary mr-2" />
-                <input 
-                  type="time" 
+                <input
+                  type="time"
                   value={reservationTime}
                   onChange={(e) => setReservationTime(e.target.value)}
-                  className="w-full bg-transparent outline-none text-foreground text-sm font-medium" 
+                  className="w-full bg-transparent outline-none text-foreground text-sm font-medium"
                 />
               </div>
             </div>
-            
+
             {/* Guests Counter */}
             <div className="relative">
               <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Guests</label>
@@ -239,9 +238,9 @@ export default function Cafes() {
                 </button>
               </div>
             </div>
-            
+
             {/* Search Button */}
-            <button 
+            <button
               onClick={handleSearch}
               disabled={isSearching}
               className="bg-primary text-primary-foreground h-10 w-full rounded flex items-center justify-center hover:bg-primary/90 transition-colors uppercase tracking-widest text-xs font-bold disabled:opacity-50"
@@ -280,7 +279,7 @@ export default function Cafes() {
                 className="group cursor-pointer"
               >
                 <div className="relative aspect-[4/3] overflow-hidden mb-6 rounded-sm">
-                  <div className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur px-3 py-1 flex items-center rounded-full">
+                  <div className="absolute top-4 right-4 z-20 bg-background/90 backdrop-blur px-3 py-1 flex items-center rounded-full">
                     <Star className="w-3 h-3 text-primary fill-primary mr-1" />
                     <span className="text-xs font-bold text-foreground">{cafe.rating}</span>
                   </div>
@@ -295,7 +294,7 @@ export default function Cafes() {
                     />
                   </motion.div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
                     <div>
@@ -310,11 +309,11 @@ export default function Cafes() {
                       <p className="text-sm font-medium text-foreground">{cafe.cuisine}</p>
                     </div>
                   </div>
-                  
+
                   <p className="text-sm text-muted-foreground/80 font-light leading-relaxed pt-2 border-t border-primary/10 mt-4">
                     {cafe.description}
                   </p>
-                  
+
                   <div className="pt-4 flex items-center text-primary text-xs font-bold uppercase tracking-widest group-hover:underline underline-offset-4">
                     View Menu <ArrowRight className="w-3 h-3 ml-2" />
                   </div>
@@ -341,12 +340,12 @@ export default function Cafes() {
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", duration: 0.5 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             >
               {/* Close Button */}
               <button
                 onClick={() => setSelectedCafe(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-background/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-background transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -357,7 +356,7 @@ export default function Cafes() {
                   {...selectedCafe.image}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 flex items-center rounded-full">
+                <div className="absolute top-4 left-4 bg-background/90 backdrop-blur px-3 py-1 flex items-center rounded-full">
                   <Star className="w-4 h-4 text-primary fill-primary mr-1" />
                   <span className="text-sm font-bold">{selectedCafe.rating}</span>
                   <span className="text-xs text-muted-foreground ml-1">({selectedCafe.reviews} reviews)</span>
@@ -427,7 +426,7 @@ export default function Cafes() {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* Footer */}
       <Footer />
     </div>

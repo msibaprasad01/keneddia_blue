@@ -16,7 +16,7 @@ export default function AboutUsSection() {
 
   useEffect(() => {
     if (isPaused) return;
-    
+
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 4000);
@@ -25,12 +25,12 @@ export default function AboutUsSection() {
   }, [isPaused]);
 
   return (
-    <section className="py-20 px-6 bg-white overflow-hidden">
+    <section className="py-20 px-6 bg-background overflow-hidden">
       <div className="container mx-auto">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-          
+
           {/* Left Column: Image */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -39,7 +39,7 @@ export default function AboutUsSection() {
           >
             <div className="relative aspect-[4/3] rounded-lg overflow-hidden shadow-xl group">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
-              <OptimizedImage 
+              <OptimizedImage
                 {...siteContent.images.about.main}
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
               />
@@ -47,7 +47,7 @@ export default function AboutUsSection() {
           </motion.div>
 
           {/* Right Column: Content & Carousel */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -56,8 +56,8 @@ export default function AboutUsSection() {
           >
             <h2 className="text-sm font-bold text-primary uppercase tracking-widest mb-2">{siteContent.text.about.discoverTitle}</h2>
             <h3 className="text-3xl md:text-4xl font-serif text-foreground mb-8">{siteContent.text.about.sectionTitle}</h3>
-            
-            <div 
+
+            <div
               className="relative min-h-[220px] mb-8"
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
@@ -97,9 +97,8 @@ export default function AboutUsSection() {
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    currentSlide === index ? "w-8 bg-primary" : "w-2 bg-gray-300 hover:bg-gray-400"
-                  }`}
+                  className={`h-1 rounded-full transition-all duration-300 ${currentSlide === index ? "w-8 bg-primary" : "w-2 bg-gray-300 hover:bg-gray-400"
+                    }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}

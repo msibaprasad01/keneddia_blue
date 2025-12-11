@@ -10,7 +10,7 @@ export default function NewsPress() {
   if (!news) return null;
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-background">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="flex flex-col items-center text-center mb-16">

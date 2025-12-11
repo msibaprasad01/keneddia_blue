@@ -68,21 +68,21 @@ export default function About() {
             transition={{ delay: 0.2 }}
             className="text-lg md:text-xl text-white/90 font-light leading-relaxed"
           >
-            Kennedia Blu is more than a hotel chain; it is a promise of premium hospitality. 
-            We are dedicated to delivering world-class services where every guest feels valued, 
+            Kennedia Blu is more than a hotel chain; it is a promise of premium hospitality.
+            We are dedicated to delivering world-class services where every guest feels valued,
             trusted, and truly at home.
           </motion.p>
         </div>
       </div>
 
       {/* Company Overview */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-20 px-6 bg-background">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl font-serif text-foreground mb-8">Our Legacy</h2>
           <p className="text-muted-foreground leading-relaxed text-lg">
-            Founded on the principles of timeless elegance and modern comfort, Kennedia Blu has established itself 
-            as a trusted name in the global hospitality landscape. Our properties are sanctuaries of peace 
-            and luxury, thoughtfully designed to offer an escape from the ordinary. We believe that true 
+            Founded on the principles of timeless elegance and modern comfort, Kennedia Blu has established itself
+            as a trusted name in the global hospitality landscape. Our properties are sanctuaries of peace
+            and luxury, thoughtfully designed to offer an escape from the ordinary. We believe that true
             luxury lies in the details—the warmth of a greeting, the comfort of a room, and the authenticity of a smile.
           </p>
         </div>
@@ -97,7 +97,7 @@ export default function About() {
               The pillars that uphold our promise to you.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {values.map((value, index) => (
               <motion.div
@@ -106,7 +106,7 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white p-8 rounded-lg shadow-sm border border-primary/5 text-center hover:shadow-md transition-shadow"
+                className="bg-card p-8 rounded-lg shadow-sm border border-primary/5 text-center hover:shadow-md transition-shadow"
               >
                 <div className="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
                   <value.icon className="w-8 h-8" />
@@ -122,7 +122,7 @@ export default function About() {
       </section>
 
       {/* Leadership Team */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-20 px-6 bg-background">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-serif text-foreground mb-4">Leadership Team</h2>

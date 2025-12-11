@@ -32,47 +32,47 @@
   --radius-lg: var(--radius);
 }
 
-/* PREMIUM MINIMALISM THEME - LIGHT & CREAMY LUXURY */
+/* CLASSIC CANADIAN WARMTH THEME */
 :root {
-  /* Creamy White Background */
-  --background: 35 30% 96%;
-  /* Soft Black / Dark Charcoal Foreground */
-  --foreground: 220 15% 15%;
+  /* Warm Off-White Background (#FAF7F2) */
+  --background: 37 27% 96%;
+  /* Soft Charcoal Foreground (#2B2B2B) */
+  --foreground: 0 0% 17%;
 
-  /* Card Background (Slightly Darker Cream) */
-  --card: 35 30% 92%;
-  --card-foreground: 220 15% 15%;
+  /* Warm Beige Card Background (#F3EEE8) */
+  --card: 33 27% 93%;
+  --card-foreground: 0 0% 17%;
 
-  /* Popover */
-  --popover: 35 30% 96%;
-  --popover-foreground: 220 15% 15%;
+  /* Popover - same as Card */
+  --popover: 33 27% 93%;
+  --popover-foreground: 0 0% 17%;
 
-  /* Primary - Deep Bronze/Gold (Darker for contrast on light bg) */
-  --primary: 35 50% 40%;
-  --primary-foreground: 35 30% 96%;
+  /* Primary - Canadian Red Accent (#C0392B) */
+  --primary: 6 63% 46%;
+  --primary-foreground: 0 0% 100%;
 
-  /* Secondary - Light Grey */
-  --secondary: 220 10% 90%;
-  --secondary-foreground: 220 15% 15%;
+  /* Secondary - Warm Beige (slightly darker than card) */
+  --secondary: 33 20% 90%;
+  --secondary-foreground: 0 0% 17%;
 
-  /* Muted - Medium Grey Text */
-  --muted: 220 10% 90%;
-  --muted-foreground: 220 10% 40%;
+  /* Muted - Soft Grey-Beige for subtext */
+  --muted: 33 10% 85%;
+  --muted-foreground: 0 0% 40%;
 
-  /* Accent - Warm Highlight */
-  --accent: 35 40% 85%;
-  --accent-foreground: 220 15% 15%;
+  /* Accent - Warm Highlight (lighter beige for hovers) */
+  --accent: 33 30% 95%;
+  --accent-foreground: 6 63% 46%;
 
   /* Destructive */
   --destructive: 0 62% 40%;
-  --destructive-foreground: 40 20% 94%;
+  --destructive-foreground: 0 0% 98%;
 
-  /* Borders - Subtle Grey */
-  --border: 220 10% 85%;
-  --input: 220 10% 85%;
-  --ring: 35 50% 40%;
+  /* Borders - Darker Beige for contrast */
+  --border: 33 15% 85%;
+  --input: 33 15% 85%;
+  --ring: 6 63% 46%;
 
-  --radius: 0px; /* Sharp corners for architectural feel */
+  --radius: 4px; /* Slightly softened corners for "warmth" */
 }
 
 @layer base {

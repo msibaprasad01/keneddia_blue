@@ -49,7 +49,7 @@ export default function Reviews() {
 
       <div className="pt-32 pb-12 px-6 bg-secondary/20 border-b border-primary/5 mb-12">
         <div className="container mx-auto text-center">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-5xl font-serif text-foreground mb-4"
@@ -73,7 +73,7 @@ export default function Reviews() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 relative"
+              className="bg-card p-8 rounded-lg shadow-sm border border-border relative"
             >
               <Quote className="absolute top-6 right-6 w-8 h-8 text-primary/10" />
               <div className="flex text-primary mb-4">
@@ -95,18 +95,18 @@ export default function Reviews() {
       <section className="bg-gray-900 text-white py-20 px-6">
         <div className="container mx-auto">
           <h2 className="text-3xl font-serif text-center mb-16">Experience Kennedia Blu</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {videos.map((video, index) => (
               <div key={video.id} className="space-y-4">
                 <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-2xl relative group">
-                  <iframe 
-                    width="100%" 
-                    height="100%" 
-                    src={video.embedUrl} 
-                    title={video.title} 
-                    frameBorder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={video.embedUrl}
+                    title={video.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="w-full h-full"
                   ></iframe>

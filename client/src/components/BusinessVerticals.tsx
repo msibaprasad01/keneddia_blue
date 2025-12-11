@@ -41,7 +41,7 @@ export default function BusinessVerticals() {
   }, []);
 
   return (
-    <section className="py-12 bg-gradient-to-b from-white to-blue-50/30 overflow-hidden relative">
+    <section className="py-12 bg-gradient-to-b from-background to-secondary/30 overflow-hidden relative">
       {/* Background Decor */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-blue-100/20 rounded-full blur-3xl pointer-events-none" />
 
@@ -83,7 +83,7 @@ function DesktopTree({ verticals }: { verticals: typeof verticals }) {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
-          className="w-30 h-30 rounded-full bg-white shadow-[0_0_35px_rgba(37,99,235,0.15)] border-4 border-blue-50 flex items-center justify-center relative z-20 overflow-hidden"
+          className="w-30 h-30 rounded-full bg-card shadow-[0_0_35px_rgba(192,57,43,0.15)] border-4 border-secondary flex items-center justify-center relative z-20 overflow-hidden"
         >
           <div className="w-22 h-22 flex items-center justify-center">
             <OptimizedImage
@@ -146,7 +146,7 @@ function BranchNode({ item, align, delay }: { item: any, align: 'left' | 'right'
       {/* Node Bubble */}
       <Link href={`/${item.id}`}>
         <a className="relative z-20 flex-shrink-0">
-          <div className="w-14 h-14 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center group-hover:scale-105 group-hover:border-blue-400 group-hover:shadow-blue-200/50 transition-all duration-300">
+          <div className="w-14 h-14 rounded-full bg-card shadow-md border border-border flex items-center justify-center group-hover:scale-105 group-hover:border-primary group-hover:shadow-primary/20 transition-all duration-300">
             <Icon className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
           </div>
         </a>
@@ -171,7 +171,7 @@ function MobileTimeline({ verticals }: { verticals: typeof verticals }) {
             <div className="absolute -left-[31px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
 
             <Link href={`/${v.id}`}>
-              <a className="block bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+              <a className="block bg-card p-4 rounded-xl shadow-sm border border-border hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-50 rounded-full text-blue-600">
                     <Icon className="w-4 h-4" />

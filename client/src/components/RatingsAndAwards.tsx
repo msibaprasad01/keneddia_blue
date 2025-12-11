@@ -67,7 +67,7 @@ export default function RatingsAndAwards() {
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ 
+              transition={{
                 delay: index * 0.15,
                 duration: 0.5,
                 type: "spring",
@@ -77,10 +77,10 @@ export default function RatingsAndAwards() {
               className="group relative"
             >
               {/* Card */}
-              <div className="relative bg-white/80 backdrop-blur-sm border border-gray-200/50 p-8 text-center overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-xl">
+              <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 p-8 text-center overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-xl">
                 {/* Hover Gradient Background */}
                 <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                
+
                 {/* Icon */}
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
@@ -150,7 +150,7 @@ export default function RatingsAndAwards() {
           transition={{ delay: 0.8 }}
           className="mt-16 text-center"
         >
-          <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/50 backdrop-blur-sm border border-primary/10 rounded-full">
+          <div className="inline-flex items-center gap-2 px-6 py-3 bg-background/50 backdrop-blur-sm border border-primary/10 rounded-full">
             <div className="flex -space-x-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star

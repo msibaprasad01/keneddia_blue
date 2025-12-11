@@ -68,7 +68,7 @@ export default function Bars() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
-      
+
       {/* Header / Filter Section */}
       <div className="pt-32 pb-12 px-6 bg-secondary/20 border-b border-primary/5">
         <div className="container mx-auto">
@@ -79,13 +79,13 @@ export default function Bars() {
           >
             Exclusive Nightlife
           </motion.h1> */}
-          
+
           {/* Search Bar */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white p-4 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-center"
+            className="bg-card p-4 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-center"
           >
             <div className="relative border-b md:border-b-0 md:border-r border-gray-100 pb-2 md:pb-0 md:pr-4">
               <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">City</label>
@@ -94,7 +94,7 @@ export default function Bars() {
                 <input type="text" placeholder="Select city" className="w-full bg-transparent outline-none text-foreground placeholder:text-foreground/30 font-medium" />
               </div>
             </div>
-            
+
             <div className="relative border-b md:border-b-0 md:border-r border-gray-100 pb-2 md:pb-0 md:pr-4 md:pl-4">
               <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Date</label>
               <div className="flex items-center">
@@ -102,7 +102,7 @@ export default function Bars() {
                 <input type="text" placeholder="Select date" className="w-full bg-transparent outline-none text-foreground placeholder:text-foreground/30 font-medium" />
               </div>
             </div>
-            
+
             <div className="relative md:px-4 pb-2 md:pb-0">
               <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Experience</label>
               <div className="flex items-center">
@@ -110,7 +110,7 @@ export default function Bars() {
                 <input type="text" placeholder="Vibe..." className="w-full bg-transparent outline-none text-foreground placeholder:text-foreground/30 font-medium" />
               </div>
             </div>
-            
+
             <button className="bg-primary text-primary-foreground h-12 w-full rounded flex items-center justify-center hover:bg-primary/90 transition-colors uppercase tracking-widest text-xs font-bold">
               <Search className="w-4 h-4 mr-2" />
               Reserve
@@ -132,7 +132,7 @@ export default function Bars() {
               className="group cursor-pointer"
             >
               <div className="relative aspect-[4/3] overflow-hidden mb-6 rounded-sm">
-                <div className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur px-3 py-1 flex items-center rounded-full">
+                <div className="absolute top-4 right-4 z-20 bg-background/90 backdrop-blur px-3 py-1 flex items-center rounded-full">
                   <Star className="w-3 h-3 text-primary fill-primary mr-1" />
                   <span className="text-xs font-bold text-foreground">{bar.rating}</span>
                 </div>
@@ -147,7 +147,7 @@ export default function Bars() {
                   />
                 </motion.div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
                   <div>
@@ -162,11 +162,11 @@ export default function Bars() {
                     <p className="text-sm font-medium text-foreground">{bar.type}</p>
                   </div>
                 </div>
-                
+
                 <p className="text-sm text-muted-foreground/80 font-light leading-relaxed pt-2 border-t border-primary/10 mt-4">
                   {bar.description}
                 </p>
-                
+
                 <div className="pt-4 flex items-center text-primary text-xs font-bold uppercase tracking-widest group-hover:underline underline-offset-4">
                   Book Table <ArrowRight className="w-3 h-3 ml-2" />
                 </div>
@@ -175,7 +175,7 @@ export default function Bars() {
           ))}
         </div>
       </div>
-      
+
       {/* Minimal Footer */}
       <Footer />
     </div>

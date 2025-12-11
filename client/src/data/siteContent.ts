@@ -132,13 +132,15 @@ export const siteContent = {
     dailyOffers: {
       title: "Exclusive Daily Offers",
       offer: {
-        title: "Summer Luxury Escape",
-        description: "Experience the epitome of luxury with our special summer package. Enjoy complimentary breakfast, spa credits, and a room upgrade.",
-        couponCode: "SUMMER2025",
-        ctaText: "Book Now",
+        title: "Winter Alpine Retreat",
+        description:
+          "Warm up this winter with our exclusive alpine getaway package. Enjoy complimentary hot cocoa evenings, fireplace lounge access, and a curated winter activity pass.",
+        couponCode: "WINTER2025",
+        ctaText: "Explore Winter Stay",
         link: "/booking"
       }
     },
+
     events: {
       title: "Upcoming Events",
       items: [
