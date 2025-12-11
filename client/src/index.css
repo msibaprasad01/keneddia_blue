@@ -32,48 +32,52 @@
   --radius-lg: var(--radius);
 }
 
-/* WARM GRAY VARIANT THEME */
+/* WARM NEUTRAL MODERN THEME */
 :root {
-  /* Background: #F3F3F3 (Light Gray) */
-  --background: 0 0% 95%;
-  /* Text Primary: #1F1F1F (Dark Charcoal) */
-  --foreground: 0 0% 12%;
+  /* Background: #F7EEE8 */
+  --background: 22 38% 94%;
+  /* Text Primary: #3A2F28 */
+  --foreground: 24 18% 19%;
 
-  /* Card: #F8F8F8 (Very Light Gray) */
-  --card: 0 0% 97%;
-  --card-foreground: 0 0% 12%;
+  /* Surface/Card: #F2E4DC */
+  --card: 22 38% 90%;
+  --card-foreground: 24 18% 19%;
 
   /* Popover - same as Card */
-  --popover: 0 0% 97%;
-  --popover-foreground: 0 0% 12%;
+  --popover: 22 38% 90%;
+  --popover-foreground: 24 18% 19%;
 
-  /* Primary: #B11226 (Burgundy Red) */
-  --primary: 352 82% 38%;
+  /* Primary: #C8102E (Standard Red) */
+  --primary: 350 85% 42%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary: #0B1F3A (Deep Navy) */
-  --secondary: 212 67% 14%;
-  --secondary-foreground: 0 0% 95%;
+  /* Secondary: #7B5A48 (Footer Background) */
+  --secondary: 21 26% 38%;
+  /* Secondary Text: #F7EEE8 (Light Text for dark sec bg) */
+  --secondary-foreground: 22 38% 94%;
 
-  /* Muted: #E7E7E7 (Surface) */
-  --muted: 0 0% 91%;
-  --muted-foreground: 0 0% 29%;
+  /* Text Secondary: #6E5C53 used as muted */
+  --muted: 22 38% 90%; /* Using card color for muted bg usually, or lighter. adapting. */
+  --muted-foreground: 20 14% 38%;
 
-  /* Accent: #C9A14A (Gold) */
-  --accent: 42 51% 54%;
-  --accent-foreground: 0 0% 12%;
+  /* Accent: #D9A86C */
+  --accent: 33 58% 64%;
+  --accent-foreground: 24 18% 19%;
 
-  /* Borders: #D4D4D4 (Divider) */
-  --border: 0 0% 83%;
-  --input: 0 0% 83%;
-  --ring: 352 82% 38%;
+  /* Highlight: #B76E54 (used for ring/border highlights) */
+  --ring: 16 40% 52%;
+
+  /* Border: #E0CFC4 */
+  --border: 23 27% 82%;
+  --input: 23 27% 82%;
 
   /* Destructive */
   --destructive: 0 62% 40%;
   --destructive-foreground: 0 0% 98%;
 
-  --radius: 4px;
+  --radius: 4px; 
 }
+
 
 @layer base {
   * {
