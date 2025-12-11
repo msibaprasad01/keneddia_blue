@@ -145,7 +145,7 @@ export default function Hero() {
 
       {/* --- THUMBNAIL PREVIEW SECTION --- */}
       {/* Positioned higher (bottom-48) to avoid wave overlap */}
-      <div className="hidden xl:flex absolute right-12 bottom-48 z-20 flex-row items-end gap-4">
+      <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-row items-end gap-2 md:gap-3 lg:gap-4">
         {slides.map((slide, index) => (
           <motion.div
             key={index}
@@ -153,7 +153,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.15 + 0.5 }}
             onClick={() => handleThumbnailClick(index)}
-            className={`relative w-40 h-64 cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${activeIndex === index
+            className={`relative w-24 h-40 md:w-32 md:h-52 lg:w-40 lg:h-64 cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${activeIndex === index
               ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
               : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
               }`}
@@ -173,8 +173,8 @@ export default function Hero() {
                 </svg>
               </div>
             )}
-            <div className="absolute bottom-0 left-0 w-full p-3 bg-linear-to-t from-black/90 to-transparent">
-              <p className="text-xs text-white/90 font-medium truncate">
+            <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-linear-to-t from-black/90 to-transparent">
+              <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
                 {slide.subtitle}
               </p>
             </div>
@@ -189,45 +189,45 @@ export default function Hero() {
       </div>
 
       {/* --- CONTROLS SECTION --- */}
-      <div className="hidden xl:flex absolute bottom-48 right-136 z-20 items-center gap-6 mr-8">
-        <div className="flex items-center gap-2">
+      <div className="hidden md:flex absolute bottom-48 right-[280px] md:right-[220px] lg:right-[280px] xl:right-136 z-20 items-center gap-3 md:gap-4 lg:gap-6 mr-4 md:mr-6 lg:mr-8">
+        <div className="flex items-center gap-1.5 md:gap-2">
           {slides.map((_, index) => (
             <div
               key={index}
               onClick={() => handleThumbnailClick(index)}
               className={`cursor-pointer h-[3px] transition-all duration-500 rounded-full ${activeIndex === index
-                ? "w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-                : "w-6 bg-white/30 hover:bg-white/60"
+                ? "w-8 md:w-10 lg:w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                : "w-4 md:w-5 lg:w-6 bg-white/30 hover:bg-white/60"
                 }`}
             />
           ))}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-2 md:gap-3">
           {/* Direct Slide Control via Instance */}
           <button
             onClick={() => swiperInstance?.slidePrev()}
-            className="w-10 h-10 flex items-center justify-center rounded-full
+            className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
             border border-white/30 text-white backdrop-blur-md
             hover:bg-white hover:text-black hover:scale-110
             transition-all duration-300 cursor-pointer"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
           </button>
           <button
             onClick={() => swiperInstance?.slideNext()}
-            className="w-10 h-10 flex items-center justify-center rounded-full
+            className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
             border border-white/30 text-white backdrop-blur-md
             hover:bg-white hover:text-black hover:scale-110
             transition-all duration-300 cursor-pointer"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
           </button>
         </div>
       </div>
 
       {/* Mobile Navigation */}
-      <div className="xl:hidden absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+      <div className="md:hidden absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
         <button
           onClick={() => swiperInstance?.slidePrev()}
           className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md"
