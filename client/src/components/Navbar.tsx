@@ -60,7 +60,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 bg-[#FAFAFA] ${scrolled ? "shadow-md" : ""}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 bg-background ${scrolled ? "shadow-md" : ""}`}>
       <div className="container mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between h-22">
           {/* wrapper: allow natural logo width, don't force 10rem */}
@@ -183,7 +183,7 @@ function DropdownMenu({ item, handleLinkClick }: any) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2 }}
-      className={`absolute top-full mt-0 bg-[#FAFAFA] shadow-xl border-t-4 border-[#B11226] ${item.type === 'mega' ? "left-1/2 -translate-x-1/2 shadow-2xl" : "right-0 w-64"
+      className={`absolute top-full mt-0 bg-background shadow-xl border-t-4 border-primary ${item.type === 'mega' ? "left-1/2 -translate-x-1/2 shadow-2xl" : "right-0 w-64"
         }`}
       style={item.type === 'mega' ? { width: 'max-content', maxWidth: '90vw' } : undefined}
     >

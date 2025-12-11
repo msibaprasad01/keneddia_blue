@@ -32,36 +32,36 @@
   --radius-lg: var(--radius);
 }
 
-/* CLASSIC CANADIAN WARMTH THEME */
+/* CLASSIC CANADIAN WARMTH THEME - EXTRA WARM/REDDISH */
 :root {
-  /* Warm Off-White Background (#FAF7F2) */
-  --background: 37 27% 96%;
-  /* Soft Charcoal Foreground (#2B2B2B) */
+  /* Reddish-Warm Biscuit/Blush Background */
+  --background: 12 50% 96%;
+  /* Soft Charcoal Foreground - Unchanged */
   --foreground: 0 0% 17%;
 
-  /* Warm Beige Card Background (#F3EEE8) */
-  --card: 33 27% 93%;
+  /* Warm Peach/Latte Card Background */
+  --card: 12 40% 93%;
   --card-foreground: 0 0% 17%;
 
   /* Popover - same as Card */
-  --popover: 33 27% 93%;
+  --popover: 12 40% 93%;
   --popover-foreground: 0 0% 17%;
 
   /* Primary - Canadian Red Accent (#C0392B) */
-  --primary: 6 63% 46%;
+  --primary: 8 65% 45%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary - Warm Beige (slightly darker than card) */
-  --secondary: 33 20% 90%;
+  /* Secondary - Deep Warm Beige */
+  --secondary: 12 30% 90%;
   --secondary-foreground: 0 0% 17%;
 
-  /* Muted - Soft Grey-Beige for subtext */
-  --muted: 33 10% 85%;
+  /* Muted - Warm Sand */
+  --muted: 12 25% 85%;
   --muted-foreground: 0 0% 40%;
 
-  /* Accent - Warm Highlight (lighter beige for hovers) */
-  --accent: 33 30% 95%;
-  --accent-foreground: 6 63% 46%;
+  /* Accent - Warm Highlight */
+  --accent: 12 50% 94%;
+  --accent-foreground: 8 65% 45%;
 
   /* Destructive */
   --destructive: 0 62% 40%;
