@@ -22,7 +22,7 @@ const slides = [
     thumbnail: siteContent.images.hero.slide1,
     title: siteContent.text.hero.slides[0].title,
     subtitle: siteContent.text.hero.slides[0].subtitle,
-    cta: "Know More",
+    // cta: "Know More",
   },
   {
     type: "image" as const,
@@ -31,7 +31,7 @@ const slides = [
     thumbnail: siteContent.images.hero.slide2,
     title: siteContent.text.hero.slides[1].title,
     subtitle: siteContent.text.hero.slides[1].subtitle,
-    cta: "Know More",
+    cta: "Explore",
   },
   {
     type: "image" as const,
@@ -40,7 +40,7 @@ const slides = [
     thumbnail: siteContent.images.hero.slide3,
     title: siteContent.text.hero.slides[2].title,
     subtitle: siteContent.text.hero.slides[2].subtitle,
-    cta: "Know More",
+    cta: "Explore",
   },
 ];
 
@@ -115,15 +115,15 @@ export default function Hero() {
             {/* Gradient Overlay - Increased opacity for better text contrast */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
 
-            {/* Content - Left Aligned & Width Restricted */}
+            {/* Content - Left Aligned & Width Restricted & Vertically Centered */}
             <div className="absolute inset-0 z-10 pointer-events-none">
               <div className="container mx-auto h-full px-8 md:px-16 lg:px-24 flex items-center">
-                <div className="w-full md:w-3/4 xl:w-[50%] pt-10 pointer-events-auto">
+                <div className="w-full md:w-[70%] xl:w-[75%] pointer-events-auto">
                   <motion.h1
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
-                    className="text-4xl md:text-6xl lg:text-7xl font-serif font-medium text-white mb-6 leading-[1.1] tracking-tight drop-shadow-lg wrap-break-word"
+                    className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium text-white mb-6 leading-[1.1] tracking-tight drop-shadow-lg wrap-break-word"
                   >
                     {slide.title}
                   </motion.h1>
@@ -135,14 +135,31 @@ export default function Hero() {
                   >
                     {slide.subtitle}
                   </motion.p>
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.7, duration: 0.8 }}
-                    className="px-10 py-3.5 border border-white/50 text-white font-medium text-base hover:bg-white hover:text-black transition-all duration-300 backdrop-blur-sm"
-                  >
-                    {slide.cta}
-                  </motion.button>
+                  {slide.cta && (
+                    <motion.button
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.7, duration: 0.8 }}
+                      className="
+                      px-8 py-2.5
+                      border border-white/40
+                      text-white font-medium text-sm
+                      rounded-sm
+                      backdrop-blur-sm
+                      bg-white/0
+                      transition-all duration-300 ease-out
+
+                      hover:bg-white/10
+                      hover:backdrop-blur-md
+                      hover:shadow-[0_0_30px_rgba(255,255,255,0.25)]
+                      hover:border-white/70
+                      cursor-pointer
+                    "
+                    >
+                      {slide.cta}
+                    </motion.button>
+
+                  )}
                 </div>
               </div>
             </div>
@@ -166,7 +183,7 @@ export default function Hero() {
 
       {/* --- THUMBNAIL AND CONTROLS SECTION --- */}
       <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4">
-        {/* Thumbnails */}
+        {/* Thumbnails - 30% smaller */}
         <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4">
           {slides.map((slide, index) => (
             <motion.div
@@ -175,7 +192,7 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.15 + 0.5 }}
               onClick={() => handleThumbnailClick(index)}
-              className={`relative w-24 h-40 md:w-28 md:h-48 lg:w-40 lg:h-64 cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${activeIndex === index
+              className={`relative w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${activeIndex === index
                 ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
                 : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
                 }`}

@@ -1,5 +1,6 @@
 import placeholderImg from "@assets/placeholder.svg";
 import brandLogo from "@assets/logo/kb-logo1.png";
+import brandLogo_main from "@assets/logo/kb-logo-main.png";
 import brandLogoHotel from "@assets/logo/kb-logo1.jpg";
 import brandLogoCafe from "@assets/logo/kb-logo3.jpg";
 import brandLogoBar from "@assets/logo/kb-logo4.jpg";
@@ -41,7 +42,7 @@ export const siteContent = {
     tagline: "Redefining luxury hospitality with a commitment to excellence, comfort, and authentic experiences.",
     logo: {
       text: "Kennedia Blu",
-      image: { src: brandLogo, alt: "Kennedia Blu - Hotel | Restaurant | Cafe", priority: true },
+      image: { src: brandLogo_main, alt: "Kennedia Blu - Hotel | Restaurant | Cafe", priority: true },
       fallbackText: "KENNEDIA BLU"
     },
     logo_hotel: {
@@ -151,6 +152,33 @@ export const siteContent = {
     dailyOffers: {
       title: "Exclusive Daily Offers",
       offers: [
+        {
+          title: "Winter Alpine Retreat",
+          description:
+            "Warm up this winter with our exclusive alpine getaway package. Enjoy complimentary hot cocoa evenings, fireplace lounge access, and a curated winter activity pass.",
+          couponCode: "WINTER2025",
+          ctaText: "Explore Winter Stay",
+          link: "#",
+          image: { src: heroExterior, alt: "Winter Alpine Retreat", priority: false }
+        },
+        {
+          title: "Luxury Spa Weekend",
+          description:
+            "Indulge in a rejuvenating spa experience with our exclusive weekend package. Includes full-body massage, aromatherapy, and access to our premium wellness facilities.",
+          couponCode: "SPA2025",
+          ctaText: "Book Spa Package",
+          link: "#",
+          image: { src: heroLobby, alt: "Luxury Spa Weekend", priority: false }
+        },
+        {
+          title: "Rooftop Dining Experience",
+          description:
+            "Savor exquisite cuisine under the stars with our special rooftop dining offer. Includes a 5-course meal, premium wine pairing, and live music entertainment.",
+          couponCode: "DINE2025",
+          ctaText: "Reserve Table",
+          link: "#",
+          image: { src: heroLounge, alt: "Rooftop Dining", priority: false }
+        },
         {
           title: "Winter Alpine Retreat",
           description:

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Tag, ChevronLeft, ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -12,7 +12,7 @@ import "swiper/css/navigation";
 
 export default function DailyOffers() {
   const { dailyOffers } = siteContent.text;
-  const swiperRef = useRef<SwiperType>(null);
+  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
 
   // Guard clause
   if (!dailyOffers || !dailyOffers.offers || dailyOffers.offers.length === 0) return null;
@@ -26,6 +26,18 @@ export default function DailyOffers() {
     if (text.includes("cafe") || text.includes("coffee") || text.includes("tea")) return "Cafe";
     if (text.includes("spa") || text.includes("massage")) return "Wellness";
     return "Hotel"; // Default
+  };
+
+  const handlePrev = () => {
+    if (swiperInstance) {
+      swiperInstance.slidePrev();
+    }
+  };
+
+  const handleNext = () => {
+    if (swiperInstance) {
+      swiperInstance.slideNext();
+    }
   };
 
   return (
@@ -43,14 +55,16 @@ export default function DailyOffers() {
           {/* Custom Navigation Controls */}
           <div className="flex gap-2">
             <button
-              onClick={() => swiperRef.current?.slidePrev()}
-              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+              onClick={handlePrev}
+              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all z-10 relative cursor-pointer"
+              aria-label="Previous Slide"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
-              onClick={() => swiperRef.current?.slideNext()}
-              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+              onClick={handleNext}
+              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all z-10 relative cursor-pointer"
+              aria-label="Next Slide"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -67,12 +81,10 @@ export default function DailyOffers() {
               640: { slidesPerView: 2 },
               1024: { slidesPerView: 3 },
             }}
-            loop={true}
+            loop={offers.length > 3}
             autoplay={{ delay: 5000, disableOnInteraction: false }}
-            onSwiper={(swiper) => {
-              // @ts-ignore
-              swiperRef.current = swiper;
-            }}
+            onSwiper={setSwiperInstance}
+            speed={600}
             className="w-full pb-4"
           >
             {offers.map((offer, index) => {
