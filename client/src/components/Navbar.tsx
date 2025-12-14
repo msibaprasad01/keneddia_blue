@@ -160,7 +160,7 @@ export default function Navbar() {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 
       ${scrolled
         ? "bg-background/95 backdrop-blur-sm shadow-md py-2 border-b border-border/10"
-        : "bg-background/95 lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none shadow-md lg:shadow-none py-2 lg:py-4"
+        : "bg-background/95 dark:lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none shadow-md lg:shadow-none py-2 lg:py-4"
       }`}
     >
       <div className="container mx-auto px-6 lg:px-12">

@@ -1,3 +1,4 @@
+// Adapted from existing logic but with theme tokens
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import {
@@ -59,11 +60,11 @@ export default function BusinessVerticals() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-3xl md:text-4xl font-serif font-bold text-[#F5F7FA] mb-2"
+            className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2"
           >
             Kennedia Group
           </motion.h2>
-          <p className="text-sm text-[#C7CBD6] max-w-lg mx-auto">
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto">
             A diverse ecosystem of luxury hospitality brands.
           </p>
         </div>
@@ -87,10 +88,10 @@ function DesktopTree({ verticals }: { verticals: VerticalItem[] }) {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
-          className="w-32 h-32 rounded-full bg-[#1A1A1A] shadow-[0_0_40px_rgba(177,18,38,0.3)] border-4 border-primary/20 flex items-center justify-center relative z-20"
+          className="w-32 h-32 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20"
         >
           <div className="text-center">
-            <h2 className="text-5xl font-serif font-bold text-[#F5F7FA] tracking-wider leading-none">
+            <h2 className="text-5xl font-serif font-bold text-foreground tracking-wider leading-none">
               KB
             </h2>
             <p className="text-[10px] uppercase tracking-widest text-primary mt-1 font-bold">Group</p>
@@ -138,22 +139,22 @@ function BranchNode({ item, index, total }: { item: any, index: number, total: n
       {isRouteAvailable(`/${item.id}`) ? (
         <Link href={`/${item.id}`}>
           <a className="block">
-            <div className="w-16 h-16 rounded-2xl bg-[#222] border border-white/5 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_rgba(177,18,38,0.2)] transition-all duration-300">
-              <Icon className="w-6 h-6 text-[#C7CBD6] group-hover:text-primary transition-colors duration-300" strokeWidth={1.5} />
+            <div className="w-16 h-16 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 group-hover:border-primary/50 group-hover:shadow-xl transition-all duration-300">
+              <Icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors duration-300" strokeWidth={1.5} />
             </div>
           </a>
         </Link>
       ) : (
-        <div className="w-16 h-16 rounded-2xl bg-[#222] border border-white/5 shadow-lg flex items-center justify-center mb-4 opacity-50 cursor-not-allowed">
-          <Icon className="w-6 h-6 text-gray-500" strokeWidth={1.5} />
+        <div className="w-16 h-16 rounded-2xl bg-muted/20 border border-border/5 shadow-lg flex items-center justify-center mb-4 opacity-50 cursor-not-allowed">
+          <Icon className="w-6 h-6 text-muted-foreground" strokeWidth={1.5} />
         </div>
       )}
 
       {/* Text Content */}
-      <h3 className="text-sm font-bold text-[#F5F7FA] group-hover:text-primary transition-colors leading-tight mb-1">
+      <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
         {item.title}
       </h3>
-      <p className="text-xs text-[#C7CBD6]/70 leading-snug max-w-[120px]">
+      <p className="text-xs text-muted-foreground/70 leading-snug max-w-[120px]">
         {item.description}
       </p>
     </motion.div>
@@ -162,7 +163,7 @@ function BranchNode({ item, index, total }: { item: any, index: number, total: n
 
 function MobileTimeline({ verticals }: { verticals: VerticalItem[] }) {
   return (
-    <div className="relative pl-6 border-l border-dashed border-blue-200 space-y-8 py-4">
+    <div className="relative pl-6 border-l border-dashed border-primary/20 space-y-8 py-4">
       {verticals.map((v: VerticalItem, i: number) => {
         const Icon = IconMap[v.icon as keyof typeof IconMap] || Building2;
         return (
@@ -173,18 +174,18 @@ function MobileTimeline({ verticals }: { verticals: VerticalItem[] }) {
             transition={{ delay: i * 0.1 }}
             className="relative"
           >
-            <div className="absolute -left-[31px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
+            <div className="absolute -left-[31px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary border-2 border-background shadow-sm" />
 
             <Link href={`/${v.id}`}>
               <a className="block bg-card p-4 rounded-xl shadow-sm border border-border hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-50 rounded-full text-blue-600">
+                  <div className="p-2 bg-primary/10 rounded-full text-primary">
                     <Icon className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-[#F5F7FA]">{v.title}</h3>
+                    <h3 className="text-base font-bold text-foreground">{v.title}</h3>
                   </div>
-                  <ArrowRight className="w-4 h-4 ml-auto text-gray-300" />
+                  <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
                 </div>
               </a>
             </Link>
