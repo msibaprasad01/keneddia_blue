@@ -1,150 +1,172 @@
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, ArrowLeft, Play, Hotel, UtensilsCrossed, Coffee, Wine } from "lucide-react";
 import { Link } from "wouter";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "./ui/OptimizedImage";
-import { useState } from "react";
 
-const verticals = [
+const brandLogos = [
+  { label: "Hotel", icon: Hotel, logo: siteContent.brand.logo_hotel.image },
+  { label: "Restaurant", icon: UtensilsCrossed, logo: siteContent.brand.logo.image }, // Fallback to main logo for Restaurant logic
+  { label: "Cafe", icon: Coffee, logo: siteContent.brand.logo_cafe.image },
+  { label: "Liquor Shop", icon: Wine, logo: siteContent.brand.logo_bar.image }
+];
+
+const mediaItems = [
   {
-    key: "hotel",
-    logo: siteContent.brand.logo_hotel,
-    image: siteContent.images.businessVerticals.hotel,
-    description: "Luxury accommodations redefining comfort.",
-    link: "/business/hotels-resorts"
+    type: "video",
+    src: "https://www.youtube.com/embed/oqqrdFmYkO0",
+    poster: siteContent.images.about.main
   },
   {
-    key: "cafe",
-    logo: siteContent.brand.logo_cafe,
-    image: siteContent.images.businessVerticals.cafe,
-    description: "Artisanal coffee and gourmet experiences.",
-    link: "/business/cafes-dining"
+    type: "image",
+    src: siteContent.images.about.leadership,
+    alt: "Award Winning Service"
   },
   {
-    key: "bar",
-    logo: siteContent.brand.logo_bar,
-    image: siteContent.images.businessVerticals.bar,
-    description: "Exclusive lounges and signature cocktails.",
-    link: "/business/bars-lounges"
+    type: "image",
+    src: siteContent.images.hero.slide2, // Lobby image
+    alt: "Luxury Interiors"
   }
 ];
 
 export default function AboutUsSection() {
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  // Video now autoplays, no separate state needed
 
   const nextSlide = () => {
-    setCurrentIndex((prev: number) => (prev + 1) % verticals.length);
+    setCurrentMediaIndex((prev) => (prev + 1) % mediaItems.length);
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev: number) => (prev - 1 + verticals.length) % verticals.length);
+    setCurrentMediaIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
   };
 
-  const currentItem = verticals[currentIndex];
-
   return (
-    <section className="py-16 px-6 bg-background relative overflow-hidden">
-      {/* Decorative Background */}
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-linear-to-l from-secondary/5 to-transparent pointer-events-none" />
+    <section className="py-20 md:py-32 bg-background relative overflow-hidden">
+      <div
+        className="absolute inset-0 z-0"
+        style={{ backgroundColor: "rgb(10, 10, 12)" }} // Very dark background base
+      />
 
-      <div className="container mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-sm font-bold text-primary uppercase tracking-[0.2em] mb-3">
-            {siteContent.text.about.discoverTitle}
-          </h2>
-          <h3 className="text-3xl md:text-5xl font-serif text-foreground leading-tight">
-            Experience Our World
-          </h3>
-          <p className="mt-4 text-muted-foreground font-light text-lg">
-            {siteContent.text.about.carousel[0].description}
-          </p>
-        </div>
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
 
-        {/* Carousel Container */}
-        <div className="relative max-w-4xl mx-auto">
-          {/* Navigation Controls */}
-          <button
-            onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 z-30 w-10 h-10 rounded-full border border-primary/30 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300"
-          >
-            <ArrowRight className="w-5 h-5 rotate-180" />
-          </button>
-
-          <button
-            onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 z-30 w-10 h-10 rounded-full border border-primary/30 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300"
-          >
-            <ArrowRight className="w-5 h-5" />
-          </button>
-
-          {/* Card Slide */}
-          <div className="relative overflow-hidden px-4 md:px-0">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.5 }}
-              className="relative aspect-[16/9] md:aspect-[21/9] rounded-xl overflow-hidden shadow-2xl"
+          {/* Left Column: Media Showcase */}
+          <div className="relative group">
+            {/* Media Card Style */}
+            <div
+              className="relative aspect-[4/3] md:aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl"
+              style={{
+                backgroundColor: "rgba(15,17,22,0.8)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+              }}
             >
-              {/* Background Image */}
-              <OptimizedImage
-                {...currentItem.image}
-                className="w-full h-full object-cover"
-              />
-
-              {/* Dark Overlay Card */}
-              <div className="absolute inset-0 bg-black/40" /> {/* General image dimming */}
-
-              {/* Content Card Positioned Over Image */}
-              <div className="absolute inset-0 flex items-center justify-center p-6 md:p-12">
-                <div
-                  className="max-w-xl w-full p-8 md:p-10 rounded-xl text-center backdrop-blur-md"
-                  style={{
-                    backgroundColor: "rgba(15,17,22,0.75)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)"
-                  }}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentMediaIndex}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="w-full h-full"
                 >
-                  {/* Logo */}
-                  <div className="h-16 mb-6 flex items-center justify-center">
-                    <img
-                      src={currentItem.logo.image.src}
-                      alt={currentItem.logo.image.alt}
-                      className="h-full w-auto object-contain brightness-0 invert opacity-90"
+                  {mediaItems[currentMediaIndex].type === "video" ? (
+                    <div className="w-full h-full relative bg-black">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        src={`${mediaItems[currentMediaIndex].src as string}?autoplay=1&mute=1&controls=1&rel=0&playsinline=1`}
+                        title="Brand Video"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <OptimizedImage
+                      src={(mediaItems[currentMediaIndex].src as any).src}
+                      alt={(mediaItems[currentMediaIndex].src as any).alt || "Gallery Image"}
+                      className="w-full h-full object-cover"
                     />
-                  </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
 
-                  <h4 className="text-2xl font-serif text-[#FFFFFF] mb-3">
-                    {currentItem.key === 'hotel' ? 'Hotels & Resorts' : currentItem.key === 'cafe' ? 'Cafes & Dining' : 'Bars & Lounges'}
-                  </h4>
-
-                  <p className="text-[#C7CBD6] font-light text-sm md:text-base mb-8 leading-relaxed">
-                    {currentItem.description}
-                  </p>
-
-                  <Link href={currentItem.link}>
-                    <a className="inline-flex items-center px-6 py-2 border border-primary/50 text-primary hover:bg-primary hover:text-white transition-colors duration-300 text-xs font-bold uppercase tracking-widest rounded-sm">
-                      Explore
-                      <ArrowRight className="w-3 h-3 ml-2" />
-                    </a>
-                  </Link>
-                </div>
+              {/* Carousel Navigation */}
+              <div className="absolute bottom-6 right-6 flex gap-3 z-20">
+                <button
+                  onClick={prevSlide}
+                  className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all hover:scale-105"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all hover:scale-105"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
-            </motion.div>
+            </div>
           </div>
 
-          {/* Dots Indicator */}
-          <div className="flex justify-center gap-2 mt-8">
-            {verticals.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentIndex ? "w-8 bg-primary" : "w-2 bg-gray-600 hover:bg-gray-500"
-                  }`}
-              />
-            ))}
+          {/* Right Column: Content */}
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-[0.2em] mb-3" style={{ color: "#9CA3AF" }}>
+                {siteContent.text.about.sectionTitle}
+              </h2>
+              <h3 className="text-4xl md:text-5xl font-serif leading-tight mb-6" style={{ color: "#FFFFFF" }}>
+                {siteContent.brand.name}
+              </h3>
+              <p className="text-lg font-light leading-relaxed" style={{ color: "#C7CBD6" }}>
+                {siteContent.text.about.carousel[0].description} {siteContent.brand.tagline}
+              </p>
+            </div>
+
+            {/* Brand Logos Grid */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-widest mb-6 opacity-70" style={{ color: "#9CA3AF" }}>
+                Our Ventures
+              </h4>
+              <div className="grid grid-cols-4 gap-4">
+                {brandLogos.map((brand) => (
+                  <div key={brand.label} className="flex flex-col items-center justify-center text-center space-y-3 group cursor-pointer">
+                    <div
+                      className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1"
+                      style={{
+                        backgroundColor: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(255,255,255,0.05)",
+                      }}
+                    >
+                      {/* Try to use image first, else icon */}
+                      <img
+                        src={brand.logo.src}
+                        alt={brand.label}
+                        className="w-8 h-8 object-contain brightness-0 invert opacity-80 group-hover:opacity-100 transition-opacity"
+                      />
+                    </div>
+                    <span className="text-[10px] uppercase tracking-wider font-medium opacity-60 group-hover:opacity-100 transition-opacity" style={{ color: "#C7CBD6" }}>
+                      {brand.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <Link href="/about">
+                <a className="inline-flex items-center text-sm font-bold uppercase tracking-widest hover:underline underline-offset-8 transition-all" style={{ color: "#FFFFFF" }}>
+                  Discover More
+                  <ArrowRight className="w-4 h-4 ml-2 text-primary" />
+                </a>
+              </Link>
+            </div>
           </div>
+
         </div>
       </div>
     </section>
