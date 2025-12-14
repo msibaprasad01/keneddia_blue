@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, LogIn, ArrowLeft } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
+import { BookingSheet } from "./BookingSheet";
 
 // Business mega menu data
 const businessCategories = [
@@ -49,7 +50,16 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileExpandedMenu, setMobileExpandedMenu] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [bookingCategory, setBookingCategory] = useState<"hotel" | "dining" | "delivery" | null>(null);
   const [location, setLocation] = useLocation();
+
+  const openBooking = (category: "hotel" | "dining" | "delivery") => {
+    setBookingCategory(category);
+    setBookingOpen(true);
+    // Close dropdowns if any
+    setActiveDropdown(null);
+  };
 
   // 1. Scroll & Active State Logic
   useEffect(() => {
@@ -195,13 +205,13 @@ export default function Navbar() {
               {/* Quick Action Dropdown */}
               <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-xl rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right">
                 <div className="py-1">
-                  <button onClick={(e) => handleLinkClick(e as any)} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors">
-                    <a href="#hotels">Book Hotel</a> {/* Using anchors for interop */}
+                  <button onClick={() => openBooking('hotel')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+                    Book Hotel
                   </button>
-                  <button className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+                  <button onClick={() => openBooking('dining')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors">
                     Reserve Table (Dine-in)
                   </button>
-                  <button className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+                  <button onClick={() => openBooking('delivery')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors">
                     Takeaway / Delivery
                   </button>
                 </div>
@@ -241,6 +251,11 @@ export default function Navbar() {
           handleLinkClick={handleLinkClick}
         />
       </div>
+      <BookingSheet
+        isOpen={bookingOpen}
+        onOpenChange={setBookingOpen}
+        category={bookingCategory}
+      />
     </nav>
   );
 }
