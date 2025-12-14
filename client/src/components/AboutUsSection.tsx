@@ -45,8 +45,7 @@ export default function AboutUsSection() {
   return (
     <section className="py-20 md:py-32 bg-background relative overflow-hidden">
       <div
-        className="absolute inset-0 z-0"
-        style={{ backgroundColor: "rgb(10, 10, 12)" }} // Very dark background base
+        className="absolute inset-0 z-0 bg-background"
       />
 
       <div className="container mx-auto px-6 relative z-10">
@@ -56,10 +55,8 @@ export default function AboutUsSection() {
           <div className="relative group">
             {/* Media Card Style */}
             <div
-              className="relative aspect-[4/3] md:aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl"
+              className="relative aspect-[4/3] md:aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10"
               style={{
-                backgroundColor: "rgba(15,17,22,0.8)",
-                border: "1px solid rgba(255,255,255,0.08)",
                 boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
               }}
             >
@@ -116,40 +113,36 @@ export default function AboutUsSection() {
           {/* Right Column: Content */}
           <div className="space-y-8">
             <div>
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] mb-3" style={{ color: "#9CA3AF" }}>
+              <h2 className="text-sm font-bold uppercase tracking-[0.2em] mb-3 text-muted-foreground">
                 {siteContent.text.about.sectionTitle}
               </h2>
-              <h3 className="text-4xl md:text-5xl font-serif leading-tight mb-6" style={{ color: "#FFFFFF" }}>
+              <h3 className="text-4xl md:text-5xl font-serif leading-tight mb-6 text-foreground">
                 {siteContent.brand.name}
               </h3>
-              <p className="text-lg font-light leading-relaxed" style={{ color: "#C7CBD6" }}>
+              <p className="text-lg font-light leading-relaxed text-muted-foreground">
                 {siteContent.text.about.carousel[0].description} {siteContent.brand.tagline}
               </p>
             </div>
 
             {/* Brand Logos Grid */}
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest mb-6 opacity-70" style={{ color: "#9CA3AF" }}>
+              <h4 className="text-xs font-bold uppercase tracking-widest mb-6 opacity-70 text-muted-foreground">
                 Our Ventures
               </h4>
               <div className="grid grid-cols-4 gap-4">
                 {brandLogos.map((brand) => (
                   <div key={brand.label} className="flex flex-col items-center justify-center text-center space-y-3 group cursor-pointer">
                     <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1"
-                      style={{
-                        backgroundColor: "rgba(255,255,255,0.03)",
-                        border: "1px solid rgba(255,255,255,0.05)",
-                      }}
+                      className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1 bg-accent/5 border border-border/10"
                     >
                       {/* Try to use image first, else icon */}
                       <img
                         src={brand.logo.src}
                         alt={brand.label}
-                        className="w-8 h-8 object-contain brightness-0 invert opacity-80 group-hover:opacity-100 transition-opacity"
+                        className="w-8 h-8 object-contain opacity-80 group-hover:opacity-100 transition-opacity dark:brightness-0 dark:invert"
                       />
                     </div>
-                    <span className="text-[10px] uppercase tracking-wider font-medium opacity-60 group-hover:opacity-100 transition-opacity" style={{ color: "#C7CBD6" }}>
+                    <span className="text-[10px] uppercase tracking-wider font-medium opacity-60 group-hover:opacity-100 transition-opacity text-muted-foreground">
                       {brand.label}
                     </span>
                   </div>
@@ -159,7 +152,7 @@ export default function AboutUsSection() {
 
             <div className="pt-4">
               <Link href="/about">
-                <a className="inline-flex items-center text-sm font-bold uppercase tracking-widest hover:underline underline-offset-8 transition-all" style={{ color: "#FFFFFF" }}>
+                <a className="inline-flex items-center text-sm font-bold uppercase tracking-widest hover:underline underline-offset-8 transition-all text-foreground hover:text-primary">
                   Discover More
                   <ArrowRight className="w-4 h-4 ml-2 text-primary" />
                 </a>

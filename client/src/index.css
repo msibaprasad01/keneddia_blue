@@ -34,7 +34,53 @@
 
 /* WARM NEUTRAL MODERN THEME */
 /* DARK PREMIUM MODERN THEME */
+/* LIGHT THEME (DEFAULT) */
 :root {
+  /* Background: Warm Cream/Off-White */
+  --background: 40 20% 97%; /* #F9F7F5 */
+  /* Text Primary: Deep Charcoal */
+  --foreground: 220 13% 10%; /* #16181D */
+
+  /* Surface/Card: Pure White */
+  --card: 0 0% 100%;
+  --card-foreground: 220 13% 10%;
+
+  /* Popover */
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 13% 10%;
+
+  /* Primary: Gold/Amber (Darker for contrast on light) */
+  --primary: 35 90% 45%; /* #DA9100 - Stronger Gold */
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary: Light Warm Gray */
+  --secondary: 40 10% 90%;
+  --secondary-foreground: 220 13% 10%;
+
+  /* Muted */
+  --muted: 40 10% 94%;
+  --muted-foreground: 220 8% 40%;
+
+  /* Accent */
+  --accent: 40 20% 92%;
+  --accent-foreground: 220 13% 10%;
+
+  /* Border */
+  --border: 220 13% 90%;
+  --input: 220 13% 90%;
+  
+  /* Ring */
+  --ring: 35 90% 45%;
+
+  /* Destructive */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+
+  --radius: 4px;
+}
+
+/* DARK THEME OVERRIDE */
+.dark {
   /* Background: Dark Solid (Deep Charcoal/Black) */
   --background: 220 13% 8%; /* #121317 */
   /* Text Primary: High Contrast White */
@@ -61,7 +107,7 @@
   --muted-foreground: 220 8% 70%;
 
   /* Accent: Same as Primary or slightly different variant */
-  --accent: 35 85% 55%;
+  --accent: 35 85% 55%; /* Or Keep Dark Accent logic */
   --accent-foreground: 220 13% 8%;
 
   /* Highlight/Ring */
@@ -74,8 +120,6 @@
   /* Destructive */
   --destructive: 0 62% 30%;
   --destructive-foreground: 0 0% 98%;
-
-  --radius: 4px; 
 }
 
 

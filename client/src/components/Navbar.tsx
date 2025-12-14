@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, LogIn, ArrowLeft } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { BookingSheet } from "./BookingSheet";
+import { ThemeToggle } from "./ThemeToggle";
 
 // Business mega menu data
 const businessCategories = [
@@ -158,8 +159,8 @@ export default function Navbar() {
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 
       ${scrolled
-        ? "bg-[#0a0a0c]/95 backdrop-blur-sm shadow-md py-2"
-        : "bg-[#0a0a0c]/95 lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none shadow-md lg:shadow-none py-2 lg:py-4"
+        ? "bg-background/95 backdrop-blur-sm shadow-md py-2 border-b border-border/10"
+        : "bg-background/95 lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none shadow-md lg:shadow-none py-2 lg:py-4"
       }`}
     >
       <div className="container mx-auto px-6 lg:px-12">
@@ -224,6 +225,9 @@ export default function Navbar() {
                 LOGIN
               </a>
             </Link>
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
           </div>
 
           {/* Mobile Menu Button */}
@@ -389,13 +393,13 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.3 }}
-          className="lg:hidden border-t border-white/10 overflow-hidden"
+          className="lg:hidden border-t border-border/10 overflow-hidden bg-background/95 backdrop-blur-md"
         >
           <div className="py-4 max-h-[70vh] overflow-y-auto">
             {navItems.map((item: NavItem) =>
               item.type === 'link' ? (
                 <Link key={item.key} href={item.href}>
-                  <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-white hover:bg-white/5 hover:text-primary transition-colors border-b border-white/5">
+                  <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-accent hover:text-primary transition-colors border-b border-border/5">
                     {item.label}
                   </a>
                 </Link>
@@ -411,13 +415,14 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
             )}
 
             {/* Login Button */}
-            <div className="px-4 pt-4">
+            <div className="px-4 pt-4 flex items-center justify-between gap-4">
               <Link href="/login">
-                <a onClick={handleLinkClick} className="flex items-center justify-center gap-2 w-full py-2.5 bg-transparent border border-white/20 text-white text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all">
+                <a onClick={handleLinkClick} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all">
                   <LogIn className="w-4 h-4" />
                   LOGIN
                 </a>
               </Link>
+              <ThemeToggle />
             </div>
           </div>
         </motion.div>
@@ -431,10 +436,10 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
   const isExpanded = mobileExpandedMenu === item.key;
 
   return (
-    <div className="border-b border-white/5">
+    <div className="border-b border-border/5">
       <button
         onClick={() => setMobileExpandedMenu(isExpanded ? null : item.key)}
-        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white hover:bg-white/5 hover:text-primary transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-accent/50 hover:text-primary transition-colors"
       >
         <span>{item.label}</span>
         <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
@@ -447,19 +452,19 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="bg-white/5 overflow-hidden"
+            className="bg-accent/5 overflow-hidden"
           >
             {item.type === 'mega' ? (
               item.items.map((category: any, index: number) => (
-                <div key={index} className="px-6 py-3 border-b border-white/5 last:border-0">
-                  <h4 className="font-semibold text-xs text-white/70 mb-2 uppercase tracking-wider">
+                <div key={index} className="px-6 py-3 border-b border-border/5 last:border-0">
+                  <h4 className="font-semibold text-xs text-muted-foreground mb-2 uppercase tracking-wider">
                     {category.title}
                   </h4>
                   <ul className="space-y-1.5">
                     {category.items.map((subItem: string, itemIndex: number) => (
                       <li key={itemIndex}>
                         <Link href={`/business/${subItem.toLowerCase().replace(/\s+/g, "-")}`}>
-                          <a onClick={handleLinkClick} className="block text-sm text-white/60 hover:text-primary py-1 transition-colors">
+                          <a onClick={handleLinkClick} className="block text-sm text-foreground/70 hover:text-primary py-1 transition-colors">
                             {subItem}
                           </a>
                         </Link>
@@ -471,7 +476,7 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
             ) : (
               item.items.map((subItem: any, idx: number) => (
                 <Link key={idx} href={subItem.href}>
-                  <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-white/60 hover:text-primary hover:bg-white/5 transition-colors">
+                  <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors">
                     {subItem.label}
                   </a>
                 </Link>
