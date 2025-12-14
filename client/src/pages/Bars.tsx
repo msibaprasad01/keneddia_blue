@@ -7,6 +7,7 @@ import HeaderLogo from "@/components/HeaderLogo";
 // Assets
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { BackButton } from "@/components/ui/BackButton";
 
 const bars = [
   {
@@ -72,19 +73,19 @@ export default function Bars() {
       <HeaderLogo
         logo={siteContent.brand.logo_bar.image}
         text={siteContent.brand.logo_bar.text}
-        bgColor="bg-slate-900/5"
+        bgColor="bg-background"
       />
 
-      {/* Header / Filter Section */}
-      <div className="pt-8 pb-12 px-6 bg-secondary/20 border-b border-primary/5">
-        <div className="container mx-auto">
-          {/* <motion.h1
+      {/* Hero Section */}
+      <div className="container mx-auto px-6 pt-32 pb-16">
+        <div className="max-w-4xl mx-auto text-center mb-12">
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-serif text-foreground mb-8"
+            className="text-5xl md:text-6xl font-serif mb-6 text-foreground"
           >
             Exclusive Nightlife
-          </motion.h1> */}
+          </motion.h1>
 
           {/* Search Bar */}
           <motion.div

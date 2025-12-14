@@ -17,14 +17,14 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <DailyOffers />
-        <AboutUsSection />
-        <BusinessVerticals />
-        <EventsSection />
-        <NewsPress />
-        <OurStoryPreview />
-        <GlobalPresence />
-        <RatingsAndAwards />
+        <section id="daily-offers"><DailyOffers /></section>
+        <section id="about"><AboutUsSection /></section>
+        <section id="business"><BusinessVerticals /></section>
+        <section id="events"><EventsSection /></section>
+        <section id="news"><NewsPress /></section>
+        <section id="story"><OurStoryPreview /></section>
+        <section id="global"><GlobalPresence /></section>
+        <section id="reviews"><RatingsAndAwards /></section>
       </main>
 
       <Footer />

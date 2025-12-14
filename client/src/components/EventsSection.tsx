@@ -10,12 +10,12 @@ export default function EventsSection() {
   if (!events) return null;
 
   return (
-    <section className="py-24 bg-gray-50 overflow-hidden">
+    <section className="py-24 bg-background overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
           <div className="max-w-2xl">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-[#FFFFFF] mb-6">
               {events.title}
             </h2>
             <div className="h-1 w-24 bg-primary rounded-full" />
@@ -48,10 +48,13 @@ export default function EventsSection() {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
 
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black/45" />
+
                 {/* Date Badge */}
-                <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-md px-4 py-2 rounded-lg shadow-sm flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                <div className="absolute top-4 left-4 z-20 bg-primary/90 backdrop-blur-md px-4 py-2 rounded-sm shadow-lg flex items-center gap-2 border border-white/10">
+                  <Calendar className="w-4 h-4 text-white" />
+                  <span className="text-sm font-bold text-white uppercase tracking-wide">
                     {event.date}
                   </span>
                 </div>
@@ -59,10 +62,10 @@ export default function EventsSection() {
 
               {/* Content */}
               <div className="p-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
+                <h3 className="text-2xl font-bold text-[#FFFFFF] mb-3 group-hover:text-primary transition-colors">
                   {event.title}
                 </h3>
-                <p className="text-gray-600 mb-6 line-clamp-2 leading-relaxed">
+                <p className="text-[#D1D5DB] mb-6 line-clamp-2 leading-relaxed">
                   {event.description}
                 </p>
                 <Link href={`/events/${event.slug}`}>

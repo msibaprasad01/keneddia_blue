@@ -99,7 +99,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+                  className="w-9 h-9 flex items-center justify-center text-[#4B5563] hover:text-[#B11226] transition-colors"
                 >
                   <social.icon className="w-5 h-5" strokeWidth={1.5} />
                 </a>
@@ -110,7 +110,7 @@ export default function Footer() {
           {/* Navigation Columns */}
           {footerSections.map((section, index) => (
             <div key={index}>
-              <h3 className="text-foreground font-semibold text-sm mb-6 uppercase tracking-wider">
+              <h3 className="text-[#1F2937] font-semibold text-sm mb-6 uppercase tracking-wider">
                 {section.title}
               </h3>
               <ul className="space-y-3">
@@ -119,7 +119,7 @@ export default function Footer() {
                     <Link href={link.href}>
                       <a
                         onClick={handleLinkClick}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors block"
+                        className="text-sm text-[#374151] hover:text-[#B11226] transition-colors block"
                       >
                         {link.label}
                       </a>
@@ -137,7 +137,7 @@ export default function Footer() {
         <div className="container mx-auto px-6 lg:px-12 py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Copyright */}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[#4B5563]">
               © {new Date().getFullYear()} {siteContent.brand.name}. All rights reserved.
             </p>
 
@@ -147,7 +147,7 @@ export default function Footer() {
                 <Link key={index} href={link.href}>
                   <a
                     onClick={handleLinkClick}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-[#4B5563] hover:text-[#B11226] transition-colors"
                   >
                     {link.label}
                   </a>

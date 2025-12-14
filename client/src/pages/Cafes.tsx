@@ -8,6 +8,7 @@ import HeaderLogo from "@/components/HeaderLogo";
 // Assets
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { BackButton } from "@/components/ui/BackButton";
 
 const allCafes = [
   {
@@ -134,12 +135,16 @@ export default function Cafes() {
       <HeaderLogo
         logo={siteContent.brand.logo_cafe.image}
         text={siteContent.brand.logo_cafe.text}
-        bgColor="bg-amber-50/30"
+        bgColor="bg-orange-950/20"
       />
 
       {/* Search Section */}
       <div className="pt-8 pb-12 px-6 bg-secondary/20 border-b border-primary/5">
         <div className="container mx-auto">
+          <div className="mb-6">
+            <BackButton />
+          </div>
+
           {/* Search Bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -266,11 +271,11 @@ export default function Cafes() {
               )}
             </button>
           </motion.div>
-        </div>
-      </div>
+        </div >
+      </div >
 
       {/* Cafe Grid */}
-      <div className="container mx-auto px-6 py-20">
+      < div className="container mx-auto px-6 py-20" >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
           <AnimatePresence mode="popLayout">
             {filteredCafes.map((cafe, index) => (
@@ -328,113 +333,115 @@ export default function Cafes() {
             ))}
           </AnimatePresence>
         </div>
-      </div>
+      </div >
 
       {/* Magnified Detail Modal */}
       <AnimatePresence>
-        {selectedCafe && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedCafe(null)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
-          >
+        {
+          selectedCafe && (
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", duration: 0.5 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedCafe(null)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedCafe(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 bg-background/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-background transition-colors"
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: "spring", duration: 0.5 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
               >
-                <X className="w-5 h-5" />
-              </button>
-
-              {/* Image */}
-              <div className="relative aspect-[16/9] overflow-hidden">
-                <OptimizedImage
-                  {...selectedCafe.image}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4 bg-background/90 backdrop-blur px-3 py-1 flex items-center rounded-full">
-                  <Star className="w-4 h-4 text-primary fill-primary mr-1" />
-                  <span className="text-sm font-bold">{selectedCafe.rating}</span>
-                  <span className="text-xs text-muted-foreground ml-1">({selectedCafe.reviews} reviews)</span>
-                </div>
-                {selectedCafe.reservations && (
-                  <div className="absolute bottom-4 right-4 bg-primary/90 backdrop-blur px-3 py-1 rounded-full">
-                    <span className="text-xs font-bold text-primary-foreground uppercase tracking-widest">Reservations Available</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="p-8">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h2 className="text-4xl font-serif text-foreground mb-2">{selectedCafe.name}</h2>
-                    <div className="flex items-center text-muted-foreground mb-2">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      <span className="text-sm uppercase tracking-wide">{selectedCafe.location}</span>
-                    </div>
-                    <div className="flex items-center text-muted-foreground">
-                      <Coffee className="w-4 h-4 mr-1" />
-                      <span className="text-xs uppercase tracking-wide">{selectedCafe.cuisine}</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Avg. Price</p>
-                    <p className="text-2xl font-serif text-foreground">{selectedCafe.avgPrice}</p>
-                  </div>
-                </div>
-
-                <p className="text-sm text-muted-foreground/80 font-light leading-relaxed mb-6 pb-6 border-b border-primary/10">
-                  {selectedCafe.description}
-                </p>
-
-                {/* Specialties */}
-                <div className="mb-6">
-                  <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-3 font-bold">Specialties</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCafe.specialties.map((specialty) => (
-                      <span
-                        key={specialty}
-                        className="px-3 py-1 bg-secondary/50 text-foreground text-xs font-medium rounded"
-                      >
-                        {specialty}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Opening Hours */}
-                <div className="mb-6 border border-primary/10 p-4 rounded">
-                  <div className="flex items-center text-muted-foreground mb-2">
-                    <Clock className="w-4 h-4 mr-2" />
-                    <span className="text-xs uppercase tracking-widest font-bold">Opening Hours</span>
-                  </div>
-                  <p className="text-lg font-serif">{selectedCafe.openingHours}</p>
-                </div>
-
-                {/* Reserve Button */}
-                <button className="w-full bg-primary text-primary-foreground py-4 rounded flex items-center justify-center hover:bg-primary/90 transition-colors uppercase tracking-widest text-xs font-bold">
-                  {selectedCafe.reservations ? "Reserve Table" : "Visit Us"}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                {/* Close Button */}
+                <button
+                  onClick={() => setSelectedCafe(null)}
+                  className="absolute top-4 right-4 z-10 w-10 h-10 bg-background/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-background transition-colors"
+                >
+                  <X className="w-5 h-5" />
                 </button>
-              </div>
+
+                {/* Image */}
+                <div className="relative aspect-[16/9] overflow-hidden">
+                  <OptimizedImage
+                    {...selectedCafe.image}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-4 left-4 bg-background/90 backdrop-blur px-3 py-1 flex items-center rounded-full">
+                    <Star className="w-4 h-4 text-primary fill-primary mr-1" />
+                    <span className="text-sm font-bold">{selectedCafe.rating}</span>
+                    <span className="text-xs text-muted-foreground ml-1">({selectedCafe.reviews} reviews)</span>
+                  </div>
+                  {selectedCafe.reservations && (
+                    <div className="absolute bottom-4 right-4 bg-primary/90 backdrop-blur px-3 py-1 rounded-full">
+                      <span className="text-xs font-bold text-primary-foreground uppercase tracking-widest">Reservations Available</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="p-8">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h2 className="text-4xl font-serif text-foreground mb-2">{selectedCafe.name}</h2>
+                      <div className="flex items-center text-muted-foreground mb-2">
+                        <MapPin className="w-4 h-4 mr-1" />
+                        <span className="text-sm uppercase tracking-wide">{selectedCafe.location}</span>
+                      </div>
+                      <div className="flex items-center text-muted-foreground">
+                        <Coffee className="w-4 h-4 mr-1" />
+                        <span className="text-xs uppercase tracking-wide">{selectedCafe.cuisine}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">Avg. Price</p>
+                      <p className="text-2xl font-serif text-foreground">{selectedCafe.avgPrice}</p>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground/80 font-light leading-relaxed mb-6 pb-6 border-b border-primary/10">
+                    {selectedCafe.description}
+                  </p>
+
+                  {/* Specialties */}
+                  <div className="mb-6">
+                    <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-3 font-bold">Specialties</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedCafe.specialties.map((specialty) => (
+                        <span
+                          key={specialty}
+                          className="px-3 py-1 bg-secondary/50 text-foreground text-xs font-medium rounded"
+                        >
+                          {specialty}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Opening Hours */}
+                  <div className="mb-6 border border-primary/10 p-4 rounded">
+                    <div className="flex items-center text-muted-foreground mb-2">
+                      <Clock className="w-4 h-4 mr-2" />
+                      <span className="text-xs uppercase tracking-widest font-bold">Opening Hours</span>
+                    </div>
+                    <p className="text-lg font-serif">{selectedCafe.openingHours}</p>
+                  </div>
+
+                  {/* Reserve Button */}
+                  <button className="w-full bg-primary text-primary-foreground py-4 rounded flex items-center justify-center hover:bg-primary/90 transition-colors uppercase tracking-widest text-xs font-bold">
+                    {selectedCafe.reservations ? "Reserve Table" : "Visit Us"}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )
+        }
+      </AnimatePresence >
 
       {/* Footer */}
-      <Footer />
-    </div>
+      < Footer />
+    </div >
   );
 }

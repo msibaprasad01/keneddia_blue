@@ -33,46 +33,46 @@
 }
 
 /* WARM NEUTRAL MODERN THEME */
+/* DARK PREMIUM MODERN THEME */
 :root {
-  /* Background: #F7EEE8 */
-  --background: 22 38% 94%;
-  /* Text Primary: #3A2F28 */
-  --foreground: 24 18% 19%;
+  /* Background: Dark Solid (Deep Charcoal/Black) */
+  --background: 220 13% 8%; /* #121317 */
+  /* Text Primary: High Contrast White */
+  --foreground: 0 0% 98%; /* #FAFAFA */
 
-  /* Surface/Card: #F2E4DC */
-  --card: 22 38% 90%;
-  --card-foreground: 24 18% 19%;
+  /* Surface/Card: Slightly Lighter than Background */
+  --card: 220 13% 12%; /* #1c1e24 */
+  --card-foreground: 0 0% 98%;
 
-  /* Popover - same as Card */
-  --popover: 22 38% 90%;
-  --popover-foreground: 24 18% 19%;
+  /* Popover */
+  --popover: 220 13% 12%;
+  --popover-foreground: 0 0% 98%;
 
-  /* Primary: #C8102E (Standard Red) */
-  --primary: 350 85% 42%;
-  --primary-foreground: 0 0% 100%;
+  /* Primary: Gold/Amber Accent for buttons & highlights */
+  --primary: 35 85% 55%; /* Rich Gold */
+  --primary-foreground: 220 13% 8%; /* Dark text on gold */
 
-  /* Secondary: #7B5A48 (Footer Background) */
-  --secondary: 21 26% 38%;
-  /* Secondary Text: #F7EEE8 (Light Text for dark sec bg) */
-  --secondary-foreground: 22 38% 94%;
+  /* Secondary: Muted Dark Gray */
+  --secondary: 220 13% 18%;
+  --secondary-foreground: 0 0% 98%;
 
-  /* Text Secondary: #6E5C53 used as muted */
-  --muted: 22 38% 90%; /* Using card color for muted bg usually, or lighter. adapting. */
-  --muted-foreground: 20 14% 38%;
+  /* Text Secondary: Muted Light Gray */
+  --muted: 220 13% 18%;
+  --muted-foreground: 220 8% 70%;
 
-  /* Accent: #D9A86C */
-  --accent: 33 58% 64%;
-  --accent-foreground: 24 18% 19%;
+  /* Accent: Same as Primary or slightly different variant */
+  --accent: 35 85% 55%;
+  --accent-foreground: 220 13% 8%;
 
-  /* Highlight: #B76E54 (used for ring/border highlights) */
-  --ring: 16 40% 52%;
+  /* Highlight/Ring */
+  --ring: 35 85% 55%;
 
-  /* Border: #E0CFC4 */
-  --border: 23 27% 82%;
-  --input: 23 27% 82%;
+  /* Border: Subtle Dark Gray */
+  --border: 220 13% 22%;
+  --input: 220 13% 22%;
 
   /* Destructive */
-  --destructive: 0 62% 40%;
+  --destructive: 0 62% 30%;
   --destructive-foreground: 0 0% 98%;
 
   --radius: 4px; 

@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { BackButton } from "@/components/ui/BackButton";
 
 const events = [
   {
@@ -43,10 +44,10 @@ export default function Events() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
-      
+
       <div className="pt-32 pb-12 px-6 bg-secondary/20 border-b border-primary/5 mb-12">
         <div className="container mx-auto text-center">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-5xl font-serif text-foreground mb-4"
@@ -60,6 +61,9 @@ export default function Events() {
       </div>
 
       <div className="container mx-auto px-6 pb-20">
+        <div className="mb-8">
+          <BackButton />
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {events.map((event, index) => (
             <motion.div
@@ -70,7 +74,7 @@ export default function Events() {
               className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow group"
             >
               <div className="relative h-48 overflow-hidden">
-                <OptimizedImage 
+                <OptimizedImage
                   {...event.image}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -78,15 +82,15 @@ export default function Events() {
                   {event.category}
                 </div>
               </div>
-              
+
               <div className="p-6">
                 <div className="flex items-center text-xs text-primary font-bold uppercase tracking-widest mb-3">
                   <Calendar className="w-3 h-3 mr-1" />
                   {event.date}
                 </div>
-                
+
                 <h3 className="text-2xl font-serif text-foreground mb-3">{event.title}</h3>
-                
+
                 <div className="space-y-2 mb-4 text-sm text-muted-foreground">
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-2 opacity-70" />
@@ -97,11 +101,11 @@ export default function Events() {
                     {event.location}
                   </div>
                 </div>
-                
+
                 <p className="text-gray-600 text-sm leading-relaxed mb-6">
                   {event.description}
                 </p>
-                
+
                 <button className="w-full py-3 border border-primary/20 text-primary font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-white transition-colors rounded">
                   RSVP Now
                 </button>

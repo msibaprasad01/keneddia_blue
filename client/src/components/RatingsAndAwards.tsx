@@ -24,7 +24,7 @@ const ratings = [
 
 export default function RatingsAndAwards() {
   return (
-    <section className="py-10 bg-linear-to-br from-gray-50 to-white relative overflow-hidden">
+    <section className="py-20 bg-background relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
@@ -77,7 +77,8 @@ export default function RatingsAndAwards() {
               className="group relative"
             >
               {/* Card */}
-              <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 p-8 text-center overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-xl">
+              {/* Card - Dark Surface with Gold Highlight on Hover */}
+              <div className="relative bg-card border border-primary/20 p-8 text-center overflow-hidden transition-all duration-500 hover:border-primary hover:shadow-[0_0_30px_rgba(217,168,108,0.15)] group-hover:-translate-y-1">
                 {/* Hover Gradient Background */}
                 <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -116,7 +117,7 @@ export default function RatingsAndAwards() {
                   whileInView={{ scaleX: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.15 + 0.5, duration: 0.4 }}
-                  className="relative z-10 w-12 h-px bg-linear-to-r from-transparent via-primary to-transparent mx-auto mb-4"
+                  className="relative z-10 w-12 h-px bg-primary/40 mx-auto mb-4"
                 />
 
                 {/* Source */}

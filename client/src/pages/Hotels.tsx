@@ -8,6 +8,7 @@ import HeaderLogo from "@/components/HeaderLogo";
 // Assets
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { BackButton } from "@/components/ui/BackButton";
 
 const allHotels = [
   {

@@ -18,6 +18,7 @@ const slides = [
   {
     type: "video" as const,
     media: video1,
+    mobileMedia: video1, // Start with same media, allows replacement
     thumbnail: siteContent.images.hero.slide1,
     title: siteContent.text.hero.slides[0].title,
     subtitle: siteContent.text.hero.slides[0].subtitle,
@@ -26,6 +27,7 @@ const slides = [
   {
     type: "image" as const,
     media: siteContent.images.hero.slide2,
+    mobileMedia: siteContent.images.hero.slide2,
     thumbnail: siteContent.images.hero.slide2,
     title: siteContent.text.hero.slides[1].title,
     subtitle: siteContent.text.hero.slides[1].subtitle,
@@ -34,6 +36,7 @@ const slides = [
   {
     type: "image" as const,
     media: siteContent.images.hero.slide3,
+    mobileMedia: siteContent.images.hero.slide3,
     thumbnail: siteContent.images.hero.slide3,
     title: siteContent.text.hero.slides[2].title,
     subtitle: siteContent.text.hero.slides[2].subtitle,
@@ -65,8 +68,8 @@ export default function Hero() {
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={index} className="relative w-full h-full">
-            {/* Background Media */}
-            <div className="absolute inset-0 w-full h-full overflow-hidden">
+            {/* Background Media - Desktop */}
+            <div className="hidden md:block absolute inset-0 w-full h-full overflow-hidden">
               {slide.type === "video" ? (
                 <video
                   autoPlay
@@ -77,7 +80,7 @@ export default function Hero() {
                   poster={slide.thumbnail.src}
                   className="w-full h-full object-cover"
                 >
-                  <source src={slide.media} type="video/mp4" />
+                  <source src={slide.media as string} type="video/mp4" />
                 </video>
               ) : (
                 <OptimizedImage
@@ -85,9 +88,32 @@ export default function Hero() {
                   className="w-full h-full object-cover"
                 />
               )}
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/40 to-transparent" />
             </div>
+
+            {/* Background Media - Mobile (Distinct Asset Support) */}
+            <div className="block md:hidden absolute inset-0 w-full h-full overflow-hidden">
+              {slide.type === "video" ? (
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  poster={slide.thumbnail.src}
+                  className="w-full h-full object-cover"
+                >
+                  <source src={slide.mobileMedia as string} type="video/mp4" />
+                </video>
+              ) : (
+                <OptimizedImage
+                  {...slide.mobileMedia}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+
+            {/* Gradient Overlay - Increased opacity for better text contrast */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
 
             {/* Content - Left Aligned & Width Restricted */}
             <div className="absolute inset-0 z-10 pointer-events-none">
@@ -97,7 +123,7 @@ export default function Hero() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
-                    className="text-4xl md:text-6xl lg:text-6xl font-serif font-medium text-[#FDFBF7] mb-6 leading-[1.1] tracking-tight wrap-break-word"
+                    className="text-4xl md:text-6xl lg:text-7xl font-serif font-medium text-white mb-6 leading-[1.1] tracking-tight drop-shadow-lg wrap-break-word"
                   >
                     {slide.title}
                   </motion.h1>
@@ -105,7 +131,7 @@ export default function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.8 }}
-                    className="text-lg md:text-xl text-[#FDFBF7]/80 font-light mb-10 tracking-wide uppercase"
+                    className="text-lg md:text-xl text-white/90 font-light mb-10 tracking-wide uppercase drop-shadow-md"
                   >
                     {slide.subtitle}
                   </motion.p>
@@ -113,7 +139,7 @@ export default function Hero() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.7, duration: 0.8 }}
-                    className="px-10 py-3.5 border border-[#FDFBF7]/50 text-[#FDFBF7] font-medium text-base hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 backdrop-blur-sm"
+                    className="px-10 py-3.5 border border-white/50 text-white font-medium text-base hover:bg-white hover:text-black transition-all duration-300 backdrop-blur-sm"
                   >
                     {slide.cta}
                   </motion.button>
@@ -121,7 +147,7 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Decorative Wave Element */}
+            {/* Decorative Wave Element - Using semantic background color */}
             <div className="absolute bottom-0 left-0 w-full h-32 md:h-48 z-10 pointer-events-none">
               <svg
                 viewBox="0 0 1440 320"

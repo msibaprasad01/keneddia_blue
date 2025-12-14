@@ -17,7 +17,7 @@ export default function NewsPress() {
           <span className="text-sm font-semibold text-primary tracking-[0.2em] uppercase mb-4">
             Updates & Recognition
           </span>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#FFFFFF] mb-6">
             {news.title}
           </h2>
           <div className="w-20 h-0.5 bg-gray-200" />
@@ -46,19 +46,19 @@ export default function NewsPress() {
               </div>
 
               {/* Meta */}
-              <div className="mb-3 flex items-center gap-4 text-sm text-gray-400">
+              <div className="mb-3 flex items-center gap-4 text-sm text-primary">
                 <span>{item.date}</span>
-                <span className="w-1 h-1 bg-gray-400 rounded-full" />
+                <span className="w-1 h-1 bg-primary rounded-full" />
                 <span className="uppercase tracking-wider">Press</span>
               </div>
 
               {/* Title */}
-              <h3 className="text-2xl font-serif font-semibold text-gray-900 mb-4 group-hover:text-primary transition-colors leading-snug">
+              <h3 className="text-2xl font-serif font-semibold text-[#F8FAFC] mb-4 group-hover:text-primary transition-colors leading-snug">
                 {item.title}
               </h3>
 
               {/* Description */}
-              <p className="text-gray-500 mb-6 leading-relaxed flex-grow">
+              <p className="text-[#B6BCC8] mb-6 leading-relaxed flex-grow">
                 {item.description}
               </p>
 

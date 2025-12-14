@@ -2,8 +2,10 @@ import { motion } from "framer-motion";
 import { Users, Award, Shield, Target, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Link } from "wouter";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { BackButton } from "@/components/ui/BackButton";
 
 const values = [
   {
@@ -55,6 +57,9 @@ export default function About() {
           />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+          <div className="mb-8">
+            <BackButton />
+          </div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

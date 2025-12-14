@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
-import { Star, Quote, Play } from "lucide-react";
+import { Star, User, Quote } from "lucide-react";
+import { siteContent } from "@/data/siteContent";
+import { BackButton } from "@/components/ui/BackButton";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -90,6 +92,24 @@ export default function Reviews() {
           ))}
         </div>
       </section>
+
+      <HeaderLogo
+        logo={siteContent.brand.logo.image}
+        text={siteContent.brand.logo.text}
+        bgColor="bg-background"
+      />
+
+      <main className="py-12 mb-20">
+        <div className="container mx-auto px-6 lg:px-12 mb-8">
+          <BackButton />
+        </div>
+
+        <div className="container mx-auto px-6 lg:px-12">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            {/* The original instruction had a partial h2 tag here, assuming it was meant to be part of the video section's h2 */}
+          </div>
+        </div>
+      </main>
 
       {/* Video Section */}
       <section className="bg-gray-900 text-white py-20 px-6">
