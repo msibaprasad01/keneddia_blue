@@ -15,7 +15,7 @@ export default function EventsSection() {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
           <div className="max-w-2xl">
-            <h2 className="text-4xl md:text-5xl font-bold text-[#FFFFFF] mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               {events.title}
             </h2>
             <div className="h-1 w-24 bg-primary rounded-full" />
@@ -62,10 +62,10 @@ export default function EventsSection() {
 
               {/* Content */}
               <div className="p-8">
-                <h3 className="text-2xl font-bold text-[#FFFFFF] mb-3 group-hover:text-primary transition-colors">
+                <h3 className="text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
                   {event.title}
                 </h3>
-                <p className="text-[#D1D5DB] mb-6 line-clamp-2 leading-relaxed">
+                <p className="text-muted-foreground mb-6 line-clamp-2 leading-relaxed">
                   {event.description}
                 </p>
                 <Link href={`/events/${event.slug}`}>

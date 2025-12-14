@@ -170,11 +170,11 @@ export default function Navbar() {
             {/* Logo Section */}
             <div className="flex items-center justify-start flex-shrink-0">
               <Link href="/">
-                <a onClick={handleLinkClick} className="block opacity-90 transition-opacity hover:opacity-100">
+                <a onClick={handleLinkClick} className="block transition-all duration-300 rounded-lg p-1.5 lg:p-2 bg-[#0a0a0c] dark:bg-transparent hover:opacity-100">
                   <img
                     src={siteContent.brand.logo.image.src}
                     alt={siteContent.brand.logo.image.alt}
-                    className="h-10 lg:h-12 w-auto object-contain"
+                    className="h-8 lg:h-10 w-auto object-contain opacity-90 group-hover:opacity-100"
                   />
                 </a>
               </Link>

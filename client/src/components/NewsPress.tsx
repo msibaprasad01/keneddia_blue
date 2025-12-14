@@ -17,7 +17,7 @@ export default function NewsPress() {
           <span className="text-sm font-semibold text-primary tracking-[0.2em] uppercase mb-4">
             Updates & Recognition
           </span>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#FFFFFF] mb-6">
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6">
             {news.title}
           </h2>
           <div className="w-20 h-0.5 bg-gray-200" />
@@ -53,12 +53,12 @@ export default function NewsPress() {
               </div>
 
               {/* Title */}
-              <h3 className="text-2xl font-serif font-semibold text-[#F8FAFC] mb-4 group-hover:text-primary transition-colors leading-snug">
+              <h3 className="text-2xl font-serif font-semibold text-foreground mb-4 group-hover:text-primary transition-colors leading-snug">
                 {item.title}
               </h3>
 
               {/* Description */}
-              <p className="text-[#B6BCC8] mb-6 leading-relaxed flex-grow">
+              <p className="text-muted-foreground mb-6 leading-relaxed flex-grow">
                 {item.description}
               </p>
 
