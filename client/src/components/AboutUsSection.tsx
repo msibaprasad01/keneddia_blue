@@ -43,7 +43,7 @@ export default function AboutUsSection() {
   };
 
   return (
-    <section className="py-20 md:py-32 bg-background relative overflow-hidden">
+    <section className="py-10 md:py-20 bg-background relative overflow-hidden">
       <div
         className="absolute inset-0 z-0 bg-background"
       />

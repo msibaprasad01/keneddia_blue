@@ -10,7 +10,7 @@ export default function EventsSection() {
   if (!events) return null;
 
   return (
-    <section className="py-24 bg-background overflow-hidden">
+    <section className="py-10 bg-background overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">

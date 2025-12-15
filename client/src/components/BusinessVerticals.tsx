@@ -50,7 +50,7 @@ export default function BusinessVerticals() {
   }, []);
 
   return (
-    <section className="py-8 bg-gradient-to-b from-background to-secondary/10 overflow-hidden relative">
+    <section className="py-2 bg-gradient-to-b from-background to-secondary/10 overflow-hidden relative">
       {/* Background Decor */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
