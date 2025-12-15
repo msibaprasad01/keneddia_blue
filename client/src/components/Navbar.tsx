@@ -29,17 +29,17 @@ type NavItem =
 
 const navItems: NavItem[] = [
   { type: 'mega', label: 'BUSINESSES', key: 'business', items: businessCategories },
-  { type: 'link', label: 'EVENTS', key: 'events', href: '/events' },
-  { type: 'link', label: 'REVIEWS', key: 'reviews', href: '/reviews' },
+  { type: 'link', label: 'EVENTS', key: 'events', href: '#' },
+  { type: 'link', label: 'REVIEWS', key: 'reviews', href: '#' },
   {
     type: 'dropdown',
     label: 'JOIN US',
     key: 'joinus',
     items: [
-      { label: 'Become a Partner', href: '/join/partner' },
-      { label: 'Franchise Opportunities', href: '/join/franchise' },
-      { label: 'Investor Relations', href: '/join/investor' },
-      { label: 'Supplier Registration', href: '/join/supplier' },
+      { label: 'Become a Partner', href: '#' },
+      { label: 'Franchise Opportunities', href: '#' },
+      { label: 'Investor Relations', href: '#' },
+      { label: 'Supplier Registration', href: '#' },
     ]
   },
   { type: 'link', label: 'ABOUT US', key: 'about', href: '/about' }
