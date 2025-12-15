@@ -199,20 +199,20 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center justify-end gap-3 w-auto">
             {/* Quick Action Selector */}
             <div className="relative group">
-              <button className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-sm font-medium rounded-full hover:bg-primary hover:text-primary-foreground transition-all">
+              <button className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-sm font-medium rounded-full hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer">
                 <span>Quick Book</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               {/* Quick Action Dropdown */}
-              <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-xl rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right">
+              <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-xl rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right cursor-pointer">
                 <div className="py-1">
-                  <button onClick={() => openBooking('hotel')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+                  <button onClick={() => openBooking('hotel')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
                     Book Hotel
                   </button>
-                  <button onClick={() => openBooking('dining')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+                  <button onClick={() => openBooking('dining')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
                     Reserve Table (Dine-in)
                   </button>
-                  <button onClick={() => openBooking('delivery')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+                  <button onClick={() => openBooking('delivery')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
                     Takeaway / Delivery
                   </button>
                 </div>
