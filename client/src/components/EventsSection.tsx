@@ -11,7 +11,7 @@ import { OptimizedImage } from "./ui/OptimizedImage";
 // Routes
 const ROUTES = {
   allEvents: "/events",
-  eventDetail: (slug: string) => `/events/${slug}`,
+  eventDetail: (slug: string) => `/#`,
 } as const;
 
 // Animation Configuration

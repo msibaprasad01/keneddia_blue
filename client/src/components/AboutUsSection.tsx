@@ -7,7 +7,7 @@ import { OptimizedImage } from "./ui/OptimizedImage";
 
 const brandLogos = [
   { label: "Hotel", icon: Hotel, logo: siteContent.brand.logo_hotel.image },
-  { label: "Restaurant", icon: UtensilsCrossed, logo: siteContent.brand.logo.image }, // Fallback to main logo for Restaurant logic
+  { label: "Restaurant", icon: UtensilsCrossed, logo: siteContent.brand.logo.image },
   { label: "Cafe", icon: Coffee, logo: siteContent.brand.logo_cafe.image },
   { label: "Liquor Shop", icon: Wine, logo: siteContent.brand.logo_bar.image }
 ];
@@ -25,14 +25,13 @@ const mediaItems = [
   },
   {
     type: "image",
-    src: siteContent.images.hero.slide2, // Lobby image
+    src: siteContent.images.hero.slide2,
     alt: "Luxury Interiors"
   }
 ];
 
 export default function AboutUsSection() {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  // Video now autoplays, no separate state needed
 
   const nextSlide = () => {
     setCurrentMediaIndex((prev) => (prev + 1) % mediaItems.length);
@@ -44,16 +43,13 @@ export default function AboutUsSection() {
 
   return (
     <section className="py-10 md:py-20 bg-background relative overflow-hidden">
-      <div
-        className="absolute inset-0 z-0 bg-background"
-      />
+      <div className="absolute inset-0 z-0 bg-background" />
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
 
           {/* Left Column: Media Showcase */}
           <div className="relative group">
-            {/* Media Card Style */}
             <div
               className="relative aspect-[4/3] md:aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10"
               style={{
@@ -132,14 +128,16 @@ export default function AboutUsSection() {
               <div className="grid grid-cols-4 gap-4">
                 {brandLogos.map((brand) => (
                   <div key={brand.label} className="flex flex-col items-center justify-center text-center space-y-3 group cursor-pointer">
-                    <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1 bg-accent/5 border border-border/10"
-                    >
-                      {/* Try to use image first, else icon */}
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1 bg-slate-900/90 dark:bg-accent/5 border border-border/10">
+                      {/* Logo with proper visibility in both modes */}
                       <img
                         src={brand.logo.src}
                         alt={brand.label}
-                        className="w-8 h-8 object-contain opacity-80 group-hover:opacity-100 transition-opacity dark:brightness-0 dark:invert"
+                        className="w-10 h-10 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+                        style={{
+                          filter: 'none',
+                          mixBlendMode: 'normal'
+                        }}
                       />
                     </div>
                     <span className="text-[10px] uppercase tracking-wider font-medium opacity-60 group-hover:opacity-100 transition-opacity text-muted-foreground">
