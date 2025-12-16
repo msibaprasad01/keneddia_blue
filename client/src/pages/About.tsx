@@ -57,9 +57,6 @@ export default function About() {
           />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <div className="mb-8">
-            <BackButton />
-          </div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

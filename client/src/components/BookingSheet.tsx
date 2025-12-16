@@ -6,7 +6,110 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Check, ChevronRight, User, Calendar, CreditCard, ChevronLeft } from "lucide-react"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Check, ChevronRight, User, Calendar as CalendarIcon, CreditCard, ChevronLeft, Users, Minus, Plus } from "lucide-react"
+import { format, differenceInDays, addDays } from "date-fns"
+import { cn } from "@/lib/utils"
+
+// ============================================================================
+// BOOKING CONFIGURATION - Centralized
+// ============================================================================
+
+// Location Data
+const LOCATIONS = [
+  { value: "kennedia-blu-bangalore", label: "Kennedia Blu - Bangalore (MG Road)", stars: 5 },
+  { value: "kennedia-grand-mumbai", label: "Kennedia Grand - Mumbai (Juhu)", stars: 5 },
+  { value: "kennedia-resort-goa", label: "Kennedia Resort - Goa (Calangute)", stars: 5 },
+  { value: "kennedia-suites-delhi", label: "Kennedia Suites - New Delhi", stars: 5 },
+]
+
+// Guest Configuration
+const GUEST_CONFIG = {
+  adults: {
+    min: 1,
+    max: 10,
+    default: 2,
+    label: "Adults",
+    description: "Age 13+",
+  },
+  children: {
+    min: 0,
+    max: 8,
+    default: 0,
+    label: "Children",
+    description: "Age 2-12",
+  },
+  infants: {
+    min: 0,
+    max: 4,
+    default: 0,
+    label: "Infants",
+    description: "Under 2",
+  },
+} as const
+
+// Date Configuration
+const DATE_CONFIG = {
+  minDate: new Date(),
+  maxDate: addDays(new Date(), 365),
+  defaultCheckIn: new Date(),
+  defaultCheckOut: addDays(new Date(), 1),
+} as const
+
+// Step Configuration
+const STEPS = {
+  LOCATION: 1,
+  DETAILS: 2,
+  CHECKOUT: 3,
+} as const
+
+const STEP_LABELS = {
+  [STEPS.LOCATION]: "Select Location",
+  [STEPS.DETAILS]: "Select Dates & Guests",
+  [STEPS.CHECKOUT]: "Checkout",
+} as const
+
+// Text Content
+const TEXT_CONTENT = {
+  titles: {
+    hotel: "Book a Stay",
+    dining: "Reserve a Table",
+    delivery: "Order Food",
+    default: "Booking",
+  },
+  buttons: {
+    confirmContinue: "Confirm & Continue",
+    proceedToPay: "Proceed to Pay",
+  },
+  placeholders: {
+    search: "Search location...",
+    name: "John Doe",
+    email: "john@example.com",
+    phone: "+91 98765 43210",
+    selectDate: "Select date",
+  },
+  labels: {
+    fullName: "Full Name",
+    email: "Email Address",
+    phone: "Phone Number",
+    totalAmount: "Total Amount",
+    checkIn: "Check-in Date",
+    checkOut: "Check-out Date",
+    guests: "Guests",
+    nights: "Night(s)",
+  },
+  messages: {
+    noLocations: "No locations found.",
+    propertyFeatures: "5 Star Luxury Property • Free Cancellation",
+    securePayment: "Secured by Kennedia SafePay. By proceeding, you agree to our Terms.",
+    showingAvailability: (category: string) => `Showing ${category} availability for nearby properties.`,
+  },
+} as const
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 interface BookingSheetProps {
   isOpen: boolean
@@ -14,41 +117,72 @@ interface BookingSheetProps {
   category: "hotel" | "dining" | "delivery" | null
 }
 
-const locations = [
-  { value: "kennedia-blu-bangalore", label: "Kennedia Blu - Bangalore (MG Road)" },
-  { value: "kennedia-grand-mumbai", label: "Kennedia Grand - Mumbai (Juhu)" },
-  { value: "kennedia-resort-goa", label: "Kennedia Resort - Goa (Calangute)" },
-  { value: "kennedia-suites-delhi", label: "Kennedia Suites - New Delhi" },
-]
+interface GuestCount {
+  adults: number
+  children: number
+  infants: number
+}
+
+interface DateRange {
+  checkIn: Date | undefined
+  checkOut: Date | undefined
+}
+
+// ============================================================================
+// MAIN BOOKING SHEET COMPONENT
+// ============================================================================
 
 export function BookingSheet({ isOpen, onOpenChange, category }: BookingSheetProps) {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(STEPS.LOCATION)
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null)
+  const [dateRange, setDateRange] = useState<DateRange>({
+    checkIn: DATE_CONFIG.defaultCheckIn,
+    checkOut: DATE_CONFIG.defaultCheckOut,
+  })
+  const [guests, setGuests] = useState<GuestCount>({
+    adults: GUEST_CONFIG.adults.default,
+    children: GUEST_CONFIG.children.default,
+    infants: GUEST_CONFIG.infants.default,
+  })
 
   // Reset state when opening
   useEffect(() => {
     if (isOpen) {
-      setStep(1)
+      setStep(STEPS.LOCATION)
       setSelectedLocation(null)
+      setDateRange({
+        checkIn: DATE_CONFIG.defaultCheckIn,
+        checkOut: DATE_CONFIG.defaultCheckOut,
+      })
+      setGuests({
+        adults: GUEST_CONFIG.adults.default,
+        children: GUEST_CONFIG.children.default,
+        infants: GUEST_CONFIG.infants.default,
+      })
     }
   }, [isOpen])
 
   const handleSelect = (value: string) => {
     setSelectedLocation(value)
-    setStep(2)
+    setStep(STEPS.DETAILS)
   }
 
   const handleBack = () => {
-    if (step > 1) setStep(step - 1)
+    if (step > STEPS.LOCATION) setStep(step - 1)
   }
 
   const getTitle = () => {
-    switch (category) {
-      case "hotel": return "Book a Stay"
-      case "dining": return "Reserve a Table"
-      case "delivery": return "Order Food"
-      default: return "Booking"
-    }
+    if (!category) return TEXT_CONTENT.titles.default
+    return TEXT_CONTENT.titles[category] || TEXT_CONTENT.titles.default
+  }
+
+  const getTotalGuests = () => {
+    return guests.adults + guests.children + guests.infants
+  }
+
+  const getNights = () => {
+    if (!dateRange.checkIn || !dateRange.checkOut) return 0
+    return differenceInDays(dateRange.checkOut, dateRange.checkIn)
   }
 
   return (
@@ -56,121 +190,410 @@ export function BookingSheet({ isOpen, onOpenChange, category }: BookingSheetPro
       <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col bg-background text-foreground border-l border-border/10">
 
         {/* Header with Back Button */}
-        <div className="p-6 border-b border-border/10 bg-card/50 backdrop-blur-md">
-          <div className="flex items-center gap-2 mb-2">
-            {step > 1 && (
-              <button onClick={handleBack} className="p-1 hover:bg-white/10 rounded-full transition-colors -ml-2">
-                <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-              </button>
-            )}
-            <SheetTitle className="text-xl font-serif font-medium">{getTitle()}</SheetTitle>
-          </div>
-          <SheetDescription className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">
-            Step {step} of 3 • {step === 1 ? "Select Location" : step === 2 ? "Review" : "Checkout"}
-          </SheetDescription>
-        </div>
+        <BookingHeader
+          step={step}
+          onBack={handleBack}
+          title={getTitle()}
+        />
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto">
-          {step === 1 && (
-            <div className="p-4 h-full flex flex-col">
-              <Command className="border border-border/10 rounded-lg bg-card/30">
-                <CommandInput placeholder="Search location..." className="text-foreground placeholder:text-muted-foreground/50 border-none" />
-                <CommandList className="max-h-[500px]">
-                  <CommandEmpty className="py-6 text-sm text-muted-foreground">No locations found.</CommandEmpty>
-                  <CommandGroup heading="Available Locations" className="text-muted-foreground">
-                    {locations.map((loc) => (
-                      <CommandItem
-                        key={loc.value}
-                        onSelect={() => handleSelect(loc.value)}
-                        className="flex items-center justify-between py-3 cursor-pointer aria-selected:bg-primary/10 aria-selected:text-primary"
-                      >
-                        <span className="font-medium text-foreground">{loc.label}</span>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-              <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/10 text-xs text-muted-foreground">
-                <p>Showing {category} availability for nearby properties.</p>
-              </div>
-            </div>
+          {step === STEPS.LOCATION && (
+            <LocationStep
+              category={category}
+              onSelect={handleSelect}
+            />
           )}
 
-          {step === 2 && (
-            <div className="p-6 space-y-6">
-              <div className="rounded-xl border border-border/10 bg-card overflow-hidden">
-                <div className="h-32 bg-muted/20 relative">
-                  {/* Placeholder for map or image */}
-                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30 text-sm font-medium">Selected Property Image</div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-serif text-lg font-medium text-foreground mb-1">
-                    {locations.find(l => l.value === selectedLocation)?.label}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">5 Star Luxury Property • Free Cancellation</p>
-
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50 border border-border/5">
-                      <Calendar className="w-4 h-4 text-primary mt-0.5" />
-                      <div>
-                        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Date</p>
-                        <p className="text-sm text-muted-foreground">Dec 15 - Dec 16 (1 Night)</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50 border border-border/5">
-                      <User className="w-4 h-4 text-primary mt-0.5" />
-                      <div>
-                        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Guests</p>
-                        <p className="text-sm text-muted-foreground">2 Adults, 0 Children</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <Button onClick={() => setStep(3)} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-base">
-                Confirm & Continue
-              </Button>
-            </div>
+          {step === STEPS.DETAILS && (
+            <DetailsStep
+              selectedLocation={selectedLocation}
+              dateRange={dateRange}
+              setDateRange={setDateRange}
+              guests={guests}
+              setGuests={setGuests}
+              onContinue={() => setStep(STEPS.CHECKOUT)}
+              getTotalGuests={getTotalGuests}
+              getNights={getNights}
+            />
           )}
 
-          {step === 3 && (
-            <div className="p-6 space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-foreground">Full Name</Label>
-                  <Input id="name" placeholder="John Doe" className="bg-card/50 border-border/20 text-foreground placeholder:text-muted-foreground/50" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-foreground">Email Address</Label>
-                  <Input id="email" type="email" placeholder="john@example.com" className="bg-card/50 border-border/20 text-foreground placeholder:text-muted-foreground/50" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-foreground">Phone Number</Label>
-                  <Input id="phone" type="tel" placeholder="+91 98765 43210" className="bg-card/50 border-border/20 text-foreground placeholder:text-muted-foreground/50" />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-border/10">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm text-muted-foreground">Total Amount</span>
-                  <span className="text-xl font-bold text-foreground">₹12,499</span>
-                </div>
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-base flex items-center justify-center gap-2">
-                  <CreditCard className="w-4 h-4" />
-                  Proceed to Pay
-                </Button>
-                <p className="text-center text-[10px] text-muted-foreground mt-3">
-                  Secured by Kennedia SafePay. By proceeding, you agree to our Terms.
-                </p>
-              </div>
-            </div>
+          {step === STEPS.CHECKOUT && (
+            <CheckoutStep
+              selectedLocation={selectedLocation}
+              dateRange={dateRange}
+              guests={guests}
+              getNights={getNights}
+            />
           )}
         </div>
 
       </SheetContent>
     </Sheet>
+  )
+}
+
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
+// Booking Header Component
+interface BookingHeaderProps {
+  step: number
+  onBack: () => void
+  title: string
+}
+
+function BookingHeader({ step, onBack, title }: BookingHeaderProps) {
+  return (
+    <div className="p-6 border-b border-border/10 bg-card/50 backdrop-blur-md">
+      <div className="flex items-center gap-2 mb-2">
+        {step > STEPS.LOCATION && (
+          <button onClick={onBack} className="p-1 hover:bg-white/10 rounded-full transition-colors -ml-2">
+            <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+          </button>
+        )}
+        <SheetTitle className="text-xl font-serif font-medium">{title}</SheetTitle>
+      </div>
+      <SheetDescription className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">
+        Step {step} of {STEPS.CHECKOUT} • {STEP_LABELS[step as keyof typeof STEP_LABELS]}
+      </SheetDescription>
+    </div>
+  )
+}
+
+// Location Step Component
+interface LocationStepProps {
+  category: "hotel" | "dining" | "delivery" | null
+  onSelect: (value: string) => void
+}
+
+function LocationStep({ category, onSelect }: LocationStepProps) {
+  return (
+    <div className="p-4 h-full flex flex-col">
+      <Command className="border border-border/10 rounded-lg bg-card/30">
+        <CommandInput
+          placeholder={TEXT_CONTENT.placeholders.search}
+          className="text-foreground placeholder:text-muted-foreground/50 border-none"
+        />
+        <CommandList className="max-h-[500px]">
+          <CommandEmpty className="py-6 text-sm text-muted-foreground">
+            {TEXT_CONTENT.messages.noLocations}
+          </CommandEmpty>
+          <CommandGroup heading="Available Locations" className="text-muted-foreground">
+            {LOCATIONS.map((loc) => (
+              <CommandItem
+                key={loc.value}
+                onSelect={() => onSelect(loc.value)}
+                className="flex items-center justify-between py-3 cursor-pointer aria-selected:bg-primary/10 aria-selected:text-primary"
+              >
+                <span className="font-medium text-foreground">{loc.label}</span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </Command>
+      <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/10 text-xs text-muted-foreground">
+        <p>{TEXT_CONTENT.messages.showingAvailability(category || "property")}</p>
+      </div>
+    </div>
+  )
+}
+
+// Details Step Component
+interface DetailsStepProps {
+  selectedLocation: string | null
+  dateRange: DateRange
+  setDateRange: (range: DateRange) => void
+  guests: GuestCount
+  setGuests: (guests: GuestCount) => void
+  onContinue: () => void
+  getTotalGuests: () => number
+  getNights: () => number
+}
+
+function DetailsStep({
+  selectedLocation,
+  dateRange,
+  setDateRange,
+  guests,
+  setGuests,
+  onContinue,
+  getTotalGuests,
+  getNights
+}: DetailsStepProps) {
+  const location = LOCATIONS.find(l => l.value === selectedLocation)
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Location Card */}
+      <LocationCard location={location} />
+
+      {/* Date Selection */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Select Dates</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <DatePicker
+            date={dateRange.checkIn}
+            onSelect={(date) => setDateRange({ ...dateRange, checkIn: date })}
+            label={TEXT_CONTENT.labels.checkIn}
+            minDate={DATE_CONFIG.minDate}
+          />
+          <DatePicker
+            date={dateRange.checkOut}
+            onSelect={(date) => setDateRange({ ...dateRange, checkOut: date })}
+            label={TEXT_CONTENT.labels.checkOut}
+            minDate={dateRange.checkIn ? addDays(dateRange.checkIn, 1) : DATE_CONFIG.minDate}
+          />
+        </div>
+        {dateRange.checkIn && dateRange.checkOut && (
+          <p className="text-xs text-muted-foreground text-center">
+            {getNights()} {TEXT_CONTENT.labels.nights}
+          </p>
+        )}
+      </div>
+
+      {/* Guest Selection */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+          {TEXT_CONTENT.labels.guests}
+        </h3>
+        <GuestSelector guests={guests} setGuests={setGuests} />
+        <p className="text-xs text-muted-foreground text-center">
+          Total: {getTotalGuests()} guest{getTotalGuests() !== 1 ? 's' : ''}
+        </p>
+      </div>
+
+      <Button
+        onClick={onContinue}
+        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-base"
+      >
+        {TEXT_CONTENT.buttons.confirmContinue}
+      </Button>
+    </div>
+  )
+}
+
+// Location Card Component
+function LocationCard({ location }: { location: typeof LOCATIONS[0] | undefined }) {
+  if (!location) return null
+
+  return (
+    <div className="rounded-xl border border-border/10 bg-card overflow-hidden">
+      <div className="h-32 bg-muted/20 relative">
+        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30 text-sm font-medium">
+          Selected Property Image
+        </div>
+      </div>
+      <div className="p-4">
+        <h3 className="font-serif text-lg font-medium text-foreground mb-1">
+          {location.label}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          {TEXT_CONTENT.messages.propertyFeatures}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// Date Picker Component
+interface DatePickerProps {
+  date: Date | undefined
+  onSelect: (date: Date | undefined) => void
+  label: string
+  minDate?: Date
+}
+
+function DatePicker({ date, onSelect, label, minDate }: DatePickerProps) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs text-muted-foreground uppercase tracking-wider">{label}</Label>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full justify-start text-left font-normal bg-card/50 border-border/20 hover:bg-card",
+              !date && "text-muted-foreground"
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {date ? format(date, "MMM dd, yyyy") : TEXT_CONTENT.placeholders.selectDate}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={onSelect}
+            disabled={(date) => {
+              if (minDate && date < minDate) return true
+              if (date > DATE_CONFIG.maxDate) return true
+              return false
+            }}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  )
+}
+
+// Guest Selector Component
+interface GuestSelectorProps {
+  guests: GuestCount
+  setGuests: (guests: GuestCount) => void
+}
+
+function GuestSelector({ guests, setGuests }: GuestSelectorProps) {
+  const handleGuestChange = (type: keyof GuestCount, delta: number) => {
+    const config = GUEST_CONFIG[type]
+    const newValue = Math.max(config.min, Math.min(config.max, guests[type] + delta))
+    setGuests({ ...guests, [type]: newValue })
+  }
+
+  return (
+    <div className="space-y-3 p-4 rounded-lg bg-card/50 border border-border/10">
+      {(Object.keys(GUEST_CONFIG) as Array<keyof typeof GUEST_CONFIG>).map((type) => (
+        <GuestCounter
+          key={type}
+          type={type}
+          count={guests[type]}
+          config={GUEST_CONFIG[type]}
+          onChange={(delta) => handleGuestChange(type, delta)}
+        />
+      ))}
+    </div>
+  )
+}
+
+// Guest Counter Component
+interface GuestCounterProps {
+  type: string
+  count: number
+  config: typeof GUEST_CONFIG[keyof typeof GUEST_CONFIG]
+  onChange: (delta: number) => void
+}
+
+function GuestCounter({ type, count, config, onChange }: GuestCounterProps) {
+  return (
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-foreground">{config.label}</p>
+        <p className="text-xs text-muted-foreground">{config.description}</p>
+      </div>
+      <div className="flex items-center gap-3">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 rounded-full"
+          onClick={() => onChange(-1)}
+          disabled={count <= config.min}
+        >
+          <Minus className="h-3 w-3" />
+        </Button>
+        <span className="w-8 text-center text-sm font-medium text-foreground">{count}</span>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 rounded-full"
+          onClick={() => onChange(1)}
+          disabled={count >= config.max}
+        >
+          <Plus className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+// Checkout Step Component
+interface CheckoutStepProps {
+  selectedLocation: string | null
+  dateRange: DateRange
+  guests: GuestCount
+  getNights: () => number
+}
+
+function CheckoutStep({ selectedLocation, dateRange, guests, getNights }: CheckoutStepProps) {
+  const location = LOCATIONS.find(l => l.value === selectedLocation)
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Booking Summary */}
+      <div className="p-4 rounded-lg bg-card/50 border border-border/10 space-y-3">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Booking Summary</h3>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Location</span>
+            <span className="text-foreground font-medium">{location?.label}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Check-in</span>
+            <span className="text-foreground">{dateRange.checkIn ? format(dateRange.checkIn, "MMM dd, yyyy") : "-"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Check-out</span>
+            <span className="text-foreground">{dateRange.checkOut ? format(dateRange.checkOut, "MMM dd, yyyy") : "-"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Nights</span>
+            <span className="text-foreground">{getNights()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Guests</span>
+            <span className="text-foreground">{guests.adults}A {guests.children}C {guests.infants}I</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Guest Information Form */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Guest Information</h3>
+        <div className="space-y-2">
+          <Label htmlFor="name" className="text-foreground">{TEXT_CONTENT.labels.fullName}</Label>
+          <Input
+            id="name"
+            placeholder={TEXT_CONTENT.placeholders.name}
+            className="bg-card/50 border-border/20 text-foreground placeholder:text-muted-foreground/50"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-foreground">{TEXT_CONTENT.labels.email}</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder={TEXT_CONTENT.placeholders.email}
+            className="bg-card/50 border-border/20 text-foreground placeholder:text-muted-foreground/50"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-foreground">{TEXT_CONTENT.labels.phone}</Label>
+          <Input
+            id="phone"
+            type="tel"
+            placeholder={TEXT_CONTENT.placeholders.phone}
+            className="bg-card/50 border-border/20 text-foreground placeholder:text-muted-foreground/50"
+          />
+        </div>
+      </div>
+
+      {/* Payment Section */}
+      <div className="pt-4 border-t border-border/10">
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-sm text-muted-foreground">{TEXT_CONTENT.labels.totalAmount}</span>
+          <span className="text-xl font-bold text-foreground">₹{(getNights() * 12499).toLocaleString()}</span>
+        </div>
+        <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-base flex items-center justify-center gap-2">
+          <CreditCard className="w-4 h-4" />
+          {TEXT_CONTENT.buttons.proceedToPay}
+        </Button>
+        <p className="text-center text-[10px] text-muted-foreground mt-3">
+          {TEXT_CONTENT.messages.securePayment}
+        </p>
+      </div>
+    </div>
   )
 }

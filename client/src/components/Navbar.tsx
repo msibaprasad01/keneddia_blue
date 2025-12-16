@@ -5,45 +5,106 @@ import { ChevronDown, LogIn, ArrowLeft } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { BookingSheet } from "./BookingSheet";
 import { ThemeToggle } from "./ThemeToggle";
-
-// Business mega menu data
-const businessCategories = [
+// Business Mega Menu Categories
+const BUSINESS_CATEGORIES = [
   {
     title: "Hotels & Resorts",
-    items: ["Luxury Hotels", "Beach Resorts", "Urban Properties", "Heritage Hotels"],
+    items: [
+      { label: "Luxury Hotels", href: "#" },
+      { label: "Beach Resorts", href: "#" },
+      { label: "Urban Properties", href: "#" },
+      { label: "Heritage Hotels", href: "#" },
+    ],
   },
   {
     title: "Cafes & Dining",
-    items: ["Fine Dining", "Casual Cafes", "Rooftop Restaurants", "Specialty Coffee"],
+    items: [
+      { label: "Fine Dining", href: "#" },
+      { label: "Casual Cafes", href: "#" },
+      { label: "Rooftop Restaurants", href: "#" },
+      { label: "Specialty Coffee", href: "#" },
+    ],
   },
   {
     title: "Bars & Lounges",
-    items: ["Cocktail Bars", "Wine Lounges", "Sky Bars", "Pool Bars"],
+    items: [
+      { label: "Cocktail Bars", href: "#" },
+      { label: "Wine Lounges", href: "#" },
+      { label: "Sky Bars", href: "#" },
+      { label: "Pool Bars", href: "#" },
+    ],
   },
 ];
 
+// Join Us Dropdown Items
+const JOIN_US_ITEMS = [
+  { label: "Become a Partner", href: "#" },
+  { label: "Franchise Opportunities", href: "#" },
+  { label: "Investor Relations", href: "#" },
+  { label: "Supplier Registration", href: "#" },
+];
+
+
+// Quick Booking Options
+const QUICK_BOOKING_OPTIONS = [
+  { label: "Book Hotel", category: "hotel" as const },
+  { label: "Reserve Table (Dine-in)", category: "dining" as const },
+  { label: "Takeaway / Delivery", category: "delivery" as const },
+];
+
+// Types
 type NavItem =
   | { type: 'link'; label: string; href: string; key: string }
   | { type: 'dropdown'; label: string; key: string; items: { label: string; href: string }[] }
-  | { type: 'mega'; label: string; key: string; items: typeof businessCategories };
+  | { type: 'mega'; label: string; key: string; items: typeof BUSINESS_CATEGORIES };
 
-const navItems: NavItem[] = [
-  { type: 'mega', label: 'BUSINESSES', key: 'business', items: businessCategories },
-  { type: 'link', label: 'EVENTS', key: 'events', href: '#' },
-  { type: 'link', label: 'REVIEWS', key: 'reviews', href: '#' },
+// Main Navigation Items
+const NAV_ITEMS: NavItem[] = [
+  {
+    type: 'mega',
+    label: 'BUSINESSES',
+    key: 'business',
+    items: BUSINESS_CATEGORIES
+  },
+  {
+    type: 'link',
+    label: 'EVENTS',
+    key: 'events',
+    href: '#events'
+  },
+  {
+    type: 'link',
+    label: 'REVIEWS',
+    key: 'reviews',
+    href: '#reviews'
+  },
   {
     type: 'dropdown',
     label: 'JOIN US',
     key: 'joinus',
-    items: [
-      { label: 'Become a Partner', href: '#' },
-      { label: 'Franchise Opportunities', href: '#' },
-      { label: 'Investor Relations', href: '#' },
-      { label: 'Supplier Registration', href: '#' },
-    ]
+    items: JOIN_US_ITEMS
   },
-  { type: 'link', label: 'ABOUT US', key: 'about', href: '/about' }
+  {
+    type: 'link',
+    label: 'ABOUT US',
+    key: 'about',
+    href: '/about'
+  }
 ];
+
+// Sections for Active State Detection
+const TRACKED_SECTIONS = ['business', 'events', 'reviews', 'joinus', 'about', 'daily-offers'];
+
+// Navbar Configuration
+const NAVBAR_CONFIG = {
+  scrollThreshold: 50,
+  navbarHeight: 64,
+  scrollBehavior: "smooth" as ScrollBehavior,
+};
+
+// ============================================================================
+// MAIN NAVBAR COMPONENT
+// ============================================================================
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -58,24 +119,20 @@ export default function Navbar() {
   const openBooking = (category: "hotel" | "dining" | "delivery") => {
     setBookingCategory(category);
     setBookingOpen(true);
-    // Close dropdowns if any
     setActiveDropdown(null);
   };
 
-  // 1. Scroll & Active State Logic
+  // Scroll & Active State Logic
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      setScrolled(window.scrollY > NAVBAR_CONFIG.scrollThreshold);
 
-      // Active Section Spy
-      const sections = ['business', 'events', 'reviews', 'joinus', 'about', 'daily-offers'];
+      // Active Section Detection
       let currentInfo = null;
-
-      for (const sectionId of sections) {
+      for (const sectionId of TRACKED_SECTIONS) {
         const el = document.getElementById(sectionId);
         if (el) {
           const rect = el.getBoundingClientRect();
-          // Check if section is roughly in view (top 3rd of screen)
           if (rect.top <= 100 && rect.bottom >= 100) {
             currentInfo = sectionId;
           }
@@ -84,65 +141,50 @@ export default function Navbar() {
       setActiveSection(currentInfo);
     };
 
-    // Handle initial hash scroll if arriving from another page
+    // Handle initial hash scroll
     if (window.location.hash) {
       const id = window.location.hash.replace('#', '');
       const el = document.getElementById(id);
       if (el) {
         setTimeout(() => {
-          const navbarHeight = 64;
           const elementPosition = el.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+          const offsetPosition = elementPosition + window.pageYOffset - NAVBAR_CONFIG.navbarHeight;
           window.scrollTo({
             top: offsetPosition,
-            behavior: "smooth"
+            behavior: NAVBAR_CONFIG.scrollBehavior
           });
         }, 100);
       }
     }
 
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Check on mount
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [location]); // Re-run on location change
+  }, [location]);
 
-  // 2. Navigation Click Logic
+  // Navigation Click Handler
   const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    // A. Normalization: Extract potential ID from "/path" -> "path"
-    const targetId = href.replace(/^\//, '').toLowerCase();
-
-    // B. Check for Section ID Match
+    const targetId = href.replace(/^[/#]/, '').toLowerCase();
     const targetElement = document.getElementById(targetId);
 
     if (targetElement) {
-      e.preventDefault(); // Stop Wouter navigation
-
-      // Calculate Scroll Position with Offset
-      const navbarHeight = 64; // h-16
+      e.preventDefault();
       const elementPosition = targetElement.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+      const offsetPosition = elementPosition + window.pageYOffset - NAVBAR_CONFIG.navbarHeight;
 
       window.scrollTo({
         top: offsetPosition,
-        behavior: "smooth"
+        behavior: NAVBAR_CONFIG.scrollBehavior
       });
 
-      // Optional: Update URL without reload (if desired, but user constraints said "use existing routes")
-      // window.history.pushState(null, "", href);
-
-      setMobileMenuOpen(false); // Close mobile menu if open
+      setMobileMenuOpen(false);
       return;
     }
 
-    // C. Fallback: Default Navigation (Wouter)
-    // If no element found, standard behavior applies (User might be on another page, so logic relies on Wouter to switch route)
     setMobileMenuOpen(false);
   };
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Wrapper to prevent default empty behavior if needed, 
-    // but main logic is now passed via specific handler or called inside Link's onClick
-    // Checking if the 'href' is available on the target
     const href = e.currentTarget.getAttribute('href');
     if (href) {
       handleNavigation(e, href);
@@ -156,6 +198,7 @@ export default function Navbar() {
       setLocation("/");
     }
   };
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 
       ${scrolled
@@ -183,14 +226,14 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center justify-center flex-1 space-x-2">
-            {navItems.map((item) => (
+            {NAV_ITEMS.map((item) => (
               <NavItem
                 key={item.key}
                 item={item}
                 activeDropdown={activeDropdown}
                 setActiveDropdown={setActiveDropdown}
                 handleLinkClick={handleLinkClick}
-                isActive={activeSection === item.key || (item.type === 'link' && activeSection === item.href.replace('/', ''))}
+                isActive={activeSection === item.key || (item.type === 'link' && activeSection === item.href.replace(/^[/#]/, ''))}
               />
             ))}
           </div>
@@ -206,15 +249,15 @@ export default function Navbar() {
               {/* Quick Action Dropdown */}
               <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-xl rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right cursor-pointer">
                 <div className="py-1">
-                  <button onClick={() => openBooking('hotel')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
-                    Book Hotel
-                  </button>
-                  <button onClick={() => openBooking('dining')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
-                    Reserve Table (Dine-in)
-                  </button>
-                  <button onClick={() => openBooking('delivery')} className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
-                    Takeaway / Delivery
-                  </button>
+                  {QUICK_BOOKING_OPTIONS.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => openBooking(option.category)}
+                      className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -251,7 +294,7 @@ export default function Navbar() {
           mobileMenuOpen={mobileMenuOpen}
           mobileExpandedMenu={mobileExpandedMenu}
           setMobileExpandedMenu={setMobileExpandedMenu}
-          navItems={navItems}
+          navItems={NAV_ITEMS}
           handleLinkClick={handleLinkClick}
         />
       </div>
@@ -264,10 +307,13 @@ export default function Navbar() {
   );
 }
 
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
 // Desktop Nav Item Component
 function NavItem({ item, activeDropdown, setActiveDropdown, handleLinkClick, isActive }: any) {
   const isHovered = activeDropdown === item.key;
-  // Active if passed prop is true OR it's the current dropdown
   const showIndicator = isHovered || isActive;
 
   return (
@@ -351,11 +397,11 @@ function MegaMenu({ items, handleLinkClick }: any) {
               {category.title}
             </h3>
             <ul className="space-y-2.5">
-              {category.items.map((subItem: string, itemIndex: number) => (
+              {category.items.map((subItem: any, itemIndex: number) => (
                 <li key={itemIndex}>
-                  <Link href={`/business/${subItem.toLowerCase().replace(/\s+/g, "-")}`}>
+                  <Link href={subItem.href}>
                     <a onClick={handleLinkClick} className="text-sm text-muted-foreground hover:text-primary transition-colors block">
-                      {subItem}
+                      {subItem.label}
                     </a>
                   </Link>
                 </li>
@@ -461,11 +507,11 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
                     {category.title}
                   </h4>
                   <ul className="space-y-1.5">
-                    {category.items.map((subItem: string, itemIndex: number) => (
+                    {category.items.map((subItem: any, itemIndex: number) => (
                       <li key={itemIndex}>
-                        <Link href={`/business/${subItem.toLowerCase().replace(/\s+/g, "-")}`}>
+                        <Link href={subItem.href}>
                           <a onClick={handleLinkClick} className="block text-sm text-foreground/70 hover:text-primary py-1 transition-colors">
-                            {subItem}
+                            {subItem.label}
                           </a>
                         </Link>
                       </li>

@@ -209,6 +209,8 @@ export const siteContent = {
       ]
     },
 
+    // In siteContent.ts
+
     events: {
       title: "Upcoming Events",
       items: [
@@ -217,24 +219,25 @@ export const siteContent = {
           date: "Dec 25, 2025",
           image: { src: barSpeakeasy, alt: "Jazz Night", priority: false },
           description: "An evening of smooth jazz and signature cocktails at our rooftop lounge.",
-          slug: "jazz-night"
+          slug: "jazz-night-under-stars" // ✅ Unique slug
         },
         {
           title: "New Year's Eve Gala",
           date: "Dec 31, 2025",
           image: { src: heroLobby, alt: "NYE Gala", priority: false },
           description: "Ring in the new year with a grand celebration featuring live music and gourmet dining.",
-          slug: "nye-gala"
+          slug: "new-years-eve-gala" // ✅ Unique slug
         },
         {
           title: "Culinary Masterclass",
           date: "Jan 15, 2026",
           image: { src: cafeParisian, alt: "Culinary Class", priority: false },
           description: "Learn the secrets of fine dining from our executive chefs.",
-          slug: "culinary-masterclass"
+          slug: "culinary-masterclass" // ✅ Unique slug
         }
       ]
     },
+
     news: {
       title: "News & Press",
       items: [
@@ -243,21 +246,21 @@ export const siteContent = {
           date: "Nov 15, 2025",
           image: { src: aboutLeader, alt: "Award Ceremony", priority: false },
           description: "Recognized for outstanding hospitality and service excellence in the annual Hotel Awards.",
-          slug: "excellence-award"
+          slug: "excellence-award-2025" // ✅ Unique slug
         },
         {
           title: "Expansion Plans for 2026",
           date: "Oct 20, 2025",
           image: { src: mapImage, alt: "Expansion Map", priority: false },
           description: "Announcing new locations in key cities across the country as we grow our footprint.",
-          slug: "expansion-2026"
+          slug: "expansion-plans-2026" // ✅ Unique slug
         },
         {
           title: "Sustainability Initiative Launch",
           date: "Sep 05, 2025",
           image: { src: cafeGarden, alt: "Green Initiative", priority: false },
           description: "Commitment to eco-friendly practices and reducing our carbon footprint.",
-          slug: "sustainability-launch"
+          slug: "sustainability-initiative" // ✅ Unique slug
         }
       ]
     },
