@@ -110,7 +110,7 @@ export default function Footer() {
           {/* Navigation Columns */}
           {footerSections.map((section, index) => (
             <div key={index}>
-              <h3 className="text-[#1F2937] font-semibold text-sm mb-6 uppercase tracking-wider">
+              <h3 className="text-[#1F2937] font-bold text-sm mb-6 uppercase tracking-wider">
                 {section.title}
               </h3>
               <ul className="space-y-3">
