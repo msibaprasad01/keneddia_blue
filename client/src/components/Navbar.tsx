@@ -5,6 +5,7 @@ import { ChevronDown, LogIn, ArrowLeft } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { BookingSheet } from "./BookingSheet";
 import { ThemeToggle } from "./ThemeToggle";
+
 // Business Mega Menu Categories
 const BUSINESS_CATEGORIES = [
   {
@@ -43,7 +44,6 @@ const JOIN_US_ITEMS = [
   { label: "Investor Relations", href: "#" },
   { label: "Supplier Registration", href: "#" },
 ];
-
 
 // Quick Booking Options
 const QUICK_BOOKING_OPTIONS = [
@@ -203,29 +203,29 @@ export default function Navbar() {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 
       ${scrolled
         ? "bg-background/95 backdrop-blur-sm shadow-md py-2 border-b border-border/10"
-        : "bg-background/95 dark:lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none shadow-md lg:shadow-none py-2 lg:py-4"
+        : "bg-background/95 dark:xl:bg-transparent backdrop-blur-sm xl:backdrop-blur-none shadow-md xl:shadow-none py-2 xl:py-4"
       }`}
     >
-      <div className="container mx-auto px-6 lg:px-12">
+      <div className="container mx-auto px-4 xl:px-12">
         <div className="flex items-center justify-between h-16">
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 xl:gap-4">
             {/* Logo Section */}
             <div className="flex items-center justify-start flex-shrink-0">
               <Link href="/">
-                <a onClick={handleLinkClick} className="block transition-all duration-300 rounded-lg p-1.5 lg:p-2 bg-[#0a0a0c] dark:bg-transparent hover:opacity-100">
+                <a onClick={handleLinkClick} className="block transition-all duration-300 rounded-lg p-1.5 xl:p-2 bg-[#0a0a0c] dark:bg-transparent hover:opacity-100">
                   <img
                     src={siteContent.brand.logo.image.src}
                     alt={siteContent.brand.logo.image.alt}
-                    className="h-8 lg:h-10 w-auto object-contain opacity-90 group-hover:opacity-100"
+                    className="h-8 xl:h-10 w-auto object-contain opacity-90 group-hover:opacity-100"
                   />
                 </a>
               </Link>
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center justify-center flex-1 space-x-2">
+          {/* Desktop Navigation - Shows at xl breakpoint (1280px+) */}
+          <div className="hidden xl:flex items-center justify-center flex-1 space-x-1 2xl:space-x-2">
             {NAV_ITEMS.map((item) => (
               <NavItem
                 key={item.key}
@@ -238,13 +238,13 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Right Actions: Quick Select + Login */}
-          <div className="hidden lg:flex items-center justify-end gap-3 w-auto">
+          {/* Right Actions: Quick Select + Login + Theme Toggle */}
+          <div className="hidden xl:flex items-center justify-end gap-2 2xl:gap-3 w-auto">
             {/* Quick Action Selector */}
             <div className="relative group">
-              <button className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-sm font-medium rounded-full hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer">
+              <button className="flex items-center gap-1.5 px-3 2xl:px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-xs 2xl:text-sm font-medium rounded-full hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer whitespace-nowrap">
                 <span>Quick Book</span>
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
               </button>
               {/* Quick Action Dropdown */}
               <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-xl rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right cursor-pointer">
@@ -263,8 +263,8 @@ export default function Navbar() {
             </div>
 
             <Link href="/login">
-              <a onClick={handleLinkClick} className="flex items-center gap-2 px-5 py-2 text-foreground/80 hover:text-primary transition-colors text-sm font-medium">
-                <LogIn className="w-4 h-4" />
+              <a onClick={handleLinkClick} className="flex items-center gap-1.5 px-3 2xl:px-5 py-2 text-foreground/80 hover:text-primary transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap">
+                <LogIn className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
                 LOGIN
               </a>
             </Link>
@@ -273,10 +273,10 @@ export default function Navbar() {
             <ThemeToggle />
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - Shows below xl breakpoint (below 1280px) */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden text-foreground hover:text-primary transition-colors"
+            className="xl:hidden text-foreground hover:text-primary transition-colors"
             aria-label="Toggle menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -312,7 +312,15 @@ export default function Navbar() {
 // ============================================================================
 
 // Desktop Nav Item Component
-function NavItem({ item, activeDropdown, setActiveDropdown, handleLinkClick, isActive }: any) {
+interface NavItemProps {
+  item: NavItem;
+  activeDropdown: string | null;
+  setActiveDropdown: (key: string | null) => void;
+  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  isActive: boolean;
+}
+
+function NavItem({ item, activeDropdown, setActiveDropdown, handleLinkClick, isActive }: NavItemProps) {
   const isHovered = activeDropdown === item.key;
   const showIndicator = isHovered || isActive;
 
@@ -326,7 +334,7 @@ function NavItem({ item, activeDropdown, setActiveDropdown, handleLinkClick, isA
         <Link href={item.href}>
           <a
             onClick={handleLinkClick}
-            className={`flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors relative whitespace-nowrap ${isActive ? "text-primary" : "text-foreground hover:text-primary"}`}
+            className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap ${isActive ? "text-primary" : "text-foreground hover:text-primary"}`}
           >
             {item.label}
             {showIndicator && <ActiveIndicator />}
@@ -335,10 +343,10 @@ function NavItem({ item, activeDropdown, setActiveDropdown, handleLinkClick, isA
       ) : (
         <>
           <button
-            className={`flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors relative whitespace-nowrap ${isActive ? "text-primary" : "text-foreground hover:text-primary"}`}
+            className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap ${isActive ? "text-primary" : "text-foreground hover:text-primary"}`}
           >
             {item.label}
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
             {showIndicator && <ActiveIndicator />}
           </button>
 
@@ -366,7 +374,12 @@ function ActiveIndicator() {
 }
 
 // Dropdown Menu Component
-function DropdownMenu({ item, handleLinkClick }: any) {
+interface DropdownMenuProps {
+  item: NavItem;
+  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+}
+
+function DropdownMenu({ item, handleLinkClick }: DropdownMenuProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -379,25 +392,30 @@ function DropdownMenu({ item, handleLinkClick }: any) {
     >
       {item.type === 'mega' ? (
         <MegaMenu items={item.items} handleLinkClick={handleLinkClick} />
-      ) : (
+      ) : item.type === 'dropdown' ? (
         <SimpleDropdown items={item.items} handleLinkClick={handleLinkClick} />
-      )}
+      ) : null}
     </motion.div>
   );
 }
 
 // Mega Menu Component
-function MegaMenu({ items, handleLinkClick }: any) {
+interface MegaMenuProps {
+  items: typeof BUSINESS_CATEGORIES;
+  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+}
+
+function MegaMenu({ items, handleLinkClick }: MegaMenuProps) {
   return (
     <div className="p-8">
       <div className="grid gap-8" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(180px, 1fr))` }}>
-        {items.map((category: any, index: number) => (
+        {items.map((category, index) => (
           <div key={index}>
             <h3 className="font-bold text-sm text-foreground mb-4 pb-2 border-b border-border">
               {category.title}
             </h3>
             <ul className="space-y-2.5">
-              {category.items.map((subItem: any, itemIndex: number) => (
+              {category.items.map((subItem, itemIndex) => (
                 <li key={itemIndex}>
                   <Link href={subItem.href}>
                     <a onClick={handleLinkClick} className="text-sm text-muted-foreground hover:text-primary transition-colors block">
@@ -415,10 +433,15 @@ function MegaMenu({ items, handleLinkClick }: any) {
 }
 
 // Simple Dropdown Component
-function SimpleDropdown({ items, handleLinkClick }: any) {
+interface SimpleDropdownProps {
+  items: { label: string; href: string }[];
+  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+}
+
+function SimpleDropdown({ items, handleLinkClick }: SimpleDropdownProps) {
   return (
     <div className="py-2">
-      {items.map((subItem: any, idx: number) => (
+      {items.map((subItem, idx) => (
         <Link key={idx} href={subItem.href}>
           <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors">
             {subItem.label}
@@ -430,7 +453,15 @@ function SimpleDropdown({ items, handleLinkClick }: any) {
 }
 
 // Mobile Menu Component
-function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu, navItems, handleLinkClick }: any) {
+interface MobileMenuProps {
+  mobileMenuOpen: boolean;
+  mobileExpandedMenu: string | null;
+  setMobileExpandedMenu: (key: string | null) => void;
+  navItems: NavItem[];
+  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+}
+
+function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu, navItems, handleLinkClick }: MobileMenuProps) {
   return (
     <AnimatePresence>
       {mobileMenuOpen && (
@@ -439,10 +470,10 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.3 }}
-          className="lg:hidden border-t border-border/10 overflow-hidden bg-background/95 backdrop-blur-md"
+          className="xl:hidden border-t border-border/10 overflow-hidden bg-background/95 backdrop-blur-md"
         >
           <div className="py-4 max-h-[70vh] overflow-y-auto">
-            {navItems.map((item: NavItem) =>
+            {navItems.map((item) =>
               item.type === 'link' ? (
                 <Link key={item.key} href={item.href}>
                   <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-accent hover:text-primary transition-colors border-b border-border/5">
@@ -478,7 +509,14 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
 }
 
 // Mobile Dropdown Component
-function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handleLinkClick }: any) {
+interface MobileDropdownProps {
+  item: Exclude<NavItem, { type: 'link' }>;
+  mobileExpandedMenu: string | null;
+  setMobileExpandedMenu: (key: string | null) => void;
+  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+}
+
+function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handleLinkClick }: MobileDropdownProps) {
   const isExpanded = mobileExpandedMenu === item.key;
 
   return (
@@ -501,13 +539,13 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
             className="bg-accent/5 overflow-hidden"
           >
             {item.type === 'mega' ? (
-              item.items.map((category: any, index: number) => (
+              item.items.map((category, index) => (
                 <div key={index} className="px-6 py-3 border-b border-border/5 last:border-0">
                   <h4 className="font-semibold text-xs text-muted-foreground mb-2 uppercase tracking-wider">
                     {category.title}
                   </h4>
                   <ul className="space-y-1.5">
-                    {category.items.map((subItem: any, itemIndex: number) => (
+                    {category.items.map((subItem, itemIndex) => (
                       <li key={itemIndex}>
                         <Link href={subItem.href}>
                           <a onClick={handleLinkClick} className="block text-sm text-foreground/70 hover:text-primary py-1 transition-colors">
@@ -520,7 +558,7 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
                 </div>
               ))
             ) : (
-              item.items.map((subItem: any, idx: number) => (
+              item.items.map((subItem, idx) => (
                 <Link key={idx} href={subItem.href}>
                   <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors">
                     {subItem.label}
