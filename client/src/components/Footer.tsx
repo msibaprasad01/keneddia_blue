@@ -81,13 +81,24 @@ export default function Footer() {
             {/* Logo */}
             <Link href="/">
               <a onClick={handleLinkClick} className="inline-block">
-                <img
-                  src={siteContent.brand.logo.image.src}
-                  alt={siteContent.brand.logo.image.alt || siteContent.brand.logo.text || 'Brand Logo'}
-                  className="h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
-                />
+                <div className="relative">
+                  {/* Dark theme logo */}
+                  <img
+                    src={siteContent.brand.logo.image.src}
+                    alt={siteContent.brand.logo.image.alt || siteContent.brand.logo.text}
+                    className="hidden dark:block h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
+                  />
+
+                  {/* Light theme (Red) logo */}
+                  <img
+                    src={siteContent.brand.logo.subImage.src}
+                    alt={siteContent.brand.logo.subImage.alt || siteContent.brand.logo.text}
+                    className="block dark:hidden h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
+                  />
+                </div>
               </a>
             </Link>
+
 
             {/* Social Media Icons */}
             <div className="flex items-center gap-4 pt-4 border-t border-border">
