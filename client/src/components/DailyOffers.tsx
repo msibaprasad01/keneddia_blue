@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { ArrowRight, Tag, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, Tag, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
@@ -17,7 +17,16 @@ export default function DailyOffers() {
   // Guard clause
   if (!dailyOffers || !dailyOffers.offers || dailyOffers.offers.length === 0) return null;
 
+  const [selectedLocation, setSelectedLocation] = useState("All Locations");
+
   const offers = dailyOffers.offers;
+
+  // Extract unique locations
+  const uniqueLocations = ["All Locations", ...Array.from(new Set(offers.map((offer: any) => offer.location).filter(Boolean)))];
+
+  const filteredOffers = selectedLocation === "All Locations"
+    ? offers
+    : offers.filter((offer: any) => offer.location === selectedLocation);
 
   // Simple category inference helper
   const getCategory = (title: string, desc: string) => {
@@ -52,8 +61,26 @@ export default function DailyOffers() {
             <div className="w-12 h-0.5 bg-primary mt-2" />
           </div>
 
-          {/* Custom Navigation Controls */}
-          <div className="flex gap-2">
+          {/* Custom Navigation Controls & Filter */}
+          <div className="flex items-center gap-3">
+            {/* Location Filter */}
+            <div className="relative hidden sm:block">
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer outline-none shadow-sm hover:border-primary/50 transition-colors"
+              >
+                {uniqueLocations.map((loc) => (
+                  <option key={String(loc)} value={String(loc)}>
+                    {String(loc)}
+                  </option>
+                ))}
+              </select>
+              <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            </div>
+
+            <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+
             <button
               onClick={handlePrev}
               className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all z-10 relative cursor-pointer"
@@ -81,13 +108,13 @@ export default function DailyOffers() {
               640: { slidesPerView: 2 },
               1024: { slidesPerView: 3 },
             }}
-            loop={offers.length > 3}
+            loop={filteredOffers.length > 3}
             autoplay={{ delay: 5000, disableOnInteraction: false }}
             onSwiper={setSwiperInstance}
             speed={600}
             className="w-full pb-4"
           >
-            {offers.map((offer, index) => {
+            {filteredOffers.map((offer: any, index: number) => {
               const category = getCategory(offer.title, offer.description);
 
               return (
@@ -113,6 +140,12 @@ export default function DailyOffers() {
                         <h3 className="text-lg font-serif font-bold text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-2">
                           {offer.title}
                         </h3>
+                        {offer.location && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                            <MapPin className="w-3 h-3" />
+                            <span>{offer.location}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Description Hidden as requested, showing minimal info or just CTA */}

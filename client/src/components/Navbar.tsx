@@ -213,12 +213,23 @@ export default function Navbar() {
             {/* Logo Section */}
             <div className="flex items-center justify-start flex-shrink-0">
               <Link href="/">
-                <a onClick={handleLinkClick} className="block transition-all duration-300 rounded-lg p-1.5 xl:p-2 bg-[#0a0a0c] dark:bg-transparent hover:opacity-100">
-                  <img
-                    src={siteContent.brand.logo.image.src}
-                    alt={siteContent.brand.logo.image.alt}
-                    className="h-8 xl:h-10 w-auto object-contain opacity-90 group-hover:opacity-100"
-                  />
+                <a onClick={handleLinkClick} className="block transition-all duration-300 rounded-lg p-1.5 xl:p-2  dark:bg-transparent hover:opacity-100">
+                  <div className="relative">
+                    {/* Dark theme logo */}
+                    <img
+                      src={siteContent.brand.logo.image.src}
+                      alt={siteContent.brand.logo.image.alt}
+                      className="hidden dark:block h-8 xl:h-10 w-auto object-contain opacity-90"
+                    />
+
+                    {/* Light (white) theme logo */}
+                    <img
+                      src={siteContent.brand.logo.subImage.src}
+                      alt={siteContent.brand.logo.subImage.alt}
+                      className="block dark:hidden h-10 xl:h-12 w-auto object-contain opacity-90"
+                    />
+                  </div>
+
                 </a>
               </Link>
             </div>

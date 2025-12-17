@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================================
+   THEME TOKENS
+============================================================================ */
+
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -23,54 +27,50 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  
+
   --font-sans: "Montserrat", sans-serif;
   --font-serif: "Cormorant Garamond", serif;
-  
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
 }
 
-/* WARM NEUTRAL MODERN THEME */
-/* DARK PREMIUM MODERN THEME */
-/* LIGHT THEME (DEFAULT) */
-:root {
-  /* Background: Warm Cream/Off-White */
-  --background: 40 20% 97%; /* #F9F7F5 */
-  /* Text Primary: Deep Charcoal */
-  --foreground: 220 13% 10%; /* #16181D */
+/* ============================================================================
+   LIGHT THEME (DEFAULT) — KENNEDIA RED
+============================================================================ */
 
-  /* Surface/Card: Pure White */
+:root {
+  /* Background */
+  --background: 40 20% 97%;          /* #F9F7F5 */
+  --foreground: 220 13% 10%;         /* #16181D */
+
+  /* Surfaces */
   --card: 0 0% 100%;
   --card-foreground: 220 13% 10%;
-
-  /* Popover */
   --popover: 0 0% 100%;
   --popover-foreground: 220 13% 10%;
 
-  /* Primary: Gold/Amber (Darker for contrast on light) */
-  --primary: 35 90% 45%; /* #DA9100 - Stronger Gold */
+  /* 🔴 PRIMARY — KENNEDIA BRAND RED */
+  --primary: 0 78% 55%;              /* #E53935 */
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary: Light Warm Gray */
+  /* Soft red accent */
+  --accent: 0 78% 92%;
+  --accent-foreground: 220 13% 10%;
+
+  /* Secondary / Muted */
   --secondary: 40 10% 90%;
   --secondary-foreground: 220 13% 10%;
-
-  /* Muted */
   --muted: 40 10% 94%;
   --muted-foreground: 220 8% 40%;
 
-  /* Accent */
-  --accent: 40 20% 92%;
-  --accent-foreground: 220 13% 10%;
-
-  /* Border */
+  /* Borders & Inputs */
   --border: 220 13% 90%;
   --input: 220 13% 90%;
-  
-  /* Ring */
-  --ring: 35 90% 45%;
+
+  /* Focus Ring */
+  --ring: 0 78% 55%;
 
   /* Destructive */
   --destructive: 0 84% 60%;
@@ -79,61 +79,68 @@
   --radius: 4px;
 }
 
-/* DARK THEME OVERRIDE */
+/* ============================================================================
+   DARK THEME — PREMIUM GOLD
+============================================================================ */
+
 .dark {
-  /* Background: Dark Solid (Deep Charcoal/Black) */
-  --background: 220 13% 8%; /* #121317 */
-  /* Text Primary: High Contrast White */
-  --foreground: 0 0% 98%; /* #FAFAFA */
+  /* Background */
+  --background: 220 13% 8%;          /* #121317 */
+  --foreground: 0 0% 98%;            /* #FAFAFA */
 
-  /* Surface/Card: Slightly Lighter than Background */
-  --card: 220 13% 12%; /* #1c1e24 */
+  /* Surfaces */
+  --card: 220 13% 12%;               /* #1c1e24 */
   --card-foreground: 0 0% 98%;
-
-  /* Popover */
   --popover: 220 13% 12%;
   --popover-foreground: 0 0% 98%;
 
-  /* Primary: Gold/Amber Accent for buttons & highlights */
-  --primary: 35 85% 55%; /* Rich Gold */
-  --primary-foreground: 220 13% 8%; /* Dark text on gold */
+  /* 🟡 PRIMARY — LUXURY GOLD */
+  --primary: 35 85% 55%;             /* Gold */
+  --primary-foreground: 220 13% 8%;
 
-  /* Secondary: Muted Dark Gray */
+  --accent: 35 85% 55%;
+  --accent-foreground: 220 13% 8%;
+
+  /* Secondary / Muted */
   --secondary: 220 13% 18%;
   --secondary-foreground: 0 0% 98%;
-
-  /* Text Secondary: Muted Light Gray */
   --muted: 220 13% 18%;
   --muted-foreground: 220 8% 70%;
 
-  /* Accent: Same as Primary or slightly different variant */
-  --accent: 35 85% 55%; /* Or Keep Dark Accent logic */
-  --accent-foreground: 220 13% 8%;
-
-  /* Highlight/Ring */
-  --ring: 35 85% 55%;
-
-  /* Border: Subtle Dark Gray */
+  /* Borders & Inputs */
   --border: 220 13% 22%;
   --input: 220 13% 22%;
+
+  /* Focus Ring */
+  --ring: 35 85% 55%;
 
   /* Destructive */
   --destructive: 0 62% 30%;
   --destructive-foreground: 0 0% 98%;
 }
 
+/* ============================================================================
+   BASE STYLES
+============================================================================ */
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/20 selection:text-primary;
+    @apply bg-background text-foreground font-sans antialiased
+           selection:bg-primary/20 selection:text-primary;
   }
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif tracking-tight;
   }
 }
+
+/* ============================================================================
+   GLOBAL UX
+============================================================================ */
 
 /* Smooth scrolling */
 html {

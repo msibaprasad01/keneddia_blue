@@ -1,6 +1,7 @@
+import { useState } from "react"; // Added useState
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight, MapPin } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "./ui/OptimizedImage";
 
@@ -45,15 +46,30 @@ export default function EventsSection() {
 
   if (!events) return null;
 
+  const [selectedLocation, setSelectedLocation] = useState("All Locations");
+
+  // Extract unique locations
+  const uniqueLocations = ["All Locations", ...Array.from(new Set(events.items.map((event: any) => event.location).filter(Boolean)))];
+
+  const filteredEvents = selectedLocation === "All Locations"
+    ? events.items
+    : events.items.filter((event: any) => event.location === selectedLocation);
+
   return (
     <section id="events" className="py-12 bg-background overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Compact Header */}
-        <SectionHeader title={events.title} viewAllLink={ROUTES.allEvents} />
+        <SectionHeader
+          title={events.title}
+          viewAllLink={ROUTES.allEvents}
+          selectedLocation={selectedLocation}
+          setSelectedLocation={setSelectedLocation}
+          uniqueLocations={uniqueLocations}
+        />
 
         {/* Compact Staggered Grid */}
         <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${STYLE_CONFIG.gridGap}`}>
-          {events.items.map((event, index) => (
+          {filteredEvents.map((event: any, index: number) => (
             <EventCard
               key={event.slug}
               event={event}
@@ -71,7 +87,15 @@ export default function EventsSection() {
 // ============================================================================
 
 // Section Header Component
-function SectionHeader({ title, viewAllLink }: { title: string; viewAllLink: string }) {
+interface SectionHeaderProps {
+  title: string;
+  viewAllLink: string;
+  selectedLocation: string;
+  setSelectedLocation: (loc: string) => void;
+  uniqueLocations: unknown[];
+}
+
+function SectionHeader({ title, viewAllLink, selectedLocation, setSelectedLocation, uniqueLocations }: SectionHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-8">
       <div>
@@ -80,12 +104,31 @@ function SectionHeader({ title, viewAllLink }: { title: string; viewAllLink: str
         </h2>
         <div className="h-0.5 w-16 bg-primary" />
       </div>
-      <Link href={viewAllLink}>
-        <a className="group flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">
-          All Events
-          <ArrowRight className="w-4 h-4" />
-        </a>
-      </Link>
+
+      <div className="flex items-center gap-4">
+        {/* Location Filter */}
+        <div className="relative hidden sm:block">
+          <select
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value)}
+            className="appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer outline-none shadow-sm hover:border-primary/50 transition-colors"
+          >
+            {uniqueLocations.map((loc) => (
+              <option key={String(loc)} value={String(loc)}>
+                {String(loc)}
+              </option>
+            ))}
+          </select>
+          <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+        </div>
+
+        <Link href={viewAllLink}>
+          <a className="group flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">
+            All Events
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </Link>
+      </div>
     </div>
   );
 }
@@ -98,6 +141,7 @@ interface EventCardProps {
     date: string;
     title: string;
     description: string;
+    location?: string;
   };
   index: number;
 }
@@ -140,6 +184,7 @@ function EventCardContent({ event }: { event: EventCardProps['event'] }) {
       <EventCardDetails
         title={event.title}
         description={event.description}
+        location={event.location}
       />
     </div>
   );
@@ -172,9 +217,15 @@ function EventDateBadge({ date }: { date: string }) {
 }
 
 // Event Card Details Component
-function EventCardDetails({ title, description }: { title: string; description: string }) {
+function EventCardDetails({ title, description, location }: { title: string; description: string; location?: string }) {
   return (
     <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+      {location && (
+        <div className="flex items-center gap-1 text-xs font-medium text-white mb-1">
+          <MapPin className="w-3 h-3" />
+          <span>{location}</span>
+        </div>
+      )}
       <h3 className="text-lg font-bold mb-1.5 line-clamp-2 group-hover:text-primary transition-colors drop-shadow-lg">
         {title}
       </h3>

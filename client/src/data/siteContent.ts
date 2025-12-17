@@ -1,6 +1,7 @@
 import placeholderImg from "@assets/placeholder.svg";
 import brandLogo from "@assets/logo/kb-logo1.png";
 import brandLogo_main from "@assets/logo/kb-logo-main.png";
+import brandLogo_red from "@assets/logo/kb-logo-red.png";
 import brandLogoHotel from "@assets/logo/kb-logo1.jpg";
 import brandLogoCafe from "@assets/logo/kb-logo3.jpg";
 import brandLogoBar from "@assets/logo/kb-logo4.jpg";
@@ -42,7 +43,16 @@ export const siteContent = {
     tagline: "Redefining luxury hospitality with a commitment to excellence, comfort, and authentic experiences.",
     logo: {
       text: "Kennedia Blu",
-      image: { src: brandLogo_main, alt: "Kennedia Blu - Hotel | Restaurant | Cafe", priority: true },
+      image: {
+        src: brandLogo_main,
+        alt: "Kennedia Blu - Hotel | Restaurant | Cafe",
+        priority: true
+      },
+      subImage: {                     // 👈 ADD THIS
+        src: brandLogo_red,
+        alt: "Kennedia Blu Accent Logo",
+        priority: false
+      },
       fallbackText: "KENNEDIA BLU"
     },
     logo_hotel: {
@@ -159,7 +169,8 @@ export const siteContent = {
           couponCode: "WINTER2025",
           ctaText: "Explore Winter Stay",
           link: "#",
-          image: { src: heroExterior, alt: "Winter Alpine Retreat", priority: false }
+          image: { src: heroExterior, alt: "Winter Alpine Retreat", priority: false },
+          location: "Manali"
         },
         {
           title: "Luxury Spa Weekend",
@@ -168,7 +179,8 @@ export const siteContent = {
           couponCode: "SPA2025",
           ctaText: "Book Spa Package",
           link: "#",
-          image: { src: heroLobby, alt: "Luxury Spa Weekend", priority: false }
+          image: { src: heroLobby, alt: "Luxury Spa Weekend", priority: false },
+          location: "Bengaluru"
         },
         {
           title: "Rooftop Dining Experience",
@@ -177,7 +189,8 @@ export const siteContent = {
           couponCode: "DINE2025",
           ctaText: "Reserve Table",
           link: "#",
-          image: { src: heroLounge, alt: "Rooftop Dining", priority: false }
+          image: { src: heroLounge, alt: "Rooftop Dining", priority: false },
+          location: "Mumbai"
         },
         {
           title: "Winter Alpine Retreat",
@@ -186,7 +199,8 @@ export const siteContent = {
           couponCode: "WINTER2025",
           ctaText: "Explore Winter Stay",
           link: "#",
-          image: { src: heroExterior, alt: "Winter Alpine Retreat", priority: false }
+          image: { src: heroExterior, alt: "Winter Alpine Retreat", priority: false },
+          location: "Manali"
         },
         {
           title: "Luxury Spa Weekend",
@@ -195,7 +209,8 @@ export const siteContent = {
           couponCode: "SPA2025",
           ctaText: "Book Spa Package",
           link: "#",
-          image: { src: heroLobby, alt: "Luxury Spa Weekend", priority: false }
+          image: { src: heroLobby, alt: "Luxury Spa Weekend", priority: false },
+          location: "Udaipur"
         },
         {
           title: "Rooftop Dining Experience",
@@ -204,7 +219,8 @@ export const siteContent = {
           couponCode: "DINE2025",
           ctaText: "Reserve Table",
           link: "#",
-          image: { src: heroLounge, alt: "Rooftop Dining", priority: false }
+          image: { src: heroLounge, alt: "Rooftop Dining", priority: false },
+          location: "Delhi"
         }
       ]
     },
@@ -219,21 +235,24 @@ export const siteContent = {
           date: "Dec 25, 2025",
           image: { src: barSpeakeasy, alt: "Jazz Night", priority: false },
           description: "An evening of smooth jazz and signature cocktails at our rooftop lounge.",
-          slug: "jazz-night-under-stars" // ✅ Unique slug
+          slug: "jazz-night-under-stars", // ✅ Unique slug
+          location: "Mumbai"
         },
         {
           title: "New Year's Eve Gala",
           date: "Dec 31, 2025",
           image: { src: heroLobby, alt: "NYE Gala", priority: false },
           description: "Ring in the new year with a grand celebration featuring live music and gourmet dining.",
-          slug: "new-years-eve-gala" // ✅ Unique slug
+          slug: "new-years-eve-gala", // ✅ Unique slug
+          location: "Goa"
         },
         {
           title: "Culinary Masterclass",
           date: "Jan 15, 2026",
           image: { src: cafeParisian, alt: "Culinary Class", priority: false },
           description: "Learn the secrets of fine dining from our executive chefs.",
-          slug: "culinary-masterclass" // ✅ Unique slug
+          slug: "culinary-masterclass", // ✅ Unique slug
+          location: "Paris"
         }
       ]
     },
