@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Navigation } from "swiper/modules";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import "swiper/css/effect-fade";
@@ -51,6 +51,13 @@ export default function Hero() {
   const handleThumbnailClick = (index: number) => {
     if (swiperInstance) {
       swiperInstance.slideToLoop(index);
+    }
+  };
+
+  const handleScrollToBusiness = () => {
+    const businessSection = document.getElementById("business");
+    if (businessSection) {
+      businessSection.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -264,6 +271,8 @@ export default function Hero() {
           </div>
         </div>
       </div>
+
+
 
       {/* Mobile Navigation */}
       <div className="md:hidden absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
