@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Play, Hotel, UtensilsCrossed, Coffee, Wine } from "lucide-react";
+import { ArrowRight, ArrowLeft, Play, Hotel, UtensilsCrossed, Coffee, Wine, Star } from "lucide-react";
 import { Link } from "wouter";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "./ui/OptimizedImage";
@@ -120,6 +120,19 @@ export default function AboutUsSection() {
               </p>
             </div>
 
+            {/* Ratings Row - Compact & Inline */}
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} className="w-4 h-4 fill-primary text-primary" />
+                ))}
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-serif font-bold text-foreground text-lg leading-none">5.0</span>
+                <span className="text-muted-foreground font-light">from 2,500+ reviews</span>
+              </div>
+            </div>
+
             {/* Brand Logos Grid */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-widest mb-6 opacity-70 text-muted-foreground">
@@ -133,7 +146,7 @@ export default function AboutUsSection() {
                       <img
                         src={brand.logo.src}
                         alt={brand.label}
-                        className="w-10 h-10 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+                        className="w-10 h-10 object-contain opacity-90 group-hover:opacity-100 transition-all duration-300 ease-out group-hover:scale-[1.15]"
                         style={{
                           filter: 'none',
                           mixBlendMode: 'normal'
