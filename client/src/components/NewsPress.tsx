@@ -1,14 +1,13 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { EffectFade, Autoplay, Navigation } from "swiper/modules";
+import { Autoplay, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "./ui/OptimizedImage";
 
 import "swiper/css";
-import "swiper/css/effect-fade";
 
 // ============================================================================
 // NEWS & PRESS CONFIGURATION - Centralized
@@ -19,32 +18,12 @@ const ROUTES = {
   newsDetail: (slug: string) => `/#`,
 } as const;
 
-// Swiper Configuration
-const SWIPER_CONFIG = {
-  modules: [EffectFade, Autoplay, Navigation],
-  effect: "fade" as const,
-  speed: 800,
-  autoplay: {
-    delay: 5000,
-    disableOnInteraction: false,
-  },
-  loop: true,
-} as const;
-
 // Styling Configuration
 const STYLE_CONFIG = {
-  aspectRatios: {
-    mobile: "4/3" as const,
-    desktop: "3/2" as const,
-  },
+  aspectRatio: "4/3" as const,
   navigation: {
-    buttonSize: "w-9 h-9",
+    buttonSize: "w-8 h-8",
     iconSize: "w-4 h-4",
-  },
-  indicator: {
-    active: "w-8 bg-primary",
-    inactive: "w-4 bg-primary/30 hover:bg-primary/50",
-    height: "h-1",
   },
 } as const;
 
@@ -52,27 +31,14 @@ const STYLE_CONFIG = {
 const TEXT_CONTENT = {
   header: {
     badge: "Updates & Recognition",
-    readMore: "Read Full Story",
+    readMore: "Read Story",
     category: "Press",
   },
   aria: {
     previous: "Previous",
     next: "Next",
-    slidePrefix: "Go to slide ",
   },
 } as const;
-
-// Custom Styles for Swiper
-const SWIPER_CUSTOM_STYLES = `
-  .news-swiper .swiper-slide {
-    opacity: 0 !important;
-    pointer-events: none;
-  }
-  .news-swiper .swiper-slide-active {
-    opacity: 1 !important;
-    pointer-events: auto;
-  }
-`;
 
 // ============================================================================
 // MAIN NEWS PRESS COMPONENT
@@ -80,19 +46,24 @@ const SWIPER_CUSTOM_STYLES = `
 
 export default function NewsPress() {
   const { news } = siteContent.text;
-  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const swiperRef = useRef<SwiperType | null>(null);
 
   if (!news || !news.items || news.items.length === 0) return null;
 
-  const handlePrev = () => swiperInstance?.slidePrev();
-  const handleNext = () => swiperInstance?.slideNext();
-  const handleSlideChange = (swiper: SwiperType) => setActiveIndex(swiper.realIndex);
-  const handleGoToSlide = (index: number) => swiperInstance?.slideToLoop(index);
+  const handlePrev = () => {
+    if (swiperRef.current) {
+      swiperRef.current.slidePrev();
+    }
+  };
+
+  const handleNext = () => {
+    if (swiperRef.current) {
+      swiperRef.current.slideNext();
+    }
+  };
 
   return (
     <section id="news" className="py-12 md:py-16 bg-background relative overflow-hidden">
-      <style>{SWIPER_CUSTOM_STYLES}</style>
       <div className="container mx-auto px-6 lg:px-12">
         {/* Compact Header with Navigation */}
         <SectionHeader
@@ -104,10 +75,7 @@ export default function NewsPress() {
         {/* Carousel Container */}
         <NewsCarousel
           items={news.items}
-          activeIndex={activeIndex}
-          onSwiper={setSwiperInstance}
-          onSlideChange={handleSlideChange}
-          onGoToSlide={handleGoToSlide}
+          swiperRef={swiperRef}
         />
       </div>
     </section>
@@ -153,15 +121,23 @@ function NavigationControls({ onPrev, onNext }: NavigationControlsProps) {
   return (
     <div className="flex gap-2">
       <button
-        onClick={onPrev}
-        className={`${STYLE_CONFIG.navigation.buttonSize} rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all cursor-pointer`}
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          onPrev();
+        }}
+        className={`${STYLE_CONFIG.navigation.buttonSize} rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all cursor-pointer z-10 relative`}
         aria-label={TEXT_CONTENT.aria.previous}
       >
         <ChevronLeft className={STYLE_CONFIG.navigation.iconSize} />
       </button>
       <button
-        onClick={onNext}
-        className={`${STYLE_CONFIG.navigation.buttonSize} rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all cursor-pointer`}
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          onNext();
+        }}
+        className={`${STYLE_CONFIG.navigation.buttonSize} rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all cursor-pointer z-10 relative`}
         aria-label={TEXT_CONTENT.aria.next}
       >
         <ChevronRight className={STYLE_CONFIG.navigation.iconSize} />
@@ -173,44 +149,80 @@ function NavigationControls({ onPrev, onNext }: NavigationControlsProps) {
 // News Carousel Component
 interface NewsCarouselProps {
   items: any[];
-  activeIndex: number;
-  onSwiper: (swiper: SwiperType) => void;
-  onSlideChange: (swiper: SwiperType) => void;
-  onGoToSlide: (index: number) => void;
+  swiperRef: React.MutableRefObject<SwiperType | null>;
 }
 
-function NewsCarousel({ items, activeIndex, onSwiper, onSlideChange, onGoToSlide }: NewsCarouselProps) {
+function NewsCarousel({ items, swiperRef }: NewsCarouselProps) {
+  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
+
+  // Calculate if we need to duplicate items for smooth loop
+  // We need at least 2x the maximum visible slides for proper looping
+  const maxVisibleSlides = 3; // From breakpoint at 1024px
+  const needsDuplication = items.length < maxVisibleSlides * 2;
+
+  // Duplicate items if needed for smooth infinite loop
+  const displayItems = needsDuplication
+    ? [...items, ...items, ...items] // Triple the items for smooth loop
+    : items;
+
+  useEffect(() => {
+    if (swiperInstance?.autoplay) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        swiperInstance.autoplay.start();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [swiperInstance]);
+
   return (
     <div className="relative">
       <Swiper
-        modules={SWIPER_CONFIG.modules}
-        effect={SWIPER_CONFIG.effect}
-        speed={SWIPER_CONFIG.speed}
-        autoplay={SWIPER_CONFIG.autoplay}
-        loop={items.length > 1}
-        onSwiper={onSwiper}
-        onSlideChange={onSlideChange}
-        className="w-full news-swiper"
+        modules={[Autoplay, Navigation]}
+        spaceBetween={24}
+        slidesPerView={1}
+        breakpoints={{
+          640: { slidesPerView: 2 },
+          1024: { slidesPerView: 3 },
+        }}
+        speed={600}
+        autoplay={{
+          delay: 5000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+          waitForTransition: true,
+        }}
+        loop={true} // Always enable loop
+        loopAdditionalSlides={2}
+        centeredSlides={false}
+        watchSlidesProgress={true}
+        observer={true}
+        observeParents={true}
+        onSwiper={(swiper) => {
+          swiperRef.current = swiper;
+          setSwiperInstance(swiper);
+        }}
+        onSlideChange={(swiper) => {
+          // Ensure autoplay continues after manual navigation
+          if (swiper.autoplay && !swiper.autoplay.running) {
+            swiper.autoplay.start();
+          }
+        }}
+        className="w-full news-swiper pb-4"
       >
-        {items.map((item, index) => (
-          <SwiperSlide key={item.slug} className="!flex">
-            <NewsSlide item={item} index={index} />
+        {displayItems.map((item, index) => (
+          <SwiperSlide key={`news-${item.slug}-${index}`} className="!h-auto">
+            <NewsCard item={item} index={index % items.length} />
           </SwiperSlide>
         ))}
       </Swiper>
-
-      {/* Slide Indicators - Outside carousel for better positioning */}
-      <SlideIndicators
-        items={items}
-        activeIndex={activeIndex}
-        onGoToSlide={onGoToSlide}
-      />
     </div>
   );
 }
 
-// News Slide Component
-interface NewsSlideProps {
+// News Card Component
+interface NewsCardProps {
   item: {
     slug: string;
     image: { src: string; alt: string };
@@ -221,125 +233,52 @@ interface NewsSlideProps {
   index: number;
 }
 
-function NewsSlide({ item, index }: NewsSlideProps) {
+function NewsCard({ item, index }: NewsCardProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center w-full">
+    <div className="group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300">
       {/* Image Section */}
-      <NewsImage
-        src={item.image.src}
-        alt={item.image.alt}
-        priority={index === 0}
-      />
+      <div className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] overflow-hidden`}>
+        <OptimizedImage
+          src={item.image.src}
+          alt={item.image.alt}
+          priority={index < 3}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        {/* Date Badge Overlay */}
+        <div className="absolute top-3 left-3">
+          <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] uppercase font-bold tracking-wider rounded">
+            {item.date}
+          </span>
+        </div>
+      </div>
 
       {/* Content Section */}
-      <NewsContent
-        date={item.date}
-        title={item.title}
-        description={item.description}
-        slug={item.slug}
-      />
-    </div>
-  );
-}
+      <div className="p-5 flex flex-col flex-grow">
+        {/* Category Meta */}
+        <div className="mb-2 text-xs font-bold text-primary tracking-wider uppercase">
+          {TEXT_CONTENT.header.category}
+        </div>
 
-// News Image Component
-interface NewsImageProps {
-  src: string;
-  alt: string;
-  priority: boolean;
-}
+        {/* Title */}
+        <h3 className="text-lg font-serif font-bold text-foreground mb-3 leading-tight group-hover:text-primary transition-colors line-clamp-2">
+          {item.title}
+        </h3>
 
-function NewsImage({ src, alt, priority }: NewsImageProps) {
-  return (
-    <div className={`relative aspect-[${STYLE_CONFIG.aspectRatios.mobile}] lg:aspect-[${STYLE_CONFIG.aspectRatios.desktop}] overflow-hidden rounded-lg`}>
-      <OptimizedImage
-        src={src}
-        alt={alt}
-        priority={priority}
-        className="w-full h-full object-cover"
-      />
-      {/* Subtle Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-    </div>
-  );
-}
+        {/* Description */}
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed flex-grow">
+          {item.description}
+        </p>
 
-// News Content Component
-interface NewsContentProps {
-  date: string;
-  title: string;
-  description: string;
-  slug: string;
-}
-
-function NewsContent({ date, title, description, slug }: NewsContentProps) {
-  return (
-    <div className="flex flex-col justify-center lg:pl-4">
-      {/* Meta */}
-      <NewsMeta date={date} />
-
-      {/* Title */}
-      <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif font-semibold text-foreground mb-4 leading-tight">
-        {title}
-      </h3>
-
-      {/* Description */}
-      <p className="text-muted-foreground mb-6 leading-relaxed text-sm md:text-base">
-        {description}
-      </p>
-
-      {/* Link */}
-      <NewsLink slug={slug} />
-    </div>
-  );
-}
-
-// News Meta Component
-function NewsMeta({ date }: { date: string }) {
-  return (
-    <div className="mb-4 flex items-center gap-3 text-xs text-primary">
-      <span className="font-medium">{date}</span>
-      <span className="w-1 h-1 bg-primary rounded-full" />
-      <span className="uppercase tracking-wider font-semibold">
-        {TEXT_CONTENT.header.category}
-      </span>
-    </div>
-  );
-}
-
-// News Link Component
-function NewsLink({ slug }: { slug: string }) {
-  return (
-    <Link href={ROUTES.newsDetail(slug)}>
-      <a className="inline-flex items-center gap-2 text-primary font-semibold text-sm hover:gap-3 transition-all group">
-        {TEXT_CONTENT.header.readMore}
-        <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-      </a>
-    </Link>
-  );
-}
-
-// Slide Indicators Component
-interface SlideIndicatorsProps {
-  items: any[];
-  activeIndex: number;
-  onGoToSlide: (index: number) => void;
-}
-
-function SlideIndicators({ items, activeIndex, onGoToSlide }: SlideIndicatorsProps) {
-  return (
-    <div className="flex items-center justify-center gap-2 mt-8 lg:absolute lg:bottom-0 lg:right-0 lg:mt-0">
-      {items.map((_, idx) => (
-        <button
-          key={idx}
-          onClick={() => onGoToSlide(idx)}
-          className={`${STYLE_CONFIG.indicator.height} rounded-full transition-all duration-300 cursor-pointer ${idx === activeIndex
-            ? STYLE_CONFIG.indicator.active
-            : STYLE_CONFIG.indicator.inactive
-            }`}
-          aria-label={`${TEXT_CONTENT.aria.slidePrefix}${idx + 1}`}
-        />
-      ))}
+        {/* Link - Pushed to bottom */}
+        <div className="mt-auto pt-2 border-t border-border/50">
+          <Link href={ROUTES.newsDetail(item.slug)}>
+            <a className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3">
+              {TEXT_CONTENT.header.readMore}
+              <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+            </a>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

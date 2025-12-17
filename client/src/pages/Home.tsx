@@ -24,7 +24,7 @@ export default function Home() {
         <section id="news"><NewsPress /></section>
         <section id="story"><OurStoryPreview /></section>
         <section id="global"><GlobalPresence /></section>
-        <section id="reviews"><RatingsAndAwards /></section>
+        {/* <section id="reviews"><RatingsAndAwards /></section> */}
       </main>
 
       <Footer />

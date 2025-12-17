@@ -280,6 +280,27 @@ export const siteContent = {
           image: { src: cafeGarden, alt: "Green Initiative", priority: false },
           description: "Commitment to eco-friendly practices and reducing our carbon footprint.",
           slug: "sustainability-initiative" // ✅ Unique slug
+        },
+        {
+          title: "Kennedia Blu Wins Excellence Award",
+          date: "Nov 15, 2025",
+          image: { src: aboutLeader, alt: "Award Ceremony", priority: false },
+          description: "Recognized for outstanding hospitality and service excellence in the annual Hotel Awards.",
+          slug: "excellence-award-2025" // ✅ Unique slug
+        },
+        {
+          title: "Expansion Plans for 2026",
+          date: "Oct 20, 2025",
+          image: { src: mapImage, alt: "Expansion Map", priority: false },
+          description: "Announcing new locations in key cities across the country as we grow our footprint.",
+          slug: "expansion-plans-2026" // ✅ Unique slug
+        },
+        {
+          title: "Sustainability Initiative Launch",
+          date: "Sep 05, 2025",
+          image: { src: cafeGarden, alt: "Green Initiative", priority: false },
+          description: "Commitment to eco-friendly practices and reducing our carbon footprint.",
+          slug: "sustainability-initiative" // ✅ Unique slug
         }
       ]
     },
@@ -294,6 +315,37 @@ export const siteContent = {
       ],
       ctaText: "Explore Our Story",
       link: "#"
+    },
+    experienceShowcase: {
+      title: "Moments of Excellence",
+      rating: "5.0",
+      reviewCount: "2,500+",
+      items: [
+        {
+          title: "Exquisite Dining",
+          description: "A culinary journey that delights the senses with every bite.",
+          author: "James Cameron, Food Critic",
+          image: { src: cafeUpscale, alt: "Dining Experience", priority: false }
+        },
+        {
+          title: "Serene Wellness",
+          description: "Rejuvenate your mind and body in our world-class spa facilities.",
+          author: "Elena Fisher, Travel Blogger",
+          image: { src: heroLobby, alt: "Spa & Wellness", priority: false }
+        },
+        {
+          title: "Luxury Stay",
+          description: "Unmatched comfort and elegance in every room and suite.",
+          author: "Michael Ross, Business Traveler",
+          image: { src: hotelMumbai, alt: "Luxury Room", priority: false }
+        },
+        {
+          title: "Vibrant Socials",
+          description: "The perfect setting for connecting with friends and colleagues.",
+          author: "Sarah Jenning, Event Planner",
+          image: { src: barLounge, alt: "Social Gathering", priority: false }
+        }
+      ]
     }
   }
 };
