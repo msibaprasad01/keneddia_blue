@@ -287,7 +287,7 @@ export default function Navbar() {
           {/* Mobile Menu Button - Shows below xl breakpoint (below 1280px) */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="xl:hidden text-foreground hover:text-primary transition-colors"
+            className="xl:hidden text-foreground hover:text-primary transition-colors relative"
             aria-label="Toggle menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -297,6 +297,12 @@ export default function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               )}
             </svg>
+            {/* Show blinking indicator only when menu is closed */}
+            {!mobileMenuOpen && (
+              <span className="absolute -top-0.5 -right-0.5">
+                <BlinkingIndicator />
+              </span>
+            )}
           </button>
         </div>
 
@@ -463,6 +469,38 @@ function SimpleDropdown({ items, handleLinkClick }: SimpleDropdownProps) {
   );
 }
 
+// Blinking Indicator Component for Mobile Dropdowns
+function BlinkingIndicator() {
+  return (
+    <motion.div
+      className="absolute -right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary rounded-full"
+      animate={{
+        scale: [1, 1.3, 1],
+        opacity: [1, 0.6, 1],
+      }}
+      transition={{
+        duration: 1.5,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    >
+      {/* Outer pulse ring */}
+      <motion.div
+        className="absolute inset-0 bg-primary rounded-full"
+        animate={{
+          scale: [1, 2, 1],
+          opacity: [0.6, 0, 0.6],
+        }}
+        transition={{
+          duration: 1.5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+    </motion.div>
+  );
+}
+
 // Mobile Menu Component
 interface MobileMenuProps {
   mobileMenuOpen: boolean;
@@ -534,9 +572,17 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
     <div className="border-b border-border/5">
       <button
         onClick={() => setMobileExpandedMenu(isExpanded ? null : item.key)}
-        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-accent/50 hover:text-primary transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-accent/50 hover:text-primary transition-colors relative"
       >
-        <span>{item.label}</span>
+        <span className="flex items-center gap-2">
+          {item.label}
+          {/* Show blinking indicator only when menu is collapsed */}
+          {!isExpanded && (
+            <span className="relative">
+              <BlinkingIndicator />
+            </span>
+          )}
+        </span>
         <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
       </button>
 
