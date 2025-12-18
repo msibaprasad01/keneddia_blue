@@ -2,6 +2,7 @@ import placeholderImg from "@assets/placeholder.svg";
 import brandLogo from "@assets/logo/kb-logo1.png";
 import brandLogo_main from "@assets/logo/kb-logo-main.png";
 import brandLogo_red from "@assets/logo/kb-logo-red.png";
+import brandLogo_black from "@assets/logo/kb-logo-black2.png";
 import brandLogoHotel from "@assets/logo/kb-logo1.jpg";
 import brandLogoCafe from "@assets/logo/kb-logo3.jpg";
 import brandLogoBar from "@assets/logo/kb-logo4.jpg";
@@ -44,7 +45,7 @@ export const siteContent = {
     logo: {
       text: "Kennedia Blu",
       image: {
-        src: brandLogo_main,
+        src: brandLogo_black,
         alt: "Kennedia Blu - Hotel | Restaurant | Cafe",
         priority: true
       },

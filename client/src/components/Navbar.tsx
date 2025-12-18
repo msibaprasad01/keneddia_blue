@@ -217,9 +217,9 @@ export default function Navbar() {
                   <div className="relative">
                     {/* Dark theme logo */}
                     <img
-                      src={siteContent.brand.logo.subImage.src}
-                      alt={siteContent.brand.logo.subImage.alt}
-                      className="hidden dark:block h-10 xl:h-12 w-auto object-contain opacity-90"
+                      src={siteContent.brand.logo.image.src}
+                      alt={siteContent.brand.logo.image.alt}
+                      className="hidden dark:block h-14 xl:h-16 w-auto object-contain opacity-90"
                     />
 
                     {/* Light (white) theme logo */}
