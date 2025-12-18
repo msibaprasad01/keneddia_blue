@@ -346,6 +346,23 @@ export const siteContent = {
           image: { src: barLounge, alt: "Social Gathering", priority: false }
         }
       ]
-    }
+    },
+    recognitions: [
+      {
+        title: "Gold List 2024",
+        source: "Condé Nast Traveler",
+        score: "98/100"
+      },
+      {
+        title: "5-Star Rating",
+        source: "Forbes Travel Guide",
+        score: "5.0"
+      },
+      {
+        title: "Luxury Keys",
+        source: "Michelin Guide",
+        score: "3 Keys"
+      }
+    ]
   }
 };

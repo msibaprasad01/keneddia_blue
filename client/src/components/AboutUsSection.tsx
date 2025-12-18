@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Play, Hotel, UtensilsCrossed, Coffee, Wine, Star } from "lucide-react";
+import { ArrowRight, Hotel, UtensilsCrossed, Coffee, Wine, Star } from "lucide-react";
 import { Link } from "wouter";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "./ui/OptimizedImage";
@@ -33,25 +33,17 @@ const mediaItems = [
 export default function AboutUsSection() {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-  const nextSlide = () => {
-    setCurrentMediaIndex((prev) => (prev + 1) % mediaItems.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentMediaIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
-  };
-
   return (
     <section className="py-10 md:py-20 bg-background relative overflow-hidden">
       <div className="absolute inset-0 z-0 bg-background" />
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-stretch">
 
           {/* Left Column: Media Showcase */}
-          <div className="relative group">
+          <div className="relative group flex flex-col">
             <div
-              className="relative aspect-[4/3] md:aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10"
+              className="relative flex-1 rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10"
               style={{
                 boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
               }}
@@ -87,62 +79,62 @@ export default function AboutUsSection() {
                   )}
                 </motion.div>
               </AnimatePresence>
+            </div>
 
-              {/* Carousel Navigation */}
-              <div className="absolute bottom-6 right-6 flex gap-3 z-20">
+            {/* Dot Indicators */}
+            <div className="flex justify-center gap-2 mt-6">
+              {mediaItems.map((_, index) => (
                 <button
-                  onClick={prevSlide}
-                  className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all hover:scale-105"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={nextSlide}
-                  className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all hover:scale-105"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+                  key={index}
+                  onClick={() => setCurrentMediaIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${currentMediaIndex === index
+                      ? 'bg-primary w-8'
+                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                    }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
             </div>
           </div>
 
           {/* Right Column: Content */}
-          <div className="space-y-8">
+          <div className="flex flex-col justify-between space-y-6">
+            {/* Header Section */}
             <div>
               <h2 className="text-sm font-bold uppercase tracking-[0.2em] mb-3 text-muted-foreground">
                 {siteContent.text.about.sectionTitle}
               </h2>
-              <h3 className="text-4xl md:text-5xl font-serif leading-tight mb-6 text-foreground">
+              <h3 className="text-4xl md:text-5xl font-serif leading-tight mb-4 text-foreground">
                 {siteContent.brand.name}
               </h3>
+
+              {/* Customer Experience - Moved here */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex -space-x-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="w-4 h-4 fill-primary text-primary" />
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-serif font-bold text-foreground text-lg leading-none">5.0</span>
+                  <span className="text-muted-foreground font-light">from 2,500+ reviews</span>
+                </div>
+              </div>
+
               <p className="text-lg font-light leading-relaxed text-muted-foreground">
                 {siteContent.text.about.carousel[0].description} {siteContent.brand.tagline}
               </p>
             </div>
 
-            {/* Ratings Row - Compact & Inline */}
-            <div className="flex items-center gap-4">
-              <div className="flex -space-x-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} className="w-4 h-4 fill-primary text-primary" />
-                ))}
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-serif font-bold text-foreground text-lg leading-none">5.0</span>
-                <span className="text-muted-foreground font-light">from 2,500+ reviews</span>
-              </div>
-            </div>
-
             {/* Brand Logos Grid */}
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest mb-6 opacity-70 text-muted-foreground">
+              <h4 className="text-xs font-bold uppercase tracking-widest mb-4 opacity-70 text-muted-foreground">
                 Our Ventures
               </h4>
               <div className="grid grid-cols-4 gap-4">
                 {brandLogos.map((brand) => (
-                  <div key={brand.label} className="flex flex-col items-center justify-center text-center space-y-3 group cursor-pointer">
+                  <div key={brand.label} className="flex flex-col items-center justify-center text-center space-y-2 group cursor-pointer">
                     <div className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1 bg-slate-900/90 dark:bg-accent/5 border border-border/10">
-                      {/* Logo with proper visibility in both modes */}
                       <img
                         src={brand.logo.src}
                         alt={brand.label}
@@ -161,11 +153,28 @@ export default function AboutUsSection() {
               </div>
             </div>
 
-            <div className="pt-4">
+            {/* Globally Recognized Section */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-widest mb-4 opacity-70 text-muted-foreground">
+                Globally Recognized
+              </h4>
+              <div className="grid grid-cols-3 gap-3">
+                {(siteContent.text as any).recognitions?.map((item: any, idx: number) => (
+                  <div key={idx} className="bg-secondary/20 border border-border/50 rounded-lg p-3 text-center group hover:border-primary/30 transition-colors">
+                    <div className="text-lg font-serif font-bold text-primary mb-0.5 tracking-tight">{item.score}</div>
+                    <div className="text-[9px] uppercase tracking-tighter font-bold text-foreground mb-1 leading-tight">{item.title}</div>
+                    <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-medium opacity-60">{item.source}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* More Details Link - Compact */}
+            <div>
               <Link href="/about">
-                <a className="inline-flex items-center text-sm font-bold uppercase tracking-widest hover:underline underline-offset-8 transition-all text-foreground hover:text-primary">
-                  Discover More
-                  <ArrowRight className="w-4 h-4 ml-2 text-primary" />
+                <a className="inline-flex items-center text-xs font-medium tracking-wide hover:underline underline-offset-4 transition-all text-muted-foreground hover:text-primary">
+                  More details
+                  <ArrowRight className="w-3 h-3 ml-1.5" />
                 </a>
               </Link>
             </div>
