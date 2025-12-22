@@ -9,6 +9,7 @@ import RatingsAndAwards from "@/components/RatingsAndAwards";
 import Footer from "@/components/Footer";
 // New Components
 import DailyOffers from "@/components/DailyOffers";
+import PropertiesSection from "@/components/PropertiesSection";
 import EventsSection from "@/components/EventsSection";
 import NewsPress from "@/components/NewsPress";
 import OurStoryPreview from "@/components/OurStoryPreview";
@@ -27,6 +28,7 @@ export default function Home() {
       <main>
         <Hero />
         <section id="daily-offers"><DailyOffers /></section>
+        <section id="properties"><PropertiesSection /></section>
         <section id="about"><AboutUsSection /></section>
         <section id="business"><BusinessVerticals /></section>
         <section id="events"><EventsSection /></section>
