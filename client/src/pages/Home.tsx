@@ -38,24 +38,24 @@ export default function Home() {
         {/* <section id="reviews"><RatingsAndAwards /></section> */}
       </main>
 
-      {/* Hero Interaction Indicator - Global Fixed (Right Bottom) */}
+      {/* Hero Interaction Indicator - Enhanced for Better Visibility */}
       <motion.div
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 1.5, duration: 0.8, type: "spring" }}
-        className="fixed bottom-8 right-8 z-50 bg-primary/90 text-primary-foreground backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 shadow-xl cursor-pointer hover:bg-primary transition-all duration-300 group ring-1 ring-white/10 hover:ring-white/20 hover:scale-105"
+        className="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 shadow-[0_4px_20px_rgba(251,191,36,0.4)] cursor-pointer hover:shadow-[0_6px_28px_rgba(251,191,36,0.6)] transition-all duration-300 group ring-1 ring-amber-500/30 hover:ring-amber-500/50 hover:scale-105"
         onClick={handleScrollToBusiness}
       >
         <div className="flex flex-col items-start bg-transparent">
-          <span className="text-[10px] font-light uppercase tracking-widest text-primary-foreground/80 leading-none mb-1">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-700 leading-none mb-1">
             Discover More
           </span>
-          <span className="text-sm font-light text-white whitespace-nowrap">
+          <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
             Explore Our Diversities
           </span>
         </div>
-        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-          <ChevronDown className="w-4 h-4 animate-pulse text-white" />
+        <div className="w-8 h-8 rounded-full bg-gray-900/20 flex items-center justify-center group-hover:bg-gray-900/30 transition-colors">
+          <ChevronDown className="w-4 h-4 animate-pulse text-gray-900" />
         </div>
       </motion.div>
 
