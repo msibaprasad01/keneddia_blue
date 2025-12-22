@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Navigation } from "swiper/modules";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, ArrowRight } from "lucide-react";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import "swiper/css/effect-fade";
@@ -144,28 +144,37 @@ export default function Hero() {
                   </motion.p>
                   {slide.cta && (
                     <motion.button
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.7, duration: 0.8 }}
                       className="
-                      px-8 py-2.5
-                      border border-white/40
-                      text-white font-medium text-sm
-                      rounded-sm
-                      backdrop-blur-sm
-                      bg-white/0
-                      transition-all duration-300 ease-out
-
-                      hover:bg-white/10
-                      hover:backdrop-blur-md
-                      hover:shadow-[0_0_30px_rgba(255,255,255,0.25)]
-                      hover:border-white/70
-                      cursor-pointer
-                    "
+                        group
+                        relative
+                        px-6 py-2.5
+                        bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400
+                        text-gray-900 font-semibold text-sm
+                        rounded-full
+                        shadow-[0_4px_16px_rgba(251,191,36,0.35)]
+                        overflow-hidden
+                        transition-all duration-500 ease-out
+                        hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)]
+                        hover:scale-105
+                        hover:-translate-y-0.5
+                        cursor-pointer
+                        flex items-center gap-2
+                        border border-amber-300/40
+                      "
                     >
-                      {slide.cta}
-                    </motion.button>
+                      {/* Shine effect overlay */}
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
 
+                      {/* Button content */}
+                      <span className="relative z-10">{slide.cta}</span>
+                      <ArrowRight className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+
+                      {/* Glow effect on hover */}
+                      <span className="absolute inset-0 bg-gradient-to-r from-amber-300 to-yellow-400 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
+                    </motion.button>
                   )}
                 </div>
               </div>
@@ -278,7 +287,7 @@ export default function Hero() {
       <div className="md:hidden absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
         <button
           onClick={() => swiperInstance?.slidePrev()}
-          className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md"
+          className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
         </button>
@@ -298,7 +307,7 @@ export default function Hero() {
 
         <button
           onClick={() => swiperInstance?.slideNext()}
-          className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md"
+          className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] hover:bg-[#FDFBF7] hover:text-black transition-all duration-300 rounded-full backdrop-blur-md cursor-pointer"
         >
           <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
         </button>
