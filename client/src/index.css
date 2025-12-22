@@ -42,7 +42,7 @@
 
 :root {
   /* Background */
-  --background: 40 20% 97%;          /* #F9F7F5 */
+  --background: 0 0% 100%;          /* #F9F7F5 */
   --foreground: 220 13% 10%;         /* #16181D */
 
   /* Surfaces */

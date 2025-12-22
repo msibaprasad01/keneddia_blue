@@ -88,8 +88,8 @@ export default function AboutUsSection() {
                   key={index}
                   onClick={() => setCurrentMediaIndex(index)}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${currentMediaIndex === index
-                      ? 'bg-primary w-8'
-                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                    ? 'bg-primary w-8'
+                    : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
                     }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
@@ -109,7 +109,7 @@ export default function AboutUsSection() {
               </h3>
 
               {/* Customer Experience - Moved here */}
-              <div className="flex items-center gap-3 mb-6">
+              {/* <div className="flex items-center gap-3 mb-6">
                 <div className="flex -space-x-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star key={star} className="w-4 h-4 fill-primary text-primary" />
@@ -119,7 +119,7 @@ export default function AboutUsSection() {
                   <span className="font-serif font-bold text-foreground text-lg leading-none">5.0</span>
                   <span className="text-muted-foreground font-light">from 2,500+ reviews</span>
                 </div>
-              </div>
+              </div> */}
 
               <p className="text-lg font-light leading-relaxed text-muted-foreground">
                 {siteContent.text.about.carousel[0].description} {siteContent.brand.tagline}

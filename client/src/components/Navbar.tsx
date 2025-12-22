@@ -213,20 +213,20 @@ export default function Navbar() {
             {/* Logo Section */}
             <div className="flex items-center justify-start flex-shrink-0">
               <Link href="/">
-                <a onClick={handleLinkClick} className="block transition-all duration-300 rounded-lg p-1.5 xl:p-2  dark:bg-transparent hover:opacity-100">
+                <a onClick={handleLinkClick} className="block transition-all duration-300 rounded-lg p-1.5 xl:p-2  dark:bg-transparent hover:opacity-100 cursor-pointer">
                   <div className="relative">
                     {/* Dark theme logo */}
                     <img
                       src={siteContent.brand.logo.image.src}
                       alt={siteContent.brand.logo.image.alt}
-                      className="hidden dark:block h-14 xl:h-16 w-auto object-contain opacity-90"
+                      className="hidden dark:block h-12 xl:h-14 w-auto object-contain opacity-90"
                     />
 
                     {/* Light (white) theme logo */}
                     <img
                       src={siteContent.brand.logo.subImage.src}
                       alt={siteContent.brand.logo.subImage.alt}
-                      className="block dark:hidden h-10 xl:h-12 w-auto object-contain opacity-90"
+                      className="block dark:hidden h-12 xl:h-14 w-auto object-contain opacity-90"
                     />
                   </div>
 
@@ -273,8 +273,8 @@ export default function Navbar() {
               </div>
             </div>
 
-            <Link href="/login">
-              <a onClick={handleLinkClick} className="flex items-center gap-1.5 px-3 2xl:px-5 py-2 text-foreground/80 hover:text-primary transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap">
+            <Link href="#">
+              <a onClick={handleLinkClick} className="flex items-center gap-1.5 px-3 2xl:px-5 py-2 text-foreground/80 hover:text-primary transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap cursor-pointer">
                 <LogIn className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
                 LOGIN
               </a>
@@ -284,26 +284,32 @@ export default function Navbar() {
             <ThemeToggle />
           </div>
 
-          {/* Mobile Menu Button - Shows below xl breakpoint (below 1280px) */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="xl:hidden text-foreground hover:text-primary transition-colors relative"
-            aria-label="Toggle menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {mobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          {/* Mobile Actions: Theme Toggle + Menu Button - Shows below xl breakpoint (below 1280px) */}
+          <div className="xl:hidden flex items-center gap-3">
+            {/* Theme Toggle for Mobile */}
+            <ThemeToggle />
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-foreground hover:text-primary transition-colors relative cursor-pointer"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+              {/* Show blinking indicator only when menu is closed */}
+              {!mobileMenuOpen && (
+                <span className="absolute -top-0.5 -right-0.5">
+                  <BlinkingIndicator />
+                </span>
               )}
-            </svg>
-            {/* Show blinking indicator only when menu is closed */}
-            {!mobileMenuOpen && (
-              <span className="absolute -top-0.5 -right-0.5">
-                <BlinkingIndicator />
-              </span>
-            )}
-          </button>
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -351,7 +357,7 @@ function NavItem({ item, activeDropdown, setActiveDropdown, handleLinkClick, isA
         <Link href={item.href}>
           <a
             onClick={handleLinkClick}
-            className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap ${isActive ? "text-primary" : "text-foreground hover:text-primary"}`}
+            className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${isActive ? "text-primary" : "text-foreground hover:text-primary"}`}
           >
             {item.label}
             {showIndicator && <ActiveIndicator />}
@@ -360,7 +366,7 @@ function NavItem({ item, activeDropdown, setActiveDropdown, handleLinkClick, isA
       ) : (
         <>
           <button
-            className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap ${isActive ? "text-primary" : "text-foreground hover:text-primary"}`}
+            className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${isActive ? "text-primary" : "text-foreground hover:text-primary"}`}
           >
             {item.label}
             <ChevronDown className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
@@ -435,7 +441,7 @@ function MegaMenu({ items, handleLinkClick }: MegaMenuProps) {
               {category.items.map((subItem, itemIndex) => (
                 <li key={itemIndex}>
                   <Link href={subItem.href}>
-                    <a onClick={handleLinkClick} className="text-sm text-muted-foreground hover:text-primary transition-colors block">
+                    <a onClick={handleLinkClick} className="text-sm text-muted-foreground hover:text-primary transition-colors block cursor-pointer">
                       {subItem.label}
                     </a>
                   </Link>
@@ -460,7 +466,7 @@ function SimpleDropdown({ items, handleLinkClick }: SimpleDropdownProps) {
     <div className="py-2">
       {items.map((subItem, idx) => (
         <Link key={idx} href={subItem.href}>
-          <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors">
+          <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
             {subItem.label}
           </a>
         </Link>
@@ -525,7 +531,7 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
             {navItems.map((item) =>
               item.type === 'link' ? (
                 <Link key={item.key} href={item.href}>
-                  <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-accent hover:text-primary transition-colors border-b border-border/5">
+                  <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-accent hover:text-primary transition-colors border-b border-border/5 cursor-pointer">
                     {item.label}
                   </a>
                 </Link>
@@ -541,14 +547,13 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
             )}
 
             {/* Login Button */}
-            <div className="px-4 pt-4 flex items-center justify-between gap-4">
-              <Link href="/login">
-                <a onClick={handleLinkClick} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all">
+            <div className="px-4 pt-4">
+              <Link href="#">
+                <a onClick={handleLinkClick} className="flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all cursor-pointer">
                   <LogIn className="w-4 h-4" />
                   LOGIN
                 </a>
               </Link>
-              <ThemeToggle />
             </div>
           </div>
         </motion.div>
@@ -572,7 +577,7 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
     <div className="border-b border-border/5">
       <button
         onClick={() => setMobileExpandedMenu(isExpanded ? null : item.key)}
-        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-accent/50 hover:text-primary transition-colors relative"
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-accent/50 hover:text-primary transition-colors relative cursor-pointer"
       >
         <span className="flex items-center gap-2">
           {item.label}
@@ -605,7 +610,7 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
                     {category.items.map((subItem, itemIndex) => (
                       <li key={itemIndex}>
                         <Link href={subItem.href}>
-                          <a onClick={handleLinkClick} className="block text-sm text-foreground/70 hover:text-primary py-1 transition-colors">
+                          <a onClick={handleLinkClick} className="block text-sm text-foreground/70 hover:text-primary py-1 transition-colors cursor-pointer">
                             {subItem.label}
                           </a>
                         </Link>
@@ -617,7 +622,7 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
             ) : (
               item.items.map((subItem, idx) => (
                 <Link key={idx} href={subItem.href}>
-                  <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors">
+                  <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer">
                     {subItem.label}
                   </a>
                 </Link>
