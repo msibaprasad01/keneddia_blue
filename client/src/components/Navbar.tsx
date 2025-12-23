@@ -200,12 +200,15 @@ export default function Navbar() {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 
-      ${scrolled
-        ? "bg-background/95 backdrop-blur-sm shadow-md py-2 border-b border-border/10"
-        : "bg-background/95 dark:xl:bg-transparent backdrop-blur-sm xl:backdrop-blur-none shadow-md xl:shadow-none py-2 xl:py-4"
-      }`}
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
+    ${scrolled
+          ? "bg-white dark:bg-background/95 dark:backdrop-blur-sm shadow-md py-2 border-b border-border/10"
+          : "bg-white dark:bg-transparent backdrop-blur-none dark:xl:backdrop-blur-none shadow-md xl:shadow-none py-2 xl:py-4"
+        }
+  `}
     >
+
       <div className="container mx-auto px-4 xl:px-12">
         <div className="flex items-center justify-between h-16">
 
