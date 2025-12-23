@@ -2,14 +2,28 @@ import { Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/ThemeProvider"
 import { useToast } from "@/components/ui/use-toast"
+import { useEffect } from "react"
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const { toast } = useToast()
 
+  // 🔥 Auto theme based on time (runs once)
+  useEffect(() => {
+    if (localStorage.getItem("theme")) return
+
+    const hour = new Date().getHours()
+    const isNight = hour >= 18 || hour < 6
+
+    const autoTheme = isNight ? "dark" : "light"
+    setTheme(autoTheme)
+    localStorage.setItem("theme", autoTheme)
+  }, [setTheme])
+
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark"
     setTheme(newTheme)
+    localStorage.setItem("theme", newTheme)
 
     toast({
       description: `${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)} mode enabled`,
