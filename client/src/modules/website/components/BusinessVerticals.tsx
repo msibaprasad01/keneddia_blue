@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { useState, useEffect } from "react";
-import { OptimizedImage } from "./ui/OptimizedImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { isRouteAvailable } from "@/lib/routes";
 
 // Lucide icon map

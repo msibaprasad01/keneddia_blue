@@ -1,7 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { MapPin, Star, Award, Users, Sparkles, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { OptimizedImage } from "./ui/OptimizedImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { siteContent } from "@/data/siteContent";
 
 const locations = [

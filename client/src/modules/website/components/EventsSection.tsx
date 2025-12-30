@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { Calendar, ArrowRight, MapPin } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
-import { OptimizedImage } from "./ui/OptimizedImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // ============================================================================
 // EVENTS SECTION CONFIGURATION - Centralized

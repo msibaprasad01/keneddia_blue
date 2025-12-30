@@ -9,7 +9,7 @@ import "swiper/css/effect-fade";
 import "swiper/css/navigation";
 
 import { siteContent } from "@/data/siteContent";
-import { OptimizedImage } from "./ui/OptimizedImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Assets
 import video1 from "@assets/video/video1.mp4";

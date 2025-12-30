@@ -1,18 +1,18 @@
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider } from "@/modules/website/components/ThemeProvider";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
-import NotFound from "@/pages/not-found";
-import Home from "@/pages/Home";
-import Hotels from "@/pages/Hotels";
-import Cafes from "@/pages/Cafes";
-import Bars from "@/pages/Bars";
-import About from "@/pages/About";
-import Events from "@/pages/Events";
-import Reviews from "@/pages/Reviews";
+import NotFound from "@/modules/website/pages/not-found";
+import Home from "@/modules/website/pages/Home";
+import Hotels from "@/modules/website/pages/Hotels";
+import Cafes from "@/modules/website/pages/Cafes";
+import Bars from "@/modules/website/pages/Bars";
+import About from "@/modules/website/pages/About";
+import Events from "@/modules/website/pages/Events";
+import Reviews from "@/modules/website/pages/Reviews";
 
 // Scroll to top on route change
 function ScrollToTop() {

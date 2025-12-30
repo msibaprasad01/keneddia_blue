@@ -1,18 +1,18 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import AboutUsSection from "@/components/AboutUsSection";
-import BusinessVerticals from "@/components/BusinessVerticals";
-import GlobalPresence from "@/components/GlobalPresence";
-import RatingsAndAwards from "@/components/RatingsAndAwards";
-import Footer from "@/components/Footer";
+import Navbar from "@/modules/website/components/Navbar";
+import Hero from "@/modules/website/components/Hero";
+import AboutUsSection from "@/modules/website/components/AboutUsSection";
+import BusinessVerticals from "@/modules/website/components/BusinessVerticals";
+import GlobalPresence from "@/modules/website/components/GlobalPresence";
+import RatingsAndAwards from "@/modules/website/components/RatingsAndAwards";
+import Footer from "@/modules/website/components/Footer";
 // New Components
-import DailyOffers from "@/components/DailyOffers";
-import PropertiesSection from "@/components/PropertiesSection";
-import EventsSection from "@/components/EventsSection";
-import NewsPress from "@/components/NewsPress";
-import OurStoryPreview from "@/components/OurStoryPreview";
+import DailyOffers from "@/modules/website/components/DailyOffers";
+import PropertiesSection from "@/modules/website/components/PropertiesSection";
+import EventsSection from "@/modules/website/components/EventsSection";
+import NewsPress from "@/modules/website/components/NewsPress";
+import OurStoryPreview from "@/modules/website/components/OurStoryPreview";
 
 export default function Home() {
   const handleScrollToBusiness = () => {

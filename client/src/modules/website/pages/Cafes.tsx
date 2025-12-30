@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Calendar, Users, Search, Star, ArrowRight, X, Clock, Coffee } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import HeaderLogo from "@/components/HeaderLogo";
+import Navbar from "@/modules/website/components/Navbar";
+import Footer from "@/modules/website/components/Footer";
+import HeaderLogo from "@/modules/website/components/HeaderLogo";
 
 // Assets
 import { siteContent } from "@/data/siteContent";

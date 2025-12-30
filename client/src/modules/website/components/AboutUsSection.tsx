@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Hotel, UtensilsCrossed, Coffee, Wine, Star } from "lucide-react";
 import { Link } from "wouter";
 import { siteContent } from "@/data/siteContent";
-import { OptimizedImage } from "./ui/OptimizedImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const brandLogos = [
   { label: "Hotel", icon: Hotel, logo: siteContent.brand.logo_hotel.image },

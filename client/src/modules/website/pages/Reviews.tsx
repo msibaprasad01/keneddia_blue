@@ -2,8 +2,9 @@ import { motion } from "framer-motion";
 import { Star, User, Quote } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { BackButton } from "@/components/ui/BackButton";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from "@/modules/website/components/Navbar";
+import Footer from "@/modules/website/components/Footer";
+import HeaderLogo from "@/modules/website/components/HeaderLogo";
 
 // Testimonials data
 const testimonials = [

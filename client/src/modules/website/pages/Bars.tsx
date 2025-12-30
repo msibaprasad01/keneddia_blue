@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Users, Search, Star, ArrowRight, Wine } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import HeaderLogo from "@/components/HeaderLogo";
+import Navbar from "@/modules/website/components/Navbar";
+import Footer from "@/modules/website/components/Footer";
+import HeaderLogo from "@/modules/website/components/HeaderLogo";
 
 // Assets
 import { siteContent } from "@/data/siteContent";

@@ -3,7 +3,7 @@ import { Star, Upload, Send, Quote, X, Youtube, Image as ImageIcon, Film, ArrowR
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
-import { OptimizedImage } from "./ui/OptimizedImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { motion, AnimatePresence } from "framer-motion";
 
 import "swiper/css";
@@ -222,8 +222,8 @@ export default function OurStoryPreview() {
                     <button
                       onClick={() => setShowYoutubeInput(!showYoutubeInput)}
                       className={`p-3 rounded-lg border transition-all ${showYoutubeInput
-                          ? 'bg-primary/10 border-primary text-primary'
-                          : 'bg-secondary/20 border-border text-muted-foreground hover:bg-secondary/40'
+                        ? 'bg-primary/10 border-primary text-primary'
+                        : 'bg-secondary/20 border-border text-muted-foreground hover:bg-secondary/40'
                         }`}
                       title="Add YouTube Link"
                     >

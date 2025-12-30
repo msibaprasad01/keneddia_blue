@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Calendar, MapPin, Clock, ArrowRight } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from "@/modules/website/components/Navbar";
+import Footer from "@/modules/website/components/Footer";
 
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
