@@ -26,7 +26,6 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "types": [
-      "node",
       "vite/client"
     ],
     "paths": {
