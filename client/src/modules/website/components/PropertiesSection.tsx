@@ -1,8 +1,13 @@
-import { useRef, useState } from "react";
-import { motion, useScroll, useTransform, useSpring, useMotionValue, useAnimationFrame, wrap } from "framer-motion";
-import { ArrowRight, MapPin, Star, Building2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { ArrowRight, MapPin, Star, Building2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+
+import "swiper/css";
+import "swiper/css/navigation";
 
 // Data from Hotels.tsx (kept internal as requested)
 // Enriched with 'type' for filtering
@@ -63,107 +68,10 @@ const properties = [
   },
 ];
 
-interface PropertyCardProps {
-  property: typeof properties[0];
-}
-
-const PropertyCard = ({ property }: PropertyCardProps) => {
-  return (
-    <div className="w-[260px] md:w-[320px] h-[200px] md:h-[240px] relative group overflow-hidden rounded-lg mx-3 flex-shrink-0 cursor-pointer">
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <OptimizedImage
-          {...property.image}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-      </div>
-
-      {/* Content */}
-      <div className="absolute inset-0 p-5 flex flex-col justify-end text-white">
-        <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-1 text-yellow-400 text-[10px] font-bold uppercase tracking-wider">
-              <Star className="w-2.5 h-2.5 fill-current" />
-              <span>{property.rating} Exceptional</span>
-            </div>
-            <span className="text-[10px] bg-white/20 backdrop-blur-md px-2 py-0.5 rounded text-white/90">
-              {property.type}
-            </span>
-          </div>
-
-          <h3 className="text-xl font-serif font-medium mb-0.5">{property.name}</h3>
-
-          <div className="flex items-center text-white/70 text-xs mb-3">
-            <MapPin className="w-2.5 h-2.5 mr-1" />
-            {property.location}
-          </div>
-
-          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
-            <button className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm py-1.5 px-3 rounded text-[10px] uppercase tracking-widest font-bold border border-white/30 transition-colors">
-              Details
-            </button>
-            <button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 py-1.5 px-3 rounded text-[10px] uppercase tracking-widest font-bold transition-colors">
-              Book
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const AutoCarousel = ({ items, direction = "left", duration = 60 }: { items: typeof properties, direction?: "left" | "right", duration?: number }) => {
-  if (!items.length) return null;
-
-  // Ensure enough items for seamless scrolling
-  // If fewer items, duplicate more times
-  let scrollItems = [...items, ...items, ...items];
-  if (items.length < 4) {
-    scrollItems = [...items, ...items, ...items, ...items, ...items, ...items];
-  }
-
-  return (
-    <div className={`marquee-container-${direction} overflow-hidden w-full select-none`}>
-      <div className={`marquee-content-${direction} flex-shrink-0`}>
-        {scrollItems.map((item, idx) => (
-          <PropertyCard key={`row-a-${item.id}-${idx}`} property={item} />
-        ))}
-      </div>
-      <div className={`marquee-content-${direction} flex-shrink-0`}>
-        {scrollItems.map((item, idx) => (
-          <PropertyCard key={`row-b-${item.id}-${idx}`} property={item} />
-        ))}
-      </div>
-      <style>{`
-        @keyframes scrollLeft {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-100%); }
-        }
-        @keyframes scrollRight {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(0); }
-        }
-        .marquee-container-${direction} {
-          display: flex;
-          width: 100%;
-          overflow: hidden;
-        }
-        .marquee-content-${direction} {
-          display: flex;
-          animation: ${direction === "left" ? "scrollLeft" : "scrollRight"} ${duration}s linear infinite;
-        }
-        .marquee-container-${direction}:hover .marquee-content-${direction} {
-          animation-play-state: paused;
-        }
-      `}</style>
-    </div>
-  )
-}
-
 export default function PropertiesSection() {
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [selectedType, setSelectedType] = useState("All Types");
+  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
 
   const uniqueCities = ["All Cities", ...Array.from(new Set(properties.map(p => p.city)))];
   const uniqueTypes = ["All Types", ...Array.from(new Set(properties.map(p => p.type)))];
@@ -174,33 +82,38 @@ export default function PropertiesSection() {
     return matchCity && matchType;
   });
 
-  return (
-    <div className="py-10 bg-background relative overflow-hidden">
-      <div className="container mx-auto px-4 lg:px-8 mb-6">
+  const handlePrev = () => {
+    if (swiperInstance) {
+      swiperInstance.slidePrev();
+    }
+  };
 
-        {/* Header Layout matching DailyOffers (flex justify-between) */}
-        <div className="flex flex-col md:flex-row items-end md:items-center justify-between gap-4">
+  const handleNext = () => {
+    if (swiperInstance) {
+      swiperInstance.slideNext();
+    }
+  };
+
+  return (
+    <section className="py-16 bg-background relative overflow-hidden">
+      <div className="container mx-auto px-6 lg:px-12">
+        {/* Header Layout */}
+        <div className="flex flex-col md:flex-row items-end md:items-center justify-between gap-6 mb-10">
           <div>
-            <h2 className="text-2xl md:text-3xl font-serif text-foreground">
+            <h2 className="text-3xl md:text-4xl font-serif text-foreground">
               Explore Our Properties
             </h2>
-            <div className="w-12 h-0.5 bg-primary mt-2" />
+            <div className="w-16 h-0.5 bg-primary mt-3" />
           </div>
 
-          {/* Filters */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-3"
-          >
+          {/* Filters & Navigation */}
+          <div className="flex flex-wrap items-center gap-3">
             {/* Type Filter */}
-            <div className="relative min-w-[140px] hidden sm:block">
+            <div className="relative hidden sm:block">
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer outline-none shadow-sm hover:border-primary/50 transition-colors"
+                className="appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer outline-none shadow-sm hover:border-primary/50 transition-colors"
               >
                 {uniqueTypes.map((t) => (
                   <option key={t} value={t}>{t}</option>
@@ -210,11 +123,11 @@ export default function PropertiesSection() {
             </div>
 
             {/* Location Filter */}
-            <div className="relative min-w-[140px]">
+            <div className="relative">
               <select
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer outline-none shadow-sm hover:border-primary/50 transition-colors"
+                className="appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer outline-none shadow-sm hover:border-primary/50 transition-colors"
               >
                 {uniqueCities.map((city) => (
                   <option key={city} value={city}>
@@ -224,29 +137,104 @@ export default function PropertiesSection() {
               </select>
               <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
             </div>
-          </motion.div>
-        </div>
-      </div>
 
-      <div className="container mx-auto px-4 lg:px-8 space-y-6">
+            <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+
+            <button
+              onClick={handlePrev}
+              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all z-10 relative cursor-pointer"
+              aria-label="Previous Property"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleNext}
+              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all z-10 relative cursor-pointer"
+              aria-label="Next Property"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Carousel */}
         {filteredProperties.length > 0 ? (
-          <>
-            <AutoCarousel items={filteredProperties} direction="left" duration={80} />
-            <AutoCarousel items={filteredProperties} direction="right" duration={90} />
-          </>
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            spaceBetween={24}
+            slidesPerView={1}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+            loop={filteredProperties.length > 3}
+            autoplay={{ delay: 6000, disableOnInteraction: true }}
+            onSwiper={setSwiperInstance}
+            speed={700}
+            className="w-full pb-4"
+          >
+            {filteredProperties.map((property) => (
+              <SwiperSlide key={property.id} className="h-full">
+                <div className="group bg-card border border-border rounded-lg overflow-hidden flex flex-col h-full hover:border-primary/40 transition-colors duration-300">
+                  {/* Image - Top - Aspect 3:2 */}
+                  <div className="relative aspect-[3/2] overflow-hidden">
+                    <OptimizedImage
+                      {...property.image}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+
+                    {/* Floating Badge */}
+                    <div className="absolute top-3 left-3">
+                      <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-white text-[10px] font-bold uppercase tracking-wider">
+                        <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                        <span>{property.rating} Exceptional</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content - Bottom */}
+                  <div className="p-5 flex flex-col flex-grow">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5 rounded-sm">
+                        {property.type}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-serif font-medium text-foreground mb-1 group-hover:text-primary transition-colors">
+                      {property.name}
+                    </h3>
+
+                    <div className="flex items-center text-muted-foreground text-xs mb-4">
+                      <MapPin className="w-3 h-3 mr-1" />
+                      {property.location}
+                    </div>
+
+                    <div className="mt-auto flex gap-3 pt-3 border-t border-border/50">
+                      <button className="flex-1 py-2 text-xs font-bold uppercase tracking-widest text-foreground hover:bg-secondary/50 rounded transition-colors border border-transparent hover:border-border">
+                        Details
+                      </button>
+                      <button className="flex-1 py-2 text-xs font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 rounded transition-colors shadow-sm">
+                        Book Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         ) : (
-          <div className="text-center py-12 flex flex-col items-center justify-center text-muted-foreground bg-secondary/10 rounded-lg mx-6 lg:mx-12 border border-dashed border-primary/10">
-            <Building2 className="w-8 h-8 mb-2 opacity-20" />
-            <p className="text-sm">No properties found matching your selection.</p>
+          <div className="text-center py-20 flex flex-col items-center justify-center text-muted-foreground bg-secondary/10 rounded-xl border border-dashed border-primary/20">
+            <Building2 className="w-10 h-10 mb-3 opacity-20" />
+            <p className="text-base font-medium">No properties found matching your selection.</p>
             <button
               onClick={() => { setSelectedCity("All Cities"); setSelectedType("All Types") }}
-              className="mt-2 text-xs text-primary underline"
+              className="mt-3 text-sm text-primary font-medium hover:underline"
             >
               Clear Filters
             </button>
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 }
