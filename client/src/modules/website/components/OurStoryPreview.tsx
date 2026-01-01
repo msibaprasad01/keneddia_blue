@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Star, Upload, Send, Quote, X, Youtube, Image as ImageIcon, Film, ArrowRight } from "lucide-react";
+import { Star, Upload, Send, Quote, X, Youtube, Image as ImageIcon, Film, ArrowRight, Play, Volume2, VolumeX } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
@@ -14,7 +14,10 @@ export default function OurStoryPreview() {
   const [youtubeLink, setYoutubeLink] = useState("");
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
+  const [playingVideo, setPlayingVideo] = useState<number | null>(null);
+  const [mutedVideos, setMutedVideos] = useState<{ [key: number]: boolean }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
 
   // Fallback if data isn't ready type-safe check
   if (!experienceShowcase) return null;
@@ -37,6 +40,29 @@ export default function OurStoryPreview() {
   const handleYoutubeLinkAdd = () => {
     if (youtubeLink.trim()) {
       setShowYoutubeInput(false);
+    }
+  };
+
+  const handleVideoPlay = (index: number) => {
+    setPlayingVideo(index);
+    if (videoRefs.current[index]) {
+      videoRefs.current[index]!.muted = false;
+      videoRefs.current[index]!.play();
+      setMutedVideos(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
+  const handleVideoPause = (index: number) => {
+    setPlayingVideo(null);
+    videoRefs.current[index]?.pause();
+  };
+
+  const toggleMute = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRefs.current[index]) {
+      const video = videoRefs.current[index]!;
+      video.muted = !video.muted;
+      setMutedVideos(prev => ({ ...prev, [index]: !prev[index] }));
     }
   };
 
@@ -82,31 +108,104 @@ export default function OurStoryPreview() {
                 {experienceShowcase.items.map((item: any, index: number) => (
                   <SwiperSlide key={index} className="h-auto">
                     <div className="group bg-background border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-300 h-full flex flex-col shadow-sm hover:shadow-md">
-                      {/* Image Top */}
-                      <div className="relative aspect-[16/10] overflow-hidden">
-                        <OptimizedImage
-                          src={item.image.src}
-                          alt={item.image.alt}
-                          priority={index < 3}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-md p-1.5 rounded-full text-white/90">
-                          <Quote className="w-3 h-3" />
-                        </div>
-                      </div>
 
-                      {/* Content Bottom */}
-                      <div className="p-4 flex flex-col flex-grow">
-                        <h3 className="text-base font-serif font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors line-clamp-1">
-                          {item.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed flex-grow italic">
-                          "{item.description}"
-                        </p>
-                        <div className="mt-auto pt-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground font-medium">
-                          <span className="text-foreground truncate">{item.author}</span>
+                      {item.type === "video" ? (
+                        // VIDEO CARD - Video takes the space that image + content would take
+                        <div className="relative w-full" style={{ paddingBottom: '125%' }}>
+                          <div className="absolute inset-0 bg-black">
+                            <video
+                              ref={(el) => (videoRefs.current[index] = el)}
+                              src={item.videoUrl}
+                              poster={item.thumbnail?.src}
+                              className="w-full h-full object-cover"
+                              loop
+                              playsInline
+                              muted
+                              onEnded={() => setPlayingVideo(null)}
+                            />
+
+                            {/* Video Overlay - Play Button */}
+                            {playingVideo !== index && (
+                              <div
+                                className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-center justify-center cursor-pointer transition-opacity hover:bg-black/40"
+                                onClick={() => handleVideoPlay(index)}
+                              >
+                                <div className="w-16 h-16 rounded-full bg-white/95 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform shadow-lg">
+                                  <Play className="w-8 h-8 text-primary ml-1" fill="currentColor" />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Pause overlay when playing */}
+                            {playingVideo === index && (
+                              <div
+                                className="absolute inset-0 cursor-pointer"
+                                onClick={() => handleVideoPause(index)}
+                              />
+                            )}
+
+                            {/* Video Badge - Top Left */}
+                            <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 z-10">
+                              <Film className="w-3 h-3 text-white" />
+                              <span className="text-[10px] text-white font-bold uppercase tracking-wider">REEL</span>
+                            </div>
+
+                            {/* Mute/Unmute Button */}
+                            {playingVideo === index && (
+                              <button
+                                onClick={(e) => toggleMute(index, e)}
+                                className="absolute top-2 right-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full text-white hover:bg-black/80 transition-colors z-10"
+                              >
+                                {mutedVideos[index] ? (
+                                  <VolumeX className="w-3.5 h-3.5" />
+                                ) : (
+                                  <Volume2 className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            )}
+
+                            {/* Bottom Info Overlay - Only shows on hover */}
+                            <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 transition-opacity z-10 ${playingVideo === index ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
+                              }`}>
+                              <h3 className="text-sm font-serif font-bold text-white mb-1">
+                                {item.title}
+                              </h3>
+                              <p className="text-xs text-white/90 truncate">
+                                {item.author}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        // IMAGE CARD WITH TEXT - Original design
+                        <>
+                          {/* Image Top */}
+                          <div className="relative aspect-[16/10] overflow-hidden">
+                            <OptimizedImage
+                              src={item.image.src}
+                              alt={item.image.alt}
+                              priority={index < 3}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                            <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-md p-1.5 rounded-full text-white/90">
+                              <Quote className="w-3 h-3" />
+                            </div>
+                          </div>
+
+                          {/* Content Bottom */}
+                          <div className="p-4 flex flex-col flex-grow">
+                            <h3 className="text-base font-serif font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors line-clamp-1">
+                              {item.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed flex-grow italic">
+                              "{item.description}"
+                            </p>
+                            <div className="mt-auto pt-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground font-medium">
+                              <span className="text-foreground truncate">{item.author}</span>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </SwiperSlide>
                 ))}
@@ -164,8 +263,11 @@ export default function OurStoryPreview() {
                         {media.type === 'image' ? (
                           <img src={media.url} alt="Preview" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-black/10">
-                            <Film className="w-6 h-6 text-primary" />
+                          <div className="relative w-full h-full bg-black">
+                            <video src={media.url} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                              <Film className="w-6 h-6 text-white" />
+                            </div>
                           </div>
                         )}
                         <button

@@ -323,28 +323,34 @@ export const siteContent = {
       reviewCount: "2,500+",
       items: [
         {
+          type: "image", // Add type field
           title: "Exquisite Dining",
           description: "A culinary journey that delights the senses with every bite.",
           author: "James Cameron, Food Critic",
           image: { src: cafeUpscale, alt: "Dining Experience", priority: false }
         },
         {
+          type: "video", // Video type
           title: "Serene Wellness",
           description: "Rejuvenate your mind and body in our world-class spa facilities.",
           author: "Elena Fisher, Travel Blogger",
-          image: { src: heroLobby, alt: "Spa & Wellness", priority: false }
+          videoUrl: "https://example.com/wellness-video.mp4", // Add video URL
+          thumbnail: { src: heroLobby, alt: "Spa & Wellness", priority: false } // Thumbnail for video
         },
         {
+          type: "image",
           title: "Luxury Stay",
           description: "Unmatched comfort and elegance in every room and suite.",
           author: "Michael Ross, Business Traveler",
           image: { src: hotelMumbai, alt: "Luxury Room", priority: false }
         },
         {
+          type: "video",
           title: "Vibrant Socials",
           description: "The perfect setting for connecting with friends and colleagues.",
           author: "Sarah Jenning, Event Planner",
-          image: { src: barLounge, alt: "Social Gathering", priority: false }
+          videoUrl: "https://example.com/social-video.mp4",
+          thumbnail: { src: barLounge, alt: "Social Gathering", priority: false }
         }
       ]
     },
