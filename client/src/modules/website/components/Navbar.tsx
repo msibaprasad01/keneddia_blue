@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, LogIn, ArrowLeft } from "lucide-react";
+import { ChevronDown, LogIn, ArrowLeft, Calendar } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { BookingSheet } from "./BookingSheet";
 import { ThemeToggle } from "./ThemeToggle";
@@ -289,6 +289,15 @@ export default function Navbar() {
 
           {/* Mobile Actions: Theme Toggle + Menu Button - Shows below xl breakpoint (below 1280px) */}
           <div className="xl:hidden flex items-center gap-3">
+            {/* Quick Book Mobile */}
+            <button
+              onClick={() => setBookingOpen(true)}
+              className="text-foreground hover:text-primary transition-colors cursor-pointer"
+              aria-label="Quick Book"
+            >
+              <Calendar className="w-5 h-5" />
+            </button>
+
             {/* Theme Toggle for Mobile */}
             <ThemeToggle />
 

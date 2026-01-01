@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Check, ChevronRight, User, Calendar as CalendarIcon, CreditCard, ChevronLeft, Users, Minus, Plus } from "lucide-react"
+import { Check, ChevronRight, User, Calendar as CalendarIcon, CreditCard, ChevronLeft, Users, Minus, Plus, BedDouble, Utensils, ShoppingBag, X } from "lucide-react"
 import { format, differenceInDays, addDays } from "date-fns"
 import { cn } from "@/lib/utils"
 
@@ -59,12 +59,14 @@ const DATE_CONFIG = {
 
 // Step Configuration
 const STEPS = {
+  CATEGORY: 0,
   LOCATION: 1,
   DETAILS: 2,
   CHECKOUT: 3,
 } as const
 
 const STEP_LABELS = {
+  [STEPS.CATEGORY]: "Select Service",
   [STEPS.LOCATION]: "Select Location",
   [STEPS.DETAILS]: "Select Dates & Guests",
   [STEPS.CHECKOUT]: "Checkout",
@@ -133,7 +135,8 @@ interface DateRange {
 // ============================================================================
 
 export function BookingSheet({ isOpen, onOpenChange, category }: BookingSheetProps) {
-  const [step, setStep] = useState(STEPS.LOCATION)
+  const [step, setStep] = useState<number>(category ? STEPS.LOCATION : STEPS.CATEGORY)
+  const [internalCategory, setInternalCategory] = useState<"hotel" | "dining" | "delivery" | null>(category)
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null)
   const [dateRange, setDateRange] = useState<DateRange>({
     checkIn: DATE_CONFIG.defaultCheckIn,
@@ -145,10 +148,18 @@ export function BookingSheet({ isOpen, onOpenChange, category }: BookingSheetPro
     infants: GUEST_CONFIG.infants.default,
   })
 
+  // Update internal category when prop changes
+  useEffect(() => {
+    if (category) {
+      setInternalCategory(category)
+    }
+  }, [category])
+
   // Reset state when opening
   useEffect(() => {
     if (isOpen) {
-      setStep(STEPS.LOCATION)
+      setStep(category ? STEPS.LOCATION : STEPS.CATEGORY)
+      if (!category) setInternalCategory(null) // Reset if opening via generic trigger
       setSelectedLocation(null)
       setDateRange({
         checkIn: DATE_CONFIG.defaultCheckIn,
@@ -160,7 +171,12 @@ export function BookingSheet({ isOpen, onOpenChange, category }: BookingSheetPro
         infants: GUEST_CONFIG.infants.default,
       })
     }
-  }, [isOpen])
+  }, [isOpen, category])
+
+  const handleCategorySelect = (cat: "hotel" | "dining" | "delivery") => {
+    setInternalCategory(cat)
+    setStep(STEPS.LOCATION)
+  }
 
   const handleSelect = (value: string) => {
     setSelectedLocation(value)
@@ -172,8 +188,9 @@ export function BookingSheet({ isOpen, onOpenChange, category }: BookingSheetPro
   }
 
   const getTitle = () => {
-    if (!category) return TEXT_CONTENT.titles.default
-    return TEXT_CONTENT.titles[category] || TEXT_CONTENT.titles.default
+    const currentCat = internalCategory || category
+    if (!currentCat) return TEXT_CONTENT.titles.default
+    return TEXT_CONTENT.titles[currentCat] || TEXT_CONTENT.titles.default
   }
 
   const getTotalGuests = () => {
@@ -193,14 +210,19 @@ export function BookingSheet({ isOpen, onOpenChange, category }: BookingSheetPro
         <BookingHeader
           step={step}
           onBack={handleBack}
+          onClose={() => onOpenChange(false)}
           title={getTitle()}
         />
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto">
+          {step === STEPS.CATEGORY && (
+            <CategoryStep onSelect={handleCategorySelect} />
+          )}
+
           {step === STEPS.LOCATION && (
             <LocationStep
-              category={category}
+              category={internalCategory || category}
               onSelect={handleSelect}
             />
           )}
@@ -241,13 +263,22 @@ export function BookingSheet({ isOpen, onOpenChange, category }: BookingSheetPro
 interface BookingHeaderProps {
   step: number
   onBack: () => void
+  onClose: () => void
   title: string
 }
 
-function BookingHeader({ step, onBack, title }: BookingHeaderProps) {
+function BookingHeader({ step, onBack, onClose, title }: BookingHeaderProps) {
   return (
-    <div className="p-6 border-b border-border/10 bg-card/50 backdrop-blur-md">
-      <div className="flex items-center gap-2 mb-2">
+    <div className="p-6 border-b border-border/10 bg-card/50 backdrop-blur-md relative">
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground hover:bg-white/10 rounded-full transition-colors z-50"
+        aria-label="Close"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
+      <div className="flex items-center gap-2 mb-2 pr-8">
         {step > STEPS.LOCATION && (
           <button onClick={onBack} className="p-1 hover:bg-white/10 rounded-full transition-colors -ml-2">
             <ChevronLeft className="w-5 h-5 text-muted-foreground" />
@@ -258,6 +289,36 @@ function BookingHeader({ step, onBack, title }: BookingHeaderProps) {
       <SheetDescription className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">
         Step {step} of {STEPS.CHECKOUT} • {STEP_LABELS[step as keyof typeof STEP_LABELS]}
       </SheetDescription>
+    </div>
+  )
+}
+
+// Category Step Component
+function CategoryStep({ onSelect }: { onSelect: (cat: "hotel" | "dining" | "delivery") => void }) {
+  const options = [
+    { id: "hotel", label: "Book a Stay", icon: BedDouble, desc: "Luxury rooms & suites" },
+    { id: "dining", label: "Reserve Table", icon: Utensils, desc: "Fine dining experiences" },
+    { id: "delivery", label: "Order Food", icon: ShoppingBag, desc: "In-room dining" },
+  ] as const
+
+  return (
+    <div className="p-6 space-y-4">
+      {options.map((opt) => (
+        <button
+          key={opt.id}
+          onClick={() => onSelect(opt.id)}
+          className="w-full flex items-center gap-4 p-4 rounded-xl border border-border/10 bg-card/50 hover:bg-card hover:border-primary/20 transition-all text-left group"
+        >
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+            <opt.icon className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="font-semibold text-foreground">{opt.label}</div>
+            <div className="text-xs text-muted-foreground">{opt.desc}</div>
+          </div>
+          <ChevronRight className="w-5 h-5 ml-auto text-muted-foreground/50 group-hover:text-primary transition-colors" />
+        </button>
+      ))}
     </div>
   )
 }
