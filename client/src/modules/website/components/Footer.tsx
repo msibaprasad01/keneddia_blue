@@ -84,8 +84,8 @@ export default function Footer() {
                 <div className="relative">
                   {/* Dark theme logo */}
                   <img
-                    src={siteContent.brand.logo.subImage.src}
-                    alt={siteContent.brand.logo.subImage.alt || siteContent.brand.logo.text}
+                    src={siteContent.brand.logo_hotel.image.src}
+                    alt={siteContent.brand.logo_hotel.image.alt || siteContent.brand.logo.text}
                     className="hidden dark:block h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
                   />
 
