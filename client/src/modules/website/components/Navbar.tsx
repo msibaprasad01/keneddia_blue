@@ -1,40 +1,19 @@
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, LogIn, ArrowLeft, Calendar } from "lucide-react";
+import { ChevronDown, LogIn, Calendar } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
+import { isRouteAvailable } from "@/lib/routes";
 import { BookingSheet } from "./BookingSheet";
 import { ThemeToggle } from "./ThemeToggle";
 
-// Business Mega Menu Categories
-const BUSINESS_CATEGORIES = [
-  {
-    title: "Hotels & Resorts",
-    items: [
-      { label: "Luxury Hotels", href: "#" },
-      { label: "Beach Resorts", href: "#" },
-      { label: "Urban Properties", href: "#" },
-      { label: "Heritage Hotels", href: "#" },
-    ],
-  },
-  {
-    title: "Cafes & Dining",
-    items: [
-      { label: "Fine Dining", href: "#" },
-      { label: "Casual Cafes", href: "#" },
-      { label: "Rooftop Restaurants", href: "#" },
-      { label: "Specialty Coffee", href: "#" },
-    ],
-  },
-  {
-    title: "Bars & Lounges",
-    items: [
-      { label: "Cocktail Bars", href: "#" },
-      { label: "Wine Lounges", href: "#" },
-      { label: "Sky Bars", href: "#" },
-      { label: "Pool Bars", href: "#" },
-    ],
-  },
+// Business Dropdown Items
+const BUSINESS_ITEMS = [
+  { label: "Hotels & Resorts", href: "/hotels" },
+  { label: "Cafes & Dining", href: "/cafes" },
+  { label: "Bars & Lounges", href: "/bars" },
+  { label: "Events & Conf.", href: "/events" },
+  { label: "Entertainment", href: "/entertainment" },
 ];
 
 // Join Us Dropdown Items
@@ -55,16 +34,15 @@ const QUICK_BOOKING_OPTIONS = [
 // Types
 type NavItem =
   | { type: 'link'; label: string; href: string; key: string }
-  | { type: 'dropdown'; label: string; key: string; items: { label: string; href: string }[] }
-  | { type: 'mega'; label: string; key: string; items: typeof BUSINESS_CATEGORIES };
+  | { type: 'dropdown'; label: string; key: string; items: { label: string; href: string }[] };
 
 // Main Navigation Items
 const NAV_ITEMS: NavItem[] = [
   {
-    type: 'mega',
+    type: 'dropdown',
     label: 'BUSINESSES',
     key: 'business',
-    items: BUSINESS_CATEGORIES
+    items: BUSINESS_ITEMS
   },
   {
     type: 'link',
@@ -139,17 +117,14 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
       setScrolled(window.scrollY > NAVBAR_CONFIG.scrollThreshold);
 
       // Active Section Detection
-      let currentInfo = null;
-      for (const sectionId of TRACKED_SECTIONS) {
+      const currentSection = TRACKED_SECTIONS.find(sectionId => {
         const el = document.getElementById(sectionId);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= 100 && rect.bottom >= 100) {
-            currentInfo = sectionId;
-          }
-        }
-      }
-      setActiveSection(currentInfo);
+        if (!el) return false;
+        const rect = el.getBoundingClientRect();
+        return rect.top <= 100 && rect.bottom >= 100;
+      });
+
+      setActiveSection(currentSection || null);
     };
 
     // Handle initial hash scroll
@@ -174,12 +149,11 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
   }, [location]);
 
   // Navigation Click Handler
-  const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const handleNavigation = (href: string) => {
     const targetId = href.replace(/^[/#]/, '').toLowerCase();
     const targetElement = document.getElementById(targetId);
 
     if (targetElement) {
-      e.preventDefault();
       const elementPosition = targetElement.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - NAVBAR_CONFIG.navbarHeight;
 
@@ -187,9 +161,6 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
         top: offsetPosition,
         behavior: NAVBAR_CONFIG.scrollBehavior
       });
-
-      setMobileMenuOpen(false);
-      return;
     }
 
     setMobileMenuOpen(false);
@@ -198,58 +169,42 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const href = e.currentTarget.getAttribute('href');
     if (href) {
-      handleNavigation(e, href);
+      e.preventDefault();
+      handleNavigation(href);
     }
   };
 
-  const handleBack = () => {
-    if (window.history.length > 2) {
-      window.history.back();
-    } else {
-      setLocation("/");
-    }
-  };
+  const navbarClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+    ? "bg-white dark:bg-background/95 dark:backdrop-blur-sm shadow-md py-2 border-b border-border/10"
+    : "bg-white dark:bg-transparent backdrop-blur-none dark:xl:backdrop-blur-none shadow-md xl:shadow-none py-2 xl:py-4"
+    }`;
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
-    ${scrolled
-          ? "bg-white dark:bg-background/95 dark:backdrop-blur-sm shadow-md py-2 border-b border-border/10"
-          : "bg-white dark:bg-transparent backdrop-blur-none dark:xl:backdrop-blur-none shadow-md xl:shadow-none py-2 xl:py-4"
-        }
-  `}
-    >
-
+    <nav className={navbarClasses}>
       <div className="container mx-auto px-4 xl:px-12">
         <div className="flex items-center justify-between h-16">
 
+          {/* Logo Section */}
           <div className="flex items-center gap-2 xl:gap-4">
-            {/* Logo Section */}
             <div className="flex items-center justify-start flex-shrink-0">
               <Link href="/">
-                <a onClick={handleLinkClick} className="block transition-all duration-300 rounded-lg p-1.5 xl:p-2  dark:bg-transparent hover:opacity-100 cursor-pointer">
-                  <div className="relative">
-                    {/* Dark theme logo */}
-                    <img
-                      src={darkLogo.src}
-                      alt={darkLogo.alt}
-                      className="hidden dark:block h-12 xl:h-14 w-auto object-contain opacity-90"
-                    />
-
-                    {/* Light (white) theme logo */}
-                    <img
-                      src={lightLogo.src}
-                      alt={lightLogo.alt}
-                      className="block dark:hidden h-12 xl:h-14 w-auto object-contain opacity-90"
-                    />
-                  </div>
-
+                <a onClick={handleLinkClick} className="block transition-all duration-300 rounded-lg p-1.5 xl:p-2 dark:bg-transparent hover:opacity-100 cursor-pointer">
+                  <img
+                    src={darkLogo.src}
+                    alt={darkLogo.alt}
+                    className="hidden dark:block h-12 xl:h-14 w-auto object-contain opacity-90"
+                  />
+                  <img
+                    src={lightLogo.src}
+                    alt={lightLogo.alt}
+                    className="block dark:hidden h-12 xl:h-14 w-auto object-contain opacity-90"
+                  />
                 </a>
               </Link>
             </div>
           </div>
 
-          {/* Desktop Navigation - Shows at xl breakpoint (1280px+) */}
+          {/* Desktop Navigation */}
           <div className="hidden xl:flex items-center justify-center flex-1 space-x-1 2xl:space-x-2">
             {navItems.map((item) => (
               <NavItem
@@ -263,7 +218,7 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
             ))}
           </div>
 
-          {/* Right Actions: Quick Select + Login + Theme Toggle */}
+          {/* Desktop Right Actions */}
           <div className="hidden xl:flex items-center justify-end gap-2 2xl:gap-3 w-auto">
             {/* Quick Action Selector */}
             <div className="relative group">
@@ -271,7 +226,6 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
                 <span>Quick Book</span>
                 <ChevronDown className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
               </button>
-              {/* Quick Action Dropdown */}
               <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-xl rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right cursor-pointer">
                 <div className="py-1">
                   {QUICK_BOOKING_OPTIONS.map((option, index) => (
@@ -294,13 +248,11 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
               </a>
             </Link>
 
-            {/* Theme Toggle */}
             <ThemeToggle />
           </div>
 
-          {/* Mobile Actions: Theme Toggle + Menu Button - Shows below xl breakpoint (below 1280px) */}
+          {/* Mobile Actions */}
           <div className="xl:hidden flex items-center gap-3">
-            {/* Quick Book Mobile */}
             <button
               onClick={() => setBookingOpen(true)}
               className="text-foreground hover:text-primary transition-colors cursor-pointer"
@@ -309,10 +261,8 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
               <Calendar className="w-5 h-5" />
             </button>
 
-            {/* Theme Toggle for Mobile */}
             <ThemeToggle />
 
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-foreground hover:text-primary transition-colors relative cursor-pointer"
@@ -325,7 +275,6 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 )}
               </svg>
-              {/* Show blinking indicator only when menu is closed */}
               {!mobileMenuOpen && (
                 <span className="absolute -top-0.5 -right-0.5">
                   <BlinkingIndicator />
@@ -344,6 +293,7 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
           handleLinkClick={handleLinkClick}
         />
       </div>
+
       <BookingSheet
         isOpen={bookingOpen}
         onOpenChange={setBookingOpen}
@@ -370,39 +320,43 @@ function NavItem({ item, activeDropdown, setActiveDropdown, handleLinkClick, isA
   const isHovered = activeDropdown === item.key;
   const showIndicator = isHovered || isActive;
 
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => item.type !== 'link' && setActiveDropdown(item.key)}
-      onMouseLeave={() => setActiveDropdown(null)}
-    >
-      {item.type === 'link' ? (
+  if (item.type === 'link') {
+    return (
+      <div className="relative">
         <Link href={item.href}>
           <a
             onClick={handleLinkClick}
-            className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${isActive ? "text-primary" : "text-foreground hover:text-primary"}`}
+            className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${isActive ? "text-primary" : "text-foreground hover:text-primary"
+              }`}
           >
             {item.label}
-            {showIndicator && <ActiveIndicator />}
           </a>
         </Link>
-      ) : (
-        <>
-          <button
-            className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${isActive ? "text-primary" : "text-foreground hover:text-primary"}`}
-          >
-            {item.label}
-            <ChevronDown className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
-            {showIndicator && <ActiveIndicator />}
-          </button>
+        {showIndicator && <ActiveIndicator />}
+      </div>
+    );
+  }
 
-          <AnimatePresence>
-            {isHovered && (
-              <DropdownMenu item={item} handleLinkClick={handleLinkClick} />
-            )}
-          </AnimatePresence>
-        </>
-      )}
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setActiveDropdown(item.key)}
+      onMouseLeave={() => setActiveDropdown(null)}
+    >
+      <button
+        className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${isActive ? "text-primary" : "text-foreground hover:text-primary"
+          }`}
+      >
+        {item.label}
+        <ChevronDown className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
+      </button>
+      {showIndicator && <ActiveIndicator />}
+
+      <AnimatePresence>
+        {isHovered && (
+          <DropdownMenu items={item.items} handleLinkClick={handleLinkClick} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -421,84 +375,44 @@ function ActiveIndicator() {
 
 // Dropdown Menu Component
 interface DropdownMenuProps {
-  item: NavItem;
+  items: { label: string; href: string }[];
   handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
-function DropdownMenu({ item, handleLinkClick }: DropdownMenuProps) {
+function DropdownMenu({ items, handleLinkClick }: DropdownMenuProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2 }}
-      className={`absolute top-full mt-2 bg-card border border-border/50 shadow-xl rounded-lg overflow-hidden ${item.type === 'mega' ? "left-1/2 -translate-x-1/2 shadow-2xl" : "right-0 w-64"
-        }`}
-      style={item.type === 'mega' ? { width: 'max-content', maxWidth: '90vw' } : undefined}
+      className="absolute top-full mt-2 bg-card border border-border/50 shadow-xl rounded-lg overflow-hidden right-0 w-64"
     >
-      {item.type === 'mega' ? (
-        <MegaMenu items={item.items} handleLinkClick={handleLinkClick} />
-      ) : item.type === 'dropdown' ? (
-        <SimpleDropdown items={item.items} handleLinkClick={handleLinkClick} />
-      ) : null}
+      <div className="py-2">
+        {items.map((subItem, idx) => {
+          const isAvailable = subItem.href.startsWith('#') || isRouteAvailable(subItem.href);
+          return (
+            <div key={idx}>
+              {isAvailable ? (
+                <Link href={subItem.href}>
+                  <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
+                    {subItem.label}
+                  </a>
+                </Link>
+              ) : (
+                <span className="block px-6 py-3 text-sm text-foreground/50 cursor-not-allowed">
+                  {subItem.label}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </motion.div>
   );
 }
 
-// Mega Menu Component
-interface MegaMenuProps {
-  items: typeof BUSINESS_CATEGORIES;
-  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
-}
-
-function MegaMenu({ items, handleLinkClick }: MegaMenuProps) {
-  return (
-    <div className="p-8">
-      <div className="grid gap-8" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(180px, 1fr))` }}>
-        {items.map((category, index) => (
-          <div key={index}>
-            <h3 className="font-bold text-sm text-foreground mb-4 pb-2 border-b border-border">
-              {category.title}
-            </h3>
-            <ul className="space-y-2.5">
-              {category.items.map((subItem, itemIndex) => (
-                <li key={itemIndex}>
-                  <Link href={subItem.href}>
-                    <a onClick={handleLinkClick} className="text-sm text-muted-foreground hover:text-primary transition-colors block cursor-pointer">
-                      {subItem.label}
-                    </a>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Simple Dropdown Component
-interface SimpleDropdownProps {
-  items: { label: string; href: string }[];
-  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
-}
-
-function SimpleDropdown({ items, handleLinkClick }: SimpleDropdownProps) {
-  return (
-    <div className="py-2">
-      {items.map((subItem, idx) => (
-        <Link key={idx} href={subItem.href}>
-          <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
-            {subItem.label}
-          </a>
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-// Blinking Indicator Component for Mobile Dropdowns
+// Blinking Indicator Component
 function BlinkingIndicator() {
   return (
     <motion.div
@@ -513,7 +427,6 @@ function BlinkingIndicator() {
         ease: "easeInOut",
       }}
     >
-      {/* Outer pulse ring */}
       <motion.div
         className="absolute inset-0 bg-primary rounded-full"
         animate={{
@@ -569,7 +482,6 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
               )
             )}
 
-            {/* Login Button */}
             <div className="px-4 pt-4">
               <Link href="#">
                 <a onClick={handleLinkClick} className="flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all cursor-pointer">
@@ -604,7 +516,6 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
       >
         <span className="flex items-center gap-2">
           {item.label}
-          {/* Show blinking indicator only when menu is collapsed */}
           {!isExpanded && (
             <span className="relative">
               <BlinkingIndicator />
@@ -623,34 +534,20 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
             transition={{ duration: 0.2 }}
             className="bg-accent/5 overflow-hidden"
           >
-            {item.type === 'mega' ? (
-              item.items.map((category, index) => (
-                <div key={index} className="px-6 py-3 border-b border-border/5 last:border-0">
-                  <h4 className="font-semibold text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                    {category.title}
-                  </h4>
-                  <ul className="space-y-1.5">
-                    {category.items.map((subItem, itemIndex) => (
-                      <li key={itemIndex}>
-                        <Link href={subItem.href}>
-                          <a onClick={handleLinkClick} className="block text-sm text-foreground/70 hover:text-primary py-1 transition-colors cursor-pointer">
-                            {subItem.label}
-                          </a>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            ) : (
-              item.items.map((subItem, idx) => (
+            {item.items.map((subItem, idx) => {
+              const isAvailable = subItem.href.startsWith('#') || isRouteAvailable(subItem.href);
+              return isAvailable ? (
                 <Link key={idx} href={subItem.href}>
                   <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer">
                     {subItem.label}
                   </a>
                 </Link>
-              ))
-            )}
+              ) : (
+                <span key={idx} className="block px-6 py-2.5 text-sm text-foreground/50 cursor-not-allowed">
+                  {subItem.label}
+                </span>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>

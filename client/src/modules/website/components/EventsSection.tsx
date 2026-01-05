@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Calendar, ArrowRight, MapPin } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { isRouteAvailable } from "@/lib/routes";
 
 // ============================================================================
 // EVENTS SECTION CONFIGURATION - Centralized
@@ -122,12 +123,19 @@ function SectionHeader({ title, viewAllLink, selectedLocation, setSelectedLocati
           <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
         </div>
 
-        <Link href={viewAllLink}>
-          <a className="group flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">
+        {isRouteAvailable(viewAllLink) ? (
+          <Link href={viewAllLink}>
+            <a className="group flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all cursor-pointer">
+              All Events
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          </Link>
+        ) : (
+          <span className="flex items-center gap-1.5 text-sm font-semibold text-primary/50 cursor-not-allowed">
             All Events
             <ArrowRight className="w-4 h-4" />
-          </a>
-        </Link>
+          </span>
+        )}
       </div>
     </div>
   );

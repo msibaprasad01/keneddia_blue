@@ -2,6 +2,7 @@ import { Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp } from "lucide
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import { siteContent } from "@/data/siteContent";
+import { isRouteAvailable } from "@/lib/routes";
 
 const footerSections = [
   {
@@ -125,18 +126,27 @@ export default function Footer() {
                 {section.title}
               </h3>
               <ul className="space-y-3">
-                {section.links.map((link, linkIndex) => (
-                  <li key={linkIndex}>
-                    <Link href={link.href}>
-                      <a
-                        onClick={handleLinkClick}
-                        className="text-sm text-[#374151] hover:text-[#B11226] transition-colors block"
-                      >
-                        {link.label}
-                      </a>
-                    </Link>
-                  </li>
-                ))}
+                {section.links.map((link, linkIndex) => {
+                  const isAvailable = link.href.startsWith('#') || isRouteAvailable(link.href);
+                  return (
+                    <li key={linkIndex}>
+                      {isAvailable ? (
+                        <Link href={link.href}>
+                          <a
+                            onClick={handleLinkClick}
+                            className="text-sm text-[#374151] hover:text-[#B11226] transition-colors block"
+                          >
+                            {link.label}
+                          </a>
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-[#374151] opacity-50 cursor-not-allowed block">
+                          {link.label}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
