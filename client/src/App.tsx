@@ -12,6 +12,7 @@ import Cafes from "@/modules/website/pages/Cafes";
 import Bars from "@/modules/website/pages/Bars";
 import About from "@/modules/website/pages/About";
 import Events from "@/modules/website/pages/Events";
+import Entertainment from "@/modules/website/pages/Entertainment";
 import Reviews from "@/modules/website/pages/Reviews";
 
 // Scroll to top on route change
@@ -34,8 +35,9 @@ function Router() {
         <Route path="/hotels" component={Hotels} />
         <Route path="/cafes" component={Cafes} />
         <Route path="/bars" component={Bars} />
-        <Route path="/about" component={About} />
         <Route path="/events" component={Events} />
+        <Route path="/entertainment" component={Entertainment} />
+        <Route path="/about" component={About} />
         <Route path="/reviews" component={Reviews} />
         <Route component={NotFound} />
       </Switch>

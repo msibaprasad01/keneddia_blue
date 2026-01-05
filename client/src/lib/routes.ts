@@ -10,6 +10,7 @@ export const availableRoutes = [
   '/bars',
   '/about',
   '/events',
+  '/entertainment',
   '/reviews',
 ] as const;
 

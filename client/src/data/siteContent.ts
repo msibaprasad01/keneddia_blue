@@ -111,6 +111,7 @@ export const siteContent = {
       jazz: { src: barSpeakeasy, alt: "Jazz Music Event", priority: false },
       gala: { src: heroLobby, alt: "Gala Event at Lobby", priority: false },
       highTea: { src: cafeHighTea, alt: "High Tea Event", priority: false },
+      wedding: { src: heroLobby, alt: "Luxury Wedding", priority: false },
     },
     globalPresence: {
       map: { src: mapImage, alt: "India Presence Map", priority: false },

@@ -106,7 +106,18 @@ const NAVBAR_CONFIG = {
 // MAIN NAVBAR COMPONENT
 // ============================================================================
 
-export default function Navbar() {
+// Brand Interface
+interface NavbarBrand {
+  image: { src: string; alt: string };
+  subImage?: { src: string; alt: string };
+  text?: string;
+}
+
+export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavItem[], logo?: NavbarBrand }) {
+  const brandLogo = logo || siteContent.brand.logo;
+  const darkLogo = brandLogo.image;
+  const lightLogo = brandLogo.subImage || brandLogo.image;
+
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -220,15 +231,15 @@ export default function Navbar() {
                   <div className="relative">
                     {/* Dark theme logo */}
                     <img
-                      src={siteContent.brand.logo.image.src}
-                      alt={siteContent.brand.logo.image.alt}
+                      src={darkLogo.src}
+                      alt={darkLogo.alt}
                       className="hidden dark:block h-12 xl:h-14 w-auto object-contain opacity-90"
                     />
 
                     {/* Light (white) theme logo */}
                     <img
-                      src={siteContent.brand.logo.subImage.src}
-                      alt={siteContent.brand.logo.subImage.alt}
+                      src={lightLogo.src}
+                      alt={lightLogo.alt}
                       className="block dark:hidden h-12 xl:h-14 w-auto object-contain opacity-90"
                     />
                   </div>
@@ -240,7 +251,7 @@ export default function Navbar() {
 
           {/* Desktop Navigation - Shows at xl breakpoint (1280px+) */}
           <div className="hidden xl:flex items-center justify-center flex-1 space-x-1 2xl:space-x-2">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <NavItem
                 key={item.key}
                 item={item}
@@ -329,7 +340,7 @@ export default function Navbar() {
           mobileMenuOpen={mobileMenuOpen}
           mobileExpandedMenu={mobileExpandedMenu}
           setMobileExpandedMenu={setMobileExpandedMenu}
-          navItems={NAV_ITEMS}
+          navItems={navItems}
           handleLinkClick={handleLinkClick}
         />
       </div>
