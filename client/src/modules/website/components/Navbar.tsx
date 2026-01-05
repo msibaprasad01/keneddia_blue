@@ -241,8 +241,8 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
               </div>
             </div>
 
-            <Link href="#">
-              <a onClick={handleLinkClick} className="flex items-center gap-1.5 px-3 2xl:px-5 py-2 text-foreground/80 hover:text-primary transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap cursor-pointer">
+            <Link href="/login">
+              <a className="flex items-center gap-1.5 px-3 2xl:px-5 py-2 text-foreground/80 hover:text-primary transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap cursor-pointer">
                 <LogIn className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
                 LOGIN
               </a>
@@ -483,8 +483,8 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
             )}
 
             <div className="px-4 pt-4">
-              <Link href="#">
-                <a onClick={handleLinkClick} className="flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all cursor-pointer">
+              <Link href="/login">
+                <a className="flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all cursor-pointer">
                   <LogIn className="w-4 h-4" />
                   LOGIN
                 </a>

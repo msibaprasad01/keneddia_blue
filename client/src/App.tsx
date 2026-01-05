@@ -14,6 +14,8 @@ import About from "@/modules/website/pages/About";
 import Events from "@/modules/website/pages/Events";
 import Entertainment from "@/modules/website/pages/Entertainment";
 import Reviews from "@/modules/website/pages/Reviews";
+// @ts-expect-error - JSX module without type declarations
+import Login from "@/modules/auth/login";
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -39,6 +41,7 @@ function Router() {
         <Route path="/entertainment" component={Entertainment} />
         <Route path="/about" component={About} />
         <Route path="/reviews" component={Reviews} />
+        <Route path="/login" component={Login} />
         <Route component={NotFound} />
       </Switch>
     </>
