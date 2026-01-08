@@ -132,7 +132,7 @@ function Sidebar() {
               }}
               onClick={() => item.hasSubmenu && toggleMenu(item.label)}
             >
-              <item.icon size={20} className="min-w-[20px]" />
+              <item.icon size={20} className="min-w-5" />
               <span className="text-sm flex-1">{item.label}</span>
               {item.hasSubmenu && (
                 <ChevronDown 
@@ -186,7 +186,7 @@ function Sidebar() {
             e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
-          <Settings size={20} className="min-w-[20px]" />
+          <Settings size={20} className="min-w-5" />
           <span className="text-sm">Settings</span>
         </div>
         <div 
@@ -199,7 +199,7 @@ function Sidebar() {
             e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
-          <LogOut size={20} className="min-w-[20px]" />
+          <LogOut size={20} className="min-w-5" />
           <span className="text-sm">Logout</span>
         </div>
       </div>
