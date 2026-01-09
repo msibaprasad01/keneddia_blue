@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Calendar, Users, Search, Star, ArrowRight, X, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Star, ArrowRight, X, Share2, Heart, Gift, Check } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
-import HeaderLogo from "@/modules/website/components/HeaderLogo";
+import HotelCarouselSection from "@/modules/website/components/HotelCarouselSection";
+import CollectionSection from "@/modules/website/components/CollectionSection";
 
 // Assets
 import { siteContent } from "@/data/siteContent";
@@ -13,10 +14,10 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 const HOTEL_NAV_ITEMS = [
   { type: 'link', label: 'OVERVIEW', key: 'overview', href: '#overview' },
   { type: 'link', label: 'COLLECTION', key: 'collection', href: '#collection' },
-  { type: 'link', label: 'OFFERS', key: 'offers', href: '/offers' }, // Placeholder 
+  { type: 'link', label: 'OFFERS', key: 'offers', href: '/offers' },
   { type: 'link', label: 'EVENTS', key: 'events', href: '/events' },
-  { type: 'link', label: 'CONTACT', key: 'contact', href: '#footer' }, // Scroll to footer
-] as any[]; // Using any to bypass strict type checking if NavItem types conflict locally
+  { type: 'link', label: 'CONTACT', key: 'contact', href: '#footer' },
+] as any[];
 
 const allHotels = [
   {
@@ -28,11 +29,17 @@ const allHotels = [
     price: "₹35,000",
     rating: "4.9",
     reviews: 1240,
-    description: "A historic landmark transformed into a sanctuary of modern luxury, overlooking the Gateway of India.",
+    description:
+      "A historic landmark transformed into a sanctuary of modern luxury, overlooking the Gateway of India. Experience the convergence of heritage and contemporary elegance.",
     amenities: ["Free WiFi", "Spa", "Restaurant", "Bar", "Gym", "Room Service"],
+    features: ["Heritage Wing", "Sea View Suites", "Butlers on call"],
     rooms: 156,
     checkIn: "2:00 PM",
     checkOut: "11:00 AM",
+    coordinates: {
+      lat: 18.921984,
+      lng: 72.833855, // Colaba, Mumbai
+    },
   },
   {
     id: "bengaluru",
@@ -43,11 +50,17 @@ const allHotels = [
     price: "₹18,000",
     rating: "4.8",
     reviews: 892,
-    description: "Minimalist perfection in the heart of Bengaluru's most exclusive tech and lifestyle district.",
+    description:
+      "Minimalist perfection in the heart of Bengaluru's most exclusive tech and lifestyle district. A haven for digital nomads and business leaders.",
     amenities: ["Free WiFi", "Traditional Tea Room", "Michelin Restaurant", "Zen Garden"],
+    features: ["Co-working Lounge", "Rooftop Microbrewery", "Smart Rooms"],
     rooms: 98,
     checkIn: "2:00 PM",
     checkOut: "11:00 AM",
+    coordinates: {
+      lat: 12.971891,
+      lng: 77.641154, // Indiranagar, Bengaluru
+    },
   },
   {
     id: "delhi",
@@ -58,11 +71,17 @@ const allHotels = [
     price: "₹25,000",
     rating: "5.0",
     reviews: 2156,
-    description: "Opulence redefined with unparalleled views of the capital's heritage.",
+    description:
+      "Opulence redefined with unparalleled views of the capital's heritage. The preferred address for diplomats and discerning travelers.",
     amenities: ["Infinity Pool", "Spa", "5 Restaurants", "Butler Service", "Helipad"],
+    features: ["Presidential Suite", "Cigar Lounge", "Art Gallery"],
     rooms: 342,
     checkIn: "2:00 PM",
     checkOut: "12:00 PM",
+    coordinates: {
+      lat: 28.631451,
+      lng: 77.216667, // Connaught Place, Delhi
+    },
   },
   {
     id: "kolkata",
@@ -73,11 +92,17 @@ const allHotels = [
     price: "₹20,000",
     rating: "4.9",
     reviews: 1567,
-    description: "Classic colonial elegance meets contemporary comfort in the City of Joy.",
+    description:
+      "Classic colonial elegance meets contemporary comfort in the City of Joy. A tribute to the artistic and intellectual spirit of Bengal.",
     amenities: ["Michelin Star Restaurant", "Wine Cellar", "Art Gallery", "Concierge"],
+    features: ["Literary Club", "Afternoon Tea", "Jazz Bar"],
     rooms: 124,
     checkIn: "2:00 PM",
     checkOut: "11:00 AM",
+    coordinates: {
+      lat: 22.553523,
+      lng: 88.349934, // Park Street, Kolkata
+    },
   },
   {
     id: "hyderabad",
@@ -88,11 +113,17 @@ const allHotels = [
     price: "₹22,000",
     rating: "4.8",
     reviews: 1023,
-    description: "An urban oasis featuring our signature infinity pool and lush sky gardens.",
+    description:
+      "An urban oasis featuring our signature infinity pool and lush sky gardens. The jewel of the Nizams, reimagined for the modern era.",
     amenities: ["Rooftop Pool", "Sky Gardens", "3 Restaurants", "Spa", "Business Center"],
+    features: ["Convention Hall", "Helipad Access", "Royal Suites"],
     rooms: 287,
     checkIn: "2:00 PM",
     checkOut: "11:00 AM",
+    coordinates: {
+      lat: 17.412348,
+      lng: 78.448522, // Banjara Hills, Hyderabad
+    },
   },
   {
     id: "chennai",
@@ -103,17 +134,24 @@ const allHotels = [
     price: "₹19,000",
     rating: "4.9",
     reviews: 934,
-    description: "Waterfront luxury with commanding views of the Bay of Bengal.",
+    description:
+      "Waterfront luxury with commanding views of the Bay of Bengal. Where the rhythm of the waves meets the soul of hospitality.",
     amenities: ["Harbour Views", "Fine Dining", "Pool", "Gym", "Yacht Charter"],
+    features: ["Private Beach", "Ayurvedic Spa", "Seafood Specialty"],
     rooms: 198,
     checkIn: "2:00 PM",
     checkOut: "11:00 AM",
+    coordinates: {
+      lat: 12.909821,
+      lng: 80.249693, // ECR, Chennai
+    },
   },
 ];
 
+
 const cities = ["All Cities", "Mumbai", "Bengaluru", "Delhi", "Kolkata", "Hyderabad", "Chennai"];
 
-// Hero Slider Images (Using existing hotel images for now)
+// Hero Slider Images
 const HERO_IMAGES = [
   siteContent.images.hotels.mumbai,
   siteContent.images.hotels.delhi,
@@ -126,10 +164,10 @@ export default function Hotels() {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
-  const [guests, setGuests] = useState(2);
   const [filteredHotels, setFilteredHotels] = useState(allHotels);
   const [isSearching, setIsSearching] = useState(false);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [showCelebrationOffer, setShowCelebrationOffer] = useState(false);
 
   // Hero Auto-play
   useEffect(() => {
@@ -137,6 +175,12 @@ export default function Hotels() {
       setCurrentHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
     }, 5000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Show offer popup after delay
+  useEffect(() => {
+    const timer = setTimeout(() => setShowCelebrationOffer(true), 10000);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSearch = () => {
@@ -151,6 +195,22 @@ export default function Hotels() {
       setFilteredHotels(filtered);
       setIsSearching(false);
     }, 500);
+  };
+
+  const handleShare = async () => {
+    if (selectedHotel && navigator.share) {
+      try {
+        await navigator.share({
+          title: selectedHotel.name,
+          text: `Check out ${selectedHotel.name} at Kennedia Blu!`,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      alert("Link copied to clipboard!"); // Fallback
+    }
   };
 
   return (
@@ -172,7 +232,8 @@ export default function Hotels() {
               {...HERO_IMAGES[currentHeroIndex]}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-black/30" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent" />
           </motion.div>
         </AnimatePresence>
 
@@ -181,7 +242,7 @@ export default function Hotels() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 uppercase tracking-wider"
+            className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 uppercase tracking-wider drop-shadow-2xl"
           >
             Timeless Luxury
           </motion.h1>
@@ -189,14 +250,14 @@ export default function Hotels() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}
-            className="text-xl md:text-2xl text-white/90 font-light max-w-2xl"
+            className="text-xl md:text-2xl text-white/90 font-light max-w-2xl drop-shadow-lg"
           >
-            Experience the pinnacle of hospitality at Kennedia Blu.
+            Where every moment is crafted with elegance.
           </motion.p>
         </div>
 
         {/* Hero Indicators */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
           {HERO_IMAGES.map((_, idx) => (
             <button
               key={idx}
@@ -208,205 +269,127 @@ export default function Hotels() {
         </div>
       </section>
 
-      {/* 2. ABOUT / OVERVIEW SECTION */}
-      <section id="overview" className="py-24 px-6 bg-background">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+      {/* NEW: HOTEL CAROUSEL SECTION */}
+      <HotelCarouselSection />
+
+      {/* 2. ABOUT / OVERVIEW SECTION - COMPACT */}
+      <section id="overview" className="py-8 px-6 bg-background">
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 lg:grid-cols-[45%_55%] gap-8 items-center">
+            {/* LEFT: Compact Rectangular Image */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="aspect-[3/4] rounded-lg overflow-hidden relative z-10">
+              <div className="aspect-[4/3] rounded-xl overflow-hidden relative z-10 border border-border/10 shadow-2xl">
                 <OptimizedImage
                   {...siteContent.images.hotels.delhi}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -right-6 w-2/3 aspect-square border border-primary/20 rounded-lg -z-0" />
-              <div className="absolute -top-6 -left-6 w-2/3 aspect-square bg-secondary/30 rounded-lg -z-0" />
+              <div className="absolute -bottom-4 -right-4 w-2/3 h-2/3 border-2 border-primary/20 rounded-xl -z-0" />
+              <div className="absolute -top-4 -left-4 w-1/2 h-1/2 bg-secondary/10 rounded-xl -z-0" />
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="space-y-8"
-            >
-              <div>
-                <h3 className="text-primary text-sm font-bold uppercase tracking-widest mb-2">Our Philosophy</h3>
-                <h2 className="text-4xl md:text-5xl font-serif text-foreground leading-tight">
-                  Where Every Stay <br /> Is a Story
-                </h2>
-              </div>
-              <p className="text-muted-foreground leading-relaxed text-lg font-light">
-                Kennedia Blu Hotels & Resorts represents a collection of the world's most distinguished properties, where history, culture, and luxury converge. From the bustling streets of Mumbai's Colaba to the serene backwaters of Chennai, each property is a gateway to the extraordinary.
-              </p>
-              <div className="grid grid-cols-2 gap-8 pt-4">
-                <div>
-                  <h4 className="text-3xl font-serif text-primary mb-1">50+</h4>
-                  <p className="text-sm text-muted-foreground uppercase tracking-wider">Global Locations</p>
-                </div>
-                <div>
-                  <h4 className="text-3xl font-serif text-primary mb-1">5-Star</h4>
-                  <p className="text-sm text-muted-foreground uppercase tracking-wider">Service Rating</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. EXPLORE / COLLECTION SECTION */}
-      <section id="collection" className="py-20 bg-secondary/5 relative">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-serif text-foreground mb-4">Explore Our Collection</h2>
-            <div className="w-24 h-1 bg-primary/20 mx-auto" />
-          </div>
-
-          {/* Search Section */}
-          <div className="mb-12 bg-card p-6 rounded-xl shadow-lg border border-border/50 max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-              {/* Location Dropdown */}
-              <div className="relative">
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Location</label>
-                <div className="relative">
-                  <button
-                    onClick={() => setShowCityDropdown(!showCityDropdown)}
-                    className="w-full flex items-center justify-between px-3 py-3 bg-background border border-border rounded outline-none hover:border-primary/30 transition-colors"
-                  >
-                    <div className="flex items-center">
-                      <MapPin className="w-4 h-4 text-primary mr-2" />
-                      <span className="text-sm font-medium">{selectedCity}</span>
-                    </div>
-                    <ArrowRight className={`w-3 h-3 text-muted-foreground transition-transform ${showCityDropdown ? "rotate-90" : ""}`} />
-                  </button>
-                  {showCityDropdown && (
-                    <div className="absolute top-full mt-1 w-full bg-card rounded-lg shadow-lg border border-border overflow-hidden z-50">
-                      {cities.map((city) => (
-                        <button
-                          key={city}
-                          onClick={() => {
-                            setSelectedCity(city);
-                            setShowCityDropdown(false);
-                          }}
-                          className={`w-full px-3 py-2 text-left text-sm hover:bg-secondary/50 transition-colors ${selectedCity === city ? "bg-secondary/30" : ""
-                            }`}
-                        >
-                          {city}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Dates */}
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Check-in</label>
-                <div className="flex items-center bg-background border border-border rounded px-3 py-3">
-                  <Calendar className="w-4 h-4 text-primary mr-2" />
-                  <input type="date" value={checkInDate} onChange={(e) => setCheckInDate(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Check-out</label>
-                <div className="flex items-center bg-background border border-border rounded px-3 py-3">
-                  <Calendar className="w-4 h-4 text-primary mr-2" />
-                  <input type="date" value={checkOutDate} onChange={(e) => setCheckOutDate(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
-                </div>
-              </div>
-
-              {/* Search Button */}
-              <button
-                onClick={handleSearch}
-                disabled={isSearching}
-                className="bg-primary text-primary-foreground h-[46px] w-full rounded flex items-center justify-center hover:bg-primary/90 transition-colors uppercase tracking-widest text-xs font-bold disabled:opacity-50"
-              >
-                {isSearching ? <Search className="w-4 h-4 animate-spin" /> : "Check Availability"}
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
-            <AnimatePresence mode="popLayout">
-              {filteredHotels.map((hotel, index) => (
+            {/* RIGHT: Carousel Content */}
+            <div className="relative">
+              <AnimatePresence mode="wait">
                 <motion.div
-                  key={hotel.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  onClick={() => setSelectedHotel(hotel)}
-                  className="group cursor-pointer"
+                  key={currentHeroIndex}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.5 }}
+                  className="space-y-4"
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden mb-6 rounded-sm">
-                    <div className="absolute top-4 right-4 z-20 bg-background/90 backdrop-blur px-3 py-1 flex items-center rounded-full">
-                      <Star className="w-3 h-3 text-primary fill-primary mr-1" />
-                      <span className="text-xs font-bold text-foreground">{hotel.rating}</span>
-                    </div>
-                    <motion.div
-                      className="w-full h-full"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <OptimizedImage
-                        {...hotel.image}
-                        className="w-full h-full object-cover"
-                      />
-                    </motion.div>
+                  <div>
+                    <h3 className="text-primary text-xs font-bold uppercase tracking-widest mb-1.5">
+                      {currentHeroIndex === 0 ? "Our Philosophy" : currentHeroIndex === 1 ? "Our Promise" : "Our Legacy"}
+                    </h3>
+                    <h2 className="text-3xl md:text-4xl font-serif text-foreground leading-tight mb-3">
+                      {currentHeroIndex === 0 && "Where Every Stay Is a Story"}
+                      {currentHeroIndex === 1 && "Excellence in Every Detail"}
+                      {currentHeroIndex === 2 && "A Heritage of Hospitality"}
+                    </h2>
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-2xl font-serif text-foreground group-hover:text-primary transition-colors">{hotel.name}</h3>
-                        <div className="flex items-center text-muted-foreground mt-1">
-                          <MapPin className="w-3 h-3 mr-1" />
-                          <span className="text-sm uppercase tracking-wide">{hotel.location}</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">from</p>
-                        <p className="text-lg font-serif text-foreground">{hotel.price}</p>
-                      </div>
+                  <p className="text-muted-foreground leading-relaxed text-base font-light">
+                    {currentHeroIndex === 0 && "Kennedia Blu Hotels & Resorts represents a collection of the world's most distinguished properties. We invite you to experience hospitality that goes beyond service—hospitality that is a feeling, a memory, a story waiting to be told."}
+                    {currentHeroIndex === 1 && "From the moment you arrive, every detail is carefully curated to exceed your expectations. Our commitment to excellence is reflected in our world-class amenities, personalized service, and unforgettable experiences that create lasting memories."}
+                    {currentHeroIndex === 2 && "With decades of experience in luxury hospitality, Kennedia Blu has established itself as a leader in creating exceptional guest experiences. Our heritage of excellence continues to set the standard for premium accommodations worldwide."}
+                  </p>
+
+                  <div className="grid grid-cols-3 gap-4 pt-3">
+                    <div>
+                      <h4 className="text-2xl font-serif text-primary mb-0.5">50+</h4>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">Locations</p>
                     </div>
-                    <p className="text-sm text-muted-foreground/80 font-light leading-relaxed pt-2 border-t border-primary/10 mt-4 line-clamp-2">
-                      {hotel.description}
-                    </p>
-                    <div className="pt-4 flex items-center text-primary text-xs font-bold uppercase tracking-widest group-hover:underline underline-offset-4">
-                      View Details <ArrowRight className="w-3 h-3 ml-2" />
+                    <div>
+                      <h4 className="text-2xl font-serif text-primary mb-0.5">5-Star</h4>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">Rating</p>
+                    </div>
+                    <div>
+                      <h4 className="text-2xl font-serif text-primary mb-0.5">100K+</h4>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">Guests</p>
                     </div>
                   </div>
                 </motion.div>
-              ))}
-            </AnimatePresence>
+              </AnimatePresence>
+
+              {/* Carousel Indicators */}
+              <div className="flex gap-2 mt-4">
+                {[0, 1, 2].map((idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentHeroIndex(idx)}
+                    className={`h-1 rounded-full transition-all duration-300 ${idx === currentHeroIndex ? "bg-primary w-8" : "bg-border w-4 hover:bg-primary/50"
+                      }`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* 3. COLLECTION SECTION */}
+      <CollectionSection
+        filteredHotels={filteredHotels}
+        selectedCity={selectedCity}
+        setSelectedCity={setSelectedCity}
+        checkInDate={checkInDate}
+        setCheckInDate={setCheckInDate}
+        checkOutDate={checkOutDate}
+        setCheckOutDate={setCheckOutDate}
+        handleSearch={handleSearch}
+        isSearching={isSearching}
+        cities={cities}
+        showCityDropdown={showCityDropdown}
+        setShowCityDropdown={setShowCityDropdown}
+        onHotelSelect={setSelectedHotel}
+      />
+
       {/* 4. CTA SECTION */}
-      <section className="py-24 bg-primary text-primary-foreground text-center px-6">
+      <section className="py-10 bg-primary text-primary-foreground text-center px-6">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-4xl md:text-5xl font-serif mb-6">Experience the Extraordinary</h2>
-          <p className="text-lg text-primary-foreground/80 mb-10 max-w-2xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-serif mb-4">Experience the Extraordinary</h2>
+          <p className="text-base text-primary-foreground/80 mb-6 max-w-2xl mx-auto">
             Join our loyalty program to unlock exclusive rates, complimentary upgrades, and unforgettable experiences.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-4 bg-background text-primary font-bold uppercase tracking-widest hover:bg-background/90 transition-colors rounded">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button className="px-6 py-3 bg-background text-primary font-bold uppercase tracking-widest hover:bg-background/90 transition-colors rounded text-sm">
               Join Kennedia Rewards
             </button>
-            <button className="px-8 py-4 border border-primary-foreground/30 text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary-foreground/10 transition-colors rounded">
+            <button className="px-6 py-3 border border-primary-foreground/30 text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary-foreground/10 transition-colors rounded text-sm">
               Contact Concierge
             </button>
           </div>
         </div>
       </section>
 
-      {/* Magnified Detail Modal */}
+      {/* ENHANCED DETAIL MODAL */}
       <AnimatePresence>
         {selectedHotel && (
           <motion.div
@@ -414,70 +397,163 @@ export default function Hotels() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedHotel(null)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4 md:p-6"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               transition={{ type: "spring", duration: 0.5 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-background rounded-xl w-full max-w-6xl max-h-[95vh] overflow-y-auto overflow-x-hidden shadow-2xl flex flex-col lg:flex-row"
             >
               <button
                 onClick={() => setSelectedHotel(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 bg-background/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-background transition-colors"
+                className="absolute top-4 right-4 z-50 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur text-white rounded-full flex items-center justify-center transition-colors"
+                title="Close"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="relative aspect-[16/9] overflow-hidden">
+              {/* Left Column: Imagery */}
+              <div className="w-full lg:w-1/2 relative h-[40vh] lg:h-auto overflow-hidden bg-gray-100">
                 <OptimizedImage
                   {...selectedHotel.image}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-4 left-4 bg-background/90 backdrop-blur px-3 py-1 flex items-center rounded-full">
-                  <Star className="w-4 h-4 text-primary fill-primary mr-1" />
-                  <span className="text-sm font-bold">{selectedHotel.rating}</span>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent lg:hidden" />
+                <div className="absolute bottom-4 left-4 text-white lg:hidden">
+                  <h2 className="text-2xl font-serif font-bold">{selectedHotel.name}</h2>
                 </div>
               </div>
 
-              <div className="p-8">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
+              {/* Right Column: Details */}
+              <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col">
+                <div className="flex-1">
+                  <div className="hidden lg:block mb-8">
                     <h2 className="text-4xl font-serif text-foreground mb-2">{selectedHotel.name}</h2>
-                    <div className="flex items-center text-muted-foreground">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      <span className="text-sm uppercase tracking-wide">{selectedHotel.location}</span>
+                    <div className="flex items-center text-muted-foreground gap-4">
+                      <div className="flex items-center">
+                        <MapPin className="w-4 h-4 mr-1.5 text-primary" />
+                        <span className="text-sm uppercase tracking-wide">{selectedHotel.location}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Star className="w-4 h-4 mr-1.5 text-yellow-500 fill-current" />
+                        <span className="text-sm font-bold">{selectedHotel.rating} ({selectedHotel.reviews} reviews)</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-3xl font-serif text-foreground">{selectedHotel.price}</p>
-                    <p className="text-xs text-muted-foreground">per night</p>
+
+                  {/* Tabs / Description */}
+                  <div className="mb-8">
+                    <p className="text-base text-muted-foreground leading-relaxed font-light">
+                      {selectedHotel.description}
+                    </p>
+                  </div>
+
+                  {/* Features / Amenities */}
+                  <div className="grid grid-cols-2 gap-6 mb-8">
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-foreground mb-3 flex items-center gap-2">
+                        Amenities
+                      </h3>
+                      <ul className="space-y-2">
+                        {selectedHotel.amenities.slice(0, 4).map(amenity => (
+                          <li key={amenity} className="text-sm text-muted-foreground flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                            {amenity}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-foreground mb-3 flex items-center gap-2">
+                        Highlights
+                      </h3>
+                      <ul className="space-y-2">
+                        {selectedHotel.features?.map(feature => (
+                          <li key={feature} className="text-sm text-muted-foreground flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-primary" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Celebration Booking */}
+                  <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-5 mb-8">
+                    <h4 className="flex items-center text-sm font-bold text-foreground mb-2">
+                      <Gift className="w-4 h-4 mr-2 text-primary" />
+                      Planning a Celebration?
+                    </h4>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Let us make your special occasion unforgettable with our curated celebration packages.
+                    </p>
+                    <label className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors">
+                      <input type="checkbox" className="accent-primary w-4 h-4" />
+                      <span>Add Celebration Package (Cake, Decor & Champagne)</span>
+                    </label>
                   </div>
                 </div>
 
-                <p className="text-sm text-muted-foreground/80 font-light leading-relaxed mb-6 pb-6 border-b border-primary/10">
-                  {selectedHotel.description}
-                </p>
-
-                <div className="mb-6">
-                  <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-3 font-bold">Amenities</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedHotel.amenities.map((amenity) => (
-                      <span key={amenity} className="px-3 py-1 bg-secondary/50 text-foreground text-xs font-medium rounded">
-                        {amenity}
-                      </span>
-                    ))}
+                {/* Footer Actions */}
+                <div className="border-t border-border pt-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Total for 1 Night</p>
+                    <p className="text-3xl font-serif text-foreground font-medium">{selectedHotel.price}</p>
+                  </div>
+                  <div className="flex gap-3 w-full md:w-auto">
+                    <button
+                      onClick={handleShare}
+                      className="p-4 border border-border rounded-lg hover:bg-secondary/20 transition-colors text-muted-foreground hover:text-foreground"
+                      title="Share"
+                    >
+                      <Share2 className="w-5 h-5" />
+                    </button>
+                    <button className="p-4 border border-border rounded-lg hover:bg-secondary/20 transition-colors text-muted-foreground hover:text-red-500" title="Save">
+                      <Heart className="w-5 h-5" />
+                    </button>
+                    <button className="flex-1 md:flex-none px-8 py-4 bg-primary text-primary-foreground font-bold uppercase tracking-widest rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                      Book Now <ArrowRight className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-
-                <button className="w-full bg-primary text-primary-foreground py-4 rounded flex items-center justify-center hover:bg-primary/90 transition-colors uppercase tracking-widest text-xs font-bold">
-                  Book Now
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* EXCLUSIVE OFFER POPUP */}
+      <AnimatePresence>
+        {showCelebrationOffer && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-6 right-6 z-40 bg-card border border-border/50 p-6 rounded-lg shadow-2xl max-w-sm"
+          >
+            <button
+              onClick={() => setShowCelebrationOffer(false)}
+              className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <Gift className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-serif text-lg font-medium mb-1">Exclusive Offer</h4>
+                <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                  Book your stay within the next 24 hours and receive a complimentary spa treatment on us.
+                </p>
+                <button className="text-xs font-bold uppercase tracking-widest text-primary hover:underline underline-offset-4">
+                  Claim Offer
+                </button>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
