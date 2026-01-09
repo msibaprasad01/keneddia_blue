@@ -27,13 +27,13 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <section id="daily-offers"><DailyOffers /></section>
-        <section id="properties"><PropertiesSection /></section>
-        <section id="about"><AboutUsSection /></section>
-        <section id="business"><BusinessVerticals /></section>
-        <section id="events"><EventsSection /></section>
-        <section id="news"><NewsPress /></section>
-        <section id="story"><OurStoryPreview /></section>
+        <section id="daily-offers" className="border-b border-section-divider"><DailyOffers /></section>
+        <section id="properties" className="border-b border-section-divider"><PropertiesSection /></section>
+        <section id="about" className="border-b border-section-divider"><AboutUsSection /></section>
+        <section id="business" className="border-b border-section-divider"><BusinessVerticals /></section>
+        <section id="events" className="border-b border-section-divider"><EventsSection /></section>
+        <section id="news" className="border-b border-section-divider"><NewsPress /></section>
+        <section id="story" className="border-b border-section-divider"><OurStoryPreview /></section>
         <section id="global"><GlobalPresence /></section>
         {/* <section id="reviews"><RatingsAndAwards /></section> */}
       </main>
