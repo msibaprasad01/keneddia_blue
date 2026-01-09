@@ -50,7 +50,7 @@ export default function DailyOffers() {
   };
 
   return (
-    <section className="relative w-full bg-background py-10 overflow-hidden">
+    <section className="relative w-full bg-muted py-10 overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Section Header - Compact */}
         <div className="flex items-center justify-between mb-8">

@@ -35,7 +35,7 @@ export default function AboutUsSection() {
 
   return (
     <section className="py-10 md:py-20 bg-background relative overflow-hidden">
-      <div className="absolute inset-0 z-0 bg-background" />
+      <div className="absolute inset-0 z-0 bg-muted" />
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-stretch">
