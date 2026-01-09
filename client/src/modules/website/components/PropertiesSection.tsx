@@ -3,85 +3,133 @@ import { ArrowRight, MapPin, Star, Building2, ChevronLeft, ChevronRight, Phone, 
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
-// Data from Hotels.tsx (kept internal as requested)
+// Data shuffled in pattern: Cafe -> Hotel -> Restaurant -> Cafe
 const properties = [
+  // Cafe 1
   {
-    id: "mumbai",
+    id: "mumbai-cafe",
+    name: "Kennedia Blu Cafe Mumbai",
+    location: "Bandra, Mumbai",
+    city: "Mumbai",
+    type: "Cafe",
+    image: siteContent.images.cafes.parisian,
+    rating: "4.8",
+    description: "A cozy Parisian-style cafe offering artisanal coffee and pastries.",
+    amenities: ["Specialty Coffee", "Fresh Pastries", "Free WiFi", "Outdoor Seating"],
+    capacity: "45 Seats",
+    price: "₹450"
+  },
+  // Hotel 1
+  {
+    id: "mumbai-hotel",
     name: "Kennedia Blu Mumbai",
     location: "Colaba, Mumbai",
     city: "Mumbai",
-    type: "Heritage",
+    type: "Hotel",
     image: siteContent.images.hotels.mumbai,
     rating: "4.9",
-    description: "Experience timeless elegance in the heart of South Mumbai. Our heritage property combines colonial charm with modern luxury.",
+    description: "Experience timeless elegance in the heart of South Mumbai.",
     amenities: ["Ocean View", "Heritage Architecture", "Fine Dining", "Spa & Wellness"],
-    rooms: "120 Luxury Rooms",
+    capacity: "120 Rooms",
     price: "₹12,500"
   },
+  // Restaurant 1
   {
-    id: "bengaluru",
+    id: "mumbai-restaurant",
+    name: "Kennedia Blu Restaurant Mumbai",
+    location: "Marine Drive, Mumbai",
+    city: "Mumbai",
+    type: "Restaurant",
+    image: siteContent.images.bars.rooftop,
+    rating: "4.9",
+    description: "Rooftop fine dining with spectacular ocean views and cocktails.",
+    amenities: ["Rooftop Dining", "Craft Cocktails", "Live Music", "Ocean Views"],
+    capacity: "80 Covers",
+    price: "₹2,500"
+  },
+  // Cafe 2
+  {
+    id: "bengaluru-cafe",
+    name: "Kennedia Blu Cafe Bengaluru",
+    location: "Koramangala, Bengaluru",
+    city: "Bengaluru",
+    type: "Cafe",
+    image: siteContent.images.cafes.minimalist,
+    rating: "4.7",
+    description: "Modern minimalist coffee shop with expertly crafted brews.",
+    amenities: ["Craft Coffee", "Power Outlets", "Co-working Space", "Vegan Options"],
+    capacity: "60 Seats",
+    price: "₹400"
+  },
+  // Hotel 2
+  {
+    id: "bengaluru-hotel",
     name: "Kennedia Blu Bengaluru",
     location: "Indiranagar, Bengaluru",
     city: "Bengaluru",
-    type: "Business",
+    type: "Hotel",
     image: siteContent.images.hotels.bengaluru,
     rating: "4.8",
-    description: "Perfect for business travelers and tech professionals. Modern amenities meet sophisticated comfort in the Silicon Valley of India.",
+    description: "Perfect for business travelers and tech professionals.",
     amenities: ["Business Center", "High-Speed WiFi", "Conference Rooms", "Rooftop Bar"],
-    rooms: "150 Executive Rooms",
+    capacity: "150 Rooms",
     price: "₹10,800"
   },
+  // Restaurant 2
   {
-    id: "delhi",
+    id: "bengaluru-restaurant",
+    name: "Kennedia Blu Restaurant Bengaluru",
+    location: "MG Road, Bengaluru",
+    city: "Bengaluru",
+    type: "Restaurant",
+    image: siteContent.images.bars.speakeasy,
+    rating: "4.8",
+    description: "Intimate speakeasy-style restaurant with jazz and gourmet plates.",
+    amenities: ["Jazz Nights", "Premium Spirits", "Private Dining", "Signature Cocktails"],
+    capacity: "50 Covers",
+    price: "₹2,200"
+  },
+  // Cafe 3
+  {
+    id: "delhi-cafe",
+    name: "Kennedia Blu Cafe Delhi",
+    location: "Khan Market, Delhi",
+    city: "Delhi",
+    type: "Cafe",
+    image: siteContent.images.cafes.highTea,
+    rating: "4.9",
+    description: "Luxury high tea lounge offering premium teas and desserts.",
+    amenities: ["High Tea Service", "Premium Teas", "Afternoon Tea", "Garden View"],
+    capacity: "35 Seats",
+    price: "₹850"
+  },
+  // Hotel 3
+  {
+    id: "delhi-hotel",
     name: "Kennedia Blu Delhi",
     location: "Connaught Place, Delhi",
     city: "Delhi",
-    type: "Luxury",
+    type: "Hotel",
     image: siteContent.images.hotels.delhi,
     rating: "5.0",
-    description: "Unparalleled luxury in the capital's most prestigious location. Where world-class service meets timeless sophistication.",
+    description: "Unparalleled luxury in the capital's most prestigious location.",
     amenities: ["Presidential Suite", "Michelin Dining", "Private Butler", "Infinity Pool"],
-    rooms: "200 Premium Suites",
+    capacity: "200 Suites",
     price: "₹18,900"
   },
+  // Restaurant 3
   {
-    id: "kolkata",
-    name: "Kennedia Blu Kolkata",
-    location: "Park Street, Kolkata",
-    city: "Kolkata",
-    type: "Heritage",
-    image: siteContent.images.hotels.kolkata,
-    rating: "4.9",
-    description: "Nestled in the cultural heart of Kolkata. Rich history blends seamlessly with contemporary comfort and Bengali hospitality.",
-    amenities: ["Heritage Tours", "Bengali Cuisine", "Art Gallery", "Garden Terrace"],
-    rooms: "95 Heritage Rooms",
-    price: "₹9,800"
-  },
-  {
-    id: "hyderabad",
-    name: "Kennedia Blu Hyderabad",
-    location: "Banjara Hills, Hyderabad",
-    city: "Hyderabad",
-    type: "City Hotel",
-    image: siteContent.images.hotels.hyderabad,
-    rating: "4.8",
-    description: "Contemporary elegance in the City of Pearls. Experience royal hospitality with modern conveniences.",
-    amenities: ["City Views", "Multi-Cuisine", "Fitness Center", "Event Spaces"],
-    rooms: "135 Deluxe Rooms",
-    price: "₹11,200"
-  },
-  {
-    id: "chennai",
-    name: "Kennedia Blu Chennai",
-    location: "ECR, Chennai",
-    city: "Chennai",
-    type: "Resort",
-    image: siteContent.images.hotels.chennai,
-    rating: "4.9",
-    description: "Beachfront paradise along the scenic East Coast Road. Relax and rejuvenate with breathtaking ocean views and coastal serenity.",
-    amenities: ["Beach Access", "Water Sports", "Ayurvedic Spa", "Seafood Restaurant"],
-    rooms: "80 Beach Villas",
-    price: "₹14,500"
+    id: "delhi-restaurant",
+    name: "Kennedia Blu Restaurant Delhi",
+    location: "Mehrauli, Delhi",
+    city: "Delhi",
+    type: "Restaurant",
+    image: siteContent.images.bars.whiskey,
+    rating: "5.0",
+    description: "Classic whiskey lounge with rare spirits and fine dining.",
+    amenities: ["Rare Whiskeys", "Wine Cellar", "Chef's Table", "Cigar Lounge"],
+    capacity: "70 Covers",
+    price: "₹3,500"
   },
 ];
 
@@ -91,7 +139,7 @@ export default function PropertiesSection() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const uniqueCities = ["All Cities", ...Array.from(new Set(properties.map(p => p.city)))];
-  const uniqueTypes = ["All Types", ...Array.from(new Set(properties.map(p => p.type)))];
+  const uniqueTypes = ["All Types", "Hotel", "Cafe", "Restaurant"];
 
   const filteredProperties = properties.filter(p => {
     const matchCity = selectedCity === "All Cities" || p.city === selectedCity;
@@ -99,13 +147,13 @@ export default function PropertiesSection() {
     return matchCity && matchType;
   });
 
-  // Auto-slide effect - every 3 seconds
+  // Auto-slide effect - every 4 seconds
   useEffect(() => {
     if (filteredProperties.length <= 1) return;
 
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev === filteredProperties.length - 1 ? 0 : prev + 1));
-    }, 3000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [filteredProperties.length]);
@@ -129,7 +177,7 @@ export default function PropertiesSection() {
       { index: activeIndex, position: 'center' },
       { index: (activeIndex + 1) % total, position: 'right' }
     ];
-    
+
     return [
       { index: (activeIndex - 1 + total) % total, position: 'left' },
       { index: activeIndex, position: 'center' },
@@ -138,6 +186,34 @@ export default function PropertiesSection() {
   };
 
   const visibleCards = getVisibleCards();
+
+  // Get type-specific button text
+  const getActionButtonText = (type: string) => {
+    switch (type) {
+      case "Hotel": return "Book Room";
+      case "Cafe": return "Reserve Table";
+      case "Restaurant": return "Reserve Table";
+      default: return "Book Now";
+    }
+  };
+
+  const getCapacityLabel = (type: string) => {
+    switch (type) {
+      case "Hotel": return "Accommodation";
+      case "Cafe": return "Seating";
+      case "Restaurant": return "Capacity";
+      default: return "Capacity";
+    }
+  };
+
+  const getPriceLabel = (type: string) => {
+    switch (type) {
+      case "Hotel": return "/night";
+      case "Cafe": return "/person";
+      case "Restaurant": return "/person";
+      default: return "/unit";
+    }
+  };
 
   return (
     <section className="py-12 bg-gradient-to-br from-background via-secondary/5 to-background relative overflow-hidden">
@@ -190,9 +266,9 @@ export default function PropertiesSection() {
         </div>
 
         {filteredProperties.length > 0 ? (
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
-            {/* LEFT: 3D Carousel */}
-            <div className="relative h-[450px] flex items-center justify-center perspective-1000">
+          <div className="grid grid-cols-1 lg:grid-cols-[70%_30%] gap-6 items-start">
+            {/* LEFT: 3D Carousel - 70% width */}
+            <div className="relative h-[550px] flex items-center justify-center perspective-1000">
               <div className="relative w-full h-full flex items-center justify-center">
                 {visibleCards.map(({ index, position }) => {
                   const property = filteredProperties[index];
@@ -203,30 +279,29 @@ export default function PropertiesSection() {
                   return (
                     <div
                       key={property.id}
-                      className={`absolute transition-all duration-700 ease-out ${
-                        isCenter 
-                          ? 'z-30 scale-100 opacity-100' 
+                      className={`absolute transition-all duration-700 ease-out ${isCenter
+                          ? 'z-30 scale-100 opacity-100'
                           : 'z-10 scale-75 opacity-40'
-                      }`}
+                        }`}
                       style={{
-                        transform: isCenter 
-                          ? 'translateX(0) rotateY(0deg)' 
+                        transform: isCenter
+                          ? 'translateX(0) rotateY(0deg)'
                           : isLeft
-                          ? 'translateX(-75%) rotateY(25deg)'
-                          : 'translateX(75%) rotateY(-25deg)',
+                            ? 'translateX(-70%) rotateY(20deg)'
+                            : 'translateX(70%) rotateY(-20deg)',
                         transformStyle: 'preserve-3d',
                       }}
                     >
-                      <div className="w-72 h-[380px] bg-card border-2 border-border rounded-2xl overflow-hidden shadow-2xl">
+                      <div className="w-96 h-[480px] bg-card border-2 border-border rounded-2xl overflow-hidden shadow-2xl">
                         <div className="relative h-full">
                           <OptimizedImage
                             {...property.image}
                             className="w-full h-full object-cover"
                           />
-                          
+
                           {/* Gradient Overlay */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                          
+
                           {/* Badge */}
                           {isCenter && (
                             <div className="absolute top-4 left-4">
@@ -239,17 +314,20 @@ export default function PropertiesSection() {
 
                           {/* Property Info Overlay */}
                           {isCenter && (
-                            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                              <div className="inline-block px-2 py-0.5 mb-1.5 text-[9px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-sm rounded border border-white/30">
+                            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                              <div className="inline-block px-2.5 py-0.5 mb-2 text-[10px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-sm rounded border border-white/30">
                                 {property.type}
                               </div>
-                              <h3 className="text-xl font-serif font-semibold mb-0.5">
+                              <h3 className="text-2xl font-serif font-semibold mb-1.5">
                                 {property.name}
                               </h3>
-                              <div className="flex items-center text-xs opacity-90">
-                                <MapPin className="w-3 h-3 mr-1" />
+                              <div className="flex items-center text-sm opacity-90 mb-2.5">
+                                <MapPin className="w-3.5 h-3.5 mr-1.5" />
                                 {property.location}
                               </div>
+                              <p className="text-xs opacity-80 line-clamp-2 leading-relaxed">
+                                {property.description}
+                              </p>
                             </div>
                           )}
                         </div>
@@ -268,7 +346,7 @@ export default function PropertiesSection() {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                
+
                 <div className="px-3 py-1 bg-background/90 backdrop-blur-sm rounded-full border border-border">
                   <span className="text-xs font-semibold text-foreground">
                     {activeIndex + 1} / {filteredProperties.length}
@@ -285,93 +363,86 @@ export default function PropertiesSection() {
               </div>
             </div>
 
-            {/* RIGHT: Content Panel */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-xl">
-              <div className="space-y-4">
+            {/* RIGHT: Compact Content Panel - 30% width */}
+            <div className="bg-card border border-border rounded-2xl p-4 shadow-xl h-[550px] flex flex-col justify-between">
+              <div className="space-y-3">
                 {/* Header */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded-full border border-primary/20">
+                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded-full border border-primary/20">
                       {activeProperty.type}
                     </span>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-yellow-50 rounded-full border border-yellow-200">
-                      <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
+                    <div className="flex items-center gap-1 px-2 py-0.5 bg-yellow-50 rounded-full border border-yellow-200">
+                      <Star className="w-3 h-3 text-yellow-500 fill-current" />
                       <span className="text-xs font-bold text-yellow-900">{activeProperty.rating}</span>
-                      <span className="text-[10px] text-yellow-700">Exceptional</span>
                     </div>
                   </div>
 
-                  <h3 className="text-2xl font-serif font-semibold text-foreground mb-1.5">
+                  <h3 className="text-lg font-serif font-semibold text-foreground mb-1 line-clamp-2">
                     {activeProperty.name}
                   </h3>
-                  
-                  <div className="flex items-center text-muted-foreground mb-3 text-sm">
-                    <MapPin className="w-3.5 h-3.5 mr-1.5" />
-                    <span>{activeProperty.location}</span>
-                  </div>
 
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {activeProperty.description}
-                  </p>
+                  <div className="flex items-center text-muted-foreground mb-2 text-xs">
+                    <MapPin className="w-3 h-3 mr-1" />
+                    <span className="line-clamp-1">{activeProperty.location}</span>
+                  </div>
                 </div>
 
-                {/* Amenities */}
+                {/* Amenities - Compact Grid */}
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-foreground mb-2">
-                    Featured Amenities
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-foreground mb-1.5">
+                    Amenities
                   </h4>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {activeProperty.amenities.map((amenity, idx) => (
-                      <div 
+                  <div className="grid grid-cols-1 gap-1">
+                    {activeProperty.amenities.slice(0, 4).map((amenity, idx) => (
+                      <div
                         key={idx}
-                        className="flex items-center gap-2 text-xs text-muted-foreground"
+                        className="flex items-center gap-1.5 text-[11px] text-muted-foreground"
                       >
-                        <div className="w-1 h-1 bg-primary rounded-full" />
-                        {amenity}
+                        <div className="w-1 h-1 bg-primary rounded-full flex-shrink-0" />
+                        <span className="line-clamp-1">{amenity}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Rooms & Price */}
-                <div className="flex items-center justify-between py-3 border-y border-border">
+                {/* Capacity & Price */}
+                <div className="flex items-center justify-between py-2 border-y border-border">
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                      Accommodation
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
+                      {getCapacityLabel(activeProperty.type)}
                     </p>
-                    <p className="text-sm font-semibold text-foreground">{activeProperty.rooms}</p>
+                    <p className="text-xs font-semibold text-foreground">{activeProperty.capacity}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
                       Starting From
                     </p>
-                    <p className="text-xl font-bold text-primary">
+                    <p className="text-base font-bold text-primary">
                       {activeProperty.price}
-                      <span className="text-xs text-muted-foreground font-normal">/night</span>
+                      <span className="text-[10px] text-muted-foreground font-normal">
+                        {getPriceLabel(activeProperty.type)}
+                      </span>
                     </p>
                   </div>
                 </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-2.5 pt-1">
-                  <button className="w-full py-3 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-98 flex items-center justify-center gap-2 text-sm">
-                    Book Now
-                    <ArrowRight className="w-4 h-4" />
+              {/* Action Buttons - Compact */}
+              <div className="space-y-2">
+                <button className="w-full py-2 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-98 flex items-center justify-center gap-1.5 text-xs">
+                  {getActionButtonText(activeProperty.type)}
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button className="py-1.5 border border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1 text-[11px]">
+                    <Phone className="w-3 h-3" />
+                    Call
                   </button>
-                  
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <button className="py-2.5 border-2 border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 text-xs">
-                      <Phone className="w-3.5 h-3.5" />
-                      Call Us
-                    </button>
-                    <button className="py-2.5 border-2 border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 text-xs">
-                      <Mail className="w-3.5 h-3.5" />
-                      Enquire
-                    </button>
-                  </div>
-
-                  <button className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors">
-                    View Full Details →
+                  <button className="py-1.5 border border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1 text-[11px]">
+                    <Mail className="w-3 h-3" />
+                    Enquire
                   </button>
                 </div>
               </div>
