@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, LogIn, Calendar } from "lucide-react";
@@ -103,7 +103,9 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingCategory, setBookingCategory] = useState<"hotel" | "dining" | "delivery" | null>(null);
-  const [location, setLocation] = useLocation();
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const openBooking = (category: "hotel" | "dining" | "delivery") => {
     setBookingCategory(category);
@@ -128,13 +130,13 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
     };
 
     // Handle initial hash scroll
-    if (window.location.hash) {
-      const id = window.location.hash.replace('#', '');
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
       const el = document.getElementById(id);
       if (el) {
         setTimeout(() => {
           const elementPosition = el.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - NAVBAR_CONFIG.navbarHeight;
+          const offsetPosition = elementPosition + window.scrollY - NAVBAR_CONFIG.navbarHeight;
           window.scrollTo({
             top: offsetPosition,
             behavior: NAVBAR_CONFIG.scrollBehavior
@@ -148,29 +150,30 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
     return () => window.removeEventListener("scroll", handleScroll);
   }, [location]);
 
-  // Navigation Click Handler
-  const handleNavigation = (href: string) => {
-    const targetId = href.replace(/^[/#]/, '').toLowerCase();
-    const targetElement = document.getElementById(targetId);
-
-    if (targetElement) {
-      const elementPosition = targetElement.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - NAVBAR_CONFIG.navbarHeight;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: NAVBAR_CONFIG.scrollBehavior
-      });
-    }
-
-    setMobileMenuOpen(false);
-  };
-
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    const href = e.currentTarget.getAttribute('href');
-    if (href) {
+  // Handle Hash Links specifically
+  const handleHashLink = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#')) {
       e.preventDefault();
-      handleNavigation(href);
+      const targetId = href.replace('#', '');
+      const targetElement = document.getElementById(targetId);
+
+      if (targetElement) {
+        const elementPosition = targetElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - NAVBAR_CONFIG.navbarHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: NAVBAR_CONFIG.scrollBehavior
+        });
+      } else if (location.pathname !== '/') {
+        // If on another page and clicking a hash link for home, navigate to home with hash
+        navigate(`/${href}`);
+      }
+      setMobileMenuOpen(false);
+    } else {
+      // For normal routes, just close menu and scroll to top
+      setMobileMenuOpen(false);
+      window.scrollTo(0, 0);
     }
   };
 
@@ -187,19 +190,17 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
           {/* Logo Section */}
           <div className="flex items-center gap-2 xl:gap-4">
             <div className="flex items-center justify-start flex-shrink-0">
-              <Link href="/">
-                <a onClick={handleLinkClick} className="block transition-all duration-300 rounded-lg p-1.5 xl:p-2 dark:bg-transparent hover:opacity-100 cursor-pointer">
-                  <img
-                    src={darkLogo.src}
-                    alt={darkLogo.alt}
-                    className="hidden dark:block h-12 xl:h-14 w-auto object-contain opacity-90"
-                  />
-                  <img
-                    src={lightLogo.src}
-                    alt={lightLogo.alt}
-                    className="block dark:hidden h-12 xl:h-14 w-auto object-contain opacity-90"
-                  />
-                </a>
+              <Link to="/" onClick={() => window.scrollTo(0, 0)} className="block transition-all duration-300 rounded-lg p-1.5 xl:p-2 dark:bg-transparent hover:opacity-100 cursor-pointer">
+                <img
+                  src={darkLogo.src}
+                  alt={darkLogo.alt}
+                  className="hidden dark:block h-12 xl:h-14 w-auto object-contain opacity-90"
+                />
+                <img
+                  src={lightLogo.src}
+                  alt={lightLogo.alt}
+                  className="block dark:hidden h-12 xl:h-14 w-auto object-contain opacity-90"
+                />
               </Link>
             </div>
           </div>
@@ -212,7 +213,7 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
                 item={item}
                 activeDropdown={activeDropdown}
                 setActiveDropdown={setActiveDropdown}
-                handleLinkClick={handleLinkClick}
+                handleHashLink={handleHashLink}
                 isActive={activeSection === item.key || (item.type === 'link' && activeSection === item.href.replace(/^[/#]/, ''))}
               />
             ))}
@@ -241,11 +242,9 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
               </div>
             </div>
 
-            <Link href="/login">
-              <a className="flex items-center gap-1.5 px-3 2xl:px-5 py-2 text-foreground/80 hover:text-primary transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap cursor-pointer">
-                <LogIn className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
-                LOGIN
-              </a>
+            <Link to="/login" className="flex items-center gap-1.5 px-3 2xl:px-5 py-2 text-foreground/80 hover:text-primary transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap cursor-pointer">
+              <LogIn className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
+              LOGIN
             </Link>
 
             <ThemeToggle />
@@ -290,7 +289,7 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
           mobileExpandedMenu={mobileExpandedMenu}
           setMobileExpandedMenu={setMobileExpandedMenu}
           navItems={navItems}
-          handleLinkClick={handleLinkClick}
+          handleHashLink={handleHashLink}
         />
       </div>
 
@@ -312,25 +311,24 @@ interface NavItemProps {
   item: NavItem;
   activeDropdown: string | null;
   setActiveDropdown: (key: string | null) => void;
-  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  handleHashLink: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
   isActive: boolean;
 }
 
-function NavItem({ item, activeDropdown, setActiveDropdown, handleLinkClick, isActive }: NavItemProps) {
+function NavItem({ item, activeDropdown, setActiveDropdown, handleHashLink, isActive }: NavItemProps) {
   const isHovered = activeDropdown === item.key;
   const showIndicator = isHovered || isActive;
 
   if (item.type === 'link') {
     return (
       <div className="relative">
-        <Link href={item.href}>
-          <a
-            onClick={handleLinkClick}
-            className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${isActive ? "text-primary" : "text-foreground hover:text-primary"
-              }`}
-          >
-            {item.label}
-          </a>
+        <Link
+          to={item.href}
+          onClick={(e) => handleHashLink(e, item.href)}
+          className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${isActive ? "text-primary" : "text-foreground hover:text-primary"
+            }`}
+        >
+          {item.label}
         </Link>
         {showIndicator && <ActiveIndicator />}
       </div>
@@ -354,7 +352,7 @@ function NavItem({ item, activeDropdown, setActiveDropdown, handleLinkClick, isA
 
       <AnimatePresence>
         {isHovered && (
-          <DropdownMenu items={item.items} handleLinkClick={handleLinkClick} />
+          <DropdownMenu items={item.items} handleHashLink={handleHashLink} />
         )}
       </AnimatePresence>
     </div>
@@ -376,10 +374,10 @@ function ActiveIndicator() {
 // Dropdown Menu Component
 interface DropdownMenuProps {
   items: { label: string; href: string }[];
-  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  handleHashLink: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
 }
 
-function DropdownMenu({ items, handleLinkClick }: DropdownMenuProps) {
+function DropdownMenu({ items, handleHashLink }: DropdownMenuProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -394,10 +392,12 @@ function DropdownMenu({ items, handleLinkClick }: DropdownMenuProps) {
           return (
             <div key={idx}>
               {isAvailable ? (
-                <Link href={subItem.href}>
-                  <a onClick={handleLinkClick} className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
-                    {subItem.label}
-                  </a>
+                <Link
+                  to={subItem.href}
+                  onClick={(e) => handleHashLink(e, subItem.href)}
+                  className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+                >
+                  {subItem.label}
                 </Link>
               ) : (
                 <span className="block px-6 py-3 text-sm text-foreground/50 cursor-not-allowed">
@@ -449,10 +449,10 @@ interface MobileMenuProps {
   mobileExpandedMenu: string | null;
   setMobileExpandedMenu: (key: string | null) => void;
   navItems: NavItem[];
-  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  handleHashLink: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
 }
 
-function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu, navItems, handleLinkClick }: MobileMenuProps) {
+function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu, navItems, handleHashLink }: MobileMenuProps) {
   return (
     <AnimatePresence>
       {mobileMenuOpen && (
@@ -466,10 +466,13 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
           <div className="py-4 max-h-[70vh] overflow-y-auto">
             {navItems.map((item) =>
               item.type === 'link' ? (
-                <Link key={item.key} href={item.href}>
-                  <a onClick={handleLinkClick} className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-accent hover:text-primary transition-colors border-b border-border/5 cursor-pointer">
-                    {item.label}
-                  </a>
+                <Link
+                  key={item.key}
+                  to={item.href}
+                  onClick={(e) => handleHashLink(e, item.href)}
+                  className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-accent hover:text-primary transition-colors border-b border-border/5 cursor-pointer"
+                >
+                  {item.label}
                 </Link>
               ) : (
                 <MobileDropdown
@@ -477,17 +480,15 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
                   item={item}
                   mobileExpandedMenu={mobileExpandedMenu}
                   setMobileExpandedMenu={setMobileExpandedMenu}
-                  handleLinkClick={handleLinkClick}
+                  handleHashLink={handleHashLink}
                 />
               )
             )}
 
             <div className="px-4 pt-4">
-              <Link href="/login">
-                <a className="flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all cursor-pointer">
-                  <LogIn className="w-4 h-4" />
-                  LOGIN
-                </a>
+              <Link to="/login" onClick={() => handleHashLink({ preventDefault: () => { } } as any, '/login')} className="flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all cursor-pointer">
+                <LogIn className="w-4 h-4" />
+                LOGIN
               </Link>
             </div>
           </div>
@@ -502,10 +503,10 @@ interface MobileDropdownProps {
   item: Exclude<NavItem, { type: 'link' }>;
   mobileExpandedMenu: string | null;
   setMobileExpandedMenu: (key: string | null) => void;
-  handleLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  handleHashLink: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
 }
 
-function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handleLinkClick }: MobileDropdownProps) {
+function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handleHashLink }: MobileDropdownProps) {
   const isExpanded = mobileExpandedMenu === item.key;
 
   return (
@@ -537,10 +538,13 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
             {item.items.map((subItem, idx) => {
               const isAvailable = subItem.href.startsWith('#') || isRouteAvailable(subItem.href);
               return isAvailable ? (
-                <Link key={idx} href={subItem.href}>
-                  <a onClick={handleLinkClick} className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer">
-                    {subItem.label}
-                  </a>
+                <Link
+                  key={idx}
+                  to={subItem.href}
+                  onClick={(e) => handleHashLink(e, subItem.href)}
+                  className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer"
+                >
+                  {subItem.label}
                 </Link>
               ) : (
                 <span key={idx} className="block px-6 py-2.5 text-sm text-foreground/50 cursor-not-allowed">
