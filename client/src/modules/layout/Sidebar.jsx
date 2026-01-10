@@ -1,5 +1,6 @@
 // Sidebar.jsx
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { colors } from '../../lib/colors/colors';
 import { 
   Home, 
@@ -21,77 +22,113 @@ import {
 } from 'lucide-react';
 
 function Sidebar({ role = 'admin', isOpen, onToggle }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState({});
 
   // Role-based menu items
   const getMenuItemsByRole = (userRole) => {
     const superAdminMenus = [
-      { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-      { icon: Home, label: 'Homepage', path: '/', active: true },
-      { icon: MapPin, label: 'Location', path: '/location' },
-      { icon: Users, label: 'Manage Users', path: '/users' },
-      { icon: BarChart3, label: 'Analytics', path: '/analytics' },
+      { icon: LayoutDashboard, label: 'Dashboard', path: '/Dashboard' },
+      { icon: Home, label: 'Homepage', path: '/Homepage-Dashboard' },
+      { icon: MapPin, label: 'Location', path: '#' },
+      { icon: Users, label: 'Manage Users', path: '#' },
+      { icon: BarChart3, label: 'Analytics', path: '#' },
       { 
         icon: Building2, 
         label: 'Hotel', 
-        path: '/hotel',
+        path: '#',
         hasSubmenu: true,
-        submenu: ['Rooms', 'Amenities', 'Bookings', 'Pricing']
+        submenu: [
+          { name: 'Rooms', path: '#' },
+          { name: 'Amenities', path: '#' },
+          { name: 'Bookings', path: '#' },
+          { name: 'Pricing', path: '#' }
+        ]
       },
       { 
         icon: Coffee, 
         label: 'Cafe', 
-        path: '/cafe',
+        path: '#',
         hasSubmenu: true,
-        submenu: ['Menu', 'Orders', 'Tables', 'Inventory']
+        submenu: [
+          { name: 'Menu', path: '#' },
+          { name: 'Orders', path: '#' },
+          { name: 'Tables', path: '#' },
+          { name: 'Inventory', path: '#' }
+        ]
       },
       { 
         icon: UtensilsCrossed, 
         label: 'Restaurant', 
-        path: '/restaurant',
+        path: '#',
         hasSubmenu: true,
-        submenu: ['Menu', 'Reservations', 'Orders', 'Kitchen']
+        submenu: [
+          { name: 'Menu', path: '#' },
+          { name: 'Reservations', path: '#' },
+          { name: 'Orders', path: '#' },
+          { name: 'Kitchen', path: '#' }
+        ]
       },
       { 
         icon: Wine, 
         label: 'Wine & Dine', 
-        path: '/wine-dine',
+        path: '#',
         hasSubmenu: true,
-        submenu: ['Wine List', 'Packages', 'Events']
+        submenu: [
+          { name: 'Wine List', path: '#' },
+          { name: 'Packages', path: '#' },
+          { name: 'Events', path: '#' }
+        ]
       },
-      { icon: FileText, label: 'Reports', path: '/reports' },
+      { icon: FileText, label: 'Reports', path: '#' },
     ];
 
     const adminMenus = [
-      { icon: Home, label: 'Homepage', path: '/', active: true },
-      { icon: MapPin, label: 'Location', path: '/location' },
+      { icon: Home, label: 'Homepage', path: '/Homepage-Dashboard' },
+      { icon: MapPin, label: 'Location', path: '#' },
       { 
         icon: Building2, 
         label: 'Hotel', 
-        path: '/hotel',
+        path: '#',
         hasSubmenu: true,
-        submenu: ['Rooms', 'Amenities', 'Bookings']
+        submenu: [
+          { name: 'Rooms', path: '#' },
+          { name: 'Amenities', path: '#' },
+          { name: 'Bookings', path: '#' }
+        ]
       },
       { 
         icon: Coffee, 
         label: 'Cafe', 
-        path: '/cafe',
+        path: '#',
         hasSubmenu: true,
-        submenu: ['Menu', 'Orders', 'Tables']
+        submenu: [
+          { name: 'Menu', path: '#' },
+          { name: 'Orders', path: '#' },
+          { name: 'Tables', path: '#' }
+        ]
       },
       { 
         icon: UtensilsCrossed, 
         label: 'Restaurant', 
-        path: '/restaurant',
+        path: '#',
         hasSubmenu: true,
-        submenu: ['Menu', 'Reservations', 'Orders']
+        submenu: [
+          { name: 'Menu', path: '#' },
+          { name: 'Reservations', path: '#' },
+          { name: 'Orders', path: '#' }
+        ]
       },
       { 
         icon: Wine, 
         label: 'Wine & Dine', 
-        path: '/wine-dine',
+        path: '#',
         hasSubmenu: true,
-        submenu: ['Wine List', 'Events']
+        submenu: [
+          { name: 'Wine List', path: '#' },
+          { name: 'Events', path: '#' }
+        ]
       },
     ];
 
@@ -105,6 +142,24 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
       ...prev,
       [label]: !prev[label]
     }));
+  };
+
+  const handleNavigation = (path, hasSubmenu, label) => {
+    if (hasSubmenu) {
+      toggleMenu(label);
+    } else if (path && path !== '#') {
+      navigate(path);
+    }
+  };
+
+  const handleSubmenuClick = (path) => {
+    if (path && path !== '#') {
+      navigate(path);
+    }
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path;
   };
 
   const getRoleBadge = (userRole) => {
@@ -205,24 +260,24 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
             <div key={item.label}>
               <div
                 className={`flex items-center px-5 py-3 cursor-pointer transition-all gap-3 relative ${
-                  item.active ? 'border-l-[3px]' : ''
+                  isActive(item.path) ? 'border-l-[3px]' : ''
                 }`}
                 style={{ 
                   color: colors.sidebarText,
-                  backgroundColor: item.active ? colors.sidebarActive : 'transparent',
-                  borderColor: item.active ? colors.primary : 'transparent'
+                  backgroundColor: isActive(item.path) ? colors.sidebarActive : 'transparent',
+                  borderColor: isActive(item.path) ? colors.primary : 'transparent'
                 }}
                 onMouseEnter={(e) => {
-                  if (!item.active) {
+                  if (!isActive(item.path)) {
                     e.currentTarget.style.backgroundColor = colors.sidebarHover;
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!item.active) {
+                  if (!isActive(item.path)) {
                     e.currentTarget.style.backgroundColor = 'transparent';
                   }
                 }}
-                onClick={() => item.hasSubmenu && toggleMenu(item.label)}
+                onClick={() => handleNavigation(item.path, item.hasSubmenu, item.label)}
               >
                 <item.icon size={20} className="min-w-5 shrink-0" />
                 <span className="text-sm flex-1 truncate">{item.label}</span>
@@ -244,7 +299,7 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
                 >
                   {item.submenu.map((subItem) => (
                     <div 
-                      key={subItem} 
+                      key={subItem.name} 
                       className="py-2 px-5 text-[13px] cursor-pointer transition-colors truncate"
                       style={{ color: colors.sidebarTextSecondary }}
                       onMouseEnter={(e) => {
@@ -253,8 +308,9 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
                       onMouseLeave={(e) => {
                         e.currentTarget.style.color = colors.sidebarTextSecondary;
                       }}
+                      onClick={() => handleSubmenuClick(subItem.path)}
                     >
-                      {subItem}
+                      {subItem.name}
                     </div>
                   ))}
                 </div>
@@ -277,6 +333,7 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
+            onClick={() => navigate('#')}
           >
             <Settings size={20} className="min-w-5 shrink-0" />
             <span className="text-sm truncate">Settings</span>
@@ -289,6 +346,10 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+            onClick={() => {
+              // Add logout logic here
+              console.log('Logout clicked');
             }}
           >
             <LogOut size={20} className="min-w-5 shrink-0" />

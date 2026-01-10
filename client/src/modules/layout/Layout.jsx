@@ -6,7 +6,7 @@ import Navbar from './Navbar';
 import { Menu } from 'lucide-react';
 
 function Layout({ children, title, subtitle, showActions = true, role = 'admin' }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Default open for desktop
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
