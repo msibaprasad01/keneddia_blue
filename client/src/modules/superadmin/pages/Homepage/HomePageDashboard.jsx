@@ -1,4 +1,4 @@
-// SuperAdminDashboard.jsx - Updated to pass role
+// HomePageDashboard.jsx - Updated to pass role
 import React, { useState } from 'react';
 import { colors } from "@/lib/colors/colors";
 import Layout from '@/modules/layout/Layout';
@@ -12,16 +12,16 @@ import {
   Newspaper, 
   Star 
 } from 'lucide-react';
-import HeroSection from './tabPages/HeroSection';
-import DailyOffers from './tabPages/DailyOffers';
-import OurProperties from './tabPages/OurProperties';
-import AboutUs from './tabPages/AboutUs';
-import KennediaGroup from './tabPages/KennediaGroup';
-import UpcomingEvents from './tabPages/UpcomingEvents';
-import NewsPress from './tabPages/NewsPress';
-import GuestExp from './tabPages/GuestExp';
+import HeroSection from '../tabPages/HeroSection';
+import DailyOffers from '../tabPages/DailyOffers';
+import OurProperties from '../tabPages/OurProperties';
+import AboutUs from '../tabPages/AboutUs';
+import KennediaGroup from '../tabPages/KennediaGroup';
+import UpcomingEvents from '../tabPages/UpcomingEvents';
+import NewsPress from '../tabPages/NewsPress';
+import GuestExp from '../tabPages/GuestExp';
 
-function SuperAdminDashboard() {
+function HomePageDashboard() {
   const [activeTab, setActiveTab] = useState('hero');
   
   // Get user role from context/props/store
@@ -95,4 +95,4 @@ function SuperAdminDashboard() {
   );
 }
 
-export default SuperAdminDashboard;
+export default HomePageDashboard;

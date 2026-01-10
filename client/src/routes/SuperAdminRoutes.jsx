@@ -2,13 +2,13 @@
 import { Route } from 'react-router-dom';
 
 // Page
-import SuperAdminDashboard from '../modules/superadmin/pages/SuperAdminDashboard.jsx';
+import HomePageDashboard from '@/modules/superadmin/pages/Homepage/HomePageDashboard';
 
 const SuperAdminRoutes = [
   <Route
-    key="super-admin-dashboard"
-    path="/Dashboard"
-    element={<SuperAdminDashboard />}
+    key="super-admin-Homepage-dashboard"
+    path="/Homepage-Dashboard"
+    element={<HomePageDashboard />}
   />,
 ];
 
