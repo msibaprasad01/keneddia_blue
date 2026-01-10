@@ -137,6 +137,7 @@ export default function PropertiesSection() {
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [selectedType, setSelectedType] = useState("All Types");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showExtraInfo, setShowExtraInfo] = useState(true);
 
   const uniqueCities = ["All Cities", ...Array.from(new Set(properties.map(p => p.city)))];
   const uniqueTypes = ["All Types", "Hotel", "Cafe", "Restaurant"];
@@ -266,8 +267,8 @@ export default function PropertiesSection() {
         </div>
 
         {filteredProperties.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-[70%_30%] gap-6 items-start">
-            {/* LEFT: 3D Carousel - 70% width */}
+          <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-4 items-start">
+            {/* LEFT: 3D Carousel - 65% width */}
             <div className="relative h-[550px] flex items-center justify-center perspective-1000">
               <div className="relative w-full h-full flex items-center justify-center">
                 {visibleCards.map(({ index, position }) => {
@@ -287,12 +288,12 @@ export default function PropertiesSection() {
                         transform: isCenter
                           ? 'translateX(0) rotateY(0deg)'
                           : isLeft
-                            ? 'translateX(-70%) rotateY(20deg)'
-                            : 'translateX(70%) rotateY(-20deg)',
+                            ? 'translateX(-65%) rotateY(20deg)'
+                            : 'translateX(65%) rotateY(-20deg)',
                         transformStyle: 'preserve-3d',
                       }}
                     >
-                      <div className="w-96 h-[480px] bg-card border-2 border-border rounded-2xl overflow-hidden shadow-2xl">
+                      <div className="w-[420px] h-[480px] bg-card border-2 border-border rounded-2xl overflow-hidden shadow-2xl">
                         <div className="relative h-full">
                           <OptimizedImage
                             {...property.image}
@@ -363,9 +364,22 @@ export default function PropertiesSection() {
               </div>
             </div>
 
-            {/* RIGHT: Compact Content Panel - 30% width */}
-            <div className="bg-card border border-border rounded-2xl p-4 shadow-xl h-[550px] flex flex-col justify-between">
-              <div className="space-y-3">
+            {/* RIGHT: Enhanced Content Panel - 35% width */}
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xl h-[550px] flex flex-col">
+              {/* Toggle Button */}
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Property Details
+                </h4>
+                <button
+                  onClick={() => setShowExtraInfo(!showExtraInfo)}
+                  className="text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors px-2 py-1 border border-primary/30 rounded-full hover:bg-primary/5"
+                >
+                  {showExtraInfo ? 'Show Less' : 'Show More'}
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-3 pr-1">
                 {/* Header */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -386,6 +400,12 @@ export default function PropertiesSection() {
                     <MapPin className="w-3 h-3 mr-1" />
                     <span className="line-clamp-1">{activeProperty.location}</span>
                   </div>
+
+                  {showExtraInfo && (
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mt-2">
+                      {activeProperty.description}
+                    </p>
+                  )}
                 </div>
 
                 {/* Amenities - Compact Grid */}
@@ -394,7 +414,7 @@ export default function PropertiesSection() {
                     Amenities
                   </h4>
                   <div className="grid grid-cols-1 gap-1">
-                    {activeProperty.amenities.slice(0, 4).map((amenity, idx) => (
+                    {activeProperty.amenities.map((amenity, idx) => (
                       <div
                         key={idx}
                         className="flex items-center gap-1.5 text-[11px] text-muted-foreground"
@@ -406,8 +426,51 @@ export default function PropertiesSection() {
                   </div>
                 </div>
 
+                {/* Extra Info Section */}
+                {showExtraInfo && (
+                  <div className="space-y-3 pt-2 border-t border-border">
+                    {/* Operating Hours */}
+                    <div>
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-foreground mb-1.5">
+                        Operating Hours
+                      </h4>
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-muted-foreground">Mon - Fri</span>
+                          <span className="font-medium text-foreground">
+                            {activeProperty.type === 'Hotel' ? '24/7' : '8:00 AM - 11:00 PM'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-muted-foreground">Sat - Sun</span>
+                          <span className="font-medium text-foreground">
+                            {activeProperty.type === 'Hotel' ? '24/7' : '9:00 AM - 12:00 AM'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Contact Info */}
+                    <div>
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-foreground mb-1.5">
+                        Contact Information
+                      </h4>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                          <Phone className="w-3 h-3" />
+                          <span>+91 {Math.floor(Math.random() * 9000000000) + 1000000000}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                          <Mail className="w-3 h-3" />
+                          <span className="line-clamp-1">{activeProperty.id}@kennedia.com</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Capacity & Price */}
-                <div className="flex items-center justify-between py-2 border-y border-border">
+                <div className="flex items-center justify-between py-2.5 border-y border-border">
                   <div>
                     <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
                       {getCapacityLabel(activeProperty.type)}
@@ -429,20 +492,24 @@ export default function PropertiesSection() {
               </div>
 
               {/* Action Buttons - Compact */}
-              <div className="space-y-2">
-                <button className="w-full py-2 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-98 flex items-center justify-center gap-1.5 text-xs">
+              <div className="space-y-2 mt-4">
+                <button className="w-full py-2.5 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-98 flex items-center justify-center gap-1.5 text-xs">
                   {getActionButtonText(activeProperty.type)}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <button className="py-1.5 border border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1 text-[11px]">
+                <div className="grid grid-cols-3 gap-2">
+                  <button className="py-2 border border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1 text-[11px]">
                     <Phone className="w-3 h-3" />
                     Call
                   </button>
-                  <button className="py-1.5 border border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1 text-[11px]">
+                  <button className="py-2 border border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1 text-[11px]">
                     <Mail className="w-3 h-3" />
-                    Enquire
+                    Email
+                  </button>
+                  <button className="py-2 border border-primary/50 text-primary font-semibold rounded-lg hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center gap-1 text-[11px]">
+                    <Building2 className="w-3 h-3" />
+                    Explore
                   </button>
                 </div>
               </div>
