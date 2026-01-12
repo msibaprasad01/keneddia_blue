@@ -14,6 +14,8 @@ import OfferDetails from "@/modules/website/pages/OfferDetails";
 import PropertyDetails from "@/modules/website/pages/PropertyDetails";
 import EventDetails from "@/modules/website/pages/EventDetails";
 import NewsDetails from "@/modules/website/pages/NewsDetails";
+import HotelNewsDetails from "@/modules/website/pages/hotel/HotelNewsDetails";
+import HotelOfferDetails from "@/modules/website/pages/hotel/HotelOfferDetails";
 import NewsListing from "@/modules/website/pages/NewsListing";
 import Careers from "@/modules/website/pages/Careers";
 
@@ -40,6 +42,9 @@ const WebsiteRoutes = [
 
   // 404
   <Route key="not-found" path="*" element={<NotFound />} />,
+  // Hotel Detail Pages
+  <Route key="hotel-news-details" path="/hotel/news/:slug" element={<HotelNewsDetails />} />,
+  <Route key="hotel-offer-details" path="/hotel/offers/:id" element={<HotelOfferDetails />} />,
 ];
 
 export default WebsiteRoutes;

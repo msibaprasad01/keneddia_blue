@@ -8,41 +8,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 import "swiper/css";
 
-// Mock Data
-const HOTEL_NEWS_ITEMS = [
-  {
-    slug: "best-luxury-hotel-award-2025",
-    image: { src: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop", alt: "Award Ceremony" },
-    date: "Jan 10, 2026",
-    title: "Kennedia Blu Wins Best Luxury Hotel Award 2025",
-    description: "We are honored to be recognized as the leading luxury hotel brand for the third consecutive year, setting new standards in hospitality.",
-    category: "Awards"
-  },
-  {
-    slug: "new-michelin-star-chef",
-    image: { src: "https://images.unsplash.com/photo-1577106263724-2c8e03bfe9f4?q=80&w=2070&auto=format&fit=crop", alt: "Chef Cooking" },
-    date: "Dec 28, 2025",
-    title: "New Michelin Star Chef Joins Our Flagship Restaurant",
-    description: "Chef Elena Rossi brings her culinary mastery and innovative vision to our signature dining experience, promising an unforgettable journey for your palate.",
-    category: "Culinary"
-  },
-  {
-    slug: "sustainable-luxury-commitment",
-    image: { src: "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1527&auto=format&fit=crop", alt: "Green Garden" },
-    date: "Dec 15, 2025",
-    title: "Sustainable Luxury: Our Commitment to Zero Carbon",
-    description: "Launching our ambitious initiative to achieve carbon neutrality across all properties by 2030 without compromising on luxury.",
-    category: "Sustainability"
-  },
-  {
-    slug: "introducing-royal-suite",
-    image: { src: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?q=80&w=2070&auto=format&fit=crop", alt: "Royal Suite Interior" },
-    date: "Dec 05, 2025",
-    title: "Introducing The Royal Suite: A New Standard of Opulence",
-    description: "Experience the pinnacle of comfort in our newly renovated Royal Suites, featuring panoramic city views and exclusive butler service.",
-    category: "Rooms & Suites"
-  }
-];
+import { HOTEL_NEWS_ITEMS } from "@/data/hotelContent";
 
 // Styling Configuration
 const STYLE_CONFIG = {
@@ -158,7 +124,7 @@ export default function HotelNewsUpdates() {
                       {item.description}
                     </p>
                     <div className="mt-auto pt-2 border-t border-border/50">
-                      <Link to={`/news/${item.slug}`} className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3">
+                      <Link to={`/hotel/news/${item.slug}`} className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3">
                         Read Story
                         <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
                       </Link>

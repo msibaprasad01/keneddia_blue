@@ -8,49 +8,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 import "swiper/css";
 
-// Mock Data
-const HOTEL_OFFERS = [
-  {
-    title: "Weekend Luxury Getaway",
-    description: "Escape the city with our 2-night luxury package including breakfast and spa credit.",
-    image: { src: "https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=2074&auto=format&fit=crop", alt: "Luxury Pool" },
-    location: "All Locations",
-    expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
-    category: "Stay",
-    couponCode: "WEEKEND25",
-    discount: "25% OFF"
-  },
-  {
-    title: "Romantic Dining Experience",
-    description: "A 5-course candlelit dinner for two at our signature rooftop restaurant.",
-    image: { src: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop", alt: "Romantic Dinner" },
-    location: "Mumbai, Delhi",
-    expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days
-    category: "Dining",
-    couponCode: "LOVE20",
-    discount: "20% OFF"
-  },
-  {
-    title: "Rejuvenating Spa Retreat",
-    description: "Complimentary 60-minute massage when you book a suite for 3 nights or more.",
-    image: { src: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=2070&auto=format&fit=crop", alt: "Spa Massage" },
-    location: "Bengaluru, Hyderabad",
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
-    category: "Wellness",
-    couponCode: "SPA100",
-    discount: "FREE SPA"
-  },
-  {
-    title: "Family Fun Package",
-    description: "Kids eat free and get complimentary access to the Kids Club. Perfect for family vacations.",
-    image: { src: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=2070&auto=format&fit=crop", alt: "Family Pool" },
-    location: "Kolkata, Chennai",
-    expiresAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days
-    category: "Family",
-    couponCode: "FAMILYFUN",
-    discount: "KIDS FREE"
-  }
-];
+import { HOTEL_OFFERS } from "@/data/hotelContent";
 
 // Reused Countdown Component
 function CountdownTimer({ expiresAt }: { expiresAt?: string | Date }) {
@@ -205,7 +163,7 @@ export default function HotelOffersCarousel() {
                         <Tag className="w-3 h-3" />
                         <span>Code: <span className="font-mono text-foreground font-medium">{offer.couponCode}</span></span>
                       </div>
-                      <Link to={`/offers/${index}`} className="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
+                      <Link to={`/hotel/offers/${offer.id}`} className="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
                         Book Now
                         <ArrowRight className="w-3 h-3" />
                       </Link>
