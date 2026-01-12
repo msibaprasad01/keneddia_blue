@@ -10,6 +10,12 @@ import About from "@/modules/website/pages/About";
 import Reviews from "@/modules/website/pages/Reviews";
 import Login from "@/modules/auth/login";
 import NotFound from "@/modules/website/pages/not-found";
+import OfferDetails from "@/modules/website/pages/OfferDetails";
+import PropertyDetails from "@/modules/website/pages/PropertyDetails";
+import EventDetails from "@/modules/website/pages/EventDetails";
+import NewsDetails from "@/modules/website/pages/NewsDetails";
+import NewsListing from "@/modules/website/pages/NewsListing";
+import Careers from "@/modules/website/pages/Careers";
 
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
@@ -21,6 +27,16 @@ const WebsiteRoutes = [
   <Route key="about" path="/about" element={<About />} />,
   <Route key="reviews" path="/reviews" element={<Reviews />} />,
   <Route key="login" path="/login" element={<Login />} />,
+  <Route key="careers" path="/careers" element={<Careers />} />,
+
+  // Detail Pages
+  <Route key="offer-details" path="/offers/:id" element={<OfferDetails />} />,
+  <Route key="property-details" path="/properties/:id" element={<PropertyDetails />} />,
+  <Route key="event-details" path="/events/:id" element={<EventDetails />} />,
+
+  // News
+  <Route key="news-listing" path="/news" element={<NewsListing />} />,
+  <Route key="news-details" path="/news/:id" element={<NewsDetails />} />,
 
   // 404
   <Route key="not-found" path="*" element={<NotFound />} />,

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -15,7 +15,7 @@ import "swiper/css";
 
 // Routes
 const ROUTES = {
-  newsDetail: (slug: string) => `/#`,
+  newsDetail: (slug: string) => `/news/${slug}`,
 } as const;
 
 // Styling Configuration
@@ -271,11 +271,9 @@ function NewsCard({ item, index }: NewsCardProps) {
 
         {/* Link - Pushed to bottom */}
         <div className="mt-auto pt-2 border-t border-border/50">
-          <Link href={ROUTES.newsDetail(item.slug)}>
-            <a className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3">
-              {TEXT_CONTENT.header.readMore}
-              <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
-            </a>
+          <Link to={ROUTES.newsDetail(item.slug)} className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3">
+            {TEXT_CONTENT.header.readMore}
+            <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
           </Link>
         </div>
       </div>

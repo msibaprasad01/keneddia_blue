@@ -18,6 +18,7 @@ const BUSINESS_ITEMS = [
 
 // Join Us Dropdown Items
 const JOIN_US_ITEMS = [
+  { label: "Careers", href: "/careers" },
   { label: "Become a Partner", href: "#" },
   { label: "Franchise Opportunities", href: "#" },
   { label: "Investor Relations", href: "#" },

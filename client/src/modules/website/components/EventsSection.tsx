@@ -1,6 +1,6 @@
 import { useState } from "react"; // Added useState
 import { motion } from "framer-motion";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { Calendar, ArrowRight, MapPin } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -13,7 +13,7 @@ import { isRouteAvailable } from "@/lib/routes";
 // Routes
 const ROUTES = {
   allEvents: "/events",
-  eventDetail: (slug: string) => `/#`,
+  eventDetail: (slug: string) => `/events/${slug}`,
 } as const;
 
 // Animation Configuration
@@ -124,11 +124,9 @@ function SectionHeader({ title, viewAllLink, selectedLocation, setSelectedLocati
         </div>
 
         {isRouteAvailable(viewAllLink) ? (
-          <Link href={viewAllLink}>
-            <a className="group flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all cursor-pointer">
-              All Events
-              <ArrowRight className="w-4 h-4" />
-            </a>
+          <Link to={viewAllLink} className="group flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all cursor-pointer">
+            All Events
+            <ArrowRight className="w-4 h-4" />
           </Link>
         ) : (
           <span className="flex items-center gap-1.5 text-sm font-semibold text-primary/50 cursor-not-allowed">
@@ -166,10 +164,8 @@ function EventCard({ event, index }: EventCardProps) {
       }}
       className="group relative"
     >
-      <Link href={ROUTES.eventDetail(event.slug)}>
-        <a className="block">
-          <EventCardContent event={event} />
-        </a>
+      <Link to={ROUTES.eventDetail(event.slug)} className="block">
+        <EventCardContent event={event} />
       </Link>
     </motion.div>
   );

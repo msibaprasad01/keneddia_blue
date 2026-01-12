@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { ArrowRight, Tag, ChevronLeft, ChevronRight, MapPin, Clock } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
@@ -21,7 +21,7 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string | Date }) {
     const calculateTimeLeft = () => {
       const now = Date.now();
       const expiryTime = new Date(expiresAt).getTime();
-      
+
       // Check if the expiry date is valid
       if (isNaN(expiryTime)) {
         console.warn('Invalid expiry date:', expiresAt);
@@ -54,7 +54,7 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string | Date }) {
       } else {
         setTimeLeft(`${seconds}s`);
       }
-      
+
       setIsExpired(false);
     };
 
@@ -67,11 +67,10 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string | Date }) {
   if (!expiresAt) return null;
 
   return (
-    <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold backdrop-blur-sm ${
-      isExpired 
-        ? 'bg-red-500/90 text-white border border-red-600' 
-        : 'bg-orange-500/90 text-white border border-orange-600'
-    }`}>
+    <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold backdrop-blur-sm ${isExpired
+      ? 'bg-red-500/90 text-white border border-red-600'
+      : 'bg-orange-500/90 text-white border border-orange-600'
+      }`}>
       <Clock className="w-3 h-3" />
       <span>{isExpired ? "Expired" : `Expires in ${timeLeft}`}</span>
     </div>
@@ -235,11 +234,9 @@ export default function DailyOffers() {
                         <div className="text-xs text-muted-foreground">
                           Code: <span className="font-mono text-foreground font-medium">{offer.couponCode}</span>
                         </div>
-                        <Link href={offer.link}>
-                          <a className="text-xs font-semibold text-primary flex items-center gap-1 hover:underline">
-                            {offer.ctaText}
-                            <ArrowRight className="w-3 h-3" />
-                          </a>
+                        <Link to={`/offers/${offer.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "")}`} className="text-xs font-semibold text-primary flex items-center gap-1 hover:underline">
+                          {offer.ctaText}
+                          <ArrowRight className="w-3 h-3" />
                         </Link>
                       </div>
                     </div>
