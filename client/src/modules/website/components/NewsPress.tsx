@@ -105,8 +105,15 @@ function SectionHeader({ title, onPrev, onNext }: SectionHeaderProps) {
         </h2>
       </div>
 
-      {/* Navigation Controls */}
-      <NavigationControls onPrev={onPrev} onNext={onNext} />
+
+      {/* Navigation Controls & View All */}
+      <div className="flex items-center gap-4">
+        <Link to="/news" className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all cursor-pointer">
+          View All
+          <ArrowUpRight className="w-4 h-4" />
+        </Link>
+        <NavigationControls onPrev={onPrev} onNext={onNext} />
+      </div>
     </div>
   );
 }

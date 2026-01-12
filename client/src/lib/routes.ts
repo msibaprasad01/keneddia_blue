@@ -9,10 +9,12 @@ export const availableRoutes = [
   '/cafes',
   '/bars',
   '/about',
-  // '/events',
-  // '/entertainment',
+  '/events',
+  '/entertainment',
   '/reviews',
   '/login',
+  '/news',
+  '/careers',
 ] as const;
 
 export type AvailableRoute = typeof availableRoutes[number];
