@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { ArrowRight, Tag, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { ArrowRight, Tag, ChevronLeft, ChevronRight, MapPin, Clock } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
@@ -9,6 +9,74 @@ import type { Swiper as SwiperType } from "swiper";
 
 import "swiper/css";
 import "swiper/css/navigation";
+
+// Countdown Timer Component
+function CountdownTimer({ expiresAt }: { expiresAt?: string | Date }) {
+  const [timeLeft, setTimeLeft] = useState("");
+  const [isExpired, setIsExpired] = useState(false);
+
+  useEffect(() => {
+    if (!expiresAt) return;
+
+    const calculateTimeLeft = () => {
+      const now = Date.now();
+      const expiryTime = new Date(expiresAt).getTime();
+      
+      // Check if the expiry date is valid
+      if (isNaN(expiryTime)) {
+        console.warn('Invalid expiry date:', expiresAt);
+        return;
+      }
+
+      const difference = expiryTime - now;
+
+      // If expired
+      if (difference <= 0) {
+        setIsExpired(true);
+        setTimeLeft("Expired");
+        return;
+      }
+
+      // Calculate time components
+      const totalSeconds = Math.floor(difference / 1000);
+      const days = Math.floor(totalSeconds / (60 * 60 * 24));
+      const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
+      const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+      const seconds = totalSeconds % 60;
+
+      // Format display based on time remaining
+      if (days > 0) {
+        setTimeLeft(`${days}d ${hours}h`);
+      } else if (hours > 0) {
+        setTimeLeft(`${hours}h ${minutes}m`);
+      } else if (minutes > 0) {
+        setTimeLeft(`${minutes}m ${seconds}s`);
+      } else {
+        setTimeLeft(`${seconds}s`);
+      }
+      
+      setIsExpired(false);
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+
+  if (!expiresAt) return null;
+
+  return (
+    <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold backdrop-blur-sm ${
+      isExpired 
+        ? 'bg-red-500/90 text-white border border-red-600' 
+        : 'bg-orange-500/90 text-white border border-orange-600'
+    }`}>
+      <Clock className="w-3 h-3" />
+      <span>{isExpired ? "Expired" : `Expires in ${timeLeft}`}</span>
+    </div>
+  );
+}
 
 export default function DailyOffers() {
   const { dailyOffers } = siteContent.text;
@@ -126,30 +194,42 @@ export default function DailyOffers() {
                         {...offer.image}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
-                      {/* Priority Only / Category Badge */}
+                      {/* Category Badge */}
                       <div className="absolute top-3 left-3 flex gap-2">
                         <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] uppercase font-bold tracking-wider rounded">
                           {category}
                         </span>
                       </div>
+
+                      {/* Countdown Timer Badge - Top Right */}
+                      {offer.expiresAt && (
+                        <div className="absolute top-3 right-3">
+                          <CountdownTimer expiresAt={offer.expiresAt} />
+                        </div>
+                      )}
                     </div>
 
                     {/* Content - Compact */}
                     <div className="p-4 flex flex-col gap-3 flex-grow">
-                      <div className="flex justify-between items-start">
-                        <h3 className="text-lg font-serif font-bold text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                      <div className="flex justify-between items-start gap-2">
+                        <h3 className="text-lg font-serif font-bold text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-2 flex-1">
                           {offer.title}
                         </h3>
                         {offer.location && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
                             <MapPin className="w-3 h-3" />
-                            <span>{offer.location}</span>
+                            <span className="whitespace-nowrap">{offer.location}</span>
                           </div>
                         )}
                       </div>
 
-                      {/* Description Hidden as requested, showing minimal info or just CTA */}
-                      {/* <p className="text-sm text-muted-foreground line-clamp-2">{offer.description}</p> */}
+                      {/* Available Hours - if any */}
+                      {offer.availableHours && (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          <span>{offer.availableHours}</span>
+                        </div>
+                      )}
 
                       <div className="mt-auto pt-2 flex items-center justify-between">
                         <div className="text-xs text-muted-foreground">

@@ -172,7 +172,9 @@ export const siteContent = {
           ctaText: "Explore Winter Stay",
           link: "#",
           image: { src: heroExterior, alt: "Winter Alpine Retreat", priority: false },
-          location: "Manali"
+          location: "Manali",
+          expiresAt: "2025-01-31T23:59:59", // ISO 8601 format - Expires Jan 31, 2025
+          availableHours: "Valid 24/7"
         },
         {
           title: "Luxury Spa Weekend",
@@ -182,7 +184,9 @@ export const siteContent = {
           ctaText: "Book Spa Package",
           link: "#",
           image: { src: heroLobby, alt: "Luxury Spa Weekend", priority: false },
-          location: "Bengaluru"
+          location: "Bengaluru",
+          expiresAt: "2025-02-15T18:00:00", // Expires Feb 15, 2025 at 6 PM
+          availableHours: "Mon-Fri: 9 AM - 6 PM"
         },
         {
           title: "Rooftop Dining Experience",
@@ -192,17 +196,21 @@ export const siteContent = {
           ctaText: "Reserve Table",
           link: "#",
           image: { src: heroLounge, alt: "Rooftop Dining", priority: false },
-          location: "Mumbai"
+          location: "Mumbai",
+          expiresAt: "2025-01-20T23:59:59", // Expires Jan 20, 2025
+          availableHours: "Dinner only: 7 PM - 11 PM"
         },
         {
-          title: "Winter Alpine Retreat",
+          title: "Morning Coffee Delight",
           description:
-            "Warm up this winter with our exclusive alpine getaway package. Enjoy complimentary hot cocoa evenings, fireplace lounge access, and a curated winter activity pass.",
-          couponCode: "WINTER2025",
-          ctaText: "Explore Winter Stay",
+            "Start your day right with our special breakfast and coffee combo.",
+          couponCode: "COFFEE2025",
+          ctaText: "Claim Offer",
           link: "#",
-          image: { src: heroExterior, alt: "Winter Alpine Retreat", priority: false },
-          location: "Manali"
+          image: { src: heroExterior, alt: "Coffee Offer", priority: false },
+          location: "Delhi",
+          expiresAt: "2025-01-13T12:00:00", // Expires tomorrow at noon (urgent!)
+          availableHours: "7 AM - 11 AM only"
         },
         {
           title: "Luxury Spa Weekend",
@@ -212,7 +220,9 @@ export const siteContent = {
           ctaText: "Book Spa Package",
           link: "#",
           image: { src: heroLobby, alt: "Luxury Spa Weekend", priority: false },
-          location: "Udaipur"
+          location: "Udaipur",
+          // No expiresAt - offer always available
+          availableHours: "Daily: 10 AM - 8 PM"
         },
         {
           title: "Rooftop Dining Experience",
@@ -222,11 +232,12 @@ export const siteContent = {
           ctaText: "Reserve Table",
           link: "#",
           image: { src: heroLounge, alt: "Rooftop Dining", priority: false },
-          location: "Delhi"
+          location: "Delhi",
+          expiresAt: "2025-03-01T23:59:59", // Expires March 1, 2025
+          // No availableHours - available anytime
         }
       ]
     },
-
     // In siteContent.ts
 
     events: {

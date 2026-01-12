@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, MapPin, Star, Building2, ChevronLeft, ChevronRight, Phone, Mail } from "lucide-react";
+import { ArrowRight, MapPin, Star, Building2, Phone, Mail } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
@@ -17,7 +17,10 @@ const properties = [
     description: "A cozy Parisian-style cafe offering artisanal coffee and pastries.",
     amenities: ["Specialty Coffee", "Fresh Pastries", "Free WiFi", "Outdoor Seating"],
     capacity: "45 Seats",
-    price: "₹450"
+    price: "₹450",
+    tagline: "Experience artisanal coffee in an authentic Parisian atmosphere",
+    headline1: "Where every cup",
+    headline2: "tells a story"
   },
   // Hotel 1
   {
@@ -31,7 +34,10 @@ const properties = [
     description: "Experience timeless elegance in the heart of South Mumbai.",
     amenities: ["Ocean View", "Heritage Architecture", "Fine Dining", "Spa & Wellness"],
     capacity: "120 Rooms",
-    price: "₹12,500"
+    price: "₹12,500",
+    tagline: "Discover timeless elegance in the heart of Mumbai's heritage district",
+    headline1: "Where luxury meets",
+    headline2: "tradition"
   },
   // Restaurant 1
   {
@@ -45,7 +51,10 @@ const properties = [
     description: "Rooftop fine dining with spectacular ocean views and cocktails.",
     amenities: ["Rooftop Dining", "Craft Cocktails", "Live Music", "Ocean Views"],
     capacity: "80 Covers",
-    price: "₹2,500"
+    price: "₹2,500",
+    tagline: "Elevate your dining experience with breathtaking ocean views and craft cocktails",
+    headline1: "Dining above",
+    headline2: "the city lights"
   },
   // Cafe 2
   {
@@ -59,7 +68,10 @@ const properties = [
     description: "Modern minimalist coffee shop with expertly crafted brews.",
     amenities: ["Craft Coffee", "Power Outlets", "Co-working Space", "Vegan Options"],
     capacity: "60 Seats",
-    price: "₹400"
+    price: "₹400",
+    tagline: "Modern minimalism meets expertly crafted coffee in the heart of Koramangala",
+    headline1: "Coffee crafted for",
+    headline2: "innovators"
   },
   // Hotel 2
   {
@@ -73,7 +85,10 @@ const properties = [
     description: "Perfect for business travelers and tech professionals.",
     amenities: ["Business Center", "High-Speed WiFi", "Conference Rooms", "Rooftop Bar"],
     capacity: "150 Rooms",
-    price: "₹10,800"
+    price: "₹10,800",
+    tagline: "Designed for the modern business traveler with seamless connectivity",
+    headline1: "Your home in the",
+    headline2: "tech capital"
   },
   // Restaurant 2
   {
@@ -87,7 +102,10 @@ const properties = [
     description: "Intimate speakeasy-style restaurant with jazz and gourmet plates.",
     amenities: ["Jazz Nights", "Premium Spirits", "Private Dining", "Signature Cocktails"],
     capacity: "50 Covers",
-    price: "₹2,200"
+    price: "₹2,200",
+    tagline: "Step into a hidden world of jazz, cocktails, and culinary excellence",
+    headline1: "Where music and",
+    headline2: "flavors collide"
   },
   // Cafe 3
   {
@@ -101,7 +119,10 @@ const properties = [
     description: "Luxury high tea lounge offering premium teas and desserts.",
     amenities: ["High Tea Service", "Premium Teas", "Afternoon Tea", "Garden View"],
     capacity: "35 Seats",
-    price: "₹850"
+    price: "₹850",
+    tagline: "Indulge in the refined art of afternoon tea with garden views",
+    headline1: "Elegance served",
+    headline2: "by the cup"
   },
   // Hotel 3
   {
@@ -115,7 +136,10 @@ const properties = [
     description: "Unparalleled luxury in the capital's most prestigious location.",
     amenities: ["Presidential Suite", "Michelin Dining", "Private Butler", "Infinity Pool"],
     capacity: "200 Suites",
-    price: "₹18,900"
+    price: "₹18,900",
+    tagline: "Experience unparalleled luxury in India's most prestigious location",
+    headline1: "The pinnacle of",
+    headline2: "hospitality"
   },
   // Restaurant 3
   {
@@ -129,7 +153,10 @@ const properties = [
     description: "Classic whiskey lounge with rare spirits and fine dining.",
     amenities: ["Rare Whiskeys", "Wine Cellar", "Chef's Table", "Cigar Lounge"],
     capacity: "70 Covers",
-    price: "₹3,500"
+    price: "₹3,500",
+    tagline: "Savor rare spirits and exceptional cuisine in a refined atmosphere",
+    headline1: "Sophistication in",
+    headline2: "every pour"
   },
 ];
 
@@ -137,7 +164,6 @@ export default function PropertiesSection() {
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [selectedType, setSelectedType] = useState("All Types");
   const [activeIndex, setActiveIndex] = useState(0);
-  const [showExtraInfo, setShowExtraInfo] = useState(true);
 
   const uniqueCities = ["All Cities", ...Array.from(new Set(properties.map(p => p.city)))];
   const uniqueTypes = ["All Types", "Hotel", "Cafe", "Restaurant"];
@@ -148,71 +174,33 @@ export default function PropertiesSection() {
     return matchCity && matchType;
   });
 
-  // Auto-slide effect - every 4 seconds
+  // Auto-slide effect - every 5 seconds
   useEffect(() => {
     if (filteredProperties.length <= 1) return;
 
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev === filteredProperties.length - 1 ? 0 : prev + 1));
-    }, 4000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [filteredProperties.length]);
 
-  const handlePrev = () => {
-    setActiveIndex((prev) => (prev === 0 ? filteredProperties.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setActiveIndex((prev) => (prev === filteredProperties.length - 1 ? 0 : prev + 1));
-  };
-
   const activeProperty = filteredProperties[activeIndex];
 
-  // Calculate visible cards (prev, current, next)
-  const getVisibleCards = () => {
-    const total = filteredProperties.length;
-    if (total === 0) return [];
-    if (total === 1) return [{ index: 0, position: 'center' }];
-    if (total === 2) return [
-      { index: activeIndex, position: 'center' },
-      { index: (activeIndex + 1) % total, position: 'right' }
-    ];
+  // Get next property for thumbnail preview
+  const nextProperty = filteredProperties[(activeIndex + 1) % filteredProperties.length];
 
-    return [
-      { index: (activeIndex - 1 + total) % total, position: 'left' },
-      { index: activeIndex, position: 'center' },
-      { index: (activeIndex + 1) % total, position: 'right' }
-    ];
+  const handleDotClick = (index: number) => {
+    setActiveIndex(index);
   };
-
-  const visibleCards = getVisibleCards();
 
   // Get type-specific button text
   const getActionButtonText = (type: string) => {
     switch (type) {
-      case "Hotel": return "Book Room";
-      case "Cafe": return "Reserve Table";
-      case "Restaurant": return "Reserve Table";
-      default: return "Book Now";
-    }
-  };
-
-  const getCapacityLabel = (type: string) => {
-    switch (type) {
-      case "Hotel": return "Accommodation";
-      case "Cafe": return "Seating";
-      case "Restaurant": return "Capacity";
-      default: return "Capacity";
-    }
-  };
-
-  const getPriceLabel = (type: string) => {
-    switch (type) {
-      case "Hotel": return "/night";
-      case "Cafe": return "/person";
-      case "Restaurant": return "/person";
-      default: return "/unit";
+      case "Hotel": return { primary: "Book Room", secondary: "Reserve Table" };
+      case "Cafe": return { primary: "Reserve Table", secondary: null };
+      case "Restaurant": return { primary: "Reserve Table", secondary: null };
+      default: return { primary: "Book Now", secondary: null };
     }
   };
 
@@ -267,250 +255,209 @@ export default function PropertiesSection() {
         </div>
 
         {filteredProperties.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-4 items-start">
-            {/* LEFT: 3D Carousel - 65% width */}
-            <div className="relative h-[550px] flex items-center justify-center perspective-1000">
-              <div className="relative w-full h-full flex items-center justify-center">
-                {visibleCards.map(({ index, position }) => {
-                  const property = filteredProperties[index];
-                  const isCenter = position === 'center';
-                  const isLeft = position === 'left';
-                  const isRight = position === 'right';
+          <div className="relative">
+            {/* Hero Carousel Container */}
+            <div className="relative h-[480px] rounded-2xl overflow-hidden shadow-2xl">
+              {/* Slides */}
+              {filteredProperties.map((property, index) => (
+                <div
+                  key={property.id}
+                  className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                    index === activeIndex
+                      ? 'opacity-100 translate-x-0'
+                      : index < activeIndex
+                      ? 'opacity-0 -translate-x-full'
+                      : 'opacity-0 translate-x-full'
+                  }`}
+                >
+                  {/* Background Image */}
+                  <OptimizedImage
+                    {...property.image}
+                    className="w-full h-full object-cover"
+                  />
 
-                  return (
-                    <div
-                      key={property.id}
-                      className={`absolute transition-all duration-700 ease-out ${isCenter
-                          ? 'z-30 scale-100 opacity-100'
-                          : 'z-10 scale-75 opacity-40'
-                        }`}
-                      style={{
-                        transform: isCenter
-                          ? 'translateX(0) rotateY(0deg)'
-                          : isLeft
-                            ? 'translateX(-65%) rotateY(20deg)'
-                            : 'translateX(65%) rotateY(-20deg)',
-                        transformStyle: 'preserve-3d',
-                      }}
-                    >
-                      <div className="w-[420px] h-[480px] bg-card border-2 border-border rounded-2xl overflow-hidden shadow-2xl">
-                        <div className="relative h-full">
-                          <OptimizedImage
-                            {...property.image}
-                            className="w-full h-full object-cover"
-                          />
+                  {/* Gradient Overlays */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                          {/* Gradient Overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  {/* Content Overlay - Left Side */}
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="container mx-auto px-12">
+                      <div className="max-w-2xl">
+                        {/* Tagline */}
+                        <p className="text-white/90 text-sm md:text-base mb-4 leading-relaxed max-w-md">
+                          {property.tagline}
+                        </p>
 
-                          {/* Badge */}
-                          {isCenter && (
-                            <div className="absolute top-4 left-4">
-                              <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
-                                <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
-                                <span className="text-xs font-bold text-gray-900">{property.rating}</span>
-                              </div>
+                        {/* Progress Indicator */}
+                        <div className="flex items-center gap-3 mb-6">
+                          {filteredProperties.map((_, idx) => (
+                            <div key={idx} className="flex flex-col items-start gap-1">
+                              <span className={`text-xs font-medium ${idx === activeIndex ? 'text-white' : 'text-white/40'}`}>
+                                {String(idx + 1).padStart(2, '0')}
+                              </span>
+                              <div className={`h-0.5 transition-all duration-500 ${
+                                idx === activeIndex ? 'w-12 bg-white' : 'w-8 bg-white/30'
+                              }`} />
                             </div>
-                          )}
+                          ))}
+                        </div>
 
-                          {/* Property Info Overlay */}
-                          {isCenter && (
-                            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                              <div className="inline-block px-2.5 py-0.5 mb-2 text-[10px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-sm rounded border border-white/30">
-                                {property.type}
-                              </div>
-                              <h3 className="text-2xl font-serif font-semibold mb-1.5">
-                                {property.name}
-                              </h3>
-                              <div className="flex items-center text-sm opacity-90 mb-2.5">
-                                <MapPin className="w-3.5 h-3.5 mr-1.5" />
-                                {property.location}
-                              </div>
-                              <p className="text-xs opacity-80 line-clamp-2 leading-relaxed">
-                                {property.description}
-                              </p>
-                            </div>
-                          )}
+                        {/* Property Type Label */}
+                        <div className="inline-block mb-3">
+                          <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">
+                            Kennedia Blu {property.type}
+                          </span>
+                        </div>
+
+                        {/* Main Headline */}
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl text-white mb-3">
+                          <span className="font-serif font-normal block leading-tight">
+                            {property.headline1}
+                          </span>
+                          <span className="font-serif italic font-light block leading-tight">
+                            {property.headline2}
+                          </span>
+                        </h1>
+
+                        {/* Location & Rating */}
+                        <div className="flex items-center gap-4 mb-6">
+                          <div className="flex items-center text-white/90">
+                            <MapPin className="w-4 h-4 mr-2" />
+                            <span className="text-sm font-medium">{property.location}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                            <span className="text-sm font-bold text-white">{property.rating}</span>
+                          </div>
+                        </div>
+
+                        {/* CTA Button */}
+                        <button className="group flex items-center gap-3 text-white hover:gap-4 transition-all duration-300">
+                          <span className="text-sm font-semibold uppercase tracking-wider">
+                            Explore Now
+                          </span>
+                          <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/30 transition-all">
+                            <ArrowRight className="w-5 h-5" />
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Next Property Thumbnail - Bottom Right */}
+                  {filteredProperties.length > 1 && index === activeIndex && (
+                    <div className="absolute bottom-6 right-6 group cursor-pointer">
+                      <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white/30 shadow-xl transition-transform duration-300 group-hover:scale-110">
+                        <OptimizedImage
+                          {...nextProperty.image}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-white text-xs font-semibold">Next</span>
                         </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-
-              {/* Navigation Buttons */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 z-40">
-                <button
-                  onClick={handlePrev}
-                  className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-lg hover:scale-110 active:scale-95"
-                  aria-label="Previous Property"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-
-                <div className="px-3 py-1 bg-background/90 backdrop-blur-sm rounded-full border border-border">
-                  <span className="text-xs font-semibold text-foreground">
-                    {activeIndex + 1} / {filteredProperties.length}
-                  </span>
+                  )}
                 </div>
+              ))}
 
-                <button
-                  onClick={handleNext}
-                  className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-lg hover:scale-110 active:scale-95"
-                  aria-label="Next Property"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+              {/* Navigation Dots - Bottom Left */}
+              <div className="absolute bottom-6 left-12 flex items-center gap-2 z-10">
+                {filteredProperties.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleDotClick(index)}
+                    className={`transition-all duration-300 rounded-full ${
+                      index === activeIndex
+                        ? 'w-3 h-3 bg-white'
+                        : 'w-2 h-2 bg-white/40 hover:bg-white/60'
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
               </div>
             </div>
 
-            {/* RIGHT: Enhanced Content Panel - 35% width */}
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-xl h-[550px] flex flex-col">
-              {/* Toggle Button */}
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Property Details
-                </h4>
-                <button
-                  onClick={() => setShowExtraInfo(!showExtraInfo)}
-                  className="text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors px-2 py-1 border border-primary/30 rounded-full hover:bg-primary/5"
-                >
-                  {showExtraInfo ? 'Show Less' : 'Show More'}
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-                {/* Header */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded-full border border-primary/20">
-                      {activeProperty.type}
-                    </span>
-                    <div className="flex items-center gap-1 px-2 py-0.5 bg-yellow-50 rounded-full border border-yellow-200">
-                      <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                      <span className="text-xs font-bold text-yellow-900">{activeProperty.rating}</span>
-                    </div>
-                  </div>
-
-                  <h3 className="text-lg font-serif font-semibold text-foreground mb-1 line-clamp-2">
-                    {activeProperty.name}
+            {/* Property Details Card - Below Carousel */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Quick Info Cards */}
+              <div className="bg-card border border-border rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-serif font-semibold text-foreground">
+                    Details
                   </h3>
-
-                  <div className="flex items-center text-muted-foreground mb-2 text-xs">
-                    <MapPin className="w-3 h-3 mr-1" />
-                    <span className="line-clamp-1">{activeProperty.location}</span>
-                  </div>
-
-                  {showExtraInfo && (
-                    <p className="text-[11px] text-muted-foreground leading-relaxed mt-2">
-                      {activeProperty.description}
-                    </p>
-                  )}
+                  <Building2 className="w-5 h-5 text-primary" />
                 </div>
-
-                {/* Amenities - Compact Grid */}
-                <div>
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-foreground mb-1.5">
-                    Amenities
-                  </h4>
-                  <div className="grid grid-cols-1 gap-1">
-                    {activeProperty.amenities.map((amenity, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-1.5 text-[11px] text-muted-foreground"
-                      >
-                        <div className="w-1 h-1 bg-primary rounded-full flex-shrink-0" />
-                        <span className="line-clamp-1">{amenity}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Extra Info Section */}
-                {showExtraInfo && (
-                  <div className="space-y-3 pt-2 border-t border-border">
-                    {/* Operating Hours */}
-                    <div>
-                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-foreground mb-1.5">
-                        Operating Hours
-                      </h4>
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[11px]">
-                          <span className="text-muted-foreground">Mon - Fri</span>
-                          <span className="font-medium text-foreground">
-                            {activeProperty.type === 'Hotel' ? '24/7' : '8:00 AM - 11:00 PM'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-[11px]">
-                          <span className="text-muted-foreground">Sat - Sun</span>
-                          <span className="font-medium text-foreground">
-                            {activeProperty.type === 'Hotel' ? '24/7' : '9:00 AM - 12:00 AM'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Contact Info */}
-                    <div>
-                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-foreground mb-1.5">
-                        Contact Information
-                      </h4>
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                          <Phone className="w-3 h-3" />
-                          <span>+91 {Math.floor(Math.random() * 9000000000) + 1000000000}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                          <Mail className="w-3 h-3" />
-                          <span className="line-clamp-1">{activeProperty.id}@kennedia.com</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Capacity & Price */}
-                <div className="flex items-center justify-between py-2.5 border-y border-border">
+                <div className="space-y-3">
                   <div>
-                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                      {getCapacityLabel(activeProperty.type)}
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                      Capacity
                     </p>
-                    <p className="text-xs font-semibold text-foreground">{activeProperty.capacity}</p>
+                    <p className="text-sm font-semibold text-foreground">{activeProperty.capacity}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                       Starting From
                     </p>
-                    <p className="text-base font-bold text-primary">
+                    <p className="text-2xl font-bold text-primary">
                       {activeProperty.price}
-                      <span className="text-[10px] text-muted-foreground font-normal">
-                        {getPriceLabel(activeProperty.type)}
+                      <span className="text-sm text-muted-foreground font-normal">
+                        {activeProperty.type === 'Hotel' ? '/night' : '/person'}
                       </span>
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Action Buttons - Compact */}
-              <div className="space-y-2 mt-4">
-                <button className="w-full py-2.5 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-98 flex items-center justify-center gap-1.5 text-xs">
-                  {getActionButtonText(activeProperty.type)}
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+              {/* Amenities */}
+              <div className="bg-card border border-border rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <h3 className="text-lg font-serif font-semibold text-foreground mb-4">
+                  Amenities
+                </h3>
+                <div className="space-y-2">
+                  {activeProperty.amenities.slice(0, 4).map((amenity, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                      <span>{amenity}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                <div className="grid grid-cols-3 gap-2">
-                  <button className="py-2 border border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1 text-[11px]">
-                    <Phone className="w-3 h-3" />
-                    Call
-                  </button>
-                  <button className="py-2 border border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1 text-[11px]">
-                    <Mail className="w-3 h-3" />
-                    Email
-                  </button>
-                  <button className="py-2 border border-primary/50 text-primary font-semibold rounded-lg hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center gap-1 text-[11px]">
-                    <Building2 className="w-3 h-3" />
-                    Explore
-                  </button>
+              {/* Actions */}
+              <div className="bg-card border border-border rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <h3 className="text-lg font-serif font-semibold text-foreground mb-4">
+                  Get in Touch
+                </h3>
+                <div className="space-y-3">
+                  {(() => {
+                    const buttonText = getActionButtonText(activeProperty.type);
+                    return (
+                      <>
+                        <button className="w-full py-3 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm">
+                          {buttonText.primary}
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                        {buttonText.secondary && (
+                          <button className="w-full py-3 bg-background border-2 border-primary text-primary font-bold uppercase tracking-wider rounded-lg hover:bg-primary hover:text-primary-foreground transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm">
+                            {buttonText.secondary}
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        )}
+                      </>
+                    );
+                  })()}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button className="py-2 border border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1 text-sm">
+                      <Phone className="w-4 h-4" />
+                      Call
+                    </button>
+                    <button className="py-2 border border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1 text-sm">
+                      <Mail className="w-4 h-4" />
+                      Email
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -528,13 +475,6 @@ export default function PropertiesSection() {
           </div>
         )}
       </div>
-
-      {/* CSS for 3D perspective */}
-      <style jsx>{`
-        .perspective-1000 {
-          perspective: 1000px;
-        }
-      `}</style>
     </section>
   );
 }
