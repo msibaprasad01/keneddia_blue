@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Users, Award, Shield, Target, User } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
-import { Link } from "wouter";
+
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { BackButton } from "@/components/ui/BackButton";

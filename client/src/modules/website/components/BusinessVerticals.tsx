@@ -1,6 +1,6 @@
 // Adapted from existing logic but with theme tokens
 import { motion } from "framer-motion";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import {
   Building2,
   Coffee,
@@ -13,7 +13,6 @@ import {
 import { siteContent } from "@/data/siteContent";
 import { useState, useEffect } from "react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { isRouteAvailable } from "@/lib/routes";
 
 // Lucide icon map
 const IconMap = {
@@ -136,19 +135,11 @@ function BranchNode({ item, index, total }: { item: any, index: number, total: n
       <div className="h-8 w-[1px] bg-primary/20 mb-4 group-hover:bg-primary/60 transition-colors duration-500" />
 
       {/* Visual Icon Node */}
-      {isRouteAvailable(`/${item.id}`) ? (
-        <Link href={`/${item.id}`}>
-          <a className="block">
-            <div className="w-16 h-16 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 group-hover:border-primary/50 group-hover:shadow-xl transition-all duration-300">
-              <Icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors duration-300" strokeWidth={1.5} />
-            </div>
-          </a>
-        </Link>
-      ) : (
-        <div className="w-16 h-16 rounded-2xl bg-muted/20 border border-border/5 shadow-lg flex items-center justify-center mb-4 opacity-50 cursor-not-allowed">
-          <Icon className="w-6 h-6 text-muted-foreground" strokeWidth={1.5} />
+      <Link to={`/${item.id}`} className="block">
+        <div className="w-16 h-16 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 group-hover:border-primary/50 group-hover:shadow-xl transition-all duration-300">
+          <Icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors duration-300" strokeWidth={1.5} />
         </div>
-      )}
+      </Link>
 
       {/* Text Content */}
       <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
@@ -176,18 +167,16 @@ function MobileTimeline({ verticals }: { verticals: VerticalItem[] }) {
           >
             <div className="absolute -left-[31px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary border-2 border-background shadow-sm" />
 
-            <Link href={`/${v.id}`}>
-              <a className="block bg-card p-4 rounded-xl shadow-sm border border-border hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-full text-primary">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-foreground">{v.title}</h3>
-                  </div>
-                  <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
+            <Link to={`/${v.id}`} className="block bg-card p-4 rounded-xl shadow-sm border border-border hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-full text-primary">
+                  <Icon className="w-4 h-4" />
                 </div>
-              </a>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">{v.title}</h3>
+                </div>
+                <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
+              </div>
             </Link>
           </motion.div>
         );

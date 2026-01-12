@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Hotel, UtensilsCrossed, Coffee, Wine, Star } from "lucide-react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
@@ -171,11 +171,9 @@ export default function AboutUsSection() {
 
             {/* More Details Link - Compact */}
             <div>
-              <Link href="/about">
-                <a className="inline-flex items-center text-xs font-medium tracking-wide hover:underline underline-offset-4 transition-all text-muted-foreground hover:text-primary">
-                  More details
-                  <ArrowRight className="w-3 h-3 ml-1.5" />
-                </a>
+              <Link to="/about" className="inline-flex items-center text-xs font-medium tracking-wide hover:underline underline-offset-4 transition-all text-muted-foreground hover:text-primary">
+                More details
+                <ArrowRight className="w-3 h-3 ml-1.5" />
               </Link>
             </div>
           </div>

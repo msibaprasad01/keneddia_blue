@@ -1,8 +1,7 @@
 import { Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp } from "lucide-react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { siteContent } from "@/data/siteContent";
-import { isRouteAvailable } from "@/lib/routes";
 
 const footerSections = [
   {
@@ -29,7 +28,7 @@ const footerSections = [
     links: [
       { label: "Kennedia Blu Foundation", href: "/foundation" },
       { label: "Investors", href: "/investors" },
-      { label: "Newsroom", href: "/newsroom" },
+      { label: "Newsroom", href: "/news" },
       { label: "Careers", href: "/careers" },
       { label: "Contact Us", href: "/contact" },
     ],
@@ -80,24 +79,23 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="space-y-6 flex flex-col items-center md:items-start">
             {/* Logo */}
-            <Link href="/">
-              <a onClick={handleLinkClick} className="inline-block">
-                <div className="relative">
-                  {/* Dark theme logo */}
-                  <img
-                    src={siteContent.brand.logo_hotel.image.src}
-                    alt={siteContent.brand.logo_hotel.image.alt || siteContent.brand.logo.text}
-                    className="hidden dark:block h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
-                  />
+            {/* Logo */}
+            <Link to="/" onClick={handleLinkClick} className="inline-block">
+              <div className="relative">
+                {/* Dark theme logo */}
+                <img
+                  src={siteContent.brand.logo_hotel.image.src}
+                  alt={siteContent.brand.logo_hotel.image.alt || siteContent.brand.logo.text}
+                  className="hidden dark:block h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
+                />
 
-                  {/* Light theme (Red) logo */}
-                  <img
-                    src={siteContent.brand.logo.subImage.src}
-                    alt={siteContent.brand.logo.subImage.alt || siteContent.brand.logo.text}
-                    className="block dark:hidden h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
-                  />
-                </div>
-              </a>
+                {/* Light theme (Red) logo */}
+                <img
+                  src={siteContent.brand.logo.subImage.src}
+                  alt={siteContent.brand.logo.subImage.alt || siteContent.brand.logo.text}
+                  className="block dark:hidden h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
+                />
+              </div>
             </Link>
 
 
@@ -126,27 +124,17 @@ export default function Footer() {
                 {section.title}
               </h3>
               <ul className="space-y-3">
-                {section.links.map((link, linkIndex) => {
-                  const isAvailable = link.href.startsWith('#') || isRouteAvailable(link.href);
-                  return (
-                    <li key={linkIndex}>
-                      {isAvailable ? (
-                        <Link href={link.href}>
-                          <a
-                            onClick={handleLinkClick}
-                            className="text-sm text-[#374151] hover:text-[#B11226] transition-colors block"
-                          >
-                            {link.label}
-                          </a>
-                        </Link>
-                      ) : (
-                        <span className="text-sm text-[#374151] opacity-50 cursor-not-allowed block">
-                          {link.label}
-                        </span>
-                      )}
-                    </li>
-                  );
-                })}
+                {section.links.map((link, linkIndex) => (
+                  <li key={linkIndex}>
+                    <Link
+                      to={link.href}
+                      onClick={handleLinkClick}
+                      className="text-sm text-[#374151] hover:text-[#B11226] transition-colors block"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
@@ -165,13 +153,13 @@ export default function Footer() {
             {/* Legal Links */}
             <div className="flex items-center gap-6">
               {legalLinks.map((link, index) => (
-                <Link key={index} href={link.href}>
-                  <a
-                    onClick={handleLinkClick}
-                    className="text-sm text-[#4B5563] hover:text-[#B11226] transition-colors"
-                  >
-                    {link.label}
-                  </a>
+                <Link
+                  key={index}
+                  to={link.href}
+                  onClick={handleLinkClick}
+                  className="text-sm text-[#4B5563] hover:text-[#B11226] transition-colors"
+                >
+                  {link.label}
                 </Link>
               ))}
             </div>

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, LogIn, Calendar } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
-import { isRouteAvailable } from "@/lib/routes";
 import { BookingSheet } from "./BookingSheet";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -399,26 +398,17 @@ function DropdownMenu({ items, handleHashLink }: DropdownMenuProps) {
       className="absolute top-full mt-2 bg-card border border-border/50 shadow-xl rounded-lg overflow-hidden right-0 w-64"
     >
       <div className="py-2">
-        {items.map((subItem, idx) => {
-          const isAvailable = subItem.href.startsWith('#') || isRouteAvailable(subItem.href);
-          return (
-            <div key={idx}>
-              {isAvailable ? (
-                <Link
-                  to={subItem.href}
-                  onClick={(e) => handleHashLink(e, subItem.href)}
-                  className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
-                >
-                  {subItem.label}
-                </Link>
-              ) : (
-                <span className="block px-6 py-3 text-sm text-foreground/50 cursor-not-allowed">
-                  {subItem.label}
-                </span>
-              )}
-            </div>
-          );
-        })}
+        {items.map((subItem, idx) => (
+          <div key={idx}>
+            <Link
+              to={subItem.href}
+              onClick={(e) => handleHashLink(e, subItem.href)}
+              className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+            >
+              {subItem.label}
+            </Link>
+          </div>
+        ))}
       </div>
     </motion.div>
   );
@@ -547,23 +537,16 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
             transition={{ duration: 0.2 }}
             className="bg-accent/5 overflow-hidden"
           >
-            {item.items.map((subItem, idx) => {
-              const isAvailable = subItem.href.startsWith('#') || isRouteAvailable(subItem.href);
-              return isAvailable ? (
-                <Link
-                  key={idx}
-                  to={subItem.href}
-                  onClick={(e) => handleHashLink(e, subItem.href)}
-                  className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer"
-                >
-                  {subItem.label}
-                </Link>
-              ) : (
-                <span key={idx} className="block px-6 py-2.5 text-sm text-foreground/50 cursor-not-allowed">
-                  {subItem.label}
-                </span>
-              );
-            })}
+            {item.items.map((subItem, idx) => (
+              <Link
+                key={idx}
+                to={subItem.href}
+                onClick={(e) => handleHashLink(e, subItem.href)}
+                className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer"
+              >
+                {subItem.label}
+              </Link>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
