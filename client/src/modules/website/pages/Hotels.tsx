@@ -5,6 +5,8 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import HotelCarouselSection from "@/modules/website/components/HotelCarouselSection";
 import CollectionSection from "@/modules/website/components/CollectionSection";
+import HotelOffersCarousel from "@/modules/website/components/hotel/HotelOffersCarousel";
+import HotelNewsUpdates from "@/modules/website/components/hotel/HotelNewsUpdates";
 
 // Assets
 import { siteContent } from "@/data/siteContent";
@@ -158,8 +160,12 @@ const HERO_IMAGES = [
   siteContent.images.hotels.hyderabad
 ];
 
+// Define a flexible type compatible with CollectionSection's expectation
+type HotelType = typeof allHotels[0];
+type FlexHotelType = Omit<HotelType, 'features'> & { features?: string[] };
+
 export default function Hotels() {
-  const [selectedHotel, setSelectedHotel] = useState<typeof allHotels[0] | null>(null);
+  const [selectedHotel, setSelectedHotel] = useState<FlexHotelType | null>(null);
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [checkInDate, setCheckInDate] = useState("");
@@ -354,7 +360,6 @@ export default function Hotels() {
         </div>
       </section>
 
-      {/* 3. COLLECTION SECTION */}
       <CollectionSection
         filteredHotels={filteredHotels}
         selectedCity={selectedCity}
@@ -370,6 +375,12 @@ export default function Hotels() {
         setShowCityDropdown={setShowCityDropdown}
         onHotelSelect={setSelectedHotel}
       />
+
+      {/* NEW: HOTEL OFFERS CAROUSEL */}
+      <HotelOffersCarousel />
+
+      {/* NEW: HOTEL NEWS UPDATES */}
+      <HotelNewsUpdates />
 
       {/* 4. CTA SECTION */}
       <section className="py-10 bg-primary text-primary-foreground text-center px-6">
