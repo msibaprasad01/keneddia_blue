@@ -115,19 +115,31 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
 
   // Scroll & Active State Logic
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > NAVBAR_CONFIG.scrollThreshold);
+    let ticking = false;
 
-      // Active Section Detection
-      const currentSection = TRACKED_SECTIONS.find(sectionId => {
-        const el = document.getElementById(sectionId);
-        if (!el) return false;
-        const rect = el.getBoundingClientRect();
-        return rect.top <= 100 && rect.bottom >= 100;
-      });
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > NAVBAR_CONFIG.scrollThreshold);
 
-      setActiveSection(currentSection || null);
+          // Active Section Detection
+          const currentSection = TRACKED_SECTIONS.find(sectionId => {
+            const el = document.getElementById(sectionId);
+            if (!el) return false;
+            const rect = el.getBoundingClientRect();
+            return rect.top <= 100 && rect.bottom >= 100;
+          });
+
+          setActiveSection(currentSection || null);
+          ticking = false;
+        });
+
+        ticking = true;
+      }
     };
+
+    // Handle initial state
+    onScroll();
 
     // Handle initial hash scroll
     if (location.hash) {
@@ -145,9 +157,8 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
       }
     }
 
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, [location]);
 
   // Handle Hash Links specifically
