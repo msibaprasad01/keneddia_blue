@@ -16,9 +16,9 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 const HOTEL_NAV_ITEMS = [
   { type: 'link', label: 'OVERVIEW', key: 'overview', href: '#overview' },
   { type: 'link', label: 'COLLECTION', key: 'collection', href: '#collection' },
-  { type: 'link', label: 'OFFERS', key: 'offers', href: '/offers' },
-  { type: 'link', label: 'EVENTS', key: 'events', href: '/events' },
-  { type: 'link', label: 'CONTACT', key: 'contact', href: '#footer' },
+  { type: 'link', label: 'OFFERS', key: 'offers', href: '#offers' },
+  { type: 'link', label: 'EVENTS', key: 'events', href: '#events' },
+  { type: 'link', label: 'CONTACT', key: 'contact', href: '#contact' },
 ] as any[];
 
 const allHotels = [
@@ -149,7 +149,6 @@ const allHotels = [
     },
   },
 ];
-
 
 const cities = ["All Cities", "Mumbai", "Bengaluru", "Delhi", "Kolkata", "Hyderabad", "Chennai"];
 
@@ -360,27 +359,33 @@ export default function Hotels() {
         </div>
       </section>
 
-      <CollectionSection
-        filteredHotels={filteredHotels}
-        selectedCity={selectedCity}
-        setSelectedCity={setSelectedCity}
-        checkInDate={checkInDate}
-        setCheckInDate={setCheckInDate}
-        checkOutDate={checkOutDate}
-        setCheckOutDate={setCheckOutDate}
-        handleSearch={handleSearch}
-        isSearching={isSearching}
-        cities={cities}
-        showCityDropdown={showCityDropdown}
-        setShowCityDropdown={setShowCityDropdown}
-        onHotelSelect={setSelectedHotel}
-      />
+      <div id="collection">
+        <CollectionSection
+          filteredHotels={filteredHotels}
+          selectedCity={selectedCity}
+          setSelectedCity={setSelectedCity}
+          checkInDate={checkInDate}
+          setCheckInDate={setCheckInDate}
+          checkOutDate={checkOutDate}
+          setCheckOutDate={setCheckOutDate}
+          handleSearch={handleSearch}
+          isSearching={isSearching}
+          cities={cities}
+          showCityDropdown={showCityDropdown}
+          setShowCityDropdown={setShowCityDropdown}
+          onHotelSelect={setSelectedHotel}
+        />
+      </div>
 
       {/* NEW: HOTEL OFFERS CAROUSEL */}
-      <HotelOffersCarousel />
+      <div id="offers">
+        <HotelOffersCarousel />
+      </div>
 
       {/* NEW: HOTEL NEWS UPDATES */}
-      <HotelNewsUpdates />
+      <div id="events">
+        <HotelNewsUpdates />
+      </div>
 
       {/* 4. CTA SECTION */}
       <section className="py-10 bg-primary text-primary-foreground text-center px-6">
@@ -569,7 +574,9 @@ export default function Hotels() {
         )}
       </AnimatePresence>
 
-      <Footer />
+      <div id="contact">
+        <Footer />
+      </div>
     </div>
   );
 }
