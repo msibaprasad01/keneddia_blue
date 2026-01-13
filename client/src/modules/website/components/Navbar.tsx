@@ -20,8 +20,8 @@ const JOIN_US_ITEMS = [
   { label: "Careers", href: "/careers" },
   { label: "Become a Partner", href: "#" },
   { label: "Franchise Opportunities", href: "#" },
-  { label: "Investor Relations", href: "#" },
-  { label: "Supplier Registration", href: "#" },
+  // { label: "Investor Relations", href: "#" },
+  // { label: "Supplier Registration", href: "#" },
 ];
 
 // Quick Booking Options
