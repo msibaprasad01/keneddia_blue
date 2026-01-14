@@ -31,103 +31,103 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
     const superAdminMenus = [
       { icon: LayoutDashboard, label: 'Dashboard', path: '/Dashboard' },
       { icon: Home, label: 'Homepage', path: '/Homepage-Dashboard' },
-      { icon: MapPin, label: 'Location', path: '#' },
-      { icon: Users, label: 'Manage Users', path: '#' },
-      { icon: BarChart3, label: 'Analytics', path: '#' },
+      { icon: MapPin, label: 'Location', path: '/Location' },
+      { icon: Users, label: 'Manage Users', path: '/ManageUsers' },
+      { icon: BarChart3, label: 'Analytics', path: '/Analytics' },
       { 
         icon: Building2, 
         label: 'Hotel', 
-        path: '#',
+        path: '/Hotel',
         hasSubmenu: true,
         submenu: [
-          { name: 'Rooms', path: '#' },
-          { name: 'Amenities', path: '#' },
-          { name: 'Bookings', path: '#' },
-          { name: 'Pricing', path: '#' }
+          { name: 'Rooms', path: '/Hotel/Rooms' },
+          { name: 'Amenities', path: '/Hotel/Amenities' },
+          { name: 'Bookings', path: '/Hotel/Bookings' },
+          { name: 'Pricing', path: '/Hotel/Pricing' }
         ]
       },
       { 
         icon: Coffee, 
         label: 'Cafe', 
-        path: '#',
+        path: '/Cafe',
         hasSubmenu: true,
         submenu: [
-          { name: 'Menu', path: '#' },
-          { name: 'Orders', path: '#' },
-          { name: 'Tables', path: '#' },
-          { name: 'Inventory', path: '#' }
+          { name: 'Menu', path: '/Cafe/Menu' },
+          { name: 'Orders', path: '/Cafe/Orders' },
+          { name: 'Tables', path: '/Cafe/Tables' },
+          { name: 'Inventory', path: '/Cafe/Inventory' }
         ]
       },
       { 
         icon: UtensilsCrossed, 
         label: 'Restaurant', 
-        path: '#',
+        path: '/Restaurant',
         hasSubmenu: true,
         submenu: [
-          { name: 'Menu', path: '#' },
-          { name: 'Reservations', path: '#' },
-          { name: 'Orders', path: '#' },
-          { name: 'Kitchen', path: '#' }
+          { name: 'Menu', path: '/Restaurant/Menu' },
+          { name: 'Reservations', path: '/Restaurant/Reservations' },
+          { name: 'Orders', path: '/Restaurant/Orders' },
+          { name: 'Kitchen', path: '/Restaurant/Kitchen' }
         ]
       },
       { 
         icon: Wine, 
         label: 'Wine & Dine', 
-        path: '#',
+        path: '/WineDine',
         hasSubmenu: true,
         submenu: [
-          { name: 'Wine List', path: '#' },
-          { name: 'Packages', path: '#' },
-          { name: 'Events', path: '#' }
+          { name: 'Wine List', path: '/WineDine/WineList' },
+          { name: 'Packages', path: '/WineDine/Packages' },
+          { name: 'Events', path: '/WineDine/Events' }
         ]
       },
-      { icon: FileText, label: 'Reports', path: '#' },
+      { icon: FileText, label: 'Reports', path: '/Reports' },
     ];
 
     const adminMenus = [
       { icon: Home, label: 'Homepage', path: '/Homepage-Dashboard' },
-      { icon: MapPin, label: 'Location', path: '#' },
+      { icon: MapPin, label: 'Location', path: '/Location' },
       { 
         icon: Building2, 
         label: 'Hotel', 
-        path: '#',
+        path: '/Hotel',
         hasSubmenu: true,
         submenu: [
-          { name: 'Rooms', path: '#' },
-          { name: 'Amenities', path: '#' },
-          { name: 'Bookings', path: '#' }
+          { name: 'Rooms', path: '/Hotel/Rooms' },
+          { name: 'Amenities', path: '/Hotel/Amenities' },
+          { name: 'Bookings', path: '/Hotel/Bookings' }
         ]
       },
       { 
         icon: Coffee, 
         label: 'Cafe', 
-        path: '#',
+        path: '/Cafe',
         hasSubmenu: true,
         submenu: [
-          { name: 'Menu', path: '#' },
-          { name: 'Orders', path: '#' },
-          { name: 'Tables', path: '#' }
+          { name: 'Menu', path: '/Cafe/Menu' },
+          { name: 'Orders', path: '/Cafe/Orders' },
+          { name: 'Tables', path: '/Cafe/Tables' }
         ]
       },
       { 
         icon: UtensilsCrossed, 
         label: 'Restaurant', 
-        path: '#',
+        path: '/Restaurant',
         hasSubmenu: true,
         submenu: [
-          { name: 'Menu', path: '#' },
-          { name: 'Reservations', path: '#' },
-          { name: 'Orders', path: '#' }
+          { name: 'Menu', path: '/Restaurant/Menu' },
+          { name: 'Reservations', path: '/Restaurant/Reservations' },
+          { name: 'Orders', path: '/Restaurant/Orders' }
         ]
       },
       { 
         icon: Wine, 
         label: 'Wine & Dine', 
-        path: '#',
+        path: '/WineDine',
         hasSubmenu: true,
         submenu: [
-          { name: 'Wine List', path: '#' },
-          { name: 'Events', path: '#' }
+          { name: 'Wine List', path: '/WineDine/WineList' },
+          { name: 'Events', path: '/WineDine/Events' }
         ]
       },
     ];
