@@ -1,98 +1,56 @@
-/**
- * Mock Authentication Service
- * Handles static login validation for admin and user roles
- */
+import { loginAPI } from "@/Api/Api";
 
-// Mock user database
-const MOCK_USERS = {
-  admin: {
-    username: 'admin',
-    password: 'admin123',
-    role: 'Super Admin',
-    type: 'admin'
-  },
-  manager: {
-    username: 'manager',
-    password: 'manager123',
-    role: 'Admin',
-    type: 'admin'
-  },
-  user: {
-    username: 'user',
-    password: 'user123',
-    type: 'user'
-  }
-};
+const AuthService = {
+  /**
+   * @param {Object} credentials - { username, password }
+   * @param {boolean} rememberMe - If true, uses localStorage, else sessionStorage
+   */
+  login: async (credentials, rememberMe = false) => {
+    try {
+      const response = await loginAPI(credentials);
+      const { token, user } = response.data;
 
-/**
- * Validates login credentials
- * @param {Object} credentials - Login credentials
- * @param {string} credentials.username - Username
- * @param {string} credentials.password - Password
- * @param {string} credentials.loginType - 'admin' or 'user'
- * @param {string} [credentials.role] - Required for admin login
- * @returns {Object} Authentication result
- */
-export const login = (credentials) => {
-  const { username, password, loginType, role } = credentials;
+      if (token) {
+        // Decide storage type
+        const storage = rememberMe ? localStorage : sessionStorage;
+        
+        // Clear the other storage to avoid token conflicts
+        const otherStorage = rememberMe ? sessionStorage : localStorage;
+        otherStorage.removeItem("accessToken");
+        otherStorage.removeItem("user");
 
-  // Find matching user
-  const user = Object.values(MOCK_USERS).find(
-    u => u.username === username && u.password === password
-  );
+        // Save to selected storage
+        storage.setItem("accessToken", token);
+        storage.setItem("user", JSON.stringify(user));
 
-  // User not found
-  if (!user) {
-    return {
-      success: false,
-      message: 'Invalid username or password'
-    };
-  }
-
-  // Validate login type matches user type
-  if (user.type !== loginType) {
-    return {
-      success: false,
-      message: `This account is not authorized for ${loginType} login`
-    };
-  }
-
-  // For admin login, validate role
-  if (loginType === 'admin') {
-    if (!role) {
+        return { success: true, user };
+      }
+      return { success: false, message: "Invalid credentials" };
+    } catch (error) {
       return {
         success: false,
-        message: 'Please select a role'
+        message: error.response?.data?.message || "Connection error"
       };
     }
+  },
 
-    if (user.role !== role) {
-      return {
-        success: false,
-        message: 'Invalid role selected for this account'
-      };
-    }
+  logout: () => {
+    // Clear both to be safe
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("user");
+    window.location.href = "/login";
+  },
+
+  getCurrentUser: () => {
+    const user = sessionStorage.getItem("user") || localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  },
+
+  isAuthenticated: () => {
+    return !!(sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken"));
   }
-
-  // Successful login
-  return {
-    success: true,
-    message: 'Login successful',
-    user: {
-      username: user.username,
-      type: user.type,
-      role: user.role
-    }
-  };
 };
 
-/**
- * Logs out the current user
- * @returns {Object} Logout result
- */
-export const logout = () => {
-  return {
-    success: true,
-    message: 'Logged out successfully'
-  };
-};
+export default AuthService;

@@ -1,37 +1,18 @@
 import axios from "axios";
 
-// ==================================================
-// 🌐 BASE URL SETUP
-// ==================================================
-
-let apiUrl = "";
-
-/**
- * Local mock server (same format as dev/qa/prod)
- * Example endpoints:
- * http://localhost:8080/api/v1/login
- */
-if (process.env.NODE_ENV === "development") {
-  apiUrl = "http://localhost:8080/";
-} else {
-  apiUrl = "https://devapi.jyotsnahealth.com/";
-}
-
-// ==================================================
-// 🚀 AXIOS INSTANCE
-// ==================================================
+const apiUrl = "http://192.168.0.135:6090/";
 
 const API = axios.create({
   baseURL: apiUrl,
 });
 
-// ==================================================
-// 🔐 REQUEST INTERCEPTOR
-// ==================================================
-
 API.interceptors.request.use(
   (req) => {
-    const token = localStorage.getItem("accessToken");
+    // Check both storages
+    const token =
+      sessionStorage.getItem("accessToken") ||
+      localStorage.getItem("accessToken");
+
     if (token) {
       req.headers.Authorization = `Bearer ${token}`;
     }
@@ -40,18 +21,76 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// AUTH
+export const loginAPI = (data) => API.post("api/v1/staff/login", data);
+
 // ==================================================
-// 🔐 AUTH APIs
+// 👥 ROLES
 // ==================================================
 
-export const login = (requestData) =>
-  API.post("api/v1/login", requestData);
+export const createRole = (data) => API.post("api/v1/roles", data);
 
-export const logout = (username) =>
-  API.post("api/v1/logout", { username });
+export const getAllRoles = () => API.get("api/v1/showAll");
 
-export const refreshToken = () =>
-  API.post("api/v1/refresh-token");
+// ==================================================
+// 👤 USERS
+// ==================================================
 
-export const getProfile = (role) =>
-  API.get(`v1/${role}/me`);
+export const createUser = (data) => API.post("api/v1/users/create", data);
+
+export const getUsersPaginated = () => API.get("api/v1/users/auth/paginated");
+
+// ==================================================
+// 📍 LOCATIONS
+// ==================================================
+
+export const addLocation = (data) => API.post("api/v1/locations/create", data);
+
+export const getAllLocations = () => API.get("api/v1/locations/all");
+
+// ==================================================
+// 🏨 PROPERTY TYPES
+// ==================================================
+
+export const addPropertyType = (data) =>
+  API.post("api/v1/property-types/create", data);
+
+export const getPropertyTypes = () => API.get("api/v1/property-types");
+
+export const getPropertyTypeById = (id) =>
+  API.get(`api/v1/property-types/${id}`);
+
+export const getActivePropertyTypes = () =>
+  API.get("api/v1/property-types/active");
+
+export const updatePropertyTypeStatus = (id, isActive) =>
+  API.patch(`api/v1/property-types/${id}/status`, null, {
+    params: { isActive },
+  });
+
+// ==================================================
+// 🍽️ PROPERTY CATEGORIES
+// ==================================================
+
+export const addPropertyCategory = (data) =>
+  API.post("api/v1/property-categories/add", data);
+
+export const getAllPropertyCategories = () =>
+  API.get("api/v1/property-categories/all");
+
+export const getActivePropertyCategories = () =>
+  API.get("api/v1/property-categories/all?activeOnly=true");
+
+export const updatePropertyCategoryStatus = (id, isActive) =>
+  API.patch(`api/v1/property-categories/${id}/status`, null, {
+    params: { isActive },
+  });
+
+// ==================================================
+// 🏢 PROPERTIES
+// ==================================================
+
+export const addProperty = (type, data) =>
+  API.post(`api/v1/properties/add/${type}`, data);
+
+export default API;
