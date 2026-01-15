@@ -6,6 +6,7 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import RoomCard from "@/modules/website/components/RoomCard";
 import PricingBreakdown from "@/modules/website/components/PricingBreakdown";
+import TrustSection from "@/modules/website/components/TrustSection";
 import { getHotelById, getRoomById } from "@/data/hotelData";
 import { siteContent } from "@/data/siteContent";
 
@@ -146,8 +147,8 @@ export default function RoomSelection() {
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded transition-all ${viewMode === 'grid'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                     }`}
                   title="Grid View"
                 >
@@ -156,8 +157,8 @@ export default function RoomSelection() {
                 <button
                   onClick={() => setViewMode('list')}
                   className={`p-2 rounded transition-all ${viewMode === 'list'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                     }`}
                   title="List View"
                 >
@@ -185,8 +186,8 @@ export default function RoomSelection() {
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-1.5 rounded transition-all ${viewMode === 'grid'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground'
                     }`}
                 >
                   <Grid3x3 className="w-3.5 h-3.5" />
@@ -194,8 +195,8 @@ export default function RoomSelection() {
                 <button
                   onClick={() => setViewMode('list')}
                   className={`p-1.5 rounded transition-all ${viewMode === 'list'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground'
                     }`}
                 >
                   <List className="w-3.5 h-3.5" />
@@ -248,8 +249,8 @@ export default function RoomSelection() {
                           key={page}
                           onClick={() => handlePageChange(page)}
                           className={`min-w-[36px] h-9 px-3 text-sm font-medium rounded-lg transition-all ${currentPage === page
-                              ? 'bg-primary text-primary-foreground shadow-sm'
-                              : 'border border-border hover:bg-secondary text-foreground'
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'border border-border hover:bg-secondary text-foreground'
                             }`}
                         >
                           {page}
@@ -272,29 +273,35 @@ export default function RoomSelection() {
           </div>
 
           {/* Right Column - Pricing Breakdown (Sticky) */}
-          <div className="lg:sticky lg:top-24 h-fit" id="pricing-section">
+          <div className="lg:sticky lg:top-24 h-fit space-y-4" id="pricing-section">
             {selectedRoom ? (
-              <PricingBreakdown
-                basePrice={selectedRoom.basePrice}
-                nights={1}
-                onProceed={handleProceedToCheckout}
-              />
+              <>
+                <PricingBreakdown
+                  basePrice={selectedRoom.basePrice}
+                  nights={1}
+                  onProceed={handleProceedToCheckout}
+                />
+                <TrustSection />
+              </>
             ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-card border border-border rounded-xl p-6 md:p-8 text-center"
-              >
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                  <Home className="w-6 h-6 md:w-8 md:h-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-base md:text-lg font-serif font-semibold text-foreground mb-2">
-                  Select a Room
-                </h3>
-                <p className="text-xs md:text-sm text-muted-foreground">
-                  Choose a room to see the pricing breakdown and proceed to checkout.
-                </p>
-              </motion.div>
+              <>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-card border border-border rounded-xl p-6 md:p-8 text-center"
+                >
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                    <Home className="w-6 h-6 md:w-8 md:h-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-base md:text-lg font-serif font-semibold text-foreground mb-2">
+                    Select a Room
+                  </h3>
+                  <p className="text-xs md:text-sm text-muted-foreground">
+                    Choose a room to see the pricing breakdown and proceed to checkout.
+                  </p>
+                </motion.div>
+                <TrustSection />
+              </>
             )}
           </div>
         </div>
