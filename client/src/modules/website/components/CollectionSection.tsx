@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { MapPin, Calendar, Search, Star, ArrowRight, ChevronLeft, ChevronRight, Home, Users, Wifi } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -103,6 +104,7 @@ export default function CollectionSection({
 }: CollectionSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const navigate = useNavigate();
 
   // Auto-cycle through properties every 5 seconds
   useEffect(() => {
@@ -360,7 +362,7 @@ export default function CollectionSection({
                     </p>
                   </div>
                   <button
-                    onClick={() => onHotelSelect(currentHotel)}
+                    onClick={() => navigate(`/hotels/${currentHotel.id}`)}
                     className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg text-sm"
                   >
                     View Details
@@ -377,8 +379,8 @@ export default function CollectionSection({
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
                   className={`transition-all duration-300 rounded-full ${idx === currentIndex
-                      ? 'w-8 h-2 bg-primary'
-                      : 'w-2 h-2 bg-border hover:bg-primary/50'
+                    ? 'w-8 h-2 bg-primary'
+                    : 'w-2 h-2 bg-border hover:bg-primary/50'
                     }`}
                   aria-label={`Go to property ${idx + 1}`}
                 />
@@ -455,7 +457,7 @@ export default function CollectionSection({
                           <button
                             onClick={() => {
                               setCurrentIndex(idx);
-                              onHotelSelect(hotel);
+                              navigate(`/hotels/${hotel.id}`);
                             }}
                             className="w-full text-xs bg-primary text-primary-foreground font-bold py-2 rounded hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
                           >

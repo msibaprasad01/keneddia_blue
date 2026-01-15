@@ -21,6 +21,7 @@ import HotelNewsUpdates from "@/modules/website/components/hotel/HotelNewsUpdate
 import HotelReviewsSection from "@/modules/website/components/HotelReviewsSection";
 // Assets
 import { siteContent } from "@/data/siteContent";
+import { allHotels } from "@/data/hotelData";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Hotel Navigation Items
@@ -32,155 +33,11 @@ const HOTEL_NAV_ITEMS = [
   { type: "link", label: "CONTACT", key: "contact", href: "#contact" },
 ] as any[];
 
-const allHotels = [
-  {
-    id: "mumbai",
-    name: "Kennedia Blu Mumbai",
-    location: "Colaba, Mumbai",
-    city: "Mumbai",
-    image: siteContent.images.hotels.mumbai,
-    price: "₹35,000",
-    rating: "4.9",
-    reviews: 1240,
-    description:
-      "A historic landmark transformed into a sanctuary of modern luxury, overlooking the Gateway of India. Experience the convergence of heritage and contemporary elegance.",
-    amenities: ["Free WiFi", "Spa", "Restaurant", "Bar", "Gym", "Room Service"],
-    features: ["Heritage Wing", "Sea View Suites", "Butlers on call"],
-    rooms: 156,
-    checkIn: "2:00 PM",
-    checkOut: "11:00 AM",
-    coordinates: {
-      lat: 18.921984,
-      lng: 72.833855,
-    },
-  },
-  {
-    id: "bengaluru",
-    name: "Kennedia Blu Bengaluru",
-    location: "Indiranagar, Bengaluru",
-    city: "Bengaluru",
-    image: siteContent.images.hotels.bengaluru,
-    price: "₹18,000",
-    rating: "4.8",
-    reviews: 892,
-    description:
-      "Minimalist perfection in the heart of Bengaluru's most exclusive tech and lifestyle district. A haven for digital nomads and business leaders.",
-    amenities: [
-      "Free WiFi",
-      "Traditional Tea Room",
-      "Michelin Restaurant",
-      "Zen Garden",
-    ],
-    features: ["Co-working Lounge", "Rooftop Microbrewery", "Smart Rooms"],
-    rooms: 98,
-    checkIn: "2:00 PM",
-    checkOut: "11:00 AM",
-    coordinates: {
-      lat: 12.971891,
-      lng: 77.641154,
-    },
-  },
-  {
-    id: "delhi",
-    name: "Kennedia Blu Delhi",
-    location: "Connaught Place, Delhi",
-    city: "Delhi",
-    image: siteContent.images.hotels.delhi,
-    price: "₹25,000",
-    rating: "5.0",
-    reviews: 2156,
-    description:
-      "Opulence redefined with unparalleled views of the capital's heritage. The preferred address for diplomats and discerning travelers.",
-    amenities: [
-      "Infinity Pool",
-      "Spa",
-      "5 Restaurants",
-      "Butler Service",
-      "Helipad",
-    ],
-    features: ["Presidential Suite", "Cigar Lounge", "Art Gallery"],
-    rooms: 342,
-    checkIn: "2:00 PM",
-    checkOut: "12:00 PM",
-    coordinates: {
-      lat: 28.631451,
-      lng: 77.216667,
-    },
-  },
-  {
-    id: "kolkata",
-    name: "Kennedia Blu Kolkata",
-    location: "Park Street, Kolkata",
-    city: "Kolkata",
-    image: siteContent.images.hotels.kolkata,
-    price: "₹20,000",
-    rating: "4.9",
-    reviews: 1567,
-    description:
-      "Classic colonial elegance meets contemporary comfort in the City of Joy. A tribute to the artistic and intellectual spirit of Bengal.",
-    amenities: [
-      "Michelin Star Restaurant",
-      "Wine Cellar",
-      "Art Gallery",
-      "Concierge",
-    ],
-    features: ["Literary Club", "Afternoon Tea", "Jazz Bar"],
-    rooms: 124,
-    checkIn: "2:00 PM",
-    checkOut: "11:00 AM",
-    coordinates: {
-      lat: 22.553523,
-      lng: 88.349934,
-    },
-  },
-  {
-    id: "hyderabad",
-    name: "Kennedia Blu Hyderabad",
-    location: "Banjara Hills, Hyderabad",
-    city: "Hyderabad",
-    image: siteContent.images.hotels.hyderabad,
-    price: "₹22,000",
-    rating: "4.8",
-    reviews: 1023,
-    description:
-      "An urban oasis featuring our signature infinity pool and lush sky gardens. The jewel of the Nizams, reimagined for the modern era.",
-    amenities: [
-      "Rooftop Pool",
-      "Sky Gardens",
-      "3 Restaurants",
-      "Spa",
-      "Business Center",
-    ],
-    features: ["Convention Hall", "Helipad Access", "Royal Suites"],
-    rooms: 287,
-    checkIn: "2:00 PM",
-    checkOut: "11:00 AM",
-    coordinates: {
-      lat: 17.412348,
-      lng: 78.448522,
-    },
-  },
-  {
-    id: "chennai",
-    name: "Kennedia Blu Chennai",
-    location: "ECR, Chennai",
-    city: "Chennai",
-    image: siteContent.images.hotels.chennai,
-    price: "₹19,000",
-    rating: "4.9",
-    reviews: 934,
-    description:
-      "Waterfront luxury with commanding views of the Bay of Bengal. Where the rhythm of the waves meets the soul of hospitality.",
-    amenities: ["Harbour Views", "Fine Dining", "Pool", "Gym", "Yacht Charter"],
-    features: ["Private Beach", "Ayurvedic Spa", "Seafood Specialty"],
-    rooms: 198,
-    checkIn: "2:00 PM",
-    checkOut: "11:00 AM",
-    coordinates: {
-      lat: 12.909821,
-      lng: 80.249693,
-    },
-  },
+// Hero Slider Images
+const HERO_IMAGES = [
+  siteContent.images.hotels.mumbai,
+  siteContent.images.hotels.delhi,
+  siteContent.images.hotels.hyderabad,
 ];
 
 const cities = [
@@ -193,21 +50,7 @@ const cities = [
   "Chennai",
 ];
 
-// Hero Slider Images
-const HERO_IMAGES = [
-  siteContent.images.hotels.mumbai,
-  siteContent.images.hotels.delhi,
-  siteContent.images.hotels.hyderabad,
-];
-
-// Define a flexible type compatible with CollectionSection's expectation
-type HotelType = (typeof allHotels)[0];
-type FlexHotelType = Omit<HotelType, "features"> & { features?: string[] };
-
 export default function Hotels() {
-  const [selectedHotel, setSelectedHotel] = useState<FlexHotelType | null>(
-    null
-  );
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [checkInDate, setCheckInDate] = useState("");
@@ -244,22 +87,6 @@ export default function Hotels() {
       setFilteredHotels(filtered);
       setIsSearching(false);
     }, 500);
-  };
-
-  const handleShare = async () => {
-    if (selectedHotel && navigator.share) {
-      try {
-        await navigator.share({
-          title: selectedHotel.name,
-          text: `Check out ${selectedHotel.name} at Kennedia Blu!`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.error("Error sharing:", err);
-      }
-    } else {
-      alert("Link copied to clipboard!");
-    }
   };
 
   return (
@@ -311,11 +138,10 @@ export default function Hotels() {
             <button
               key={idx}
               onClick={() => setCurrentHeroIndex(idx)}
-              className={`w-12 h-1 rounded-full transition-all duration-300 ${
-                idx === currentHeroIndex
-                  ? "bg-white"
-                  : "bg-white/30 hover:bg-white/50"
-              }`}
+              className={`w-12 h-1 rounded-full transition-all duration-300 ${idx === currentHeroIndex
+                ? "bg-white"
+                : "bg-white/30 hover:bg-white/50"
+                }`}
             />
           ))}
         </div>
@@ -327,22 +153,20 @@ export default function Hotels() {
             <div className="inline-flex items-center gap-0.5 bg-card border border-border rounded-full p-0.5 shadow-md">
               <button
                 onClick={() => setViewMode("carousel")}
-                className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${
-                  viewMode === "carousel"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${viewMode === "carousel"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 <Grid3x3 className="w-3 md:w-3.5 h-3 md:h-3.5" />
                 <span className="hidden sm:inline">Gallery</span>
               </button>
               <button
                 onClick={() => setViewMode("map")}
-                className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${
-                  viewMode === "map"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${viewMode === "map"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 <Map className="w-3 md:w-3.5 h-3 md:h-3.5" />
                 <span className="hidden sm:inline">Map</span>
@@ -386,7 +210,7 @@ export default function Hotels() {
                 cities={cities}
                 showCityDropdown={showCityDropdown}
                 setShowCityDropdown={setShowCityDropdown}
-                onHotelSelect={setSelectedHotel}
+                onHotelSelect={() => { }} // No longer needed, using navigation
               />
             </motion.div>
           )}
@@ -429,8 +253,8 @@ export default function Hotels() {
                       {currentHeroIndex === 0
                         ? "Our Philosophy"
                         : currentHeroIndex === 1
-                        ? "Our Promise"
-                        : "Our Legacy"}
+                          ? "Our Promise"
+                          : "Our Legacy"}
                     </h3>
                     <h2 className="text-3xl md:text-4xl font-serif text-foreground leading-tight mb-3">
                       {currentHeroIndex === 0 && "Where Every Stay Is a Story"}
@@ -483,11 +307,10 @@ export default function Hotels() {
                   <button
                     key={idx}
                     onClick={() => setCurrentHeroIndex(idx)}
-                    className={`h-1 rounded-full transition-all duration-300 ${
-                      idx === currentHeroIndex
-                        ? "bg-primary w-8"
-                        : "bg-border w-4 hover:bg-primary/50"
-                    }`}
+                    className={`h-1 rounded-full transition-all duration-300 ${idx === currentHeroIndex
+                      ? "bg-primary w-8"
+                      : "bg-border w-4 hover:bg-primary/50"
+                      }`}
                   />
                 ))}
               </div>
@@ -509,170 +332,6 @@ export default function Hotels() {
       <div id="ratings">
         <HotelReviewsSection />
       </div>
-
-      {/* ENHANCED DETAIL MODAL */}
-      <AnimatePresence>
-        {selectedHotel && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedHotel(null)}
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4 md:p-6"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ type: "spring", duration: 0.5 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-background rounded-xl w-full max-w-6xl max-h-[95vh] overflow-y-auto overflow-x-hidden shadow-2xl flex flex-col lg:flex-row"
-            >
-              <button
-                onClick={() => setSelectedHotel(null)}
-                className="absolute top-4 right-4 z-50 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur text-white rounded-full flex items-center justify-center transition-colors"
-                title="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {/* Left Column: Imagery */}
-              <div className="w-full lg:w-1/2 relative h-[40vh] lg:h-auto overflow-hidden bg-gray-100">
-                <OptimizedImage
-                  {...selectedHotel.image}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent lg:hidden" />
-                <div className="absolute bottom-4 left-4 text-white lg:hidden">
-                  <h2 className="text-2xl font-serif font-bold">
-                    {selectedHotel.name}
-                  </h2>
-                </div>
-              </div>
-
-              {/* Right Column: Details */}
-              <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col">
-                <div className="flex-1">
-                  <div className="hidden lg:block mb-8">
-                    <h2 className="text-4xl font-serif text-foreground mb-2">
-                      {selectedHotel.name}
-                    </h2>
-                    <div className="flex items-center text-muted-foreground gap-4">
-                      <div className="flex items-center">
-                        <MapPin className="w-4 h-4 mr-1.5 text-primary" />
-                        <span className="text-sm uppercase tracking-wide">
-                          {selectedHotel.location}
-                        </span>
-                      </div>
-                      <div className="flex items-center">
-                        <Star className="w-4 h-4 mr-1.5 text-yellow-500 fill-current" />
-                        <span className="text-sm font-bold">
-                          {selectedHotel.rating} ({selectedHotel.reviews}{" "}
-                          reviews)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Tabs / Description */}
-                  <div className="mb-8">
-                    <p className="text-base text-muted-foreground leading-relaxed font-light">
-                      {selectedHotel.description}
-                    </p>
-                  </div>
-
-                  {/* Features / Amenities */}
-                  <div className="grid grid-cols-2 gap-6 mb-8">
-                    <div>
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-foreground mb-3 flex items-center gap-2">
-                        Amenities
-                      </h3>
-                      <ul className="space-y-2">
-                        {selectedHotel.amenities.slice(0, 4).map((amenity) => (
-                          <li
-                            key={amenity}
-                            className="text-sm text-muted-foreground flex items-center gap-2"
-                          >
-                            <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                            {amenity}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-foreground mb-3 flex items-center gap-2">
-                        Highlights
-                      </h3>
-                      <ul className="space-y-2">
-                        {selectedHotel.features?.map((feature) => (
-                          <li
-                            key={feature}
-                            className="text-sm text-muted-foreground flex items-center gap-2"
-                          >
-                            <Check className="w-3.5 h-3.5 text-primary" />
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Celebration Booking */}
-                  <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-5 mb-8">
-                    <h4 className="flex items-center text-sm font-bold text-foreground mb-2">
-                      <Gift className="w-4 h-4 mr-2 text-primary" />
-                      Planning a Celebration?
-                    </h4>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Let us make your special occasion unforgettable with our
-                      curated celebration packages.
-                    </p>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors">
-                      <input
-                        type="checkbox"
-                        className="accent-primary w-4 h-4"
-                      />
-                      <span>
-                        Add Celebration Package (Cake, Decor & Champagne)
-                      </span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Footer Actions */}
-                <div className="border-t border-border pt-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground uppercase tracking-wider mb-1">
-                      Total for 1 Night
-                    </p>
-                    <p className="text-3xl font-serif text-foreground font-medium">
-                      {selectedHotel.price}
-                    </p>
-                  </div>
-                  <div className="flex gap-3 w-full md:w-auto">
-                    <button
-                      onClick={handleShare}
-                      className="p-4 border border-border rounded-lg hover:bg-secondary/20 transition-colors text-muted-foreground hover:text-foreground"
-                      title="Share"
-                    >
-                      <Share2 className="w-5 h-5" />
-                    </button>
-                    <button
-                      className="p-4 border border-border rounded-lg hover:bg-secondary/20 transition-colors text-muted-foreground hover:text-red-500"
-                      title="Save"
-                    >
-                      <Heart className="w-5 h-5" />
-                    </button>
-                    <button className="flex-1 md:flex-none px-8 py-4 bg-primary text-primary-foreground font-bold uppercase tracking-widest rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
-                      Book Now <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* EXCLUSIVE OFFER POPUP */}
       <AnimatePresence>

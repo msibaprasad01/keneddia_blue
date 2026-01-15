@@ -2,6 +2,8 @@ import { Route } from "react-router-dom";
 
 import Home from "@/modules/website/pages/Home";
 import Hotels from "@/modules/website/pages/Hotels";
+import HotelDetail from "@/modules/website/pages/HotelDetail";
+import RoomSelection from "@/modules/website/pages/RoomSelection";
 import Cafes from "@/modules/website/pages/Cafes";
 import Bars from "@/modules/website/pages/Bars";
 import Events from "@/modules/website/pages/Events";
@@ -22,6 +24,8 @@ import Careers from "@/modules/website/pages/Careers";
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
   <Route key="hotels" path="/hotels" element={<Hotels />} />,
+  <Route key="hotel-detail" path="/hotels/:hotelId" element={<HotelDetail />} />,
+  <Route key="room-selection" path="/hotels/:hotelId/rooms" element={<RoomSelection />} />,
   <Route key="cafes" path="/cafes" element={<Cafes />} />,
   <Route key="bars" path="/bars" element={<Bars />} />,
   <Route key="events" path="/events" element={<Events />} />,

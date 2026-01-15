@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, MapPin, Star, Building2, ChevronLeft, ChevronRight, Phone, Mail } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -73,6 +74,7 @@ const featuredHotels = [
 
 export default function HotelCarouselSection() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const navigate = useNavigate();
 
   // Auto-slide every 5 seconds
   useEffect(() => {
@@ -155,8 +157,8 @@ export default function HotelCarouselSection() {
                   <div
                     key={hotel.id}
                     className={`absolute transition-all duration-700 ease-out ${isCenter
-                        ? 'z-30 scale-100 opacity-100'
-                        : 'z-10 scale-65 opacity-35'
+                      ? 'z-30 scale-100 opacity-100'
+                      : 'z-10 scale-65 opacity-35'
                       }`}
                     style={{
                       transform: isCenter
@@ -308,7 +310,10 @@ export default function HotelCarouselSection() {
 
             {/* Action Buttons */}
             <div className="space-y-2.5">
-              <button className="w-full py-3 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-98 flex items-center justify-center gap-2 text-sm">
+              <button
+                onClick={() => navigate(`/hotels/${activeHotel.id}`)}
+                className="w-full py-3 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-98 flex items-center justify-center gap-2 text-sm"
+              >
                 Book Room
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -324,7 +329,10 @@ export default function HotelCarouselSection() {
                 </button>
               </div>
 
-              <button className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors">
+              <button
+                onClick={() => navigate(`/hotels/${activeHotel.id}`)}
+                className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors"
+              >
                 View Full Details →
               </button>
             </div>
