@@ -10,6 +10,8 @@ import HotelCarouselSection from "@/modules/website/components/HotelCarouselSect
 import HotelOffersCarousel from "@/modules/website/components/hotel/HotelOffersCarousel";
 import HotelNewsUpdates from "@/modules/website/components/hotel/HotelNewsUpdates";
 import HotelReviewsSection from "@/modules/website/components/HotelReviewsSection";
+import QuickBooking from "@/modules/website/components/QuickBooking";
+import GroupBookingSection from "@/modules/website/components/GroupBookingSection";
 // Assets
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -98,13 +100,16 @@ export default function Hotels() {
               key={idx}
               onClick={() => setCurrentHeroIndex(idx)}
               className={`w-12 h-1 rounded-full transition-all duration-300 ${idx === currentHeroIndex
-                  ? "bg-white"
-                  : "bg-white/30 hover:bg-white/50"
+                ? "bg-white"
+                : "bg-white/30 hover:bg-white/50"
                 }`}
             />
           ))}
         </div>
       </section>
+
+      {/* QUICK BOOKING */}
+      <QuickBooking />
 
       {/* HOTEL COLLECTION SECTION - Now includes Gallery/Map toggle internally */}
       <div id="collection">
@@ -203,8 +208,8 @@ export default function Hotels() {
                     key={idx}
                     onClick={() => setCurrentHeroIndex(idx)}
                     className={`h-1 rounded-full transition-all duration-300 ${idx === currentHeroIndex
-                        ? "bg-primary w-8"
-                        : "bg-border w-4 hover:bg-primary/50"
+                      ? "bg-primary w-8"
+                      : "bg-border w-4 hover:bg-primary/50"
                       }`}
                   />
                 ))}
@@ -218,6 +223,9 @@ export default function Hotels() {
       <div id="offers">
         <HotelOffersCarousel />
       </div>
+
+      {/* GROUP BOOKING EXTENSION */}
+      <GroupBookingSection />
 
       {/* HOTEL NEWS UPDATES */}
       <div id="events">

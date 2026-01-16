@@ -20,6 +20,7 @@ import HotelNewsDetails from "@/modules/website/pages/hotel/HotelNewsDetails";
 import HotelOfferDetails from "@/modules/website/pages/hotel/HotelOfferDetails";
 import NewsListing from "@/modules/website/pages/NewsListing";
 import Careers from "@/modules/website/pages/Careers";
+import Checkout from "@/modules/website/pages/Checkout";
 
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
@@ -49,6 +50,7 @@ const WebsiteRoutes = [
   // Hotel Detail Pages
   <Route key="hotel-news-details" path="/hotel/news/:slug" element={<HotelNewsDetails />} />,
   <Route key="hotel-offer-details" path="/hotel/offers/:id" element={<HotelOfferDetails />} />,
+  <Route key="checkout" path="/checkout" element={<Checkout />} />,
 ];
 
 export default WebsiteRoutes;
