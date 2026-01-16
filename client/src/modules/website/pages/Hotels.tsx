@@ -1,27 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  MapPin,
-  Star,
-  ArrowRight,
   X,
-  Share2,
-  Heart,
   Gift,
-  Check,
-  Map,
-  Grid3x3,
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import HotelCarouselSection from "@/modules/website/components/HotelCarouselSection";
-import CollectionSection from "@/modules/website/components/CollectionSection";
 import HotelOffersCarousel from "@/modules/website/components/hotel/HotelOffersCarousel";
 import HotelNewsUpdates from "@/modules/website/components/hotel/HotelNewsUpdates";
 import HotelReviewsSection from "@/modules/website/components/HotelReviewsSection";
 // Assets
 import { siteContent } from "@/data/siteContent";
-import { allHotels } from "@/data/hotelData";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Hotel Navigation Items
@@ -40,26 +30,9 @@ const HERO_IMAGES = [
   siteContent.images.hotels.hyderabad,
 ];
 
-const cities = [
-  "All Cities",
-  "Mumbai",
-  "Bengaluru",
-  "Delhi",
-  "Kolkata",
-  "Hyderabad",
-  "Chennai",
-];
-
 export default function Hotels() {
-  const [selectedCity, setSelectedCity] = useState("All Cities");
-  const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [checkInDate, setCheckInDate] = useState("");
-  const [checkOutDate, setCheckOutDate] = useState("");
-  const [filteredHotels, setFilteredHotels] = useState(allHotels);
-  const [isSearching, setIsSearching] = useState(false);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
   const [showCelebrationOffer, setShowCelebrationOffer] = useState(false);
-  const [viewMode, setViewMode] = useState<"carousel" | "map">("carousel");
 
   // Hero Auto-play
   useEffect(() => {
@@ -74,20 +47,6 @@ export default function Hotels() {
     const timer = setTimeout(() => setShowCelebrationOffer(true), 10000);
     return () => clearTimeout(timer);
   }, []);
-
-  const handleSearch = () => {
-    setIsSearching(true);
-    setTimeout(() => {
-      const filtered = allHotels.filter((hotel) => {
-        if (selectedCity !== "All Cities" && hotel.city !== selectedCity) {
-          return false;
-        }
-        return true;
-      });
-      setFilteredHotels(filtered);
-      setIsSearching(false);
-    }, 500);
-  };
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -139,83 +98,19 @@ export default function Hotels() {
               key={idx}
               onClick={() => setCurrentHeroIndex(idx)}
               className={`w-12 h-1 rounded-full transition-all duration-300 ${idx === currentHeroIndex
-                ? "bg-white"
-                : "bg-white/30 hover:bg-white/50"
+                  ? "bg-white"
+                  : "bg-white/30 hover:bg-white/50"
                 }`}
             />
           ))}
         </div>
       </section>
-      {/* VIEW TOGGLE SECTION - Improved spacing and compact design */}
-      <div className="bg-gradient-to-br from-background via-secondary/5 to-background py-4">
-        <div className="container mx-auto px-4 md:px-6 lg:px-12">
-          <div className="flex justify-end">
-            <div className="inline-flex items-center gap-0.5 bg-card border border-border rounded-full p-0.5 shadow-md">
-              <button
-                onClick={() => setViewMode("carousel")}
-                className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${viewMode === "carousel"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-                  }`}
-              >
-                <Grid3x3 className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                <span className="hidden sm:inline">Gallery</span>
-              </button>
-              <button
-                onClick={() => setViewMode("map")}
-                className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${viewMode === "map"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-                  }`}
-              >
-                <Map className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                <span className="hidden sm:inline">Map</span>
-              </button>
-            </div>
-          </div>
-        </div>
+
+      {/* HOTEL COLLECTION SECTION - Now includes Gallery/Map toggle internally */}
+      <div id="collection">
+        <HotelCarouselSection />
       </div>
 
-      {/* CONDITIONAL RENDERING BASED ON VIEW MODE */}
-      <div id="collection">
-        <AnimatePresence mode="wait">
-          {viewMode === "carousel" ? (
-            <motion.div
-              key="carousel"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <HotelCarouselSection />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="map"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <CollectionSection
-                filteredHotels={filteredHotels}
-                selectedCity={selectedCity}
-                setSelectedCity={setSelectedCity}
-                checkInDate={checkInDate}
-                setCheckInDate={setCheckInDate}
-                checkOutDate={checkOutDate}
-                setCheckOutDate={setCheckOutDate}
-                handleSearch={handleSearch}
-                isSearching={isSearching}
-                cities={cities}
-                showCityDropdown={showCityDropdown}
-                setShowCityDropdown={setShowCityDropdown}
-                onHotelSelect={() => { }} // No longer needed, using navigation
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
       {/* 2. ABOUT / OVERVIEW SECTION - COMPACT */}
       <section id="overview" className="py-8 px-6 bg-background">
         <div className="container mx-auto max-w-7xl">
@@ -308,8 +203,8 @@ export default function Hotels() {
                     key={idx}
                     onClick={() => setCurrentHeroIndex(idx)}
                     className={`h-1 rounded-full transition-all duration-300 ${idx === currentHeroIndex
-                      ? "bg-primary w-8"
-                      : "bg-border w-4 hover:bg-primary/50"
+                        ? "bg-primary w-8"
+                        : "bg-border w-4 hover:bg-primary/50"
                       }`}
                   />
                 ))}
@@ -319,16 +214,17 @@ export default function Hotels() {
         </div>
       </section>
 
-      {/* NEW: HOTEL OFFERS CAROUSEL */}
+      {/* HOTEL OFFERS CAROUSEL */}
       <div id="offers">
         <HotelOffersCarousel />
       </div>
 
-      {/* NEW: HOTEL NEWS UPDATES */}
+      {/* HOTEL NEWS UPDATES */}
       <div id="events">
         <HotelNewsUpdates />
       </div>
 
+      {/* HOTEL REVIEWS */}
       <div id="ratings">
         <HotelReviewsSection />
       </div>
@@ -369,6 +265,7 @@ export default function Hotels() {
         )}
       </AnimatePresence>
 
+      {/* FOOTER */}
       <div id="contact">
         <Footer />
       </div>
