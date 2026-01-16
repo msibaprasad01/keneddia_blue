@@ -13,6 +13,7 @@ import PropertiesSection from "@/modules/website/components/PropertiesSection";
 import EventsSection from "@/modules/website/components/EventsSection";
 import NewsPress from "@/modules/website/components/NewsPress";
 import OurStoryPreview from "@/modules/website/components/OurStoryPreview";
+import SpecialOfferPopup from "@/modules/website/components/SpecialOfferPopup";
 
 export default function Home() {
   const handleScrollToBusiness = () => {
@@ -59,6 +60,7 @@ export default function Home() {
         </div>
       </motion.div>
 
+      <SpecialOfferPopup />
       <Footer />
     </div>
   );

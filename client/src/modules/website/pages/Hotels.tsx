@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Gift,
-} from "lucide-react";
+
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import HotelCarouselSection from "@/modules/website/components/HotelCarouselSection";
@@ -12,6 +9,7 @@ import HotelNewsUpdates from "@/modules/website/components/hotel/HotelNewsUpdate
 import HotelReviewsSection from "@/modules/website/components/HotelReviewsSection";
 import QuickBooking from "@/modules/website/components/QuickBooking";
 import GroupBookingSection from "@/modules/website/components/GroupBookingSection";
+import SpecialOfferPopup from "@/modules/website/components/SpecialOfferPopup";
 // Assets
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -34,20 +32,12 @@ const HERO_IMAGES = [
 
 export default function Hotels() {
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
-  const [showCelebrationOffer, setShowCelebrationOffer] = useState(false);
-
   // Hero Auto-play
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
-
-  // Show offer popup after delay
-  useEffect(() => {
-    const timer = setTimeout(() => setShowCelebrationOffer(true), 10000);
-    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -238,40 +228,7 @@ export default function Hotels() {
       </div>
 
       {/* EXCLUSIVE OFFER POPUP */}
-      <AnimatePresence>
-        {showCelebrationOffer && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-6 right-6 z-40 bg-card border border-border/50 p-6 rounded-lg shadow-2xl max-w-sm"
-          >
-            <button
-              onClick={() => setShowCelebrationOffer(false)}
-              className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="w-4 h-4" />
-            </button>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                <Gift className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h4 className="font-serif text-lg font-medium mb-1">
-                  Exclusive Offer
-                </h4>
-                <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                  Book your stay within the next 24 hours and receive a
-                  complimentary spa treatment on us.
-                </p>
-                <button className="text-xs font-bold uppercase tracking-widest text-primary hover:underline underline-offset-4">
-                  Claim Offer
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <SpecialOfferPopup />
 
       {/* FOOTER */}
       <div id="contact">
