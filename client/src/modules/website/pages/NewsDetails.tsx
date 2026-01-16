@@ -11,7 +11,7 @@ export default function NewsDetails() {
   const { id } = useParams();
   const { items } = siteContent.text.news;
   const newsItem = items.find((n) => n.slug === id);
-  
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   if (!newsItem) {
@@ -54,7 +54,7 @@ export default function NewsDetails() {
   const handleShare = (platform: string) => {
     const url = window.location.href;
     const text = newsItem.title;
-    
+
     const shareUrls: { [key: string]: string } = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
       twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
@@ -89,28 +89,28 @@ export default function NewsDetails() {
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold mb-4 md:mb-6 leading-tight text-foreground">
               {newsItem.title}
             </h1>
-            
+
             {/* Meta Information */}
             <div className="flex flex-wrap items-center gap-3 md:gap-6 text-xs md:text-sm text-muted-foreground pb-4 md:pb-6 border-b border-border">
               <span className="flex items-center gap-1.5 md:gap-2">
-                <Calendar className="w-3.5 md:w-4 h-3.5 md:h-4 text-primary" /> 
+                <Calendar className="w-3.5 md:w-4 h-3.5 md:h-4 text-primary" />
                 {newsItem.date}
               </span>
               <span className="hidden md:inline">•</span>
               <span className="flex items-center gap-1.5 md:gap-2">
-                <User className="w-3.5 md:w-4 h-3.5 md:h-4 text-primary" /> 
+                <User className="w-3.5 md:w-4 h-3.5 md:h-4 text-primary" />
                 Kennedia Team
               </span>
               <span className="hidden md:inline">•</span>
               <span className="flex items-center gap-1.5 md:gap-2">
-                <Clock className="w-3.5 md:w-4 h-3.5 md:h-4 text-primary" /> 
+                <Clock className="w-3.5 md:w-4 h-3.5 md:h-4 text-primary" />
                 5 min read
               </span>
             </div>
 
             {/* Breadcrumb - Moved here */}
-            <Link 
-              to="/news" 
+            <Link
+              to="/news"
               className="inline-flex items-center gap-2 text-xs md:text-sm text-muted-foreground hover:text-primary mt-4 transition-colors group"
             >
               <ArrowLeft className="w-3.5 md:w-4 h-3.5 md:h-4 group-hover:-translate-x-1 transition-transform" />
@@ -120,10 +120,10 @@ export default function NewsDetails() {
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 lg:gap-12">
-            
+
             {/* LEFT: Article Content */}
             <article className="max-w-3xl">
-              
+
               {/* Featured Image Carousel - Mobile Only */}
               <div className="lg:hidden relative aspect-video rounded-xl md:rounded-2xl overflow-hidden shadow-lg mb-6 md:mb-8 group">
                 {/* Category Label */}
@@ -137,9 +137,8 @@ export default function NewsDetails() {
                 {newsImages.map((image, index) => (
                   <div
                     key={index}
-                    className={`absolute inset-0 transition-opacity duration-700 ${
-                      index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-                    }`}
+                    className={`absolute inset-0 transition-opacity duration-700 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                      }`}
                   >
                     <OptimizedImage
                       {...image}
@@ -175,11 +174,10 @@ export default function NewsDetails() {
                       <button
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`transition-all duration-300 rounded-full ${
-                          index === currentImageIndex
+                        className={`transition-all duration-300 rounded-full ${index === currentImageIndex
                             ? 'w-6 md:w-8 h-1.5 md:h-2 bg-white'
                             : 'w-1.5 md:w-2 h-1.5 md:h-2 bg-white/50 hover:bg-white/75'
-                        }`}
+                          }`}
                         aria-label={`Go to image ${index + 1}`}
                       />
                     ))}
@@ -197,18 +195,18 @@ export default function NewsDetails() {
                   A New Era of Hospitality
                 </h2>
                 <p className="text-sm md:text-base leading-relaxed text-foreground/80 mb-4">
-                  At Kennedia Blu, we are constantly striving for excellence and pushing the boundaries of luxury hospitality. 
-                  This achievement marks a significant milestone in our journey, reflecting our unwavering commitment to providing 
+                  At Kennedia Blu, we are constantly striving for excellence and pushing the boundaries of luxury hospitality.
+                  This achievement marks a significant milestone in our journey, reflecting our unwavering commitment to providing
                   exceptional experiences to our guests across all our properties.
                 </p>
                 <p className="text-sm md:text-base leading-relaxed text-foreground/80 mb-4">
-                  Our dedication to quality and innovation has been recognized by industry leaders and guests alike. 
-                  Each property in our portfolio embodies the perfect blend of modern amenities and timeless elegance, 
+                  Our dedication to quality and innovation has been recognized by industry leaders and guests alike.
+                  Each property in our portfolio embodies the perfect blend of modern amenities and timeless elegance,
                   creating memorable stays that exceed expectations.
                 </p>
 
                 <blockquote className="border-l-4 border-primary pl-4 md:pl-6 py-2 md:py-3 my-6 md:my-8 italic text-base md:text-lg text-foreground/90 bg-secondary/30 rounded-r-lg">
-                  "We are incredibly proud of this recognition. It reflects the hard work and dedication of our entire team, 
+                  "We are incredibly proud of this recognition. It reflects the hard work and dedication of our entire team,
                   from front desk staff to executive leadership. This is a testament to our shared vision of excellence."
                   <footer className="text-xs md:text-sm text-muted-foreground mt-2 not-italic font-medium">
                     — CEO, Kennedia Blu Hotels
@@ -219,7 +217,7 @@ export default function NewsDetails() {
                   Commitment to Excellence
                 </h2>
                 <p className="text-sm md:text-base leading-relaxed text-foreground/80 mb-4">
-                  Our success is built on three core pillars: exceptional service, innovative design, and sustainable practices. 
+                  Our success is built on three core pillars: exceptional service, innovative design, and sustainable practices.
                   Every member of our team undergoes rigorous training to ensure they deliver the highest standards of hospitality.
                 </p>
                 <ul className="list-disc list-inside space-y-2 text-sm md:text-base text-foreground/80 mb-4 ml-2 md:ml-4">
@@ -233,13 +231,13 @@ export default function NewsDetails() {
                   Looking Ahead
                 </h2>
                 <p className="text-sm md:text-base leading-relaxed text-foreground/80 mb-4">
-                  The future holds exciting possibilities as we continue to expand our presence and refine our offerings. 
-                  We are committed to maintaining our high standards while exploring new ways to enhance the guest experience 
+                  The future holds exciting possibilities as we continue to expand our presence and refine our offerings.
+                  We are committed to maintaining our high standards while exploring new ways to enhance the guest experience
                   through technology and personalized service.
                 </p>
                 <p className="text-sm md:text-base leading-relaxed text-foreground/80 mb-4">
-                  Our upcoming projects include new properties in key metropolitan areas, expanded wellness facilities, 
-                  and innovative dining concepts that celebrate local cultures and cuisines. We invite you to be part of 
+                  Our upcoming projects include new properties in key metropolitan areas, expanded wellness facilities,
+                  and innovative dining concepts that celebrate local cultures and cuisines. We invite you to be part of
                   this exciting journey as we continue to redefine luxury hospitality.
                 </p>
               </div>
@@ -263,28 +261,28 @@ export default function NewsDetails() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <span className="font-serif font-bold text-base md:text-lg">Share this article</span>
                   <div className="flex gap-2 md:gap-3">
-                    <button 
+                    <button
                       onClick={() => handleShare('facebook')}
                       className="p-2 md:p-2.5 rounded-full border border-border hover:bg-blue-50 hover:border-blue-500 hover:text-blue-500 dark:hover:bg-blue-950 transition-all group"
                       aria-label="Share on Facebook"
                     >
                       <Facebook className="w-4 md:w-5 h-4 md:h-5" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleShare('twitter')}
                       className="p-2 md:p-2.5 rounded-full border border-border hover:bg-sky-50 hover:border-sky-500 hover:text-sky-500 dark:hover:bg-sky-950 transition-all group"
                       aria-label="Share on Twitter"
                     >
                       <Twitter className="w-4 md:w-5 h-4 md:h-5" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleShare('linkedin')}
                       className="p-2 md:p-2.5 rounded-full border border-border hover:bg-blue-50 hover:border-blue-600 hover:text-blue-600 dark:hover:bg-blue-950 transition-all group"
                       aria-label="Share on LinkedIn"
                     >
                       <Linkedin className="w-4 md:w-5 h-4 md:h-5" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleShare('email')}
                       className="p-2 md:p-2.5 rounded-full border border-border hover:bg-secondary hover:border-primary hover:text-primary transition-all group"
                       aria-label="Share via Email"
@@ -299,7 +297,7 @@ export default function NewsDetails() {
 
             {/* RIGHT: Sidebar */}
             <aside className="lg:sticky lg:top-24 h-fit space-y-6 md:space-y-8">
-              
+
               {/* Featured Image Carousel - Desktop Only */}
               <div className="hidden lg:block relative">
                 <div className="relative aspect-square rounded-2xl overflow-hidden shadow-xl group">
@@ -314,9 +312,8 @@ export default function NewsDetails() {
                   {newsImages.map((image, index) => (
                     <div
                       key={index}
-                      className={`absolute inset-0 transition-opacity duration-700 ${
-                        index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-                      }`}
+                      className={`absolute inset-0 transition-opacity duration-700 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                        }`}
                     >
                       <OptimizedImage
                         {...image}
@@ -352,11 +349,10 @@ export default function NewsDetails() {
                         <button
                           key={index}
                           onClick={() => setCurrentImageIndex(index)}
-                          className={`transition-all duration-300 rounded-full ${
-                            index === currentImageIndex
+                          className={`transition-all duration-300 rounded-full ${index === currentImageIndex
                               ? 'w-8 h-2 bg-white'
                               : 'w-2 h-2 bg-white/50 hover:bg-white/75'
-                          }`}
+                            }`}
                           aria-label={`Go to image ${index + 1}`}
                         />
                       ))}
@@ -389,8 +385,8 @@ export default function NewsDetails() {
                   </h3>
                   <div className="space-y-4 md:space-y-5">
                     {relatedNews.map((item) => (
-                      <Link 
-                        key={item.slug} 
+                      <Link
+                        key={item.slug}
                         to={`/news/${item.slug}`}
                         className="group block"
                       >
@@ -414,8 +410,8 @@ export default function NewsDetails() {
                       </Link>
                     ))}
                   </div>
-                  <Link 
-                    to="/news" 
+                  <Link
+                    to="/news"
                     className="mt-4 md:mt-5 inline-flex items-center gap-2 text-xs md:text-sm text-primary font-semibold hover:gap-3 transition-all group"
                   >
                     View All News
@@ -438,7 +434,7 @@ export default function NewsDetails() {
                     placeholder="Enter your email"
                     className="w-full px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-background"
                   />
-                  <button 
+                  <button
                     type="submit"
                     className="w-full py-2 md:py-2.5 bg-primary text-primary-foreground text-xs md:text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg"
                   >
