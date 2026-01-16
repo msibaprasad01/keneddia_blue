@@ -16,7 +16,13 @@ export const properties = [
     price: "₹450",
     tagline: "Experience artisanal coffee in an authentic Parisian atmosphere",
     headline1: "Where every cup",
-    headline2: "tells a story"
+    headline2: "tells a story",
+    coordinates: { lat: 19.0596, lng: 72.8295 }, // Bandra West
+    nearbyPlaces: [
+      { name: "Bandstand Promenade", type: "Attraction", distance: "1.2 km", coordinates: { lat: 19.0453, lng: 72.8193 } },
+      { name: "Mount Mary Church", type: "Landmark", distance: "1.5 km", coordinates: { lat: 19.0466, lng: 72.8225 } },
+      { name: "Linking Road", type: "Shopping", distance: "0.5 km", coordinates: { lat: 19.0650, lng: 72.8337 } },
+    ]
   },
   // Hotel 1
   {
@@ -33,7 +39,13 @@ export const properties = [
     price: "₹12,500",
     tagline: "Discover timeless elegance in the heart of Mumbai's heritage district",
     headline1: "Where luxury meets",
-    headline2: "tradition"
+    headline2: "tradition",
+    coordinates: { lat: 18.9220, lng: 72.8347 }, // Near Gateway
+    nearbyPlaces: [
+      { name: "Gateway of India", type: "Landmark", distance: "0.2 km", coordinates: { lat: 18.9220, lng: 72.8347 } },
+      { name: "Marine Drive", type: "Attraction", distance: "2.5 km", coordinates: { lat: 18.9438, lng: 72.8234 } },
+      { name: "Colaba Causeway", type: "Shopping", distance: "0.5 km", coordinates: { lat: 18.9149, lng: 72.8266 } },
+    ]
   },
   // Restaurant 1
   {
@@ -50,7 +62,12 @@ export const properties = [
     price: "₹2,500",
     tagline: "Elevate your dining experience with breathtaking ocean views and craft cocktails",
     headline1: "Dining above",
-    headline2: "the city lights"
+    headline2: "the city lights",
+    coordinates: { lat: 18.9415, lng: 72.8236 }, // Marine Drive
+    nearbyPlaces: [
+      { name: "Chowpatty Beach", type: "Attraction", distance: "1.0 km", coordinates: { lat: 18.9567, lng: 72.8159 } },
+      { name: "Nariman Point", type: "Business", distance: "2.0 km", coordinates: { lat: 18.9256, lng: 72.8242 } },
+    ]
   },
   // Cafe 2
   {
@@ -67,7 +84,12 @@ export const properties = [
     price: "₹400",
     tagline: "Modern minimalism meets expertly crafted coffee in the heart of Koramangala",
     headline1: "Coffee crafted for",
-    headline2: "innovators"
+    headline2: "innovators",
+    coordinates: { lat: 12.9345, lng: 77.6265 }, // Koramangala
+    nearbyPlaces: [
+      { name: "Forum Mall", type: "Shopping", distance: "1.0 km", coordinates: { lat: 12.9348, lng: 77.6113 } },
+      { name: "HSR Layout", type: "Area", distance: "3.0 km", coordinates: { lat: 12.9116, lng: 77.6389 } },
+    ]
   },
   // Hotel 2
   {
@@ -84,7 +106,12 @@ export const properties = [
     price: "₹10,800",
     tagline: "Designed for the modern business traveler with seamless connectivity",
     headline1: "Your home in the",
-    headline2: "tech capital"
+    headline2: "tech capital",
+    coordinates: { lat: 12.9719, lng: 77.6412 }, // Indiranagar
+    nearbyPlaces: [
+      { name: "100 Feet Road", type: "Dining", distance: "0.2 km", coordinates: { lat: 12.9700, lng: 77.6400 } },
+      { name: "Ulsoor Lake", type: "Nature", distance: "2.5 km", coordinates: { lat: 12.9830, lng: 77.6200 } },
+    ]
   },
   // Restaurant 2
   {
@@ -101,7 +128,12 @@ export const properties = [
     price: "₹2,200",
     tagline: "Step into a hidden world of jazz, cocktails, and culinary excellence",
     headline1: "Where music and",
-    headline2: "flavors collide"
+    headline2: "flavors collide",
+    coordinates: { lat: 12.9754, lng: 77.6067 }, // MG Road
+    nearbyPlaces: [
+      { name: "Brigade Road", type: "Shopping", distance: "0.5 km", coordinates: { lat: 12.9698, lng: 77.6080 } },
+      { name: "Cubbon Park", type: "Nature", distance: "1.5 km", coordinates: { lat: 12.9763, lng: 77.5929 } },
+    ]
   },
   // Cafe 3
   {
@@ -118,7 +150,12 @@ export const properties = [
     price: "₹850",
     tagline: "Indulge in the refined art of afternoon tea with garden views",
     headline1: "Elegance served",
-    headline2: "by the cup"
+    headline2: "by the cup",
+    coordinates: { lat: 28.6004, lng: 77.2268 }, // Khan Market
+    nearbyPlaces: [
+      { name: "Lodhi Gardens", type: "Nature", distance: "1.0 km", coordinates: { lat: 28.5933, lng: 77.2217 } },
+      { name: "India Gate", type: "Landmark", distance: "2.5 km", coordinates: { lat: 28.6129, lng: 77.2295 } },
+    ]
   },
   // Hotel 3
   {
@@ -135,7 +172,13 @@ export const properties = [
     price: "₹18,900",
     tagline: "Experience unparalleled luxury in India's most prestigious location",
     headline1: "The pinnacle of",
-    headline2: "hospitality"
+    headline2: "hospitality",
+    coordinates: { lat: 28.6315, lng: 77.2167 }, // CP
+    nearbyPlaces: [
+      { name: "Janpath Market", type: "Shopping", distance: "0.5 km", coordinates: { lat: 28.6267, lng: 77.2192 } },
+      { name: "Jantar Mantar", type: "Landmark", distance: "0.8 km", coordinates: { lat: 28.6271, lng: 77.2166 } },
+      { name: "Gurudwara Bangla Sahib", type: "Religious", distance: "1.2 km", coordinates: { lat: 28.6262, lng: 77.2090 } },
+    ]
   },
   // Restaurant 3
   {
@@ -152,6 +195,11 @@ export const properties = [
     price: "₹3,500",
     tagline: "Savor rare spirits and exceptional cuisine in a refined atmosphere",
     headline1: "Sophistication in",
-    headline2: "every pour"
+    headline2: "every pour",
+    coordinates: { lat: 28.5244, lng: 77.1855 }, // Mehrauli
+    nearbyPlaces: [
+      { name: "Qutub Minar", type: "Landmark", distance: "0.5 km", coordinates: { lat: 28.5244, lng: 77.1855 } },
+      { name: "Archeological Park", type: "Nature", distance: "0.3 km", coordinates: { lat: 28.5218, lng: 77.1873 } },
+    ]
   },
 ];

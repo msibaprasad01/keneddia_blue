@@ -4,6 +4,7 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { properties } from "@/data/properties"; // Using extracted data
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import PropertyMap from "@/modules/website/components/PropertyMap";
 import NotFound from "./not-found";
 
 export default function PropertyDetails() {
@@ -71,6 +72,12 @@ export default function PropertyDetails() {
                   <Wifi className="w-5 h-5 text-primary" />
                   <span className="font-medium">High-Speed Wifi</span>
                 </div>
+              </div>
+
+              {/* LOCATION MAP SECTION */}
+              <div className="mt-12">
+                <h3 className="text-2xl font-serif mb-6">Location & Nearby</h3>
+                <PropertyMap property={property} />
               </div>
             </div>
 

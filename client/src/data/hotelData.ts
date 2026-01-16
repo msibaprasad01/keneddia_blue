@@ -32,6 +32,12 @@ export interface Hotel {
     lat: number;
     lng: number;
   };
+  nearbyPlaces?: {
+    name: string;
+    type: string;
+    distance: string;
+    coordinates: { lat: number; lng: number };
+  }[];
   roomTypes: Room[];
 }
 
@@ -56,6 +62,11 @@ export const allHotels: Hotel[] = [
       lat: 18.921984,
       lng: 72.833855,
     },
+    nearbyPlaces: [
+      { name: "Gateway of India", type: "Landmark", distance: "0.2 km", coordinates: { lat: 18.9220, lng: 72.8347 } },
+      { name: "Marine Drive", type: "Attraction", distance: "2.5 km", coordinates: { lat: 18.9438, lng: 72.8234 } },
+      { name: "Colaba Causeway", type: "Shopping", distance: "0.5 km", coordinates: { lat: 18.9149, lng: 72.8266 } },
+    ],
     roomTypes: [
       {
         id: "mumbai-deluxe",
@@ -141,6 +152,10 @@ export const allHotels: Hotel[] = [
       lat: 12.971891,
       lng: 77.641154,
     },
+    nearbyPlaces: [
+      { name: "100 Feet Road", type: "Dining", distance: "0.2 km", coordinates: { lat: 12.9700, lng: 77.6400 } },
+      { name: "Ulsoor Lake", type: "Nature", distance: "2.5 km", coordinates: { lat: 12.9830, lng: 77.6200 } },
+    ],
     roomTypes: [
       {
         id: "bengaluru-deluxe",
@@ -227,6 +242,11 @@ export const allHotels: Hotel[] = [
       lat: 28.631451,
       lng: 77.216667,
     },
+    nearbyPlaces: [
+      { name: "Janpath Market", type: "Shopping", distance: "0.5 km", coordinates: { lat: 28.6267, lng: 77.2192 } },
+      { name: "Jantar Mantar", type: "Landmark", distance: "0.8 km", coordinates: { lat: 28.6271, lng: 77.2166 } },
+      { name: "Gurudwara Bangla Sahib", type: "Religious", distance: "1.2 km", coordinates: { lat: 28.6262, lng: 77.2090 } },
+    ],
     roomTypes: [
       {
         id: "delhi-deluxe",

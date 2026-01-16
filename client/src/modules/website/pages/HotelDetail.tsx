@@ -17,6 +17,7 @@ import Footer from "@/modules/website/components/Footer";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getHotelById } from "@/data/hotelData";
 import { siteContent } from "@/data/siteContent";
+import PropertyMap from "@/modules/website/components/PropertyMap";
 
 export default function HotelDetail() {
   const { hotelId } = useParams<{ hotelId: string }>();
@@ -233,6 +234,19 @@ export default function HotelDetail() {
                   </p>
                 </div>
               </div>
+            </motion.div>
+
+            {/* LOCATION MAP SECTION */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="mt-12"
+            >
+              <h2 className="text-2xl font-serif font-semibold text-foreground mb-6">
+                Location & Nearby
+              </h2>
+              <PropertyMap property={hotel} />
             </motion.div>
           </div>
 
