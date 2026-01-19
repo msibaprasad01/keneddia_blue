@@ -1,0 +1,131 @@
+
+import { useState } from "react";
+import { Room } from "@/data/hotelData";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { Users, Check, Maximize2, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+
+interface RoomListProps {
+  rooms: Room[];
+  onSelectRoom: (roomId: string) => void;
+}
+
+export default function RoomList({ rooms, onSelectRoom }: RoomListProps) {
+  const [expandedRoom, setExpandedRoom] = useState<string | null>(null);
+
+  const toggleExpand = (id: string) => {
+    setExpandedRoom(expandedRoom === id ? null : id);
+  };
+
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  return (
+    <div className="space-y-4">
+      {rooms.map((room) => (
+        <div
+          key={room.id}
+          className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex flex-col md:flex-row">
+            {/* Image Section */}
+            <div className="w-full md:w-64 h-48 md:h-auto relative flex-shrink-0">
+              <OptimizedImage
+                {...room.image}
+                className="w-full h-full object-cover"
+              />
+              <button
+                className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1 hover:bg-black/80 transition-colors"
+              >
+                <Maximize2 className="w-3 h-3" /> View Photos
+              </button>
+            </div>
+
+            {/* Content Section */}
+            <div className="flex-1 p-4 md:p-6 flex flex-col justify-between">
+              <div>
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 className="text-xl font-serif font-semibold text-foreground">{room.name}</h3>
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground mt-1">
+                      <span className="flex items-center gap-1"><Maximize2 className="w-3 h-3" /> {room.size}</span>
+                      <span className="flex items-center gap-1"><Users className="w-3 h-3" /> Max {room.maxOccupancy} Guests</span>
+                      <span className="flex items-center gap-1 text-green-600 font-medium"><Check className="w-3 h-3" /> Free Cancellation</span>
+                    </div>
+                  </div>
+                  {/* Mobile Price (Hidden on Desktop) */}
+                  <div className="md:hidden text-right">
+                    <p className="text-lg font-bold text-primary">{formatPrice(room.basePrice)}</p>
+                  </div>
+                </div>
+
+                {/* Inclusion Chips */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <span className="px-2 py-0.5 bg-secondary/30 text-secondary-foreground text-[10px] uppercase font-bold tracking-wider rounded">Room Only</span>
+                  <span className="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 text-[10px] uppercase font-bold tracking-wider rounded">Breakfast Available</span>
+                </div>
+
+                {/* Amenities Preview */}
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+                  {room.amenities.slice(0, 6).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <div className="w-1 h-1 bg-primary rounded-full" />
+                      <span className="truncate">{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Description Toggle */}
+                <button
+                  onClick={() => toggleExpand(room.id)}
+                  className="text-primary text-xs font-medium flex items-center gap-1 hover:underline"
+                >
+                  {expandedRoom === room.id ? "Hide Details" : "Room Details"}
+                  {expandedRoom === room.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                </button>
+
+                {expandedRoom === room.id && (
+                  <div className="mt-3 pt-3 border-t border-border text-sm text-muted-foreground animate-in fade-in slide-in-from-top-2 duration-200">
+                    <p>{room.description}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Price & Action Section (Desktop right, Mobile bottom) */}
+            <div className="p-4 md:p-6 bg-secondary/5 border-t md:border-t-0 md:border-l border-border md:w-60 flex flex-col justify-center items-center md:items-end text-center md:text-right">
+              <div className="hidden md:block mb-4">
+                <p className="text-xs text-muted-foreground line-through">₹{(room.basePrice * 1.2).toLocaleString()}</p>
+                <p className="text-2xl font-serif font-bold text-primary">{formatPrice(room.basePrice)}</p>
+                <p className="text-[10px] text-muted-foreground">+ ₹{Math.round(room.basePrice * 0.18)} taxes & fees</p>
+                <p className="text-[10px] text-green-600 font-medium mt-1">Per Night</p>
+              </div>
+
+              <Button
+                onClick={() => onSelectRoom(room.id)}
+                disabled={!room.available}
+                className="w-full md:w-auto min-w-[140px]"
+              >
+                {room.available ? "Select Room" : "Unavailable"}
+              </Button>
+
+              {!room.available && <p className="text-[10px] text-red-500 mt-2 font-medium">Sold Out for these dates</p>}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

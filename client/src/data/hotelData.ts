@@ -39,6 +39,18 @@ export interface Hotel {
     coordinates: { lat: number; lng: number };
   }[];
   roomTypes: Room[];
+  dining?: {
+    name: string;
+    cuisine: string;
+    timings: string;
+    image?: ImageAsset;
+  }[];
+  policies?: {
+    checkInAge: number;
+    pets: boolean;
+    cancellation: string;
+    extraBed: boolean;
+  };
 }
 
 export const allHotels: Hotel[] = [
@@ -67,6 +79,26 @@ export const allHotels: Hotel[] = [
       { name: "Marine Drive", type: "Attraction", distance: "2.5 km", coordinates: { lat: 18.9438, lng: 72.8234 } },
       { name: "Colaba Causeway", type: "Shopping", distance: "0.5 km", coordinates: { lat: 18.9149, lng: 72.8266 } },
     ],
+    dining: [
+      {
+        name: "The Golden Peacock",
+        cuisine: "North Indian & Mughlai",
+        timings: "12:00 PM - 3:00 PM, 7:00 PM - 11:00 PM",
+        image: siteContent.images.bars.rooftop
+      },
+      {
+        name: "Ocean View Deck",
+        cuisine: "Continental & Seafood",
+        timings: "24 Hours",
+        image: siteContent.images.bars.rooftop
+      }
+    ],
+    policies: {
+      checkInAge: 18,
+      pets: false,
+      cancellation: "Flexible until 24 hours before check-in",
+      extraBed: true
+    },
     roomTypes: [
       {
         id: "mumbai-deluxe",
@@ -144,6 +176,24 @@ export const allHotels: Hotel[] = [
       "Michelin Restaurant",
       "Zen Garden",
     ],
+    dining: [
+      {
+        name: "Zen Garden Cafe",
+        cuisine: "Pan-Asian & Teas",
+        timings: "10:00 AM - 10:00 PM",
+      },
+      {
+        name: "Sky Brew",
+        cuisine: "Finger Food & Craft Beer",
+        timings: "4:00 PM - 1:00 AM",
+      }
+    ],
+    policies: {
+      checkInAge: 18,
+      pets: true,
+      cancellation: "Non-refundable for promotional rates",
+      extraBed: false
+    },
     features: ["Co-working Lounge", "Rooftop Microbrewery", "Smart Rooms"],
     rooms: 98,
     checkIn: "2:00 PM",
@@ -247,6 +297,24 @@ export const allHotels: Hotel[] = [
       { name: "Jantar Mantar", type: "Landmark", distance: "0.8 km", coordinates: { lat: 28.6271, lng: 77.2166 } },
       { name: "Gurudwara Bangla Sahib", type: "Religious", distance: "1.2 km", coordinates: { lat: 28.6262, lng: 77.2090 } },
     ],
+    dining: [
+      {
+        name: "The Royal Durbbar",
+        cuisine: "Awadhi",
+        timings: "7:00 PM - 11:30 PM",
+      },
+      {
+        name: "24/7 Pavilion",
+        cuisine: "Multi-Cuisine",
+        timings: "24 Hours",
+      }
+    ],
+    policies: {
+      checkInAge: 21,
+      pets: false,
+      cancellation: "Free cancellation up to 48 hours",
+      extraBed: true
+    },
     roomTypes: [
       {
         id: "delhi-deluxe",
@@ -351,6 +419,19 @@ export const allHotels: Hotel[] = [
       lat: 22.553523,
       lng: 88.349934,
     },
+    dining: [
+      {
+        name: "Bengal Brasserie",
+        cuisine: "Bengali & French Fusion",
+        timings: "12:30 PM - 3:30 PM, 7:30 PM - 11:30 PM",
+      }
+    ],
+    policies: {
+      checkInAge: 18,
+      pets: false,
+      cancellation: "Flexible",
+      extraBed: true
+    },
     roomTypes: [
       {
         id: "kolkata-deluxe",
@@ -437,6 +518,19 @@ export const allHotels: Hotel[] = [
       lat: 17.412348,
       lng: 78.448522,
     },
+    dining: [
+      {
+        name: "Nizam's Table",
+        cuisine: "Hyderabadi",
+        timings: "12:00 PM - 4:00 PM, 7:00 PM - 12:00 AM",
+      }
+    ],
+    policies: {
+      checkInAge: 18,
+      pets: false,
+      cancellation: "24 hours notice",
+      extraBed: true
+    },
     roomTypes: [
       {
         id: "hyderabad-deluxe",
@@ -516,6 +610,19 @@ export const allHotels: Hotel[] = [
     coordinates: {
       lat: 12.909821,
       lng: 80.249693,
+    },
+    dining: [
+      {
+        name: "Bay Catch",
+        cuisine: "Seafood",
+        timings: "11:00 AM - 11:00 PM",
+      }
+    ],
+    policies: {
+      checkInAge: 18,
+      pets: true,
+      cancellation: "Flexible",
+      extraBed: true
     },
     roomTypes: [
       {
