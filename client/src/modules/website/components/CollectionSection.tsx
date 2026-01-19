@@ -362,7 +362,16 @@ export default function CollectionSection({
                     </p>
                   </div>
                   <button
-                    onClick={() => navigate(`/hotels/${currentHotel.id}`)}
+                    onClick={() => navigate(`/hotels/${currentHotel.city}`, {
+                      state: {
+                        hotelId: currentHotel.id,
+                        hotelSlug: currentHotel.id,
+                        city: currentHotel.city,
+                        selectedDates: { checkIn: checkInDate, checkOut: checkOutDate },
+                        guests: 2,
+                        rooms: 1
+                      }
+                    })}
                     className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg text-sm"
                   >
                     View Details
@@ -457,7 +466,16 @@ export default function CollectionSection({
                           <button
                             onClick={() => {
                               setCurrentIndex(idx);
-                              navigate(`/hotels/${hotel.id}`);
+                              navigate(`/hotels/${hotel.city}`, {
+                                state: {
+                                  hotelId: hotel.id,
+                                  hotelSlug: hotel.id,
+                                  city: hotel.city,
+                                  selectedDates: { checkIn: checkInDate, checkOut: checkOutDate },
+                                  guests: 2,
+                                  rooms: 1
+                                }
+                              });
                             }}
                             className="w-full text-xs bg-primary text-primary-foreground font-bold py-2 rounded hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
                           >

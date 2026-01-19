@@ -25,7 +25,7 @@ import Checkout from "@/modules/website/pages/Checkout";
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
   <Route key="hotels" path="/hotels" element={<Hotels />} />,
-  <Route key="hotel-detail" path="/hotels/:hotelId" element={<HotelDetail />} />,
+  <Route key="hotel-detail" path="/hotels/:city" element={<HotelDetail />} />,
   <Route key="room-selection" path="/hotels/:hotelId/rooms" element={<RoomSelection />} />,
   <Route key="cafes" path="/cafes" element={<Cafes />} />,
   <Route key="bars" path="/bars" element={<Bars />} />,

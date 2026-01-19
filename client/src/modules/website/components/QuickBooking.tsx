@@ -67,17 +67,21 @@ export default function QuickBooking() {
   };
 
   const handleBook = (hotel: Hotel) => {
-    const params = new URLSearchParams();
-    params.append("hotel", hotel.name);
-    params.append("location", hotel.city);
-    params.append("price", hotel.price.toString());
-    if (checkIn) params.append("checkIn", checkIn.toISOString());
-    if (checkOut) params.append("checkOut", checkOut.toISOString());
-    params.append("adults", guests.adults.toString());
-    params.append("children", guests.children.toString());
-    params.append("rooms", guests.rooms.toString());
-
-    navigate(`/checkout?${params.toString()}`);
+    navigate(`/hotels/${hotel.city}`, {
+      state: {
+        hotelId: hotel.id,
+        hotelSlug: hotel.id,
+        city: hotel.city,
+        // formatted for consistency with other components
+        selectedDates: {
+          checkIn: checkIn ? format(checkIn, "yyyy-MM-dd") : "",
+          checkOut: checkOut ? format(checkOut, "yyyy-MM-dd") : ""
+        },
+        guests: guests.adults + guests.children,
+        rooms: guests.rooms,
+        guestsDetails: guests // passing full details if needed
+      }
+    });
   };
 
   // Pagination Logic

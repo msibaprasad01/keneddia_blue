@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   MapPin,
@@ -16,7 +16,7 @@ import {
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { getHotelById } from "@/data/hotelData";
+import { getHotelById, allHotels } from "@/data/hotelData";
 import { siteContent } from "@/data/siteContent";
 import PropertyMap from "@/modules/website/components/PropertyMap";
 import FindYourStay from "@/modules/website/components/FindYourStay";
@@ -30,9 +30,20 @@ import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal
 import ReviewsSection from "@/modules/website/components/hotel-detail/ReviewsSection";
 
 export default function HotelDetail() {
-  const { hotelId } = useParams<{ hotelId: string }>();
+  const { city } = useParams<{ city: string }>();
   const navigate = useNavigate();
-  const hotel = hotelId ? getHotelById(hotelId) : null;
+  const location = useLocation();
+  const state = location.state as {
+    selectedDates?: { checkIn: string; checkOut: string };
+    guests?: number;
+    rooms?: number;
+    guestsDetails?: { adults: number; children: number; rooms: number };
+  } | null;
+
+  // Find hotel by city name (case-insensitive) or ID as fallback
+  const hotel = city
+    ? allHotels.find(h => h.city.toLowerCase() === city.toLowerCase() || h.id === city.toLowerCase())
+    : null;
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
@@ -188,7 +199,17 @@ export default function HotelDetail() {
         </div>
 
         {/* Quick Search Bar */}
-        <FindYourStay />
+        <FindYourStay
+          initialDate={state?.selectedDates?.checkIn && state?.selectedDates?.checkOut ? {
+            from: new Date(state.selectedDates.checkIn),
+            to: new Date(state.selectedDates.checkOut)
+          } : undefined}
+          initialGuests={state?.guestsDetails || (state?.guests ? {
+            adults: state.guests,
+            children: 0,
+            rooms: state.rooms || 1
+          } : undefined)}
+        />
       </div>
 
       {/* Sticky Navigation */}

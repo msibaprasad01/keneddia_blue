@@ -9,13 +9,18 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
-export default function FindYourStay() {
-  const [date, setDate] = useState<DateRange | undefined>({
+interface FindYourStayProps {
+  initialDate?: DateRange;
+  initialGuests?: { adults: number; children: number; rooms: number };
+}
+
+export default function FindYourStay({ initialDate, initialGuests }: FindYourStayProps) {
+  const [date, setDate] = useState<DateRange | undefined>(initialDate || {
     from: new Date(),
     to: addDays(new Date(), 2),
   });
 
-  const [guests, setGuests] = useState({ adults: 2, children: 0, rooms: 1 });
+  const [guests, setGuests] = useState(initialGuests || { adults: 2, children: 0, rooms: 1 });
   const [isOpen, setIsOpen] = useState(false);
 
   return (

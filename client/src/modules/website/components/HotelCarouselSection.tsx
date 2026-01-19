@@ -542,7 +542,16 @@ export default function HotelCarouselSection() {
 
                   <div className="space-y-2.5">
                     <button
-                      onClick={() => navigate(`/hotels/${activeHotel.id}`)}
+                      onClick={() => navigate(`/hotels/${activeHotel.city}`, {
+                        state: {
+                          hotelId: activeHotel.id,
+                          hotelSlug: activeHotel.id,
+                          city: activeHotel.city,
+                          selectedDates: { checkIn: checkInDate, checkOut: checkOutDate },
+                          guests: 2,
+                          rooms: 1
+                        }
+                      })}
                       className="w-full py-3 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-98 flex items-center justify-center gap-2 text-sm"
                     >
                       Book Room
@@ -561,7 +570,16 @@ export default function HotelCarouselSection() {
                     </div>
 
                     <button
-                      onClick={() => navigate(`/hotels/${activeHotel.id}`)}
+                      onClick={() => navigate(`/hotels/${activeHotel.city}`, {
+                        state: {
+                          hotelId: activeHotel.id,
+                          hotelSlug: activeHotel.id,
+                          city: activeHotel.city,
+                          selectedDates: { checkIn: checkInDate, checkOut: checkOutDate },
+                          guests: 2,
+                          rooms: 1
+                        }
+                      })}
                       className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors"
                     >
                       View Full Details →
@@ -678,7 +696,16 @@ export default function HotelCarouselSection() {
                           </p>
                         </div>
                         <button
-                          onClick={() => navigate(`/hotels/${activeHotel.id}`)}
+                          onClick={() => navigate(`/hotels/${activeHotel.city}`, {
+                            state: {
+                              hotelId: activeHotel.id,
+                              hotelSlug: activeHotel.id,
+                              city: activeHotel.city,
+                              selectedDates: { checkIn: checkInDate, checkOut: checkOutDate },
+                              guests: 2,
+                              rooms: 1
+                            }
+                          })}
                           className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg text-sm"
                         >
                           View Details
@@ -759,7 +786,16 @@ export default function HotelCarouselSection() {
                                 <button
                                   onClick={() => {
                                     setActiveIndex(idx);
-                                    navigate(`/hotels/${hotel.id}`);
+                                    navigate(`/hotels/${hotel.city}`, {
+                                      state: {
+                                        hotelId: hotel.id,
+                                        hotelSlug: hotel.id,
+                                        city: hotel.city,
+                                        selectedDates: { checkIn: checkInDate, checkOut: checkOutDate },
+                                        guests: 2,
+                                        rooms: 1
+                                      }
+                                    });
                                   }}
                                   className="w-full text-xs bg-primary text-primary-foreground font-bold py-2 rounded hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
                                 >
