@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -7,11 +8,10 @@ import {
   Share2,
   Heart,
   Check,
-  Building2,
-  Utensils,
-  Map as MapIcon,
+  Info,
   ChevronRight,
-  Info
+  Utensils,
+  Map as MapIcon
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
@@ -24,10 +24,17 @@ import HotelStickyNav from "@/modules/website/components/HotelStickyNav";
 import RoomList from "@/modules/website/components/RoomList";
 import { Button } from "@/components/ui/button";
 
+// New Optimization Components
+import RightSidebar from "@/modules/website/components/hotel-detail/RightSidebar";
+import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
+import ReviewsSection from "@/modules/website/components/hotel-detail/ReviewsSection";
+
 export default function HotelDetail() {
   const { hotelId } = useParams<{ hotelId: string }>();
   const navigate = useNavigate();
   const hotel = hotelId ? getHotelById(hotelId) : null;
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
 
   if (!hotel) {
     return (
@@ -50,13 +57,27 @@ export default function HotelDetail() {
     { id: "about-hotel", label: "About Hotel" },
     { id: "amenities", label: "Amenities" },
     { id: "food-dining", label: "Food & Dining" },
+    { id: "guest-reviews", label: "Guest Reviews" }, // Added Reviews
     { id: "location", label: "Location" },
     { id: "policies", label: "Guest Policies" },
   ];
 
+  const openGallery = (index: number) => {
+    setInitialGalleryIndex(index);
+    setIsGalleryOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden pt-20">
       <Navbar logo={siteContent.brand.logo_hotel} />
+
+      {/* Gallery Modal */}
+      <GalleryModal
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        hotel={hotel}
+        initialImageIndex={initialGalleryIndex}
+      />
 
       {/* Breadcrumb */}
       <div className="container mx-auto px-4 md:px-6 lg:px-12 py-4">
@@ -101,12 +122,17 @@ export default function HotelDetail() {
               <div className="bg-green-600 text-white px-2 py-1 rounded text-sm font-bold flex items-center gap-1">
                 {hotel.rating} <Star className="w-3 h-3 fill-current" />
               </div>
-              <span className="text-sm font-medium underline cursor-pointer">{hotel.reviews} Verified Reviews</span>
+              <span
+                className="text-sm font-medium underline cursor-pointer hover:text-primary transition-colors"
+                onClick={() => document.getElementById('guest-reviews')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                {hotel.reviews} Verified Reviews
+              </span>
             </div>
           </div>
 
-          {/* Pricing Card (Desktop right) */}
-          <div className="hidden lg:block w-80 bg-card border border-border rounded-xl p-4 shadow-sm h-fit">
+          {/* Pricing Card Replaced by Sidebar - removed here or can keep small summary for mobile if needed, but sidebar handles desktop */}
+          <div className="lg:hidden w-full bg-card border border-border rounded-xl p-4 shadow-sm">
             <div className="flex justify-between items-end mb-2">
               <div>
                 <p className="text-xs text-muted-foreground uppercase">Starting from</p>
@@ -123,22 +149,36 @@ export default function HotelDetail() {
           </div>
         </div>
 
-        {/* Media Grid */}
+        {/* Media Grid - WIRED UP */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[400px] mb-8 rounded-xl overflow-hidden">
-          <div className="md:col-span-2 h-full relative group cursor-pointer">
-            <OptimizedImage {...hotel.image} className="w-full h-full object-cover" />
+
+          {/* Main Image */}
+          <div className="md:col-span-2 h-full relative group cursor-pointer" onClick={() => openGallery(0)}>
+            <OptimizedImage {...hotel.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
           </div>
+
+          {/* Room Image */}
           <div className="md:col-span-1 flex flex-col gap-2 h-full">
-            <div className="h-1/2 relative cursor-pointer"><OptimizedImage src={hotel.roomTypes[0]?.image.src || hotel.image.src} alt="Room" className="w-full h-full object-cover" /></div>
-            <div className="h-1/2 relative cursor-pointer"><OptimizedImage src={hotel.dining?.[0]?.image?.src || hotel.image.src} alt="Dining" className="w-full h-full object-cover" /></div>
+            <div className="h-1/2 relative cursor-pointer overflow-hidden group" onClick={() => openGallery(1)}>
+              <OptimizedImage src={hotel.roomTypes[0]?.image.src || hotel.image.src} alt="Room" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+            </div>
+            <div className="h-1/2 relative cursor-pointer overflow-hidden group" onClick={() => openGallery(2)}>
+              <OptimizedImage src={hotel.dining?.[0]?.image?.src || hotel.image.src} alt="Dining" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+            </div>
           </div>
+
+          {/* More Photos */}
           <div className="md:col-span-1 flex flex-col gap-2 h-full">
-            <div className="h-1/2 relative cursor-pointer"><OptimizedImage src={siteContent.images.hero.slide2.src} alt="Lobby" className="w-full h-full object-cover" /></div>
-            <div className="h-1/2 relative cursor-pointer group">
-              <OptimizedImage src={siteContent.images.hero.slide3.src} alt="Pool" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <span className="text-white font-medium border border-white/50 px-3 py-1 rounded backdrop-blur-sm">+12 More Photos</span>
+            <div className="h-1/2 relative cursor-pointer overflow-hidden group" onClick={() => openGallery(3)}>
+              <OptimizedImage src={siteContent.images.hero.slide2.src} alt="Lobby" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+            </div>
+            <div className="h-1/2 relative cursor-pointer group overflow-hidden" onClick={() => openGallery(0)}>
+              <OptimizedImage src={siteContent.images.hero.slide3.src} alt="Pool" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-colors group-hover:bg-black/40">
+                <span className="text-white font-medium border border-white/50 px-3 py-1 rounded backdrop-blur-sm group-hover:bg-white/10 transition-colors">
+                  View All Photos
+                </span>
               </div>
             </div>
           </div>
@@ -151,14 +191,17 @@ export default function HotelDetail() {
       {/* Sticky Navigation */}
       <HotelStickyNav sections={sections} />
 
-      {/* Main Content Sections */}
+      {/* Main Content Layout */}
       <div className="container mx-auto px-4 md:px-6 lg:px-12 py-8 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
+
+        {/* LEFT COLUMN: Main Information */}
         <div className="space-y-12">
 
           {/* Room Options */}
           <section id="room-options" className="scroll-mt-40">
             <h2 className="text-2xl font-serif font-bold mb-6">Choose Your Room</h2>
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            {/* Mobile Filter Chips */}
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
               <span className="px-3 py-1 bg-secondary border border-border rounded-full text-xs font-medium whitespace-nowrap">Free Cancellation</span>
               <span className="px-3 py-1 bg-secondary border border-border rounded-full text-xs font-medium whitespace-nowrap">Breakfast Included</span>
               <span className="px-3 py-1 bg-secondary border border-border rounded-full text-xs font-medium whitespace-nowrap">Pay at Hotel</span>
@@ -173,7 +216,7 @@ export default function HotelDetail() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {hotel.features.map((feature, idx) => (
-                <div key={idx} className="bg-secondary/10 p-4 rounded-lg border border-border/50 text-center">
+                <div key={idx} className="bg-secondary/10 p-4 rounded-lg border border-border/50 text-center hover:bg-secondary/20 transition-colors">
                   <Star className="w-5 h-5 text-primary mx-auto mb-2" />
                   <span className="text-xs font-bold uppercase tracking-wider">{feature}</span>
                 </div>
@@ -183,7 +226,10 @@ export default function HotelDetail() {
 
           {/* Amenities */}
           <section id="amenities" className="scroll-mt-40 pt-8 border-t border-border">
-            <h2 className="text-2xl font-serif font-bold mb-6">Amenities</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-serif font-bold">Amenities</h2>
+              <Button variant="link" className="text-primary h-auto p-0">View All Amenities</Button>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-8">
               {hotel.amenities.map((amenity, idx) => (
                 <div key={idx} className="flex items-center gap-3">
@@ -201,17 +247,18 @@ export default function HotelDetail() {
             <h2 className="text-2xl font-serif font-bold mb-6">Food & Dining</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {hotel.dining?.map((place, idx) => (
-                <div key={idx} className="bg-card border border-border rounded-xl overflow-hidden flex flex-col">
-                  <div className="h-40 relative">
+                <div key={idx} className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+                  <div className="h-40 relative group cursor-pointer" onClick={() => openGallery(2)}>
                     {place.image ? (
-                      <OptimizedImage {...place.image} className="w-full h-full object-cover" />
+                      <OptimizedImage {...place.image} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                     ) : (
                       <div className="w-full h-full bg-secondary flex items-center justify-center">
                         <Utensils className="w-8 h-8 text-muted-foreground" />
                       </div>
                     )}
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
                   </div>
-                  <div className="p-4 flex-1">
+                  <div className="p-4 flex-1 flex flex-col">
                     <h3 className="text-lg font-serif font-bold mb-1">{place.name}</h3>
                     <p className="text-sm text-muted-foreground mb-3">{place.cuisine}</p>
                     <div className="mt-auto pt-3 border-t border-border/50 flex items-center gap-2 text-xs text-muted-foreground">
@@ -221,6 +268,11 @@ export default function HotelDetail() {
                 </div>
               ))}
             </div>
+          </section>
+
+          {/* Guest Reviews - NEW SECTION */}
+          <section id="guest-reviews" className="scroll-mt-40 pt-8 border-t border-border">
+            <ReviewsSection />
           </section>
 
           {/* Location */}
@@ -237,7 +289,7 @@ export default function HotelDetail() {
                 <h4 className="text-sm font-bold uppercase tracking-wider mb-3">Nearby Places</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {hotel.nearbyPlaces.map((place, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-secondary/10 rounded-lg border border-border/50">
+                    <div key={idx} className="flex items-center justify-between p-3 bg-secondary/10 rounded-lg border border-border/50 hover:bg-secondary/20 transition-colors">
                       <div>
                         <p className="text-sm font-medium">{place.name}</p>
                         <p className="text-[10px] text-muted-foreground">{place.type}</p>
@@ -253,7 +305,7 @@ export default function HotelDetail() {
           {/* Guest Policies */}
           <section id="policies" className="scroll-mt-40 pt-8 border-t border-border">
             <h2 className="text-2xl font-serif font-bold mb-6">Guest Policies</h2>
-            <div className="bg-secondary/5 rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-secondary/5 rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6 border border-border/50">
               <div>
                 <h4 className="text-sm font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
                   <Info className="w-4 h-4 text-primary" /> Check-in / Check-out
@@ -278,39 +330,11 @@ export default function HotelDetail() {
           </section>
         </div>
 
-        {/* Right Rail (Sticky Booking Summary could go here if layout changes, but keeping it empty for now as per Goibibo style of wide content or using for ads/promos) */}
-        <div className="hidden lg:block space-y-6">
-          {/* Could replicate the price card here sticky */}
-          <div className="sticky top-24">
-            <div className="bg-card border border-border rounded-xl p-6 shadow-lg mb-6">
-              <h3 className="font-serif font-bold text-lg mb-4">Why Book With Us?</h3>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                  <span>Best Price Guarantee</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                  <span>No Hidden Fees</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                  <span>Instant Confirmation</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                  <span>24/7 Customer Support</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-primary/5 rounded-xl p-6 border border-primary/10">
-              <h3 className="font-serif font-bold text-lg mb-2">Need Help?</h3>
-              <p className="text-sm text-muted-foreground mb-4">Call our expert travel desk for assistance.</p>
-              <Button variant="outline" className="w-full">Contact Support</Button>
-            </div>
-          </div>
+        {/* RIGHT COLUMN: Sticky Sidebar */}
+        <div className="hidden lg:block relative z-10">
+          <RightSidebar hotel={hotel} />
         </div>
+
       </div>
 
       <Footer />
