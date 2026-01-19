@@ -10,6 +10,7 @@ import HotelReviewsSection from "@/modules/website/components/HotelReviewsSectio
 import QuickBooking from "@/modules/website/components/QuickBooking";
 import GroupBookingSection from "@/modules/website/components/GroupBookingSection";
 import SpecialOfferPopup from "@/modules/website/components/SpecialOfferPopup";
+import WhatsAppButton from "@/modules/website/components/WhatsAppButton";
 // Assets
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -233,6 +234,7 @@ export default function Hotels() {
       {/* FOOTER */}
       <div id="contact">
         <Footer />
+        <WhatsAppButton />
       </div>
     </div>
   );

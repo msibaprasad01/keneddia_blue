@@ -18,7 +18,17 @@ export default function SpecialOfferPopup() {
       const timer = setTimeout(() => {
         setIsVisible(true);
       }, 3000);
-      return () => clearTimeout(timer);
+
+      // Auto-hide after 15 seconds
+      const hideTimer = setTimeout(() => {
+        setIsVisible(false);
+        sessionStorage.setItem("hasSeenPopup", "true");
+      }, 18000); // 3s delay + 15s display
+
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(hideTimer);
+      };
     }
   }, []);
 
@@ -36,11 +46,12 @@ export default function SpecialOfferPopup() {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 50 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 50 }}
+          initial={{ opacity: 0, scale: 0.9, y: "-40%", x: "-50%" }}
+          animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+          exit={{ opacity: 0, scale: 0.9, y: "-40%", x: "-50%" }}
           transition={{ duration: 0.4, type: "spring" }}
-          className="fixed bottom-6 right-6 z-[60] w-[90vw] md:w-[400px] h-auto bg-card border border-primary/20 rounded-2xl shadow-2xl overflow-hidden"
+          className="fixed top-1/2 left-1/2 z-[60] w-[90vw] md:w-[400px] h-auto bg-card border border-primary/20 rounded-2xl shadow-2xl overflow-hidden"
+          style={{ transform: 'translate(-50%, -50%)' }}
         >
           {/* Close Button */}
           <button

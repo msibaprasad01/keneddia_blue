@@ -1,42 +1,72 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarHeart, Users, PartyPopper, ArrowRight, ChevronRight, Check } from "lucide-react";
+import { CalendarHeart, Users, PartyPopper, ArrowRight, ChevronRight, Check, Calendar, Star, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { siteContent } from "@/data/siteContent";
 import { CITIES, HOTELS_DATA, Hotel } from "@/data/hotelsData";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
-const GROUP_OFFERS = [
+const CELEBRATION_OFFERS = [
   {
     id: "birthday",
-    title: "Birthday Celebrations",
+    title: "Birthday & Private Parties",
     icon: PartyPopper,
     image: siteContent.images.hotels.mumbai,
-    description: "Make your special day unforgettable with our exclusive birthday packages including cake, decor, and private dining.",
+    description: "Celebrate in style with custom decor, curated menus, and exclusive venues for your private moments.",
+    tag: "Custom Packages"
   },
   {
-    id: "valentines",
-    title: "Valentine's Getaway",
-    icon: CalendarHeart,
-    image: siteContent.images.bars.beach,
-    description: "Romantic suites, couple's spa treatments, and candlelight dinners for the perfect romantic escape.",
-  },
-  {
-    id: "group-events",
-    title: "Group Events",
+    id: "corporate",
+    title: "Corporate Meetings & Offsites",
     icon: Users,
     image: siteContent.images.hotels.hyderabad,
-    description: "Perfect for corporate retreats, family reunions, or friend getaways with special group rates and activities.",
+    description: "State-of-the-art conference rooms and team-building activities designed for productivity and connection.",
+    tag: "Business Ready"
   },
+];
+
+const UPCOMING_EVENTS = [
+  {
+    id: 1,
+    title: "International Wine Festival",
+    date: "25th Oct 2024",
+    location: "Kennedia Blu Mumbai",
+    image: siteContent.images.bars.lounge,
+    price: "₹2,500 onwards",
+    badge: "Early Bird"
+  },
+  {
+    id: 2,
+    title: "Sufi Night with Live Band",
+    date: "2nd Nov 2024",
+    location: "Kennedia Blu Delhi",
+    image: siteContent.images.bars.poolside,
+    price: "Entry Free for Guests",
+    badge: "Exclusive"
+  },
+  {
+    id: 3,
+    title: "Global Culinary Summit",
+    date: "15th Nov 2024",
+    location: "Kennedia Blu Bengaluru",
+    image: siteContent.images.cafes.parisian,
+    price: "Registration Required",
+    badge: "Networking"
+  }
 ];
 
 export default function GroupBookingSection() {
   const navigate = useNavigate();
-  const [selectedOffer, setSelectedOffer] = useState<typeof GROUP_OFFERS[0] | null>(null);
+  const [selectedOffer, setSelectedOffer] = useState<typeof CELEBRATION_OFFERS[0] | null>(null);
   const [step, setStep] = useState(1);
 
   // Wizard State
@@ -44,7 +74,7 @@ export default function GroupBookingSection() {
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  const handleOpen = (offer: typeof GROUP_OFFERS[0]) => {
+  const handleOpen = (offer: typeof CELEBRATION_OFFERS[0]) => {
     setSelectedOffer(offer);
     setStep(1);
     setCity("");
@@ -70,55 +100,108 @@ export default function GroupBookingSection() {
   const filteredHotels = city ? HOTELS_DATA.filter(h => h.city === city) : [];
 
   return (
-    <section className="py-16 bg-background">
+    <section className="py-16 bg-background space-y-16">
+
+      {/* 1. Celebrations Container (2 Sliding Boxes) */}
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-serif mb-4">Celebrations & Groups</h2>
           <div className="w-16 h-1 bg-primary mx-auto mb-6" />
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            From intimate celebrations to grand gatherings, we create moments that last a lifetime.
+            Curated experiences for your most important gatherings.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {GROUP_OFFERS.map((offer) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {CELEBRATION_OFFERS.map((offer) => (
             <div
               key={offer.id}
-              className="group relative bg-card border border-border/50 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
+              className="group relative h-[400px] overflow-hidden rounded-2xl shadow-xl cursor-pointer"
+              onClick={() => handleOpen(offer)}
             >
-              <div className="aspect-[16/9] relative overflow-hidden">
-                <OptimizedImage
-                  {...offer.image}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80" />
-                <div className="absolute bottom-4 left-4 text-white flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-                    <offer.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="font-serif text-lg font-medium tracking-wide">
-                    {offer.title}
-                  </h3>
-                </div>
+              <OptimizedImage
+                {...offer.image}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90 transition-opacity" />
+
+              <div className="absolute top-4 right-4">
+                <span className="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30 uppercase tracking-wide">
+                  {offer.tag}
+                </span>
               </div>
 
-              <div className="p-6 flex flex-col flex-1">
-                <p className="text-muted-foreground text-sm mb-6 leading-relaxed line-clamp-3">
+              <div className="absolute bottom-0 left-0 right-0 p-8 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <offer.icon className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <h3 className="font-serif text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
+                  {offer.title}
+                </h3>
+                <p className="text-white/80 text-sm leading-relaxed mb-6 line-clamp-2 max-w-md">
                   {offer.description}
                 </p>
-
-                <div className="mt-auto">
-                  <Button
-                    variant="outline"
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-colors"
-                    onClick={() => handleOpen(offer)}
-                  >
-                    Plan Event <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity delay-100">
+                  Plan Now <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* 2. Upcoming Events Slider */}
+      <div className="bg-secondary/10 py-16">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-2xl font-serif font-semibold">Upcoming Events</h3>
+              <p className="text-muted-foreground text-sm">Join us for exclusive experiences</p>
+            </div>
+            <Button variant="outline" className="hidden md:flex">View All Events</Button>
+          </div>
+
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            spaceBetween={20}
+            slidesPerView={1}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            loop={true}
+            className="pb-8"
+          >
+            {UPCOMING_EVENTS.map((event) => (
+              <SwiperSlide key={event.id}>
+                <div className="bg-card border border-border rounded-xl overflow-hidden group hover:shadow-lg transition-all h-full flex flex-col">
+                  <div className="relative h-48 overflow-hidden">
+                    <OptimizedImage {...event.image} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded text-xs font-bold shadow-sm uppercase tracking-wide text-foreground">
+                      {event.badge}
+                    </div>
+                  </div>
+                  <div className="p-5 flex flex-col flex-1">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wide mb-1 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" /> {event.date}
+                    </span>
+                    <h4 className="font-serif text-lg font-bold mb-2 group-hover:text-primary transition-colors">
+                      {event.title}
+                    </h4>
+                    <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" /> {event.location}
+                    </p>
+
+                    <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
+                      <span className="text-sm font-semibold">{event.price}</span>
+                      <Button size="sm" variant="secondary" className="h-8 text-xs">RSVP</Button>
+                    </div>
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </div>
 
@@ -202,7 +285,7 @@ export default function GroupBookingSection() {
               <div className="space-y-4 animate-in slide-in-from-right-4 duration-300 flex flex-col items-center">
                 <h3 className="font-medium text-lg self-start">Select Event Date</h3>
                 <div className="border rounded-lg p-3 bg-card/50">
-                  <Calendar
+                  <CalendarComponent
                     mode="single"
                     selected={date}
                     onSelect={setDate}

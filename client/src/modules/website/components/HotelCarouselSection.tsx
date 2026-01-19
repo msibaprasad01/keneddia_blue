@@ -240,19 +240,49 @@ export default function HotelCarouselSection() {
       <div className="container mx-auto px-6 lg:px-12">
         {/* Unified Header with View Toggle */}
         <div className="bg-card border border-border rounded-xl p-4 shadow-sm mb-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            {/* Left: Title */}
-            <div className="flex-shrink-0">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1 block">
-                {viewMode === "gallery" ? "Premium Selection" : "Discover"}
-              </span>
-              <h2 className="text-xl md:text-2xl font-serif text-foreground">
-                {viewMode === "gallery" ? "Our Collection" : "Our Collection"}
-              </h2>
+          <div className="flex flex-col gap-4">
+            {/* Top Row: Title & View Toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1 block">
+                  {viewMode === "gallery" ? "Premium Selection" : "Discover"}
+                </span>
+                <h2 className="text-xl md:text-2xl font-serif text-foreground">
+                  {viewMode === "gallery" ? "Our Collection" : "Our Collection"}
+                </h2>
+              </div>
+
+              {/* View Mode Toggle - Prominent */}
+              <div className="inline-flex items-center gap-0.5 bg-background border border-border rounded-full p-0.5 shadow-sm">
+                <button
+                  onClick={() => setViewMode("gallery")}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "gallery"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                  <Grid3x3 className="w-3 h-3" />
+                  <span className="hidden sm:inline">Gallery</span>
+                </button>
+                <button
+                  onClick={() => setViewMode("map")}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "map"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                  <Map className="w-3 h-3" />
+                  <span className="hidden sm:inline">Map</span>
+                </button>
+              </div>
             </div>
 
-            {/* Right: Filters + View Toggle */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Bottom Row: Filters (Separated) */}
+            <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-border/50">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1">
+                Filter By:
+              </span>
+
               {/* City Filter */}
               <div className="relative">
                 <button
@@ -266,7 +296,7 @@ export default function HotelCarouselSection() {
                   />
                 </button>
                 {showCityDropdown && (
-                  <div className="absolute top-full mt-1 right-0 w-48 bg-card rounded-lg shadow-xl border border-border overflow-hidden z-50">
+                  <div className="absolute top-full mt-1 left-0 w-48 bg-card rounded-lg shadow-xl border border-border overflow-hidden z-50">
                     {cities.map((city) => (
                       <button
                         key={city}
@@ -290,34 +320,12 @@ export default function HotelCarouselSection() {
                 <span className="font-medium">All Types</span>
               </button>
 
+              <div className="flex-1" />
+
               {/* Property Count Badge */}
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-full text-xs">
                 <Star className="w-3 h-3 text-primary fill-current" />
                 <span className="font-semibold text-foreground">{filteredHotels.length} Properties</span>
-              </div>
-
-              {/* View Mode Toggle */}
-              <div className="inline-flex items-center gap-0.5 bg-background border border-border rounded-full p-0.5 shadow-sm">
-                <button
-                  onClick={() => setViewMode("gallery")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "gallery"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  <Grid3x3 className="w-3 h-3" />
-                  <span className="hidden sm:inline">Gallery</span>
-                </button>
-                <button
-                  onClick={() => setViewMode("map")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "map"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  <Map className="w-3 h-3" />
-                  <span className="hidden sm:inline">Map</span>
-                </button>
               </div>
             </div>
           </div>
@@ -725,8 +733,8 @@ export default function HotelCarouselSection() {
                             icon={markerIcon}
                             eventHandlers={{
                               click: () => setActiveIndex(idx),
-                              mouseover: (e) => e.target.openPopup(),
-                              mouseout: (e) => e.target.closePopup(),
+                              mouseover: (e: L.LeafletMouseEvent) => e.target.openPopup(),
+                              mouseout: (e: L.LeafletMouseEvent) => e.target.closePopup(),
                             }}
                           >
                             <Popup closeButton={false} className="custom-popup" autoClose={false} closeOnClick={false}>

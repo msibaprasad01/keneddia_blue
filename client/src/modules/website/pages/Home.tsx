@@ -60,7 +60,7 @@ export default function Home() {
         </div>
       </motion.div>
 
-      <SpecialOfferPopup />
+      {/* <SpecialOfferPopup /> Remove from Home, only for Hotels page */}
       <Footer />
     </div>
   );
