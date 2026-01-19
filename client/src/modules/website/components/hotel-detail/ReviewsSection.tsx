@@ -73,9 +73,29 @@ export default function ReviewsSection() {
   const itemsPerPage = 3;
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
+  const [newComment, setNewComment] = useState("");
+  const [newRating, setNewRating] = useState(5);
 
   const totalPages = Math.ceil(reviews.length / itemsPerPage);
   const currentReviews = reviews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handleAddReview = () => {
+    if (!newComment.trim()) return;
+
+    const newReview: Comment = {
+      id: `new-${Date.now()}`,
+      author: "Guest User", // In a real app, from auth context
+      date: "Just now",
+      rating: newRating,
+      content: newComment,
+      likes: 0,
+      replies: []
+    };
+
+    setReviews([newReview, ...reviews]);
+    setNewComment("");
+    setNewRating(5);
+  };
 
   const handleReplySubmit = (reviewId: string) => {
     if (!replyText.trim()) return;
@@ -141,6 +161,30 @@ export default function ReviewsSection() {
               <DropdownMenuItem>Lowest Rated</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
+      </div>
+
+      {/* Add Review Box - NEW */}
+      <div className="bg-secondary/5 rounded-xl p-6 border border-border/50">
+        <h3 className="font-bold text-lg mb-4">Write a Review</h3>
+        <div className="space-y-4">
+          <Textarea
+            placeholder="Share your experience about your stay..."
+            className="min-h-[100px] bg-background"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+          />
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-medium mr-2">Your Rating:</span>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button key={star} onClick={() => setNewRating(star)} className="focus:outline-none transition-transform hover:scale-110">
+                  <Star className={`w-5 h-5 ${star <= newRating ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground"}`} />
+                </button>
+              ))}
+            </div>
+            <Button onClick={handleAddReview} disabled={!newComment.trim()}>Submit Review</Button>
+          </div>
         </div>
       </div>
 

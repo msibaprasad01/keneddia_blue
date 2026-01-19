@@ -35,6 +35,7 @@ export default function HotelDetail() {
   const hotel = hotelId ? getHotelById(hotelId) : null;
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
   if (!hotel) {
     return (
@@ -66,6 +67,8 @@ export default function HotelDetail() {
     setInitialGalleryIndex(index);
     setIsGalleryOpen(true);
   };
+
+  const selectedRoom = selectedRoomId ? hotel.roomTypes.find(r => r.id === selectedRoomId) || null : null;
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden pt-20">
@@ -206,7 +209,11 @@ export default function HotelDetail() {
               <span className="px-3 py-1 bg-secondary border border-border rounded-full text-xs font-medium whitespace-nowrap">Breakfast Included</span>
               <span className="px-3 py-1 bg-secondary border border-border rounded-full text-xs font-medium whitespace-nowrap">Pay at Hotel</span>
             </div>
-            <RoomList rooms={hotel.roomTypes} onSelectRoom={(id) => console.log('Selected', id)} />
+            <RoomList
+              rooms={hotel.roomTypes}
+              selectedRoomId={selectedRoomId}
+              onSelectRoom={(id) => setSelectedRoomId(id === selectedRoomId ? null : id)}
+            />
           </section>
 
           {/* About Hotel */}
@@ -332,7 +339,7 @@ export default function HotelDetail() {
 
         {/* RIGHT COLUMN: Sticky Sidebar */}
         <div className="hidden lg:block relative z-10">
-          <RightSidebar hotel={hotel} />
+          <RightSidebar hotel={hotel} selectedRoom={selectedRoom} />
         </div>
 
       </div>
