@@ -3,7 +3,7 @@ import { colors } from "@/lib/colors/colors";
 import Layout from '@/modules/layout/Layout';
 import { MapPin, Search, Edit2, ChevronDown } from 'lucide-react';
 import AddLocationModal from '../../modals/AddLocationModal';
-
+import { getAllLocations } from '@/Api/Api';
 function Location() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');

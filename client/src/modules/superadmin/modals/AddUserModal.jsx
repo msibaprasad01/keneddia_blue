@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { X, User, Eye, EyeOff } from 'lucide-react';
-
+import { createUser } from '@/Api/Api';
 function AddUserModal({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     name: '',

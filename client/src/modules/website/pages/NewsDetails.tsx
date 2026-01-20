@@ -716,7 +716,7 @@ const ArticleNavigation = ({ prevArticle, nextArticle, basePath = "/news" }: Art
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {prevArticle ? (
           <Link 
-            to={`${basePath}/${prevArticle.slug}`}
+            to={`#`}
             className="group flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-md transition-all"
           >
             <div className="p-2 bg-secondary rounded-lg group-hover:bg-primary/10 transition-colors">
@@ -735,7 +735,7 @@ const ArticleNavigation = ({ prevArticle, nextArticle, basePath = "/news" }: Art
 
         {nextArticle ? (
           <Link 
-            to={`${basePath}/${nextArticle.slug}`}
+            to={`#`}
             className="group flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-md transition-all md:flex-row-reverse md:text-right"
           >
             <div className="p-2 bg-secondary rounded-lg group-hover:bg-primary/10 transition-colors">

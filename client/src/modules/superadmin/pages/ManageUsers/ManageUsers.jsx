@@ -3,7 +3,7 @@ import { colors } from "@/lib/colors/colors";
 import Layout from '@/modules/layout/Layout';
 import { Search, ChevronDown, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import AddUserModal from '../../modals/AddUserModal';
-
+import { getUsersPaginated } from '@/Api/Api';
 function ManageUsers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('All Roles');

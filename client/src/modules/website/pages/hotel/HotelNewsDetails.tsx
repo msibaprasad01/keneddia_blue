@@ -720,7 +720,7 @@ const ArticleNavigation = ({ prevArticle, nextArticle }: ArticleNavProps) => {
         {/* Previous Article */}
         {prevArticle ? (
           <Link 
-            to={`/hotels/news/${prevArticle.slug}`}
+            to={`#`}
             className="group flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-md transition-all"
           >
             <div className="p-2 bg-secondary rounded-lg group-hover:bg-primary/10 transition-colors">
@@ -740,7 +740,7 @@ const ArticleNavigation = ({ prevArticle, nextArticle }: ArticleNavProps) => {
         {/* Next Article */}
         {nextArticle ? (
           <Link 
-            to={`/hotels/news/${nextArticle.slug}`}
+            to={`#`}
             className="group flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-md transition-all md:flex-row-reverse md:text-right"
           >
             <div className="p-2 bg-secondary rounded-lg group-hover:bg-primary/10 transition-colors">

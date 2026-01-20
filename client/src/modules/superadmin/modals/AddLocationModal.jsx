@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { X, MapPin } from 'lucide-react';
-
+import { addLocation } from '@/Api/Api';
 function AddLocationModal({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     name: '',
