@@ -1,14 +1,14 @@
 // Sidebar.jsx
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { colors } from '../../lib/colors/colors';
-import { 
-  Home, 
-  MapPin, 
-  Users, 
-  Building2, 
-  Coffee, 
-  UtensilsCrossed, 
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { colors } from "../../lib/colors/colors";
+import {
+  Home,
+  MapPin,
+  Users,
+  Building2,
+  Coffee,
+  UtensilsCrossed,
   Wine,
   Settings,
   LogOut,
@@ -18,10 +18,10 @@ import {
   FileText,
   BarChart3,
   ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
-
-function Sidebar({ role = 'admin', isOpen, onToggle }) {
+  ChevronRight,
+} from "lucide-react";
+import AuthService from "../auth/authService";
+function Sidebar({ role = "admin", isOpen, onToggle }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState({});
@@ -29,131 +29,131 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
   // Role-based menu items
   const getMenuItemsByRole = (userRole) => {
     const superAdminMenus = [
-      { icon: LayoutDashboard, label: 'Dashboard', path: '/Dashboard' },
-      { icon: Home, label: 'Homepage', path: '/Homepage-Dashboard' },
-      { icon: MapPin, label: 'Location', path: '/Location' },
-      { icon: Users, label: 'Manage Users', path: '/ManageUsers' },
-      { icon: BarChart3, label: 'Analytics', path: '/Analytics' },
-      { 
-        icon: Building2, 
-        label: 'Hotel', 
-        path: '/Hotel',
+      { icon: LayoutDashboard, label: "Dashboard", path: "/Dashboard" },
+      { icon: Home, label: "Homepage", path: "/Homepage-Dashboard" },
+      { icon: MapPin, label: "Location", path: "/Location" },
+      { icon: Users, label: "Manage Users", path: "/ManageUsers" },
+      { icon: BarChart3, label: "Analytics", path: "/Analytics" },
+      {
+        icon: Building2,
+        label: "Hotel",
+        path: "/Hotel",
         hasSubmenu: true,
         submenu: [
-          { name: 'Rooms', path: '/Hotel/Rooms' },
-          { name: 'Amenities', path: '/Hotel/Amenities' },
-          { name: 'Bookings', path: '/Hotel/Bookings' },
-          { name: 'Pricing', path: '/Hotel/Pricing' }
-        ]
+          { name: "Rooms", path: "/Hotel/Rooms" },
+          { name: "Amenities", path: "/Hotel/Amenities" },
+          { name: "Bookings", path: "/Hotel/Bookings" },
+          { name: "Pricing", path: "/Hotel/Pricing" },
+        ],
       },
-      { 
-        icon: Coffee, 
-        label: 'Cafe', 
-        path: '/Cafe',
+      {
+        icon: Coffee,
+        label: "Cafe",
+        path: "/Cafe",
         hasSubmenu: true,
         submenu: [
-          { name: 'Menu', path: '/Cafe/Menu' },
-          { name: 'Orders', path: '/Cafe/Orders' },
-          { name: 'Tables', path: '/Cafe/Tables' },
-          { name: 'Inventory', path: '/Cafe/Inventory' }
-        ]
+          { name: "Menu", path: "/Cafe/Menu" },
+          { name: "Orders", path: "/Cafe/Orders" },
+          { name: "Tables", path: "/Cafe/Tables" },
+          { name: "Inventory", path: "/Cafe/Inventory" },
+        ],
       },
-      { 
-        icon: UtensilsCrossed, 
-        label: 'Restaurant', 
-        path: '/Restaurant',
+      {
+        icon: UtensilsCrossed,
+        label: "Restaurant",
+        path: "/Restaurant",
         hasSubmenu: true,
         submenu: [
-          { name: 'Menu', path: '/Restaurant/Menu' },
-          { name: 'Reservations', path: '/Restaurant/Reservations' },
-          { name: 'Orders', path: '/Restaurant/Orders' },
-          { name: 'Kitchen', path: '/Restaurant/Kitchen' }
-        ]
+          { name: "Menu", path: "/Restaurant/Menu" },
+          { name: "Reservations", path: "/Restaurant/Reservations" },
+          { name: "Orders", path: "/Restaurant/Orders" },
+          { name: "Kitchen", path: "/Restaurant/Kitchen" },
+        ],
       },
-      { 
-        icon: Wine, 
-        label: 'Wine & Dine', 
-        path: '/WineDine',
+      {
+        icon: Wine,
+        label: "Wine & Dine",
+        path: "/WineDine",
         hasSubmenu: true,
         submenu: [
-          { name: 'Wine List', path: '/WineDine/WineList' },
-          { name: 'Packages', path: '/WineDine/Packages' },
-          { name: 'Events', path: '/WineDine/Events' }
-        ]
+          { name: "Wine List", path: "/WineDine/WineList" },
+          { name: "Packages", path: "/WineDine/Packages" },
+          { name: "Events", path: "/WineDine/Events" },
+        ],
       },
-      { icon: FileText, label: 'Reports', path: '/Reports' },
+      { icon: FileText, label: "Reports", path: "/Reports" },
     ];
 
     const adminMenus = [
-      { icon: Home, label: 'Homepage', path: '/Homepage-Dashboard' },
-      { icon: MapPin, label: 'Location', path: '/Location' },
-      { 
-        icon: Building2, 
-        label: 'Hotel', 
-        path: '/Hotel',
+      { icon: Home, label: "Homepage", path: "/Homepage-Dashboard" },
+      { icon: MapPin, label: "Location", path: "/Location" },
+      {
+        icon: Building2,
+        label: "Hotel",
+        path: "/Hotel",
         hasSubmenu: true,
         submenu: [
-          { name: 'Rooms', path: '/Hotel/Rooms' },
-          { name: 'Amenities', path: '/Hotel/Amenities' },
-          { name: 'Bookings', path: '/Hotel/Bookings' }
-        ]
+          { name: "Rooms", path: "/Hotel/Rooms" },
+          { name: "Amenities", path: "/Hotel/Amenities" },
+          { name: "Bookings", path: "/Hotel/Bookings" },
+        ],
       },
-      { 
-        icon: Coffee, 
-        label: 'Cafe', 
-        path: '/Cafe',
+      {
+        icon: Coffee,
+        label: "Cafe",
+        path: "/Cafe",
         hasSubmenu: true,
         submenu: [
-          { name: 'Menu', path: '/Cafe/Menu' },
-          { name: 'Orders', path: '/Cafe/Orders' },
-          { name: 'Tables', path: '/Cafe/Tables' }
-        ]
+          { name: "Menu", path: "/Cafe/Menu" },
+          { name: "Orders", path: "/Cafe/Orders" },
+          { name: "Tables", path: "/Cafe/Tables" },
+        ],
       },
-      { 
-        icon: UtensilsCrossed, 
-        label: 'Restaurant', 
-        path: '/Restaurant',
+      {
+        icon: UtensilsCrossed,
+        label: "Restaurant",
+        path: "/Restaurant",
         hasSubmenu: true,
         submenu: [
-          { name: 'Menu', path: '/Restaurant/Menu' },
-          { name: 'Reservations', path: '/Restaurant/Reservations' },
-          { name: 'Orders', path: '/Restaurant/Orders' }
-        ]
+          { name: "Menu", path: "/Restaurant/Menu" },
+          { name: "Reservations", path: "/Restaurant/Reservations" },
+          { name: "Orders", path: "/Restaurant/Orders" },
+        ],
       },
-      { 
-        icon: Wine, 
-        label: 'Wine & Dine', 
-        path: '/WineDine',
+      {
+        icon: Wine,
+        label: "Wine & Dine",
+        path: "/WineDine",
         hasSubmenu: true,
         submenu: [
-          { name: 'Wine List', path: '/WineDine/WineList' },
-          { name: 'Events', path: '/WineDine/Events' }
-        ]
+          { name: "Wine List", path: "/WineDine/WineList" },
+          { name: "Events", path: "/WineDine/Events" },
+        ],
       },
     ];
 
-    return userRole === 'superadmin' ? superAdminMenus : adminMenus;
+    return userRole === "superadmin" ? superAdminMenus : adminMenus;
   };
 
   const menuItems = getMenuItemsByRole(role);
 
   const toggleMenu = (label) => {
-    setExpandedMenus(prev => ({
+    setExpandedMenus((prev) => ({
       ...prev,
-      [label]: !prev[label]
+      [label]: !prev[label],
     }));
   };
 
   const handleNavigation = (path, hasSubmenu, label) => {
     if (hasSubmenu) {
       toggleMenu(label);
-    } else if (path && path !== '#') {
+    } else if (path && path !== "#") {
       navigate(path);
     }
   };
 
   const handleSubmenuClick = (path) => {
-    if (path && path !== '#') {
+    if (path && path !== "#") {
       navigate(path);
     }
   };
@@ -163,36 +163,36 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
   };
 
   const getRoleBadge = (userRole) => {
-    return userRole === 'superadmin' ? 'Super Admin' : 'Admin';
+    return userRole === "superadmin" ? "Super Admin" : "Admin";
   };
 
   const getRoleBadgeColor = (userRole) => {
-    return userRole === 'superadmin' ? colors.primary : colors.info;
+    return userRole === "superadmin" ? colors.primary : colors.info;
   };
 
   return (
     <>
       {/* Overlay for mobile only */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={onToggle}
         />
       )}
 
       {/* Sidebar */}
-      <div 
+      <div
         className={`w-60 h-screen flex flex-col fixed left-0 top-0 overflow-y-auto z-40 transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         style={{ backgroundColor: colors.sidebarBg }}
       >
         {/* Logo/Brand Section with Close Button */}
-        <div 
+        <div
           className="p-5 border-b flex items-center justify-between"
           style={{ borderColor: colors.sidebarActive }}
         >
-          <h2 
+          <h2
             className="text-lg font-semibold m-0"
             style={{ color: colors.sidebarText }}
           >
@@ -207,7 +207,7 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
               e.currentTarget.style.backgroundColor = colors.sidebarHover;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.backgroundColor = "transparent";
             }}
           >
             <ChevronLeft size={20} />
@@ -215,40 +215,40 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
         </div>
 
         {/* User Profile with Role */}
-        <div 
+        <div
           className="p-5 flex items-center gap-3 border-b relative"
           style={{ borderColor: colors.sidebarActive }}
         >
-          <div 
+          <div
             className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
             style={{ backgroundColor: colors.sidebarActive }}
           >
             <span className="text-xl">👋</span>
           </div>
           <div className="flex-1 min-w-0">
-            <div 
+            <div
               className="text-xs"
               style={{ color: colors.sidebarTextSecondary }}
             >
               Hello 👋
             </div>
-            <div 
+            <div
               className="text-sm font-medium mt-0.5 truncate"
               style={{ color: colors.sidebarText }}
             >
               Balaram Sikdar
             </div>
-            <div 
+            <div
               className="text-[10px] font-medium mt-1 px-2 py-0.5 rounded inline-block"
-              style={{ 
-                backgroundColor: getRoleBadgeColor(role) + '20',
-                color: getRoleBadgeColor(role)
+              style={{
+                backgroundColor: getRoleBadgeColor(role) + "20",
+                color: getRoleBadgeColor(role),
               }}
             >
               {getRoleBadge(role)}
             </div>
           </div>
-          <div 
+          <div
             className="w-2 h-2 rounded-full absolute top-6 right-5"
             style={{ backgroundColor: colors.success }}
           ></div>
@@ -260,12 +260,16 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
             <div key={item.label}>
               <div
                 className={`flex items-center px-5 py-3 cursor-pointer transition-all gap-3 relative ${
-                  isActive(item.path) ? 'border-l-[3px]' : ''
+                  isActive(item.path) ? "border-l-[3px]" : ""
                 }`}
-                style={{ 
+                style={{
                   color: colors.sidebarText,
-                  backgroundColor: isActive(item.path) ? colors.sidebarActive : 'transparent',
-                  borderColor: isActive(item.path) ? colors.primary : 'transparent'
+                  backgroundColor: isActive(item.path)
+                    ? colors.sidebarActive
+                    : "transparent",
+                  borderColor: isActive(item.path)
+                    ? colors.primary
+                    : "transparent",
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive(item.path)) {
@@ -274,39 +278,42 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive(item.path)) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.backgroundColor = "transparent";
                   }
                 }}
-                onClick={() => handleNavigation(item.path, item.hasSubmenu, item.label)}
+                onClick={() =>
+                  handleNavigation(item.path, item.hasSubmenu, item.label)
+                }
               >
                 <item.icon size={20} className="min-w-5 shrink-0" />
                 <span className="text-sm flex-1 truncate">{item.label}</span>
                 {item.hasSubmenu && (
-                  <ChevronDown 
-                    size={16} 
+                  <ChevronDown
+                    size={16}
                     className={`transition-transform shrink-0 ${
-                      expandedMenus[item.label] ? 'rotate-180' : 'rotate-0'
+                      expandedMenus[item.label] ? "rotate-180" : "rotate-0"
                     }`}
                   />
                 )}
               </div>
-              
+
               {/* Submenu */}
               {item.hasSubmenu && expandedMenus[item.label] && (
-                <div 
+                <div
                   className="pl-[52px]"
                   style={{ backgroundColor: colors.sidebarActive }}
                 >
                   {item.submenu.map((subItem) => (
-                    <div 
-                      key={subItem.name} 
+                    <div
+                      key={subItem.name}
                       className="py-2 px-5 text-[13px] cursor-pointer transition-colors truncate"
                       style={{ color: colors.sidebarTextSecondary }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.color = colors.sidebarText;
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.color = colors.sidebarTextSecondary;
+                        e.currentTarget.style.color =
+                          colors.sidebarTextSecondary;
                       }}
                       onClick={() => handleSubmenuClick(subItem.path)}
                     >
@@ -320,36 +327,35 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
         </nav>
 
         {/* Bottom Actions */}
-        <div 
+        <div
           className="border-t py-5"
           style={{ borderColor: colors.sidebarActive }}
         >
-          <div 
+          <div
             className="flex items-center px-5 py-3 cursor-pointer transition-all gap-3"
             style={{ color: colors.sidebarText }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = colors.sidebarHover;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.backgroundColor = "transparent";
             }}
-            onClick={() => navigate('#')}
+            onClick={() => navigate("#")}
           >
             <Settings size={20} className="min-w-5 shrink-0" />
             <span className="text-sm truncate">Settings</span>
           </div>
-          <div 
+          <div
             className="flex items-center px-5 py-3 cursor-pointer transition-all gap-3"
             style={{ color: colors.sidebarText }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = colors.sidebarHover;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.backgroundColor = "transparent";
             }}
             onClick={() => {
-              // Add logout logic here
-              console.log('Logout clicked');
+              AuthService.logout(); // clears session + local storage & redirects
             }}
           >
             <LogOut size={20} className="min-w-5 shrink-0" />
@@ -363,9 +369,9 @@ function Sidebar({ role = 'admin', isOpen, onToggle }) {
         <button
           onClick={onToggle}
           className="hidden lg:flex fixed left-0 top-1/2 -translate-y-1/2 z-30 p-2 rounded-r-lg shadow-lg transition-all items-center justify-center"
-          style={{ 
+          style={{
             backgroundColor: colors.sidebarBg,
-            color: colors.sidebarText
+            color: colors.sidebarText,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = colors.sidebarHover;
