@@ -35,8 +35,8 @@ export default function HotelNewsUpdates() {
   };
 
   return (
-    <section className="py-12 md:py-16 bg-background relative overflow-hidden">
-      <div className="container mx-auto px-6 lg:px-12">
+    <section className="py-2 bg-background relative overflow-hidden">
+      <div className="container mx-auto px-6 lg:px-6">
         <div className="flex items-center justify-between mb-8">
           <div>
             <span className="text-xs font-bold text-primary tracking-[0.25em] uppercase block mb-2">
