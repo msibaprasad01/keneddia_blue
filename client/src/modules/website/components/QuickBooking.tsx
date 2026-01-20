@@ -47,7 +47,7 @@ export default function QuickBooking() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Search Handler
+  // Search Handler - Updated to auto-navigate for single hotel
   const handleSearch = () => {
     setHasSearched(true);
     setCurrentPage(1);
@@ -58,7 +58,7 @@ export default function QuickBooking() {
       filtered = HOTELS_DATA.filter(h => h.city === location);
     }
 
-    // Auto Redirect if only 1 hotel found
+    // Auto Redirect if only 1 hotel found - UPDATED
     if (filtered.length === 1) {
       handleBook(filtered[0]);
     } else {
@@ -286,14 +286,14 @@ export default function QuickBooking() {
               </Popover>
             </div>
 
-            {/* Search Button */}
+            {/* Search Button - UPDATED TEXT */}
             <div className="flex items-end">
               <Button
                 onClick={handleSearch}
                 className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-bold uppercase tracking-wide text-sm"
               >
                 <Search className="w-4 h-4" />
-                Check Availability
+                Book
               </Button>
             </div>
           </div>
