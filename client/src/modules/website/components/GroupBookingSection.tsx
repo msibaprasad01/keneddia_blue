@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarHeart, Users, PartyPopper, ArrowRight, ChevronRight, Check, Calendar, Star, Sparkles } from "lucide-react";
+import { CalendarHeart, Users, PartyPopper, ArrowRight, ChevronRight, Check, Calendar, Star, Sparkles, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { siteContent } from "@/data/siteContent";
 import { CITIES, HOTELS_DATA, Hotel } from "@/data/hotelsData";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
@@ -134,23 +133,23 @@ export default function GroupBookingSection() {
   const filteredHotels = city ? HOTELS_DATA.filter(h => h.city === city) : [];
 
   return (
-    <section className="py-16 bg-background space-y-16">
+    <section className="py-6 bg-background space-y-8">
 
       {/* 1. Celebrations Container (2 Cards with Auto-sliding Background Images) */}
       <div className="w-[90%] mx-auto">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-serif mb-4">Celebrations & Groups</h2>
-          <div className="w-16 h-1 bg-primary mx-auto mb-6" />
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl md:text-3xl font-serif mb-2">Celebrations & Groups</h2>
+          <div className="w-16 h-0.5 bg-primary mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
             Curated experiences for your most important gatherings.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {CELEBRATION_OFFERS.map((offer) => (
             <div
               key={offer.id}
-              className="group relative h-[450px] overflow-hidden rounded-2xl shadow-xl cursor-pointer"
+              className="group relative h-[320px] overflow-hidden rounded-xl shadow-lg cursor-pointer"
               onClick={() => handleOpen(offer)}
             >
               {/* Auto-sliding Background Images */}
@@ -178,24 +177,24 @@ export default function GroupBookingSection() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90 transition-opacity z-10" />
 
               {/* Tag Badge */}
-              <div className="absolute top-4 right-4 z-20">
+              <div className="absolute top-3 right-3 z-20">
                 <span className="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30 uppercase tracking-wide">
                   {offer.tag}
                 </span>
               </div>
 
               {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-8 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 z-20">
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <offer.icon className="w-6 h-6 text-primary-foreground" />
+              <div className="absolute bottom-0 left-0 right-0 p-5 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 z-20">
+                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                  <offer.icon className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <h3 className="font-serif text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
+                <h3 className="font-serif text-lg font-bold mb-1.5 group-hover:text-primary transition-colors">
                   {offer.title}
                 </h3>
-                <p className="text-white/80 text-sm leading-relaxed mb-6 line-clamp-2 max-w-md">
+                <p className="text-white/80 text-xs leading-relaxed mb-3 line-clamp-2 max-w-md">
                   {offer.description}
                 </p>
-                <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity delay-100">
+                <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity delay-100">
                   Plan Now <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
@@ -204,82 +203,105 @@ export default function GroupBookingSection() {
         </div>
       </div>
 
-      {/* 2. Upcoming Events Slider */}
-      <div className="bg-secondary/10 py-16">
+      {/* 2. Upcoming Events - Compact Continuous Scroll Carousel */}
+      <div className="bg-gradient-to-b from-secondary/5 to-transparent py-8">
         <div className="w-[90%] mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-2xl md:text-3xl font-serif font-semibold">Upcoming Events</h3>
-              <p className="text-muted-foreground text-sm mt-1">Join us for exclusive experiences</p>
-            </div>
-            <Button variant="outline" className="hidden md:flex">View All Events</Button>
+          <div className="text-center mb-6">
+            <h3 className="text-2xl md:text-3xl font-serif font-semibold mb-1">Upcoming Events</h3>
+            <p className="text-sm text-muted-foreground">Join us for exclusive experiences</p>
           </div>
 
-          <Swiper
-            modules={[Navigation, Pagination, Autoplay]}
-            spaceBetween={24}
-            slidesPerView={1}
-            breakpoints={{
-              640: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-              1280: { slidesPerView: 4 },
-            }}
-            navigation
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 4000, disableOnInteraction: false }}
-            loop={true}
-            className="pb-12 events-swiper"
-          >
-            {UPCOMING_EVENTS.map((event) => (
-              <SwiperSlide key={event.id}>
-                <div className="bg-card border border-border rounded-xl overflow-hidden group hover:shadow-lg transition-all h-full flex flex-col">
-                  {/* Auto-sliding Background Images for Events */}
-                  <div className="relative h-56 overflow-hidden">
-                    <Swiper
-                      modules={[Autoplay, EffectFade]}
-                      effect="fade"
-                      autoplay={{ delay: 3500, disableOnInteraction: false }}
-                      loop={true}
-                      speed={1000}
-                      className="w-full h-full"
-                    >
-                      {event.images.map((image, idx) => (
-                        <SwiperSlide key={idx}>
-                          <OptimizedImage 
-                            {...image} 
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                          />
-                        </SwiperSlide>
-                      ))}
-                    </Swiper>
-                    
-                    {/* Badge */}
-                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded text-xs font-bold shadow-sm uppercase tracking-wide text-foreground z-10">
-                      {event.badge}
+          {/* Continuous Auto-Scroll Carousel */}
+          <div className="relative overflow-hidden">
+            {/* Gradient Edges for Aesthetic Effect */}
+            <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+
+            <Swiper
+              modules={[Autoplay]}
+              spaceBetween={16}
+              slidesPerView={1.2}
+              breakpoints={{
+                640: { slidesPerView: 2.2, spaceBetween: 20 },
+                1024: { slidesPerView: 3.5, spaceBetween: 24 },
+                1280: { slidesPerView: 4.2, spaceBetween: 24 },
+              }}
+              autoplay={{ 
+                delay: 0,
+                disableOnInteraction: true,
+                pauseOnMouseEnter: true,
+                reverseDirection: false
+              }}
+              speed={6000}
+              loop={true}
+              freeMode={true}
+              className="events-carousel"
+              onTouchStart={(swiper) => swiper.autoplay.stop()}
+              onClick={(swiper) => swiper.autoplay.stop()}
+            >
+              {/* Duplicate events for seamless loop */}
+              {[...UPCOMING_EVENTS, ...UPCOMING_EVENTS].map((event, index) => (
+                <SwiperSlide key={`${event.id}-${index}`}>
+                  <div className="bg-card border border-border rounded-lg overflow-hidden group hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:scale-[1.02] cursor-pointer">
+                    {/* Compact Image with Auto-sliding */}
+                    <div className="relative h-36 overflow-hidden">
+                      <Swiper
+                        modules={[Autoplay, EffectFade]}
+                        effect="fade"
+                        autoplay={{ delay: 3500, disableOnInteraction: false }}
+                        loop={true}
+                        speed={1000}
+                        className="w-full h-full"
+                      >
+                        {event.images.map((image, idx) => (
+                          <SwiperSlide key={idx}>
+                            <OptimizedImage 
+                              {...image} 
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                            />
+                          </SwiperSlide>
+                        ))}
+                      </Swiper>
+                      
+                      {/* Badge */}
+                      <div className="absolute top-2 left-2 bg-primary/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold shadow-md uppercase tracking-wide text-primary-foreground z-10">
+                        {event.badge}
+                      </div>
+                    </div>
+
+                    {/* Compact Event Content */}
+                    <div className="p-3 flex flex-col flex-1">
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-wide mb-1 flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> {event.date}
+                      </span>
+                      <h4 className="font-serif text-sm font-bold mb-1.5 line-clamp-2 group-hover:text-primary transition-colors leading-tight">
+                        {event.title}
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground mb-2 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> {event.location}
+                      </p>
+
+                      <div className="mt-auto pt-2 border-t border-border/50 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-foreground">{event.price}</span>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-6 text-[10px] px-2 hover:bg-primary hover:text-primary-foreground transition-all"
+                        >
+                          RSVP
+                        </Button>
+                      </div>
                     </div>
                   </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
 
-                  {/* Event Content */}
-                  <div className="p-5 flex flex-col flex-1">
-                    <span className="text-xs font-bold text-primary uppercase tracking-wide mb-2 flex items-center gap-1">
-                      <Calendar className="w-3 h-3" /> {event.date}
-                    </span>
-                    <h4 className="font-serif text-lg font-bold mb-2 group-hover:text-primary transition-colors">
-                      {event.title}
-                    </h4>
-                    <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" /> {event.location}
-                    </p>
-
-                    <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
-                      <span className="text-sm font-semibold">{event.price}</span>
-                      <Button size="sm" variant="secondary" className="h-8 text-xs">RSVP</Button>
-                    </div>
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+          {/* Subtle instruction */}
+          <p className="text-center text-[10px] text-muted-foreground mt-3 opacity-60">
+            Hover to pause • Swipe to explore
+          </p>
         </div>
       </div>
 
@@ -395,29 +417,14 @@ export default function GroupBookingSection() {
       </Dialog>
 
       <style>{`
-        .events-swiper .swiper-button-next,
-        .events-swiper .swiper-button-prev {
-          color: hsl(var(--primary));
-          background: white;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        
-        .events-swiper .swiper-button-next:after,
-        .events-swiper .swiper-button-prev:after {
-          font-size: 18px;
-          font-weight: bold;
+        /* Smooth continuous scrolling for events carousel */
+        .events-carousel .swiper-wrapper {
+          transition-timing-function: linear !important;
         }
 
-        .events-swiper .swiper-pagination-bullet {
-          background: hsl(var(--primary));
-          opacity: 0.3;
-        }
-
-        .events-swiper .swiper-pagination-bullet-active {
-          opacity: 1;
+        /* Remove default pagination if present */
+        .events-carousel .swiper-pagination {
+          display: none;
         }
       `}</style>
     </section>

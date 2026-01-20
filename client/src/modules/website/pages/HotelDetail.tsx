@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -28,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import RightSidebar from "@/modules/website/components/hotel-detail/RightSidebar";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import ReviewsSection from "@/modules/website/components/hotel-detail/ReviewsSection";
+import MobileBookingBar from "@/modules/website/components/Mobilebookingbar";
 
 export default function HotelDetail() {
   const { city } = useParams<{ city: string }>();
@@ -69,7 +69,7 @@ export default function HotelDetail() {
     { id: "about-hotel", label: "About Hotel" },
     { id: "amenities", label: "Amenities" },
     { id: "food-dining", label: "Food & Dining" },
-    { id: "guest-reviews", label: "Guest Reviews" }, // Added Reviews
+    { id: "guest-reviews", label: "Guest Reviews" },
     { id: "location", label: "Location" },
     { id: "policies", label: "Guest Policies" },
   ];
@@ -81,8 +81,15 @@ export default function HotelDetail() {
 
   const selectedRoom = selectedRoomId ? hotel.roomTypes.find(r => r.id === selectedRoomId) || null : null;
 
+  const scrollToRoomOptions = () => {
+    const element = document.getElementById('room-options');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden pt-20">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden pt-20 pb-24 lg:pb-0">
       <Navbar logo={siteContent.brand.logo_hotel} />
 
       {/* Gallery Modal */}
@@ -144,28 +151,10 @@ export default function HotelDetail() {
               </span>
             </div>
           </div>
-
-          {/* Pricing Card Replaced by Sidebar - removed here or can keep small summary for mobile if needed, but sidebar handles desktop */}
-          <div className="lg:hidden w-full bg-card border border-border rounded-xl p-4 shadow-sm">
-            <div className="flex justify-between items-end mb-2">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase">Starting from</p>
-                <p className="text-2xl font-serif font-bold text-primary">{hotel.price}</p>
-                <p className="text-[10px] text-muted-foreground">+ taxes & fees / night</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-green-600 font-bold mb-1">Login for best rates</p>
-              </div>
-            </div>
-            <Button className="w-full font-bold uppercase tracking-wider" onClick={() => document.getElementById('room-options')?.scrollIntoView({ behavior: 'smooth' })}>
-              Select Room
-            </Button>
-          </div>
         </div>
 
-        {/* Media Grid - WIRED UP */}
+        {/* Media Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[400px] mb-8 rounded-xl overflow-hidden">
-
           {/* Main Image */}
           <div className="md:col-span-2 h-full relative group cursor-pointer" onClick={() => openGallery(0)}>
             <OptimizedImage {...hotel.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -298,7 +287,7 @@ export default function HotelDetail() {
             </div>
           </section>
 
-          {/* Guest Reviews - NEW SECTION */}
+          {/* Guest Reviews */}
           <section id="guest-reviews" className="scroll-mt-40 pt-8 border-t border-border">
             <ReviewsSection />
           </section>
@@ -358,12 +347,19 @@ export default function HotelDetail() {
           </section>
         </div>
 
-        {/* RIGHT COLUMN: Sticky Sidebar */}
+        {/* RIGHT COLUMN: Sticky Sidebar (Desktop Only) */}
         <div className="hidden lg:block relative z-10">
           <RightSidebar hotel={hotel} selectedRoom={selectedRoom} />
         </div>
 
       </div>
+
+      {/* Mobile Booking Bar (Mobile Only) */}
+      <MobileBookingBar
+        hotel={hotel}
+        selectedRoom={selectedRoom}
+        onSelectRoom={scrollToRoomOptions}
+      />
 
       <Footer />
     </div>
