@@ -10,7 +10,8 @@ import {
   Info,
   ChevronRight,
   Utensils,
-  Map as MapIcon
+  Map as MapIcon,
+  Navigation
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
@@ -122,11 +123,32 @@ export default function HotelDetail() {
                   <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded">5 Star Luxury</span>
                 </div>
                 <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2">{hotel.name}</h1>
-                <p className="text-muted-foreground flex items-center gap-1.5 mb-4">
-                  <MapPin className="w-4 h-4 text-primary" />
-                  {hotel.location}
-                  <span className="text-primary hover:underline cursor-pointer text-xs font-semibold ml-2" onClick={() => document.getElementById('location')?.scrollIntoView({ behavior: 'smooth' })}>View Map</span>
-                </p>
+                
+                {/* Location with Nearby Landmark */}
+                <div className="mb-4">
+                  <p className="text-muted-foreground flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    {hotel.location}
+                    <span className="text-primary hover:underline cursor-pointer text-xs font-semibold ml-2" onClick={() => document.getElementById('location')?.scrollIntoView({ behavior: 'smooth' })}>View Map</span>
+                  </p>
+                  {/* Nearby Landmark Info */}
+                  {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
+                    <div className="flex items-center gap-1.5 mt-1.5 ml-5">
+                      <Navigation className="w-3 h-3 text-green-500" />
+                      <span className="text-xs text-muted-foreground">
+                        {hotel.nearbyPlaces[0].distance} from {hotel.nearbyPlaces[0].name}
+                      </span>
+                      {hotel.nearbyPlaces.length > 1 && (
+                        <>
+                          <span className="text-muted-foreground/50 mx-1">•</span>
+                          <span className="text-xs text-muted-foreground">
+                            {hotel.nearbyPlaces[1].distance} from {hotel.nearbyPlaces[1].name}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-2">
