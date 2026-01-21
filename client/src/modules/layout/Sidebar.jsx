@@ -31,6 +31,7 @@ function Sidebar({ role = "admin", isOpen, onToggle }) {
     const superAdminMenus = [
       { icon: LayoutDashboard, label: "Dashboard", path: "/Dashboard" },
       { icon: Home, label: "Homepage", path: "/Homepage-Dashboard" },
+      { icon: Building2, label: "Properties", path: "/Properties" },
       { icon: MapPin, label: "Location", path: "/Location" },
       { icon: Users, label: "Manage Users", path: "/ManageUsers" },
       { icon: BarChart3, label: "Analytics", path: "/Analytics" },

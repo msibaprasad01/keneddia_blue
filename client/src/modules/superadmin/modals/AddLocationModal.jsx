@@ -1,57 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { colors } from "@/lib/colors/colors";
-import { X, MapPin } from 'lucide-react';
-import { addLocation } from '@/Api/Api';
+import { X, MapPin } from "lucide-react";
+import { addLocation } from "@/Api/Api";
+
 function AddLocationModal({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
-    name: '',
-    state: '',
-    country: 'India',
-    status: 'active',
-    address: '',
-    pincode: '',
-    phone: '',
-    email: ''
+    locationName: "",
+    state: "",
+    country: "India",
+    isActive: true,
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    const { name, value, type } = e.target;
+
+    // Handle select for isActive (convert string to boolean)
+    if (name === "isActive") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value === "true",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = 'Location name is required';
+
+    if (!formData.locationName.trim()) {
+      newErrors.locationName = "Location name is required";
     }
     if (!formData.state.trim()) {
-      newErrors.state = 'State is required';
+      newErrors.state = "State is required";
     }
     if (!formData.country.trim()) {
-      newErrors.country = 'Country is required';
-    }
-    if (formData.pincode && !/^\d{6}$/.test(formData.pincode)) {
-      newErrors.pincode = 'Pincode must be 6 digits';
-    }
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
-    }
-    if (formData.phone && !/^\d{10}$/.test(formData.phone)) {
-      newErrors.phone = 'Phone must be 10 digits';
+      newErrors.country = "Country is required";
     }
 
     setErrors(newErrors);
@@ -60,7 +58,7 @@ function AddLocationModal({ onClose, onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -68,18 +66,34 @@ function AddLocationModal({ onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call - replace with your actual API endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newLocation = {
-        id: Date.now(),
-        ...formData
+      // Prepare payload matching API format
+      const payload = {
+        locationName: formData.locationName.trim(),
+        country: formData.country.trim(),
+        state: formData.state.trim(),
+        isActive: formData.isActive,
       };
 
-      onSuccess(newLocation);
+      console.log("Creating location with payload:", payload);
+
+      const response = await addLocation(payload);
+
+      console.log("Add location response:", response);
+
+      // Handle response
+      let data = response;
+      if (response?.data) {
+        data = response.data;
+      }
+
+      onSuccess(data);
     } catch (error) {
-      console.error('Error adding location:', error);
-      setErrors({ submit: 'Failed to add location. Please try again.' });
+      console.error("Error adding location:", error);
+      setErrors({
+        submit:
+          error?.response?.data?.message ||
+          "Failed to add location. Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -92,41 +106,38 @@ function AddLocationModal({ onClose, onSuccess }) {
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ 
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        backdropFilter: 'blur(4px)'
+      style={{
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backdropFilter: "blur(4px)",
       }}
       onClick={handleBackdropClick}
     >
-      <div 
-        className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div 
+        <div
           className="flex items-center justify-between px-6 py-4 border-b"
           style={{ borderColor: colors.border }}
         >
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: colors.primary + '15' }}
+              style={{ backgroundColor: colors.primary + "15" }}
             >
               <MapPin size={20} style={{ color: colors.primary }} />
             </div>
             <div>
-              <h2 
+              <h2
                 className="text-xl font-semibold"
                 style={{ color: colors.textPrimary }}
               >
                 Add New Location
               </h2>
-              <p 
-                className="text-sm"
-                style={{ color: colors.textSecondary }}
-              >
+              <p className="text-sm" style={{ color: colors.textSecondary }}>
                 Enter location details below
               </p>
             </div>
@@ -144,21 +155,21 @@ function AddLocationModal({ onClose, onSuccess }) {
         <form onSubmit={handleSubmit}>
           <div className="px-6 py-6 overflow-y-auto max-h-[calc(90vh-180px)]">
             {errors.submit && (
-              <div 
+              <div
                 className="mb-4 p-3 rounded-lg text-sm"
-                style={{ 
-                  backgroundColor: '#fef2f2',
-                  color: '#dc2626'
+                style={{
+                  backgroundColor: "#fef2f2",
+                  color: "#dc2626",
                 }}
               >
                 {errors.submit}
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               {/* Location Name */}
-              <div className="md:col-span-2">
-                <label 
+              <div>
+                <label
                   className="block text-sm font-medium mb-2"
                   style={{ color: colors.textPrimary }}
                 >
@@ -166,24 +177,26 @@ function AddLocationModal({ onClose, onSuccess }) {
                 </label>
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
+                  name="locationName"
+                  value={formData.locationName}
                   onChange={handleChange}
                   placeholder="Enter location name (e.g., Mumbai)"
                   className="w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2"
-                  style={{ 
-                    borderColor: errors.name ? '#ef4444' : colors.border,
-                    color: colors.textPrimary
+                  style={{
+                    borderColor: errors.locationName ? "#ef4444" : colors.border,
+                    color: colors.textPrimary,
                   }}
                 />
-                {errors.name && (
-                  <p className="mt-1 text-xs text-red-500">{errors.name}</p>
+                {errors.locationName && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.locationName}
+                  </p>
                 )}
               </div>
 
               {/* State */}
               <div>
-                <label 
+                <label
                   className="block text-sm font-medium mb-2"
                   style={{ color: colors.textPrimary }}
                 >
@@ -196,9 +209,9 @@ function AddLocationModal({ onClose, onSuccess }) {
                   onChange={handleChange}
                   placeholder="Enter state"
                   className="w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2"
-                  style={{ 
-                    borderColor: errors.state ? '#ef4444' : colors.border,
-                    color: colors.textPrimary
+                  style={{
+                    borderColor: errors.state ? "#ef4444" : colors.border,
+                    color: colors.textPrimary,
                   }}
                 />
                 {errors.state && (
@@ -208,7 +221,7 @@ function AddLocationModal({ onClose, onSuccess }) {
 
               {/* Country */}
               <div>
-                <label 
+                <label
                   className="block text-sm font-medium mb-2"
                   style={{ color: colors.textPrimary }}
                 >
@@ -221,9 +234,9 @@ function AddLocationModal({ onClose, onSuccess }) {
                   onChange={handleChange}
                   placeholder="Enter country"
                   className="w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2"
-                  style={{ 
-                    borderColor: errors.country ? '#ef4444' : colors.border,
-                    color: colors.textPrimary
+                  style={{
+                    borderColor: errors.country ? "#ef4444" : colors.border,
+                    color: colors.textPrimary,
                   }}
                 />
                 {errors.country && (
@@ -231,132 +244,33 @@ function AddLocationModal({ onClose, onSuccess }) {
                 )}
               </div>
 
-              {/* Address */}
-              <div className="md:col-span-2">
-                <label 
-                  className="block text-sm font-medium mb-2"
-                  style={{ color: colors.textPrimary }}
-                >
-                  Address
-                </label>
-                <textarea
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  placeholder="Enter full address"
-                  rows="3"
-                  className="w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 resize-none"
-                  style={{ 
-                    borderColor: colors.border,
-                    color: colors.textPrimary
-                  }}
-                />
-              </div>
-
-              {/* Pincode */}
-              <div>
-                <label 
-                  className="block text-sm font-medium mb-2"
-                  style={{ color: colors.textPrimary }}
-                >
-                  Pincode
-                </label>
-                <input
-                  type="text"
-                  name="pincode"
-                  value={formData.pincode}
-                  onChange={handleChange}
-                  placeholder="Enter 6-digit pincode"
-                  maxLength="6"
-                  className="w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2"
-                  style={{ 
-                    borderColor: errors.pincode ? '#ef4444' : colors.border,
-                    color: colors.textPrimary
-                  }}
-                />
-                {errors.pincode && (
-                  <p className="mt-1 text-xs text-red-500">{errors.pincode}</p>
-                )}
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label 
-                  className="block text-sm font-medium mb-2"
-                  style={{ color: colors.textPrimary }}
-                >
-                  Phone Number
-                </label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Enter 10-digit phone"
-                  maxLength="10"
-                  className="w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2"
-                  style={{ 
-                    borderColor: errors.phone ? '#ef4444' : colors.border,
-                    color: colors.textPrimary
-                  }}
-                />
-                {errors.phone && (
-                  <p className="mt-1 text-xs text-red-500">{errors.phone}</p>
-                )}
-              </div>
-
-              {/* Email */}
-              <div className="md:col-span-2">
-                <label 
-                  className="block text-sm font-medium mb-2"
-                  style={{ color: colors.textPrimary }}
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter email address"
-                  className="w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2"
-                  style={{ 
-                    borderColor: errors.email ? '#ef4444' : colors.border,
-                    color: colors.textPrimary
-                  }}
-                />
-                {errors.email && (
-                  <p className="mt-1 text-xs text-red-500">{errors.email}</p>
-                )}
-              </div>
-
               {/* Status */}
               <div>
-                <label 
+                <label
                   className="block text-sm font-medium mb-2"
                   style={{ color: colors.textPrimary }}
                 >
                   Status
                 </label>
                 <select
-                  name="status"
-                  value={formData.status}
+                  name="isActive"
+                  value={formData.isActive.toString()}
                   onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2"
-                  style={{ 
+                  style={{
                     borderColor: colors.border,
-                    color: colors.textPrimary
+                    color: colors.textPrimary,
                   }}
                 >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
                 </select>
               </div>
             </div>
           </div>
 
           {/* Modal Footer */}
-          <div 
+          <div
             className="flex items-center justify-end gap-3 px-6 py-4 border-t"
             style={{ borderColor: colors.border }}
           >
@@ -364,11 +278,11 @@ function AddLocationModal({ onClose, onSuccess }) {
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-lg text-sm font-medium transition-colors border"
-              style={{ 
+              className="px-5 py-2.5 rounded-lg text-sm font-medium transition-colors border hover:bg-gray-50"
+              style={{
                 borderColor: colors.border,
                 color: colors.textPrimary,
-                backgroundColor: 'white'
+                backgroundColor: "white",
               }}
             >
               Cancel
@@ -376,12 +290,10 @@ function AddLocationModal({ onClose, onSuccess }) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
               style={{ backgroundColor: colors.primary }}
-              onMouseEnter={(e) => !isSubmitting && (e.target.style.backgroundColor = colors.primaryHover)}
-              onMouseLeave={(e) => !isSubmitting && (e.target.style.backgroundColor = colors.primary)}
             >
-              {isSubmitting ? 'Adding...' : 'Add Location'}
+              {isSubmitting ? "Adding..." : "Add Location"}
             </button>
           </div>
         </form>
