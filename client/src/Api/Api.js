@@ -92,5 +92,7 @@ export const updatePropertyCategoryStatus = (id, isActive) =>
 
 export const addProperty = (type, data) =>
   API.post(`api/v1/properties/add/${type}`, data);
+export const getAllProperties = () =>
+  API.get("api/v1/properties/showAll");
 
 export default API;

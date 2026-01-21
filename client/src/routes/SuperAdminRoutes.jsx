@@ -10,6 +10,7 @@ import Location from '@/modules/superadmin/pages/Location/Location';
 import ManageUsers from '@/modules/superadmin/pages/ManageUsers/ManageUsers';
 import Analytics from '@/modules/superadmin/pages/Analytics/Analytics';
 import Reports from '@/modules/superadmin/pages/Reports/Reports';
+import ManageProperties from '@/modules/superadmin/pages/Properties/ManageProperties';
 
 // Hotel Module
 import Hotel from '@/modules/superadmin/pages/Hotel/Hotel';
@@ -61,6 +62,11 @@ const SuperAdminRoutes = [
     key="super-admin-manage-users"
     path="/ManageUsers"
     element={<ManageUsers />}
+  />,
+  <Route
+    key="super-admin-manage-properties"
+    path="/Properties"
+    element={<ManageProperties />}
   />,
   <Route
     key="super-admin-analytics"

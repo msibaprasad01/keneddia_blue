@@ -29,7 +29,7 @@ function Sidebar({ role = "admin", isOpen, onToggle }) {
   // Role-based menu items
   const getMenuItemsByRole = (userRole) => {
     const superAdminMenus = [
-      { icon: LayoutDashboard, label: "Dashboard", path: "/Dashboard" },
+      // { icon: LayoutDashboard, label: "Dashboard", path: "/Dashboard" },
       { icon: Home, label: "Homepage", path: "/Homepage-Dashboard" },
       { icon: Building2, label: "Properties", path: "/Properties" },
       { icon: MapPin, label: "Location", path: "/Location" },

@@ -44,7 +44,7 @@ export default function Login() {
 
         if (role === "ROLE_SUPERADMIN") {
           // Navigating to the route path you specified
-          navigate("/Dashboard");
+          navigate("/Homepage-Dashboard");
         } else if (role === "ROLE_ADMIN") {
           navigate("/admin/dashboard");
         } else {
