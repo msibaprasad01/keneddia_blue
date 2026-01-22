@@ -21,6 +21,7 @@ import HotelOfferDetails from "@/modules/website/pages/hotel/HotelOfferDetails";
 import NewsListing from "@/modules/website/pages/NewsListing";
 import Careers from "@/modules/website/pages/Careers";
 import Checkout from "@/modules/website/pages/Checkout";
+import RestaurantHomepage from "@/modules/website/pages/restaurant/RestaurantHomepage";
 
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
@@ -35,6 +36,7 @@ const WebsiteRoutes = [
   <Route key="reviews" path="/reviews" element={<Reviews />} />,
   <Route key="login" path="/login" element={<Login />} />,
   <Route key="careers" path="/careers" element={<Careers />} />,
+  <Route key="restaurant-homepage" path="/restaurant-homepage" element={<RestaurantHomepage />} />,
 
   // Detail Pages
   <Route key="offer-details" path="/offers/:id" element={<OfferDetails />} />,
