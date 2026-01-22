@@ -8,12 +8,12 @@ import { ThemeToggle } from "./ThemeToggle";
 
 // Business Dropdown Items
 const BUSINESS_ITEMS = [
-  { label: "Restaurants", href: "/restaurant-homepage" },
   { label: "Hotels & Resorts", href: "/hotels" },
-  { label: "Cafes & Dining", href: "/cafes" },
-  { label: "Bars & Lounges", href: "/bars" },
-  { label: "Events & Conf.", href: "/events" },
-  { label: "Entertainment", href: "/entertainment" },
+  { label: "Restaurants", href: "/restaurant-homepage" },
+  // { label: "Cafes & Dining", href: "/cafes" },
+  // { label: "Bars & Lounges", href: "/bars" },
+  // { label: "Events & Conf.", href: "/events" },
+  // { label: "Entertainment", href: "/entertainment" },
 ];
 
 // Join Us Dropdown Items
