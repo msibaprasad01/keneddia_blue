@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import RestaurantNavbar from "./components/RestaurantNavbar";
+import Navbar from "@/modules/website/components/Navbar";
+import Footer from "@/modules/website/components/Footer";
 import HeroBanner from "./components/HeroBanner";
 import CuisineCategories from "./components/CuisineCategories";
 import AboutRestaurant from "./components/AboutRestaurant";
@@ -9,7 +10,16 @@ import EventsSchedule from "./components/EventsSchedule";
 import SignatureDishes from "./components/SignatureDishes";
 import ReservationForm from "./components/ReservationForm";
 import Testimonials from "./components/Testimonials";
-import RestaurantFooter from "./components/RestaurantFooter";
+import { siteContent } from "@/data/siteContent";
+
+// Restaurant Navigation Items (following Hotels page pattern)
+const RESTAURANT_NAV_ITEMS = [
+  { type: "link", label: "HOME", key: "home", href: "#home" },
+  { type: "link", label: "ABOUT", key: "about", href: "#about" },
+  { type: "link", label: "MENU", key: "menu", href: "#menu" },
+  { type: "link", label: "RESERVATION", key: "reservation", href: "#reservation" },
+  { type: "link", label: "CONTACT", key: "contact", href: "#contact" },
+];
 
 export default function RestaurantHomepage() {
   // Scroll to top on mount
@@ -19,8 +29,8 @@ export default function RestaurantHomepage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Restaurant-specific Navbar */}
-      <RestaurantNavbar />
+      {/* Main Navbar with Restaurant-specific items */}
+      <Navbar navItems={RESTAURANT_NAV_ITEMS} logo={siteContent.brand.logo} />
 
       {/* Main Content */}
       <main>
@@ -55,7 +65,9 @@ export default function RestaurantHomepage() {
       </main>
 
       {/* Footer */}
-      <RestaurantFooter />
+      <div id="contact">
+        <Footer />
+      </div>
     </div>
   );
 }
