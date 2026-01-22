@@ -331,49 +331,6 @@ export default function HotelCarouselSection() {
           </div>
 
           {/* Date Search Row (Only for Map View) */}
-          {viewMode === "map" && (
-            <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-border">
-              {/* Check-in Date */}
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-background border border-border rounded-full shadow-sm">
-                <Calendar className="w-3 h-3 text-primary flex-shrink-0" />
-                <input
-                  type="date"
-                  value={checkInDate}
-                  onChange={(e) => setCheckInDate(e.target.value)}
-                  placeholder="Check-in"
-                  className="bg-transparent outline-none text-xs font-medium w-24"
-                />
-              </div>
-
-              {/* Check-out Date */}
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-background border border-border rounded-full shadow-sm">
-                <Calendar className="w-3 h-3 text-primary flex-shrink-0" />
-                <input
-                  type="date"
-                  value={checkOutDate}
-                  onChange={(e) => setCheckOutDate(e.target.value)}
-                  placeholder="Check-out"
-                  className="bg-transparent outline-none text-xs font-medium w-24"
-                />
-              </div>
-
-              {/* Search Button */}
-              <button
-                onClick={handleSearch}
-                disabled={isSearching}
-                className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors uppercase tracking-wider text-xs font-bold disabled:opacity-50 shadow-sm"
-              >
-                {isSearching ? (
-                  <Search className="w-3 h-3 animate-spin" />
-                ) : (
-                  <>
-                    <Search className="w-3 h-3" />
-                    Search
-                  </>
-                )}
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Content Area - Switches between Gallery and Map */}
