@@ -44,7 +44,7 @@ function HomePageDashboard() {
     <Layout 
       title="Home Page Management"
       subtitle="Control what visitors see on your hotel's homepage"
-      role={userRole}
+      Layout role="superadmin" showActions={false}
     >
       <div className="flex flex-col h-full">
         {/* Tab Navigation */}
