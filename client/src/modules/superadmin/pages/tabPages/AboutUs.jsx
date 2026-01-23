@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2, Loader2 } from 'lucide-react';
+import { addAboutUs, getAboutUsAdmin, updateAboutUsById } from '@/Api/Api';
+import { toast } from 'react-hot-toast';
 
 function AboutUs() {
   const [basicInfo, setBasicInfo] = useState({
-    sectionTitle: 'About Kennedia Blu',
-    subTitle: 'Kennedia Blu',
-    description: 'Kennedia Blu is built on trust and excellence, delivering premium hospitality experiences that exceed customer expectations. Redefining luxury hospitality with a commitment to excellence, comfort, and authentic experiences.'
+    sectionTitle: '',
+    subTitle: '',
+    description: ''
   });
 
   const [videoSection, setVideoSection] = useState({
-    videoURL: 'https://www.youtube.com/embed/example',
-    videoTitle: 'Dr. Jay Prakash – Kennedia Blu Cafe Wins Excellence in ...',
-    buttonText: 'More Details →',
-    buttonURL: 'www.gggggggggggggggggg.com'
+    videoUrl: '',
+    videoTitle: '',
+    ctaButtonText: '',
+    ctaButtonUrl: ''
   });
 
   const [ventures, setVentures] = useState([
@@ -28,6 +30,74 @@ function AboutUs() {
     { id: 2, title: '5.0', subtitle: '5 STAR RATING', badge: '5 STAR RATING' },
     { id: 3, title: '3 Keys', subtitle: 'LUXURY KEYS', badge: 'LUXURY KEYS' }
   ]);
+
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [existingData, setExistingData] = useState(null);
+
+  // Fetch About Us data on component mount
+  const fetchAboutUs = useCallback(async () => {
+    try {
+      setFetching(true);
+      const response = await getAboutUsAdmin();
+      
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        // Get the latest about us (highest id)
+        const latestAboutUs = response.data.reduce((latest, current) => 
+          current.id > latest.id ? current : latest
+        );
+        
+        setExistingData(latestAboutUs);
+        
+        // Populate form with latest data
+        setBasicInfo({
+          sectionTitle: latestAboutUs.sectionTitle || '',
+          subTitle: latestAboutUs.subTitle || '',
+          description: latestAboutUs.description || ''
+        });
+
+        setVideoSection({
+          videoUrl: latestAboutUs.videoUrl || '',
+          videoTitle: latestAboutUs.videoTitle || '',
+          ctaButtonText: latestAboutUs.ctaButtonText || '',
+          ctaButtonUrl: latestAboutUs.ctaButtonUrl || ''
+        });
+
+        console.log("Latest About Us:", latestAboutUs);
+      } else {
+        // Set default values if no data
+        setBasicInfo({
+          sectionTitle: 'About Kennedia Blu',
+          subTitle: 'Kennedia Blu',
+          description: 'Kennedia Blu is built on trust and excellence, delivering premium hospitality experiences that exceed customer expectations.'
+        });
+        
+        setVideoSection({
+          videoUrl: '',
+          videoTitle: '',
+          ctaButtonText: 'More Details →',
+          ctaButtonUrl: ''
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching about us:", error);
+      toast.error("Failed to load about us data");
+      
+      // Set default values on error
+      setBasicInfo({
+        sectionTitle: 'About Kennedia Blu',
+        subTitle: 'Kennedia Blu',
+        description: 'Kennedia Blu is built on trust and excellence.'
+      });
+    } finally {
+      setFetching(false);
+    }
+  }, []);
+
+  // Fetch on mount only
+  useEffect(() => {
+    fetchAboutUs();
+  }, []);
 
   const handleAddVenture = () => {
     setVentures([...ventures, { id: Date.now(), name: '', logo: null }]);
@@ -44,6 +114,76 @@ function AboutUs() {
   const handleDeleteRecognition = (id) => {
     setRecognitions(recognitions.filter(r => r.id !== id));
   };
+
+  const handleSubmit = async () => {
+    // Validation
+    if (!basicInfo.sectionTitle.trim()) {
+      toast.error("Section title is required");
+      return;
+    }
+    if (!basicInfo.subTitle.trim()) {
+      toast.error("Subtitle is required");
+      return;
+    }
+    if (!basicInfo.description.trim()) {
+      toast.error("Description is required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        sectionTitle: basicInfo.sectionTitle,
+        subTitle: basicInfo.subTitle,
+        description: basicInfo.description,
+        videoUrl: videoSection.videoUrl,
+        videoTitle: videoSection.videoTitle,
+        ctaButtonText: videoSection.ctaButtonText,
+        ctaButtonUrl: videoSection.ctaButtonUrl
+      };
+
+      let response;
+      
+      if (existingData?.id) {
+        // Update existing
+        response = await updateAboutUsById(existingData.id, payload);
+        toast.success("About Us updated successfully!");
+      } else {
+        // Create new
+        response = await addAboutUs(payload);
+        toast.success("About Us created successfully!");
+      }
+
+      console.log("Response:", response.data);
+
+      // Refresh data after successful save
+      await fetchAboutUs();
+      
+    } catch (error) {
+      console.error("Error saving about us:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to save about us"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show loading state while fetching
+  if (fetching) {
+    return (
+      <div
+        className="rounded-lg p-6 shadow-sm flex items-center justify-center h-[400px]"
+        style={{ backgroundColor: colors.contentBg }}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 size={32} className="animate-spin" style={{ color: colors.primary }} />
+          <p style={{ color: colors.textSecondary }}>Loading about us data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
@@ -65,7 +205,7 @@ function AboutUs() {
               className="block text-xs font-medium mb-1.5"
               style={{ color: colors.textSecondary }}
             >
-              Section Title
+              Section Title <span style={{ color: "#ef4444" }}>*</span>
             </label>
             <input
               type="text"
@@ -85,7 +225,7 @@ function AboutUs() {
               className="block text-xs font-medium mb-1.5"
               style={{ color: colors.textSecondary }}
             >
-              Sub Title
+              Sub Title <span style={{ color: "#ef4444" }}>*</span>
             </label>
             <input
               type="text"
@@ -105,7 +245,7 @@ function AboutUs() {
               className="block text-xs font-medium mb-1.5"
               style={{ color: colors.textSecondary }}
             >
-              Description
+              Description <span style={{ color: "#ef4444" }}>*</span>
             </label>
             <textarea
               value={basicInfo.description}
@@ -144,15 +284,15 @@ function AboutUs() {
             </label>
             <input
               type="text"
-              value={videoSection.videoURL}
-              onChange={(e) => setVideoSection({...videoSection, videoURL: e.target.value})}
+              value={videoSection.videoUrl}
+              onChange={(e) => setVideoSection({...videoSection, videoUrl: e.target.value})}
               className="w-full px-3 py-2 rounded border text-sm"
               style={{ 
                 borderColor: colors.border,
                 backgroundColor: colors.mainBg,
                 color: colors.textPrimary
               }}
-              placeholder="https://www.youtube.com/embed/example"
+              placeholder="https://www.youtube.com/watch?v=example123"
             />
           </div>
 
@@ -173,6 +313,7 @@ function AboutUs() {
                 backgroundColor: colors.mainBg,
                 color: colors.textPrimary
               }}
+              placeholder="Discover Kennedia Blu"
             />
           </div>
 
@@ -182,18 +323,19 @@ function AboutUs() {
                 className="block text-xs font-medium mb-1.5"
                 style={{ color: colors.textSecondary }}
               >
-                Button Text
+                CTA Button Text
               </label>
               <input
                 type="text"
-                value={videoSection.buttonText}
-                onChange={(e) => setVideoSection({...videoSection, buttonText: e.target.value})}
+                value={videoSection.ctaButtonText}
+                onChange={(e) => setVideoSection({...videoSection, ctaButtonText: e.target.value})}
                 className="w-full px-3 py-2 rounded border text-sm"
                 style={{ 
                   borderColor: colors.border,
                   backgroundColor: colors.mainBg,
                   color: colors.textPrimary
                 }}
+                placeholder="Learn More"
               />
             </div>
 
@@ -202,21 +344,44 @@ function AboutUs() {
                 className="block text-xs font-medium mb-1.5"
                 style={{ color: colors.textSecondary }}
               >
-                Button URL
+                CTA Button URL
               </label>
               <input
                 type="text"
-                value={videoSection.buttonURL}
-                onChange={(e) => setVideoSection({...videoSection, buttonURL: e.target.value})}
+                value={videoSection.ctaButtonUrl}
+                onChange={(e) => setVideoSection({...videoSection, ctaButtonUrl: e.target.value})}
                 className="w-full px-3 py-2 rounded border text-sm"
                 style={{ 
                   borderColor: colors.border,
                   backgroundColor: colors.mainBg,
                   color: colors.textPrimary
                 }}
+                placeholder="https://www.kennediablu.com/about-us"
               />
             </div>
           </div>
+
+          {/* Video Preview */}
+          {videoSection.videoUrl && (
+            <div className="mt-3">
+              <label 
+                className="block text-xs font-medium mb-1.5"
+                style={{ color: colors.textSecondary }}
+              >
+                Video Preview
+              </label>
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full rounded-lg"
+                  src={videoSection.videoUrl.replace('watch?v=', 'embed/')}
+                  title={videoSection.videoTitle || "Video preview"}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -326,7 +491,7 @@ function AboutUs() {
               color: '#ffffff'
             }}
           >
-            + Add Venture
+            + Add Recognition
           </button>
         </div>
 
@@ -404,6 +569,41 @@ function AboutUs() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Submit Button */}
+      <div 
+        className="rounded-lg p-4 sm:p-5 shadow-sm"
+        style={{ backgroundColor: colors.contentBg }}
+      >
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 border-none rounded-md text-sm font-semibold cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            backgroundColor: colors.primary,
+            color: colors.sidebarText,
+          }}
+          onMouseEnter={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = colors.primaryHover;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = colors.primary;
+            }
+          }}
+        >
+          {loading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <span>{existingData?.id ? 'Update About Us' : 'Save About Us'}</span>
+          )}
+        </button>
       </div>
     </div>
   );

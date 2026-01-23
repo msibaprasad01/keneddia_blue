@@ -109,11 +109,11 @@ export const getHeroSection = () => API.get(`api/v1/hero-sections`);
 
 export const addAboutUs = (data) => API.post("api/v1/admin/about-us", data);
 
-export const updateAboutUs = (id, data) =>
+export const updateAboutUsById = (id, data) =>
   API.put(`api/v1/admin/about-us/${id}`, data);
 
-export const getAboutUsAdminById = (id) =>
-  API.get(`api/v1/admin/about-us/${id}`);
+export const getAboutUsAdmin = () =>
+  API.get(`api/v1/admin/about-us`);
 
 export const getAboutUsPublicById = (id) =>
   API.get(`api/v1/public/about-us/${id}`);
