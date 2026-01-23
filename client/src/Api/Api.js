@@ -123,7 +123,7 @@ export const getAboutUsPublicById = (id) =>
 export const addVenture = (aboutUsId, formData) =>
   API.post(`api/v1/admin/about-us/${aboutUsId}/ventures`, formData);
 
-export const updateVenture = (ventureId, formData) =>
+export const updateVentureById = (ventureId, formData) =>
   API.put(`api/v1/admin/about-us/ventures/${ventureId}`, formData);
 
 export const getVenturesByAboutUsId = (aboutUsId) =>

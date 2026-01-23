@@ -30,7 +30,7 @@ function HomePageDashboard() {
   const tabs = [
     { id: 'hero', label: 'Hero Section', icon: Home, component: HeroSection },
     { id: 'offers', label: 'Daily Offers', icon: DollarSign, component: DailyOffers },
-    { id: 'properties', label: 'Our Properties', icon: Building, component: OurProperties },
+    // { id: 'properties', label: 'Our Properties', icon: Building, component: OurProperties },
     { id: 'about', label: 'About Us', icon: Info, component: AboutUs },
     { id: 'kennedia', label: 'Kennedia Group', icon: Building2, component: KennediaGroup },
     { id: 'events', label: 'Upcoming Events', icon: Calendar, component: UpcomingEvents },

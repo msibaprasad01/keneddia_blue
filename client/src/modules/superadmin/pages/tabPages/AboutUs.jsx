@@ -1,7 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { Upload, Trash2, Loader2 } from 'lucide-react';
-import { addAboutUs, getAboutUsAdmin, updateAboutUsById } from '@/Api/Api';
+import { 
+  addAboutUs, 
+  getAboutUsAdmin, 
+  updateAboutUsById,
+  addVenture,
+  updateVentureById,
+  getVenturesByAboutUsId,
+  addRecognition,
+  updateRecognition,
+  getRecognitionsByAboutUsId 
+} from '@/Api/Api';
 import { toast } from 'react-hot-toast';
 
 function AboutUs() {
@@ -18,18 +28,9 @@ function AboutUs() {
     ctaButtonUrl: ''
   });
 
-  const [ventures, setVentures] = useState([
-    { id: 1, name: 'HOTEL', logo: 'hotel-logo.png' },
-    { id: 2, name: 'RESTAURANT', logo: 'restaurant-logo.png' },
-    { id: 3, name: 'CAFE', logo: 'cafe-logo.png' },
-    { id: 4, name: 'LIQUOR SHOP', logo: 'liquor-logo.png' }
-  ]);
-
-  const [recognitions, setRecognitions] = useState([
-    { id: 1, title: '98/100', subtitle: 'GOLD LIST 2024', badge: 'CONE NAST TRAVELLER' },
-    { id: 2, title: '5.0', subtitle: '5 STAR RATING', badge: '5 STAR RATING' },
-    { id: 3, title: '3 Keys', subtitle: 'LUXURY KEYS', badge: 'LUXURY KEYS' }
-  ]);
+  const [ventures, setVentures] = useState([]);
+  const [recognitions, setRecognitions] = useState([]);
+  const [ventureFiles, setVentureFiles] = useState({});
 
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -63,6 +64,12 @@ function AboutUs() {
           ctaButtonUrl: latestAboutUs.ctaButtonUrl || ''
         });
 
+        // Fetch ventures and recognitions for this about us
+        if (latestAboutUs.id) {
+          await fetchVentures(latestAboutUs.id);
+          await fetchRecognitions(latestAboutUs.id);
+        }
+
         console.log("Latest About Us:", latestAboutUs);
       } else {
         // Set default values if no data
@@ -94,21 +101,78 @@ function AboutUs() {
     }
   }, []);
 
+  // Fetch ventures for about us
+  const fetchVentures = async (aboutUsId) => {
+    try {
+      const response = await getVenturesByAboutUsId(aboutUsId);
+      if (response.data && Array.isArray(response.data)) {
+        setVentures(response.data.map(v => ({
+          id: v.id,
+          ventureName: v.ventureName,
+          logoUrl: v.logoUrl,
+          isExisting: true
+        })));
+      }
+    } catch (error) {
+      console.error("Error fetching ventures:", error);
+    }
+  };
+
+  // Fetch recognitions for about us
+  const fetchRecognitions = async (aboutUsId) => {
+    try {
+      const response = await getRecognitionsByAboutUsId(aboutUsId);
+      if (response.data && Array.isArray(response.data)) {
+        setRecognitions(response.data.map(r => ({
+          id: r.id,
+          value: r.value,
+          title: r.title,
+          subTitle: r.subTitle,
+          isExisting: true
+        })));
+      }
+    } catch (error) {
+      console.error("Error fetching recognitions:", error);
+    }
+  };
+
   // Fetch on mount only
   useEffect(() => {
     fetchAboutUs();
   }, []);
 
   const handleAddVenture = () => {
-    setVentures([...ventures, { id: Date.now(), name: '', logo: null }]);
+    setVentures([...ventures, { 
+      id: Date.now(), 
+      ventureName: '', 
+      logoUrl: null,
+      isExisting: false 
+    }]);
   };
 
   const handleDeleteVenture = (id) => {
     setVentures(ventures.filter(v => v.id !== id));
+    // Remove file from ventureFiles if exists
+    const newFiles = { ...ventureFiles };
+    delete newFiles[id];
+    setVentureFiles(newFiles);
+  };
+
+  const handleVentureFileChange = (ventureId, file) => {
+    setVentureFiles(prev => ({
+      ...prev,
+      [ventureId]: file
+    }));
   };
 
   const handleAddRecognition = () => {
-    setRecognitions([...recognitions, { id: Date.now(), title: '', subtitle: '', badge: '' }]);
+    setRecognitions([...recognitions, { 
+      id: Date.now(), 
+      value: '', 
+      title: '', 
+      subTitle: '',
+      isExisting: false 
+    }]);
   };
 
   const handleDeleteRecognition = (id) => {
@@ -133,6 +197,7 @@ function AboutUs() {
     try {
       setLoading(true);
 
+      // Step 1: Save About Us basic info
       const payload = {
         sectionTitle: basicInfo.sectionTitle,
         subTitle: basicInfo.subTitle,
@@ -143,27 +208,90 @@ function AboutUs() {
         ctaButtonUrl: videoSection.ctaButtonUrl
       };
 
-      let response;
+      let aboutUsResponse;
+      let aboutUsId;
       
       if (existingData?.id) {
         // Update existing
-        response = await updateAboutUsById(existingData.id, payload);
+        aboutUsResponse = await updateAboutUsById(existingData.id, payload);
+        aboutUsId = existingData.id;
         toast.success("About Us updated successfully!");
       } else {
         // Create new
-        response = await addAboutUs(payload);
+        aboutUsResponse = await addAboutUs(payload);
+        aboutUsId = aboutUsResponse.data.id;
         toast.success("About Us created successfully!");
       }
 
-      console.log("Response:", response.data);
+      console.log("About Us Response:", aboutUsResponse.data);
+
+      // Step 2: Save Ventures
+      for (const venture of ventures) {
+        if (venture.isExisting) {
+          // Update existing venture if name changed or new file uploaded
+          if (ventureFiles[venture.id]) {
+            const ventureFormData = new FormData();
+            ventureFormData.append('ventureName', venture.ventureName);
+            ventureFormData.append('logo', ventureFiles[venture.id]);
+            
+            await updateVentureById(venture.id, ventureFormData);
+            console.log(`Updated venture ${venture.id}`);
+          }
+        } else {
+          // Add new venture
+          if (venture.ventureName.trim()) {
+            const ventureFormData = new FormData();
+            ventureFormData.append('ventureName', venture.ventureName);
+            
+            if (ventureFiles[venture.id]) {
+              ventureFormData.append('logo', ventureFiles[venture.id]);
+            }
+            
+            await addVenture(aboutUsId, ventureFormData);
+            console.log(`Added new venture: ${venture.ventureName}`);
+          }
+        }
+      }
+
+      // Step 3: Save Recognitions
+      for (const recognition of recognitions) {
+        if (recognition.isExisting) {
+          // Update existing recognition
+          const recognitionPayload = {
+            value: recognition.value,
+            title: recognition.title,
+            subTitle: recognition.subTitle
+          };
+          
+          await updateRecognition(recognition.id, recognitionPayload);
+          console.log(`Updated recognition ${recognition.id}`);
+        } else {
+          // Add new recognition
+          if (recognition.value.trim() && recognition.title.trim()) {
+            const recognitionPayload = {
+              value: recognition.value,
+              title: recognition.title,
+              subTitle: recognition.subTitle
+            };
+            
+            await addRecognition(aboutUsId, recognitionPayload);
+            console.log(`Added new recognition: ${recognition.title}`);
+          }
+        }
+      }
+
+      toast.success("All data saved successfully!");
 
       // Refresh data after successful save
       await fetchAboutUs();
       
+      // Clear venture files
+      setVentureFiles({});
+      
     } catch (error) {
-      console.error("Error saving about us:", error);
+      console.error("Error saving data:", error);
       toast.error(
-        error.response?.data?.message || "Failed to save about us"
+        error.response?.data?.message || "Failed to save data"
       );
     } finally {
       setLoading(false);
@@ -421,10 +549,10 @@ function AboutUs() {
             >
               <input
                 type="text"
-                value={venture.name}
+                value={venture.ventureName}
                 onChange={(e) => {
                   setVentures(ventures.map(v => 
-                    v.id === venture.id ? {...v, name: e.target.value} : v
+                    v.id === venture.id ? {...v, ventureName: e.target.value} : v
                   ));
                 }}
                 className="px-3 py-2 rounded border text-sm"
@@ -442,6 +570,11 @@ function AboutUs() {
                   accept="image/*"
                   className="hidden"
                   id={`venture-${venture.id}`}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleVentureFileChange(venture.id, e.target.files[0]);
+                    }
+                  }}
                 />
                 <label
                   htmlFor={`venture-${venture.id}`}
@@ -453,7 +586,11 @@ function AboutUs() {
                   }}
                 >
                   <Upload size={14} />
-                  {venture.logo || 'Upload File'}
+                  {ventureFiles[venture.id] 
+                    ? ventureFiles[venture.id].name 
+                    : venture.logoUrl 
+                      ? 'Change Logo' 
+                      : 'Upload Logo'}
                 </label>
                 <button
                   onClick={() => handleDeleteVenture(venture.id)}
@@ -466,6 +603,17 @@ function AboutUs() {
                   <Trash2 size={14} />
                 </button>
               </div>
+
+              {/* Show existing logo preview */}
+              {venture.logoUrl && !ventureFiles[venture.id] && (
+                <div className="md:col-span-2">
+                  <img 
+                    src={venture.logoUrl} 
+                    alt={venture.ventureName}
+                    className="h-12 w-auto object-contain"
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -507,10 +655,10 @@ function AboutUs() {
             >
               <input
                 type="text"
-                value={recognition.title}
+                value={recognition.value}
                 onChange={(e) => {
                   setRecognitions(recognitions.map(r => 
-                    r.id === recognition.id ? {...r, title: e.target.value} : r
+                    r.id === recognition.id ? {...r, value: e.target.value} : r
                   ));
                 }}
                 className="px-3 py-2 rounded border text-sm"
@@ -524,10 +672,10 @@ function AboutUs() {
 
               <input
                 type="text"
-                value={recognition.subtitle}
+                value={recognition.title}
                 onChange={(e) => {
                   setRecognitions(recognitions.map(r => 
-                    r.id === recognition.id ? {...r, subtitle: e.target.value} : r
+                    r.id === recognition.id ? {...r, title: e.target.value} : r
                   ));
                 }}
                 className="px-3 py-2 rounded border text-sm"
@@ -536,15 +684,15 @@ function AboutUs() {
                   backgroundColor: colors.contentBg,
                   color: colors.textPrimary
                 }}
-                placeholder="GOLD LIST 2024"
+                placeholder="Years of Excellence"
               />
 
               <input
                 type="text"
-                value={recognition.badge}
+                value={recognition.subTitle}
                 onChange={(e) => {
                   setRecognitions(recognitions.map(r => 
-                    r.id === recognition.id ? {...r, badge: e.target.value} : r
+                    r.id === recognition.id ? {...r, subTitle: e.target.value} : r
                   ));
                 }}
                 className="px-3 py-2 rounded border text-sm"
@@ -553,7 +701,7 @@ function AboutUs() {
                   backgroundColor: colors.contentBg,
                   color: colors.textPrimary
                 }}
-                placeholder="CONE NAST TRAVELLER"
+                placeholder="Trusted globally"
               />
 
               <button
@@ -601,7 +749,7 @@ function AboutUs() {
               <span>Saving...</span>
             </>
           ) : (
-            <span>{existingData?.id ? 'Update About Us' : 'Save About Us'}</span>
+            <span>Save All Changes</span>
           )}
         </button>
       </div>
