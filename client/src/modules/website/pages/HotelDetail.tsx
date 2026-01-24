@@ -68,6 +68,7 @@ export default function HotelDetail() {
   const sections = [
     { id: "room-options", label: "Room Options" },
     { id: "about-hotel", label: "About Hotel" },
+    { id: "upcoming-events", label: "Upcoming Events" },
     { id: "amenities", label: "Amenities" },
     { id: "food-dining", label: "Food & Dining" },
     { id: "guest-reviews", label: "Guest Reviews" },
@@ -269,6 +270,49 @@ export default function HotelDetail() {
                 </div>
               ))}
             </div>
+          </section>
+
+          {/* Upcoming Events */}
+          <section id="upcoming-events" className="scroll-mt-40 pt-8 border-t border-border">
+            <h2 className="text-2xl font-serif font-bold mb-6">Upcoming Events</h2>
+            {hotel.events && hotel.events.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {hotel.events.map((event) => (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-md transition-shadow"
+                  >
+                    <div className="h-48 relative group cursor-pointer">
+                      <OptimizedImage {...event.image} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+                      {event.tag && (
+                        <div className="absolute top-3 right-3">
+                          <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold">
+                            {event.tag}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h3 className="text-lg font-serif font-bold mb-2">{event.title}</h3>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="font-semibold text-primary">{event.date}</span>
+                        <span>•</span>
+                        <span>{event.time}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-secondary/5 rounded-xl border border-border/50">
+                <p className="text-muted-foreground">No upcoming events available</p>
+              </div>
+            )}
           </section>
 
           {/* Amenities */}

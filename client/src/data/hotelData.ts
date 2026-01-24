@@ -230,6 +230,25 @@ export const allHotels: Hotel[] = [
       cancellation: "Non-refundable for promotional rates",
       extraBed: false
     },
+    events: [
+      {
+        id: "evt-blr-1",
+        title: "Craft Beer Tasting",
+        date: "Sat, 26 Oct",
+        time: "7:00 PM",
+        image: siteContent.images.bars.lounge,
+        tag: "Brewery"
+      },
+      {
+        id: "evt-blr-2",
+        title: "Startup Founders Mixer",
+        date: "Wed, 30 Oct",
+        time: "6:30 PM",
+        image: siteContent.images.cafes.garden,
+        tag: "Networking"
+      }
+    ],
+
     features: ["Co-working Lounge", "Rooftop Microbrewery", "Smart Rooms"],
     rooms: 98,
     checkIn: "2:00 PM",
@@ -351,6 +370,25 @@ export const allHotels: Hotel[] = [
       cancellation: "Free cancellation up to 48 hours",
       extraBed: true
     },
+    events: [
+      {
+        id: "evt-del-1",
+        title: "Classical Music Evening",
+        date: "Fri, 25 Oct",
+        time: "8:00 PM",
+        image: siteContent.images.events.jazz,
+        tag: "Culture"
+      },
+      {
+        id: "evt-del-2",
+        title: "Royal Awadhi Food Festival",
+        date: "Sun, 27 Oct",
+        time: "1:00 PM",
+        image: siteContent.images.bars.rooftop,
+        tag: "Dining"
+      }
+    ],
+
     roomTypes: [
       {
         id: "delhi-deluxe",
@@ -468,6 +506,25 @@ export const allHotels: Hotel[] = [
       cancellation: "Flexible",
       extraBed: true
     },
+    events: [
+      {
+        id: "evt-kol-1",
+        title: "Jazz & Poetry Night",
+        date: "Sat, 26 Oct",
+        time: "7:30 PM",
+        image: siteContent.images.bars.lounge,
+        tag: "Music"
+      },
+      {
+        id: "evt-kol-2",
+        title: "Literary Club Meetup",
+        date: "Thu, 31 Oct",
+        time: "6:00 PM",
+        image: siteContent.images.cafes.garden,
+        tag: "Literature"
+      }
+    ],
+
     roomTypes: [
       {
         id: "kolkata-deluxe",

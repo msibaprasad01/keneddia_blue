@@ -64,7 +64,7 @@ export default function RightSidebar({ hotel, selectedRoom }: RightSidebarProps)
 
           <Button
             onClick={() => selectedRoom ? console.log("Proceeding to book", selectedRoom.id) : scrollToSection('room-options')}
-            className="w-full font-bold uppercase tracking-wider py-6 text-sm shadow-md hover:shadow-lg transition-all"
+            className="w-full font-bold uppercase tracking-wider py-3 text-sm shadow-md hover:shadow-lg transition-all"
             variant={selectedRoom ? "default" : "secondary"}
           >
             {selectedRoom ? "Proceed to Book" : "Select Room"}
