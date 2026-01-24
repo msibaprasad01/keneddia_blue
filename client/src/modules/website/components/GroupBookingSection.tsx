@@ -13,127 +13,111 @@ import { Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
-// Combined data for the 3-box rotating slides
-const SHOWCASE_SLIDES = [
+// Group Booking Options
+const GROUP_BOOKING_OPTIONS = [
   {
-    id: 1,
-    // Left Feature Card
-    feature: {
-      type: "celebration",
-      id: "birthday",
-      title: "Birthday & Private Parties",
-      icon: PartyPopper,
-      image: siteContent.images.hotels.mumbai,
-      description: "Celebrate in style with custom decor and curated menus.",
-      tag: "Custom Packages"
-    },
-    // Right Two Event Cards
-    events: [
-      {
-        id: 1,
-        title: "International Wine Festival",
-        date: "25th Oct 2024",
-        location: "Kennedia Blu Mumbai",
-        image: siteContent.images.bars.lounge,
-        price: "₹2,500 onwards",
-        badge: "Early Bird"
-      },
-      {
-        id: 2,
-        title: "Sufi Night with Live Band",
-        date: "2nd Nov 2024",
-        location: "Kennedia Blu Delhi",
-        image: siteContent.images.bars.poolside,
-        price: "Entry Free for Guests",
-        badge: "Exclusive"
-      }
-    ]
+    id: "birthday",
+    title: "Birthday & Private Parties",
+    icon: PartyPopper,
+    description: "Celebrate in style with custom decor and curated menus.",
+    color: "bg-gradient-to-br from-pink-500/20 to-purple-500/20 border-pink-500/30"
   },
   {
-    id: 2,
-    feature: {
-      type: "celebration",
-      id: "corporate",
-      title: "Corporate Meetings & Offsites",
-      icon: Users,
-      image: siteContent.images.hotels.hyderabad,
-      description: "State-of-the-art venues for productivity and connection.",
-      tag: "Business Ready"
-    },
-    events: [
-      {
-        id: 3,
-        title: "Global Culinary Summit",
-        date: "15th Nov 2024",
-        location: "Kennedia Blu Bengaluru",
-        image: siteContent.images.cafes.parisian,
-        price: "Registration Required",
-        badge: "Networking"
-      },
-      {
-        id: 4,
-        title: "Jazz & Blues Evening",
-        date: "20th Nov 2024",
-        location: "Kennedia Blu Mumbai",
-        image: siteContent.images.bars.rooftop,
-        price: "₹1,500 per person",
-        badge: "Live Music"
-      }
-    ]
+    id: "corporate",
+    title: "Corporate Meetings & Offsites",
+    icon: Users,
+    description: "State-of-the-art venues for productivity and connection.",
+    color: "bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-500/30"
   },
   {
-    id: 3,
-    feature: {
-      type: "event-highlight",
-      id: "wine-fest",
-      title: "Wine Festival 2024",
-      icon: Sparkles,
-      image: siteContent.images.bars.rooftop,
-      description: "An evening of exquisite wines from around the world.",
-      tag: "Featured Event"
-    },
-    events: [
-      {
-        id: 5,
-        title: "Birthday Bash Packages",
-        date: "Year Round",
-        location: "All Kennedia Locations",
-        image: siteContent.images.hotels.bengaluru,
-        price: "From ₹15,000",
-        badge: "Popular"
-      },
-      {
-        id: 6,
-        title: "Team Offsite Deals",
-        date: "Limited Time",
-        location: "Premium Venues",
-        image: siteContent.images.hotels.mumbai,
-        price: "Custom Quote",
-        badge: "Corporate"
-      }
-    ]
+    id: "wedding",
+    title: "Weddings & Receptions",
+    icon: Sparkles,
+    description: "Make your special day unforgettable with our premium venues.",
+    color: "bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-500/30"
   }
+];
+
+// Upcoming Events Data
+const UPCOMING_EVENTS = [
+  [
+    {
+      id: 1,
+      title: "International Wine Festival",
+      date: "25th Oct 2024",
+      location: "Kennedia Blu Mumbai",
+      image: siteContent.images.bars.lounge,
+      price: "₹2,500 onwards",
+      badge: "Early Bird"
+    },
+    {
+      id: 2,
+      title: "Sufi Night with Live Band",
+      date: "2nd Nov 2024",
+      location: "Kennedia Blu Delhi",
+      image: siteContent.images.bars.poolside,
+      price: "Entry Free for Guests",
+      badge: "Exclusive"
+    }
+  ],
+  [
+    {
+      id: 3,
+      title: "Global Culinary Summit",
+      date: "15th Nov 2024",
+      location: "Kennedia Blu Bengaluru",
+      image: siteContent.images.cafes.parisian,
+      price: "Registration Required",
+      badge: "Networking"
+    },
+    {
+      id: 4,
+      title: "Jazz & Blues Evening",
+      date: "20th Nov 2024",
+      location: "Kennedia Blu Mumbai",
+      image: siteContent.images.bars.rooftop,
+      price: "₹1,500 per person",
+      badge: "Live Music"
+    }
+  ],
+  [
+    {
+      id: 5,
+      title: "New Year Gala Dinner",
+      date: "31st Dec 2024",
+      location: "All Kennedia Locations",
+      image: siteContent.images.hotels.bengaluru,
+      price: "From ₹15,000",
+      badge: "Popular"
+    },
+    {
+      id: 6,
+      title: "Wine & Cheese Tasting",
+      date: "10th Jan 2025",
+      location: "Kennedia Blu Hyderabad",
+      image: siteContent.images.hotels.mumbai,
+      price: "₹3,500 per person",
+      badge: "Limited"
+    }
+  ]
 ];
 
 export default function GroupBookingSection() {
   const navigate = useNavigate();
   const [selectedOffer, setSelectedOffer] = useState<{ id: string; title: string; icon: any } | null>(null);
   const [step, setStep] = useState(1);
-  const [activeSlide, setActiveSlide] = useState(0);
 
   // Wizard State
   const [city, setCity] = useState("");
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  const handleOpenBooking = (feature: typeof SHOWCASE_SLIDES[0]['feature']) => {
-    if (feature.type === "celebration") {
-      setSelectedOffer({ id: feature.id, title: feature.title, icon: feature.icon });
-      setStep(1);
-      setCity("");
-      setHotel(null);
-      setDate(undefined);
-    }
+  const handleOpenBooking = (option: typeof GROUP_BOOKING_OPTIONS[0]) => {
+    setSelectedOffer({ id: option.id, title: option.title, icon: option.icon });
+    setStep(1);
+    setCity("");
+    setHotel(null);
+    setDate(undefined);
   };
 
   const handleNext = () => setStep(s => s + 1);
@@ -165,120 +149,150 @@ export default function GroupBookingSection() {
           </p>
         </div>
 
-        {/* Main Carousel - 3 Box Layout */}
-        <div className="relative">
-          <Swiper
-            modules={[Autoplay, Pagination]}
-            autoplay={{ delay: 6000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-            pagination={{ 
-              clickable: true,
-              el: '.showcase-pagination',
-            }}
-            loop={true}
-            speed={600}
-            onSlideChange={(swiper) => setActiveSlide(swiper.realIndex)}
-            className="showcase-carousel"
-          >
-            {SHOWCASE_SLIDES.map((slide) => (
-              <SwiperSlide key={slide.id}>
-                {/* 3-Column Equal Height Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Left: Feature Card */}
-                  <div 
-                    className="group relative h-[280px] overflow-hidden rounded-xl shadow-md cursor-pointer"
-                    onClick={() => handleOpenBooking(slide.feature)}
+        {/* Split Layout Container */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* LEFT SIDE: Group Booking (30%) */}
+          <div className="lg:col-span-4">
+            <div className="bg-gradient-to-br from-primary/5 via-background to-background border border-border/50 rounded-2xl p-5 h-full shadow-sm flex flex-col">
+              <div className="mb-4">
+                <h3 className="text-lg font-serif font-semibold mb-1 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Group Booking
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Special packages for your celebrations
+                </p>
+              </div>
+
+              <div className="space-y-2.5 flex-1">
+                {GROUP_BOOKING_OPTIONS.map((option) => (
+                  <div
+                    key={option.id}
+                    onClick={() => handleOpenBooking(option)}
+                    className={cn(
+                      "group relative overflow-hidden rounded-xl border-2 p-3.5 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5",
+                      option.color
+                    )}
                   >
-                    {/* Background Image */}
-                    <div className="absolute inset-0">
-                      <OptimizedImage
-                        {...slide.feature.image}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    </div>
-
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/10" />
-
-                    {/* Tag */}
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className="bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                        {slide.feature.tag}
-                      </span>
-                    </div>
-
-                    {/* Content */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white z-10">
-                      <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center mb-2 group-hover:bg-primary transition-colors duration-300">
-                        <slide.feature.icon className="w-4 h-4" />
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                        <option.icon className="w-4.5 h-4.5" />
                       </div>
-                      <h3 className="font-serif text-lg font-bold mb-1.5 leading-tight">
-                        {slide.feature.title}
-                      </h3>
-                      <p className="text-white/75 text-xs leading-relaxed mb-3 line-clamp-2">
-                        {slide.feature.description}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs font-semibold text-white group-hover:text-primary transition-colors">
-                        {slide.feature.type === "celebration" ? "Plan Your Event" : "Learn More"}
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm mb-0.5 group-hover:text-primary transition-colors">
+                          {option.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-1.5">
+                          {option.description}
+                        </p>
+                        <div className="flex items-center gap-1 text-xs font-medium text-primary">
+                          <span>Plan Now</span>
+                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
                     </div>
                   </div>
+                ))}
+              </div>
 
-                  {/* Middle & Right: Two Event Cards */}
-                  {slide.events.map((event) => (
-                    <div 
-                      key={event.id}
-                      className="group bg-card border border-border/60 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300 h-[280px] flex flex-col cursor-pointer"
-                    >
-                      {/* Event Image */}
-                      <div className="relative h-[140px] flex-shrink-0 overflow-hidden">
-                        <OptimizedImage 
-                          {...event.image} 
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                        />
-                        {/* Badge */}
-                        <div className="absolute top-2 right-2">
-                          <span className="bg-black/70 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">
-                            {event.badge}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Event Content */}
-                      <div className="p-3 flex flex-col flex-1">
-                        <div className="flex items-center gap-2 flex-wrap text-[10px] text-muted-foreground mb-1.5">
-                          <span className="flex items-center gap-1 font-medium text-primary">
-                            <Calendar className="w-3 h-3" /> {event.date}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" /> {event.location}
-                          </span>
-                        </div>
-                        
-                        <h4 className="font-serif text-sm font-semibold mb-2 line-clamp-1 group-hover:text-primary transition-colors">
-                          {event.title}
-                        </h4>
-
-                        <div className="mt-auto pt-2 border-t border-border/40 flex items-center justify-between">
-                          <span className="text-sm font-bold text-foreground">{event.price}</span>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-7 text-[10px] px-3 rounded-full hover:bg-primary hover:text-primary-foreground hover:border-primary"
-                          >
-                            Details
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+              {/* Additional Info */}
+              <div className="mt-4 pt-4 border-t border-border/50">
+                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                  <p>Custom packages, flexible booking, and dedicated event coordinators available</p>
                 </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+              </div>
+            </div>
+          </div>
 
-          {/* Dot Pagination - Centered Below */}
-          <div className="showcase-pagination flex justify-center gap-2 mt-6" />
+          {/* RIGHT SIDE: Upcoming Events Carousel (70%) */}
+          <div className="lg:col-span-8">
+            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
+              <div className="mb-5">
+                <h3 className="text-lg font-serif font-semibold mb-1 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  Upcoming Events
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Exclusive experiences across our properties
+                </p>
+              </div>
+
+              {/* Events Carousel */}
+              <div className="relative">
+                <Swiper
+                  modules={[Autoplay, Pagination]}
+                  autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+                  pagination={{ 
+                    clickable: true,
+                    el: '.events-pagination',
+                  }}
+                  loop={true}
+                  speed={600}
+                  className="events-carousel"
+                >
+                  {UPCOMING_EVENTS.map((eventPair, slideIndex) => (
+                    <SwiperSlide key={slideIndex}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {eventPair.map((event) => (
+                          <div 
+                            key={event.id}
+                            className="group bg-background border border-border/60 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer"
+                          >
+                            {/* Event Image */}
+                            <div className="relative h-[140px] overflow-hidden">
+                              <OptimizedImage 
+                                {...event.image} 
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                              />
+                              {/* Badge */}
+                              <div className="absolute top-2.5 right-2.5">
+                                <span className="bg-black/70 backdrop-blur-sm text-white text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
+                                  {event.badge}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Event Content */}
+                            <div className="p-3.5">
+                              <div className="flex items-center gap-3 flex-wrap text-[10px] text-muted-foreground mb-2">
+                                <span className="flex items-center gap-1 font-medium text-primary">
+                                  <Calendar className="w-3 h-3" /> {event.date}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" /> {event.location}
+                                </span>
+                              </div>
+                              
+                              <h4 className="font-serif text-sm font-semibold mb-2.5 line-clamp-1 group-hover:text-primary transition-colors">
+                                {event.title}
+                              </h4>
+
+                              <div className="flex items-center justify-between pt-2.5 border-t border-border/40">
+                                <span className="text-sm font-bold text-foreground">{event.price}</span>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="h-7 text-xs px-3.5 rounded-full hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                                >
+                                  View Details
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+
+                {/* Dot Pagination */}
+                <div className="events-pagination flex justify-center gap-2 mt-5" />
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -393,7 +407,7 @@ export default function GroupBookingSection() {
       </Dialog>
 
       <style>{`
-        .showcase-pagination .swiper-pagination-bullet {
+        .events-pagination .swiper-pagination-bullet {
           width: 8px;
           height: 8px;
           background: hsl(var(--muted-foreground) / 0.3);
@@ -403,7 +417,7 @@ export default function GroupBookingSection() {
           cursor: pointer;
         }
         
-        .showcase-pagination .swiper-pagination-bullet-active {
+        .events-pagination .swiper-pagination-bullet-active {
           width: 24px;
           background: hsl(var(--primary));
         }

@@ -117,60 +117,68 @@ export default function HotelDetail() {
         <div className="flex flex-col lg:flex-row gap-6 mb-6">
           {/* Header Info */}
           <div className="flex-1">
-            <div className="flex items-start justify-between">
-              <div>
+            <div className="flex items-start justify-between gap-4">
+              {/* Left Side - Main Info */}
+              <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded">5 Star Luxury</span>
                 </div>
                 <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2">{hotel.name}</h1>
-                
-                {/* Location with Nearby Landmark */}
+
+                {/* Location Only */}
                 <div className="mb-4">
                   <p className="text-muted-foreground flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-primary" />
                     {hotel.location}
                     <span className="text-primary hover:underline cursor-pointer text-xs font-semibold ml-2" onClick={() => document.getElementById('location')?.scrollIntoView({ behavior: 'smooth' })}>View Map</span>
                   </p>
-                  {/* Nearby Landmark Info */}
-                  {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
-                    <div className="flex items-center gap-1.5 mt-1.5 ml-5">
+                </div>
+
+                {/* Rating & Reviews */}
+                <div className="flex items-center gap-4">
+                  <div className="bg-green-600 text-white px-2 py-1 rounded text-sm font-bold flex items-center gap-1">
+                    {hotel.rating} <Star className="w-3 h-3 fill-current" />
+                  </div>
+                  <span
+                    className="text-sm font-medium underline cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => document.getElementById('guest-reviews')?.scrollIntoView({ behavior: 'smooth' })}
+                  >
+                    {hotel.reviews} Verified Reviews
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Side - Actions & Nearby Places */}
+              <div className="flex flex-col items-end gap-3">
+                {/* Share & Like Buttons */}
+                <div className="flex gap-2">
+                  <Button variant="outline" size="icon" className="rounded-full">
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="rounded-full">
+                    <Heart className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {/* Nearby Landmark Info */}
+                {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
+                  <div className="bg-secondary/30 rounded-lg px-3 py-2 border border-border/50">
+                    <div className="flex items-center gap-1.5 mb-1">
                       <Navigation className="w-3 h-3 text-green-500" />
                       <span className="text-xs text-muted-foreground">
                         {hotel.nearbyPlaces[0].distance} from {hotel.nearbyPlaces[0].name}
                       </span>
-                      {hotel.nearbyPlaces.length > 1 && (
-                        <>
-                          <span className="text-muted-foreground/50 mx-1">•</span>
-                          <span className="text-xs text-muted-foreground">
-                            {hotel.nearbyPlaces[1].distance} from {hotel.nearbyPlaces[1].name}
-                          </span>
-                        </>
-                      )}
                     </div>
-                  )}
-                </div>
+                    {hotel.nearbyPlaces.length > 1 && (
+                      <div className="flex items-center gap-1.5 ml-4">
+                        <span className="text-xs text-muted-foreground">
+                          {hotel.nearbyPlaces[1].distance} from {hotel.nearbyPlaces[1].name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-
-              <div className="flex gap-2">
-                <Button variant="outline" size="icon" className="rounded-full">
-                  <Share2 className="w-4 h-4" />
-                </Button>
-                <Button variant="outline" size="icon" className="rounded-full">
-                  <Heart className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 mt-2">
-              <div className="bg-green-600 text-white px-2 py-1 rounded text-sm font-bold flex items-center gap-1">
-                {hotel.rating} <Star className="w-3 h-3 fill-current" />
-              </div>
-              <span
-                className="text-sm font-medium underline cursor-pointer hover:text-primary transition-colors"
-                onClick={() => document.getElementById('guest-reviews')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                {hotel.reviews} Verified Reviews
-              </span>
             </div>
           </div>
         </div>

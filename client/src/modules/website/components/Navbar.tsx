@@ -96,6 +96,7 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
   const brandLogo = logo || siteContent.brand.logo;
   const darkLogo = brandLogo.image;
   const lightLogo = brandLogo.subImage || brandLogo.image;
+  
 
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);

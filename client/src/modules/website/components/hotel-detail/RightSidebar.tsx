@@ -235,6 +235,52 @@ export default function RightSidebar({ hotel, selectedRoom }: RightSidebarProps)
         </div>
       </div>
 
+      {/* Upcoming Events - NEW */}
+      {hotel.events && hotel.events.length > 0 && (
+        <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+          <h4 className="text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between">
+            Upcoming Events
+            <span className="text-[10px] text-primary cursor-pointer hover:underline font-normal">
+              View All
+            </span>
+          </h4>
+          <div className="space-y-4">
+            {hotel.events.slice(0, 3).map((event, idx) => (
+              <div key={idx} className="flex gap-3 group cursor-pointer">
+                <div className="w-14 h-14 rounded-lg bg-secondary overflow-hidden shrink-0 relative">
+                  <OptimizedImage
+                    {...event.image}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  {/* Date Badge Overlay */}
+                  <div className="absolute top-0 left-0 bg-primary/90 text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-br-md">
+                    {event.date.split(',')[0]}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <h5 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                    {event.title}
+                  </h5>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      {event.date} • {event.time}
+                    </span>
+                  </div>
+                  {event.tag && (
+                    <span className="inline-block mt-1 text-[9px] font-semibold text-primary bg-primary/10 px-1.5 rounded w-fit">
+                      {event.tag}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <Button variant="outline" size="sm" className="w-full mt-4 text-xs font-medium">
+            Enquire for Events
+          </Button>
+        </div>
+      )}
+
     </div>
   );
 }

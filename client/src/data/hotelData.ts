@@ -13,6 +13,15 @@ export interface Room {
   size: string;
 }
 
+export interface Event {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  image: ImageAsset;
+  tag?: string;
+}
+
 export interface Hotel {
   id: string;
   name: string;
@@ -45,6 +54,7 @@ export interface Hotel {
     timings: string;
     image?: ImageAsset;
   }[];
+  events?: Event[];
   policies?: {
     checkInAge: number;
     pets: boolean;
@@ -99,6 +109,32 @@ export const allHotels: Hotel[] = [
       cancellation: "Flexible until 24 hours before check-in",
       extraBed: true
     },
+    events: [
+      {
+        id: "evt-mumbai-1",
+        title: "Live Jazz Night",
+        date: "Fri, 24 Oct",
+        time: "8:00 PM",
+        image: siteContent.images.events.jazz,
+        tag: "Music"
+      },
+      {
+        id: "evt-mumbai-2",
+        title: "Sunday Brunch",
+        date: "Sun, 26 Oct",
+        time: "11:00 AM",
+        image: siteContent.images.cafes.garden,
+        tag: "Dining"
+      },
+      {
+        id: "evt-mumbai-3",
+        title: "Art & Wine Mixer",
+        date: "Sat, 01 Nov",
+        time: "6:30 PM",
+        image: siteContent.images.bars.lounge,
+        tag: "Social"
+      }
+    ],
     roomTypes: [
       {
         id: "mumbai-deluxe",

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { ArrowRight, MapPin, Star, Building2, ChevronLeft, ChevronRight, Phone, Mail, Calendar, Search, Home, Users, Wifi, Grid3x3, Map } from "lucide-react";
+import { ArrowRight, MapPin, Star, Building2, ChevronLeft, ChevronRight, Phone, Mail, Calendar, Search, Home, Users, Wifi, Grid3x3, Map, Tag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -51,7 +51,13 @@ const featuredHotels = [
     description: "Experience timeless elegance in the heart of South Mumbai with colonial charm.",
     amenities: ["Ocean View", "Heritage Architecture", "Fine Dining", "Spa & Wellness"],
     capacity: "120 Rooms",
-    price: "₹12,500",
+    pricing: {
+      basePrice: 12500,
+      discount: 1250,
+      discountPercent: 10,
+      discountLabel: "Early Bird Discount",
+      gstPercent: 12,
+    },
     rooms: 120,
     checkIn: "2:00 PM",
     checkOut: "11:00 AM",
@@ -69,7 +75,13 @@ const featuredHotels = [
     description: "Unparalleled luxury in the capital's most prestigious location.",
     amenities: ["Presidential Suite", "Michelin Dining", "Private Butler", "Infinity Pool"],
     capacity: "200 Suites",
-    price: "₹18,900",
+    pricing: {
+      basePrice: 18900,
+      discount: 2835,
+      discountPercent: 15,
+      discountLabel: "Premium Member Discount",
+      gstPercent: 12,
+    },
     rooms: 200,
     checkIn: "2:00 PM",
     checkOut: "12:00 PM",
@@ -87,7 +99,13 @@ const featuredHotels = [
     description: "Perfect for business travelers and tech professionals in Silicon Valley.",
     amenities: ["Business Center", "High-Speed WiFi", "Conference Rooms", "Rooftop Bar"],
     capacity: "150 Rooms",
-    price: "₹10,800",
+    pricing: {
+      basePrice: 10800,
+      discount: 1080,
+      discountPercent: 10,
+      discountLabel: "Corporate Discount",
+      gstPercent: 12,
+    },
     rooms: 150,
     checkIn: "2:00 PM",
     checkOut: "11:00 AM",
@@ -105,7 +123,13 @@ const featuredHotels = [
     description: "Beachfront paradise along the scenic East Coast Road with ocean views.",
     amenities: ["Beach Access", "Water Sports", "Ayurvedic Spa", "Seafood Restaurant"],
     capacity: "80 Villas",
-    price: "₹14,500",
+    pricing: {
+      basePrice: 14500,
+      discount: 2175,
+      discountPercent: 15,
+      discountLabel: "Weekend Special",
+      gstPercent: 12,
+    },
     rooms: 80,
     checkIn: "2:00 PM",
     checkOut: "11:00 AM",
@@ -123,7 +147,13 @@ const featuredHotels = [
     description: "Contemporary elegance in the City of Pearls with royal hospitality.",
     amenities: ["City Views", "Multi-Cuisine", "Fitness Center", "Event Spaces"],
     capacity: "135 Rooms",
-    price: "₹11,200",
+    pricing: {
+      basePrice: 11200,
+      discount: 1120,
+      discountPercent: 10,
+      discountLabel: "Festive Offer",
+      gstPercent: 12,
+    },
     rooms: 135,
     checkIn: "2:00 PM",
     checkOut: "11:00 AM",
@@ -140,6 +170,132 @@ const cities = [
   "Hyderabad",
   "Chennai",
 ];
+
+// Helper function to calculate prices
+const calculatePricing = (pricing: typeof featuredHotels[0]['pricing']) => {
+  const subtotal = pricing.basePrice - pricing.discount;
+  const gst = Math.round(subtotal * (pricing.gstPercent / 100));
+  const total = subtotal + gst;
+  
+  return {
+    basePrice: pricing.basePrice,
+    discount: pricing.discount,
+    subtotal,
+    gst,
+    total
+  };
+};
+
+// Price Breakdown Component with Toggle
+function PriceBreakdown({ 
+  pricing, 
+  calculated 
+}: { 
+  pricing: typeof featuredHotels[0]['pricing'], 
+  calculated: ReturnType<typeof calculatePricing> 
+}) {
+  const [showDetails, setShowDetails] = useState(false);
+
+  return (
+    <div className="py-2.5 border-y border-border">
+      {/* Compact View */}
+      {!showDetails ? (
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Tag className="w-3 h-3 text-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Pricing
+              </span>
+            </div>
+            <button
+              onClick={() => setShowDetails(true)}
+              className="text-[9px] text-primary hover:underline font-medium"
+            >
+              View Breakdown
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground line-through">
+                ₹{calculated.basePrice.toLocaleString('en-IN')}
+              </span>
+              <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
+                {pricing.discountPercent}% OFF
+              </span>
+            </div>
+            <div className="text-right">
+              <p className="text-xl font-bold text-primary">
+                ₹{calculated.total.toLocaleString('en-IN')}
+              </p>
+              <p className="text-[8px] text-muted-foreground">per night (incl. taxes)</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Detailed View */
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
+              <Tag className="w-3 h-3 text-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-foreground">
+                Price Breakdown
+              </span>
+            </div>
+            <button
+              onClick={() => setShowDetails(false)}
+              className="text-[9px] text-primary hover:underline font-medium"
+            >
+              Hide Details
+            </button>
+          </div>
+
+          {/* Base Price */}
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">Base Price</span>
+            <span className="font-medium">₹{calculated.basePrice.toLocaleString('en-IN')}</span>
+          </div>
+
+          {/* Discount */}
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1">
+              {pricing.discountLabel}
+              <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
+                {pricing.discountPercent}%
+              </span>
+            </span>
+            <span className="font-medium text-green-600">- ₹{calculated.discount.toLocaleString('en-IN')}</span>
+          </div>
+
+          {/* Subtotal */}
+          <div className="flex items-center justify-between text-xs pb-1.5 border-b border-border/50">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-medium">₹{calculated.subtotal.toLocaleString('en-IN')}</span>
+          </div>
+
+          {/* GST */}
+          <div className="flex items-center justify-between text-[10px]">
+            <span className="text-muted-foreground">GST ({pricing.gstPercent}%)</span>
+            <span className="font-medium">₹{calculated.gst.toLocaleString('en-IN')}</span>
+          </div>
+
+          {/* Total */}
+          <div className="flex items-center justify-between pt-1.5 border-t border-border bg-primary/5 -mx-2 px-2 py-1.5 rounded-lg mt-1.5">
+            <div>
+              <p className="text-[10px] font-bold text-foreground">Total Amount</p>
+              <p className="text-[8px] text-muted-foreground">per night (all taxes incl.)</p>
+            </div>
+            <p className="text-xl font-bold text-primary">
+              ₹{calculated.total.toLocaleString('en-IN')}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 // Map controller component
 function MapViewController({ center, zoom }: { center: [number, number], zoom: number }) {
@@ -208,6 +364,7 @@ export default function HotelCarouselSection() {
   };
 
   const activeHotel = filteredHotels[activeIndex];
+  const activePricing = calculatePricing(activeHotel.pricing);
 
   // Calculate visible cards for 3D effect (Gallery mode)
   const getVisibleCards = () => {
@@ -329,8 +486,6 @@ export default function HotelCarouselSection() {
               </div>
             </div>
           </div>
-
-          {/* Date Search Row (Only for Map View) */}
         </div>
 
         {/* Content Area - Switches between Gallery and Map */}
@@ -437,7 +592,7 @@ export default function HotelCarouselSection() {
 
                 {/* RIGHT: Content Panel - 40% width */}
                 <div className="bg-card border border-border rounded-2xl p-5 shadow-xl h-[500px] flex flex-col justify-between">
-                  <div className="space-y-3.5">
+                  <div className="space-y-3.5 overflow-y-auto">
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded-full border border-primary/20">
@@ -478,26 +633,14 @@ export default function HotelCarouselSection() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between py-3 border-y border-border">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                          Accommodation
-                        </p>
-                        <p className="text-sm font-semibold text-foreground">{activeHotel.capacity}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                          Starting From
-                        </p>
-                        <p className="text-xl font-bold text-primary">
-                          {activeHotel.price}
-                          <span className="text-xs text-muted-foreground font-normal">/night</span>
-                        </p>
-                      </div>
-                    </div>
+                    {/* Price Breakdown - Compact with Toggle */}
+                    <PriceBreakdown 
+                      pricing={activeHotel.pricing}
+                      calculated={activePricing}
+                    />
                   </div>
 
-                  <div className="space-y-2.5">
+                  <div className="space-y-2.5 mt-4">
                     <button
                       onClick={() => navigate(`/hotels/${activeHotel.city}`, {
                         state: {
@@ -514,17 +657,6 @@ export default function HotelCarouselSection() {
                       Book Room
                       <ArrowRight className="w-4 h-4" />
                     </button>
-
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <button className="py-2.5 border-2 border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 text-xs">
-                        <Phone className="w-3.5 h-3.5" />
-                        Call Us
-                      </button>
-                      <button className="py-2.5 border-2 border-border text-foreground font-semibold rounded-lg hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 text-xs">
-                        <Mail className="w-3.5 h-3.5" />
-                        Enquire
-                      </button>
-                    </div>
 
                     <button
                       onClick={() => navigate(`/hotels/${activeHotel.city}`, {
@@ -644,14 +776,47 @@ export default function HotelCarouselSection() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-[10px] text-muted-foreground mb-0.5">Starting from</p>
-                          <p className="text-2xl font-bold text-primary">
-                            {activeHotel.price}
-                            <span className="text-xs text-muted-foreground font-normal">/night</span>
-                          </p>
+                      {/* Price Breakdown - Compact Version for Map View */}
+                      <div className="mb-3 pb-3 border-b border-border bg-muted/20 rounded-lg p-2.5">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-1.5">
+                            <Tag className="w-3 h-3 text-primary" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              Pricing
+                            </span>
+                          </div>
                         </div>
+
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground line-through">
+                              ₹{activePricing.basePrice.toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
+                              {activeHotel.pricing.discountPercent}% OFF
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="text-muted-foreground">After Discount</span>
+                            <span className="font-medium text-green-600">₹{activePricing.subtotal.toLocaleString('en-IN')}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="text-muted-foreground">+ GST ({activeHotel.pricing.gstPercent}%)</span>
+                            <span className="font-medium">₹{activePricing.gst.toLocaleString('en-IN')}</span>
+                          </div>
+                          <div className="flex items-center justify-between pt-1.5 border-t border-border/50">
+                            <div>
+                              <p className="text-[10px] font-bold text-foreground">Total</p>
+                              <p className="text-[8px] text-muted-foreground">per night</p>
+                            </div>
+                            <p className="text-lg font-bold text-primary">
+                              ₹{activePricing.total.toLocaleString('en-IN')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
                         <button
                           onClick={() => navigate(`/hotels/${activeHotel.city}`, {
                             state: {
@@ -663,9 +828,9 @@ export default function HotelCarouselSection() {
                               rooms: 1
                             }
                           })}
-                          className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg text-sm"
+                          className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg text-sm"
                         >
-                          View Details
+                          Book Now
                           <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -709,6 +874,7 @@ export default function HotelCarouselSection() {
                       {filteredHotels.map((hotel, idx) => {
                         const isActive = idx === activeIndex;
                         const markerIcon = createRedIcon(isActive);
+                        const hotelPricing = calculatePricing(hotel.pricing);
 
                         return (
                           <Marker
@@ -736,10 +902,22 @@ export default function HotelCarouselSection() {
                                   <MapPin className="w-3 h-3 mr-1 text-red-500 flex-shrink-0" />
                                   <span className="line-clamp-1">{hotel.location}</span>
                                 </div>
-                                <div className="flex items-center justify-between pt-2 border-t border-border">
-                                  <span className="text-xs text-muted-foreground">Starting from</span>
-                                  <span className="text-base font-bold text-primary">{hotel.price}</span>
+                                
+                                {/* Compact Pricing */}
+                                <div className="space-y-1 pt-2 border-t border-border bg-muted/30 rounded p-2">
+                                  <div className="flex items-center justify-between text-[10px]">
+                                    <span className="text-muted-foreground line-through">₹{hotelPricing.basePrice.toLocaleString('en-IN')}</span>
+                                    <span className="text-[8px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
+                                      {hotel.pricing.discountPercent}% OFF
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                                    <span className="text-[9px] text-foreground font-bold">Total (incl. GST)</span>
+                                    <span className="text-sm font-bold text-primary">₹{hotelPricing.total.toLocaleString('en-IN')}</span>
+                                  </div>
+                                  <p className="text-[8px] text-muted-foreground text-center">per night</p>
                                 </div>
+                                
                                 <button
                                   onClick={() => {
                                     setActiveIndex(idx);
