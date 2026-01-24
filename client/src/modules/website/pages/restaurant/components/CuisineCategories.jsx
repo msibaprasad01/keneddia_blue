@@ -2,17 +2,23 @@ import { motion } from "framer-motion";
 import { cuisineCategories } from "@/data/restaurantData";
 import { ArrowRight, Sparkles } from "lucide-react";
 
+import { useNavigate } from "react-router-dom";
+
 export default function CuisineCategories() {
+  const navigate = useNavigate();
+
   const handleCategoryClick = (categoryId) => {
-    // Logic to filter or navigate to menu
-    const menuSection = document.getElementById('menu');
-    if (menuSection) {
-      const elementPosition = menuSection.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - 80;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+    const routes = {
+      "italian": "/restaurant/italian",
+      "luxury-lounge": "/restaurant/luxury-lounge",
+      "spicy-darbar": "/restaurant/spicy-darbar",
+      "takeaway": "/restaurant/takeaway"
+    };
+
+    const route = routes[categoryId];
+    if (route) {
+      navigate(route);
+      window.scrollTo(0, 0);
     }
   };
 

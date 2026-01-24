@@ -22,6 +22,10 @@ import NewsListing from "@/modules/website/pages/NewsListing";
 import Careers from "@/modules/website/pages/Careers";
 import Checkout from "@/modules/website/pages/Checkout";
 import RestaurantHomepage from "@/modules/website/pages/restaurant/RestaurantHomepage";
+import Italian from "@/modules/website/pages/restaurant/pages/verticals/Italian";
+import LuxuryLounge from "@/modules/website/pages/restaurant/pages/verticals/LuxuryLounge";
+import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/SpicyDarbar";
+import TakeawayTreats from "@/modules/website/pages/restaurant/pages/verticals/TakeawayTreats";
 
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
@@ -37,6 +41,12 @@ const WebsiteRoutes = [
   <Route key="login" path="/login" element={<Login />} />,
   <Route key="careers" path="/careers" element={<Careers />} />,
   <Route key="restaurant-homepage" path="/restaurant-homepage" element={<RestaurantHomepage />} />,
+  
+  // Restaurant Sub-Verticals
+  <Route key="restaurant-italian" path="/restaurant/italian" element={<Italian />} />,
+  <Route key="restaurant-lounge" path="/restaurant/luxury-lounge" element={<LuxuryLounge />} />,
+  <Route key="restaurant-spicy-darbar" path="/restaurant/spicy-darbar" element={<SpicyDarbar />} />,
+  <Route key="restaurant-takeaway" path="/restaurant/takeaway" element={<TakeawayTreats />} />,
 
   // Detail Pages
   <Route key="offer-details" path="/offers/:id" element={<OfferDetails />} />,
