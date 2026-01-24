@@ -1,8 +1,22 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { restaurantStats } from "@/data/restaurantData";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { TrendingUp, Users, Star, Award, Clock, Sparkles } from "lucide-react";
+
+const ICON_MAP = {
+  "Growth": TrendingUp,
+  "Guests": Users,
+  "Rating": Star,
+  "Awards": Award,
+  "Years": Clock
+};
+
+const GRADIENT_COLORS = [
+  { accent: "bg-blue-500/10", text: "text-blue-600", border: "border-blue-200/30" },
+  { accent: "bg-purple-500/10", text: "text-purple-600", border: "border-purple-200/30" },
+  { accent: "bg-amber-500/10", text: "text-amber-600", border: "border-amber-200/30" },
+  { accent: "bg-emerald-500/10", text: "text-emerald-600", border: "border-emerald-200/30" },
+];
 
 function CountUpAnimation({ end, duration = 2, suffix = "" }) {
   const [count, setCount] = useState(0);
@@ -36,118 +50,121 @@ function CountUpAnimation({ end, duration = 2, suffix = "" }) {
   );
 }
 
-export default function PerformanceMetrics() {
-  const scrollRef = useRef(null);
-  const barHeights = [75, 85, 70, 80];
+export default function PerformanceMetricsCarousel() {
+  const [offset, setOffset] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const scroll = (direction) => {
-    if (scrollRef.current) {
-      const scrollAmount = 300;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
+  // Create infinite loop by duplicating stats
+  const infiniteStats = [...restaurantStats, ...restaurantStats, ...restaurantStats];
+
+  // Auto-scroll effect
+  useEffect(() => {
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      setOffset((prev) => {
+        const newOffset = prev - 1;
+        // Reset when first set of duplicates is fully scrolled
+        if (Math.abs(newOffset) >= (restaurantStats.length * 320)) {
+          return 0;
+        }
+        return newOffset;
       });
-    }
-  };
+    }, 30); // Smooth 30ms interval
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
 
   return (
-    <section className="relative py-12 bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-background dark:via-background dark:to-background overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-           animate={{ 
-             scale: [1, 1.15, 1],
-             opacity: [0.03, 0.06, 0.03]
-           }}
-           transition={{ 
-             duration: 15,
-             repeat: Infinity,
-             ease: "easeInOut"
-           }}
-           className="absolute top-0 right-[15%] w-[350px] h-[350px] bg-gray-400 dark:bg-primary rounded-full blur-3xl"
-         />
-      </div>
-
-      <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        {/* Compact Header */}
-        <div className="text-center mb-8">
-          <span className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-primary text-xs font-medium mb-2">
-            Performance Metrics
-          </span>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-foreground mb-1">
-            Excellence by Numbers
-          </h2>
+    <section className="py-4 bg-background overflow-hidden">
+      <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+        {/* Minimal Header */}
+        <div className="mb-4 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-primary/70" />
+          <div>
+            <h2 className="text-base md:text-lg font-medium text-foreground/80">
+              Our Impact
+            </h2>
+            <p className="text-[10px] text-muted-foreground/60">
+              Live performance metrics
+            </p>
+          </div>
         </div>
 
         {/* Carousel Container */}
-        <div className="relative max-w-5xl mx-auto">
-           {/* Navigation Buttons (Desktop) */}
-           <div className="hidden md:flex absolute top-1/2 -translate-y-1/2 -left-12 -right-12 justify-between z-20 pointer-events-none">
-             <Button
-               variant="outline"
-               size="icon"
-               className="pointer-events-auto rounded-full bg-background/80 backdrop-blur shadow-md hover:bg-primary hover:text-primary-foreground transition-colors"
-               onClick={() => scroll('left')}
-             >
-               <ChevronLeft className="h-5 w-5" />
-             </Button>
-             <Button
-               variant="outline"
-               size="icon"
-               className="pointer-events-auto rounded-full bg-background/80 backdrop-blur shadow-md hover:bg-primary hover:text-primary-foreground transition-colors"
-               onClick={() => scroll('right')}
-             >
-               <ChevronRight className="h-5 w-5" />
-             </Button>
-           </div>
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {/* Gradient Overlays for fade effect */}
+          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
-          <div 
-            ref={scrollRef}
-            className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-6 hide-scrollbar px-4 md:px-0"
-            style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
-          >
-             {restaurantStats.map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className="snap-center flex-shrink-0 w-[85vw] sm:w-[calc(50%-12px)] md:w-[calc(33%-12px)] lg:w-[calc(25%-18px)]"
-                >
-                  <div className="bg-white/80 dark:bg-card/40 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-border shadow-lg p-6 flex flex-col items-center h-full">
-                    {/* Bar Representation */}
-                    <div className="relative w-full h-32 flex flex-col justify-end mb-4">
-                       <motion.div
-                         initial={{ height: 0 }}
-                         whileInView={{ height: `${barHeights[index % barHeights.length]}%` }}
-                         viewport={{ once: true }}
-                         transition={{ duration: 1.2, delay: 0.2 }}
-                         className="w-full bg-gradient-to-t from-primary to-primary/60 rounded-t-lg mx-auto relative overflow-hidden"
-                       >
-                         {/* Shimmer */}
-                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-transparent animate-shimmer" />
-                       </motion.div>
-                       <div className="w-full h-0.5 bg-border rounded-full" />
-                    </div>
+          {/* Scrolling Container */}
+          <div className="overflow-hidden">
+            <motion.div
+              className="flex gap-3"
+              animate={{ x: offset }}
+              transition={{ ease: "linear", duration: 0 }}
+            >
+              {infiniteStats.map((stat, index) => {
+                const IconComponent = Object.entries(ICON_MAP).find(([key]) => 
+                  stat.label.includes(key)
+                )?.[1] || Star;
 
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-foreground mb-1">
-                        <CountUpAnimation end={stat.value} suffix={stat.suffix} />
+                const colors = GRADIENT_COLORS[index % GRADIENT_COLORS.length];
+                const trendValue = Math.floor(Math.random() * 30) + 5;
+
+                return (
+                  <div
+                    key={index}
+                    className="flex-shrink-0 w-[300px]"
+                  >
+                    <div className={`bg-card/50 backdrop-blur-sm rounded-lg p-4 border ${colors.border} hover:border-primary/30 transition-all duration-300`}>
+                      {/* Content Layout - Horizontal */}
+                      <div className="flex items-center justify-between gap-3">
+                        {/* Left: Icon & Content */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          {/* Icon Badge */}
+                          <div className={`flex-shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg ${colors.accent} ${colors.text}`}>
+                            <IconComponent className="w-5 h-5" />
+                          </div>
+
+                          {/* Value & Label */}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xl md:text-2xl font-semibold text-foreground/90 tracking-tight leading-none mb-1">
+                              <CountUpAnimation end={stat.value} suffix={stat.suffix} />
+                            </div>
+                            <p className="text-[11px] font-normal text-muted-foreground/70 truncate">
+                              {stat.label}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Right: Trend Badge */}
+                        <div className="flex-shrink-0">
+                          <div className="flex flex-col items-center justify-center w-11 h-11 rounded-lg bg-green-500/10 text-green-600 dark:bg-green-900/20 dark:text-green-400 font-medium">
+                            <span className="text-base leading-none">↑</span>
+                            <span className="text-[10px] leading-none mt-0.5">{trendValue}%</span>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="text-sm font-medium text-muted-foreground">{stat.label}</h3>
                     </div>
                   </div>
-                </motion.div>
-             ))}
+                );
+              })}
+            </motion.div>
           </div>
 
-          {/* Mobile Swipe Hint */}
-          <div className="flex md:hidden justify-center gap-2 mt-2">
-            {restaurantStats.map((_, i) => (
-              <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/30" />
-            ))}
-          </div>
+          {/* Pause Indicator */}
+          {isPaused && (
+            <div className="absolute top-2 right-2 z-20">
+              <div className="px-2 py-1 rounded bg-background/80 backdrop-blur-sm border border-border text-[10px] text-muted-foreground">
+                ⏸ Paused
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

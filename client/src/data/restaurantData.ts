@@ -108,22 +108,26 @@ export const cuisineCategories: CuisineCategory[] = [
   {
     id: "italian",
     title: "Italian",
-    description: "Authentic Italian flavors with a modern twist"
+    description: "Authentic Italian flavors with a modern twist",
+    image: "https://images.unsplash.com/photo-1595295333158-4742f28fbd85?q=80&w=800"
   },
   {
     id: "luxury-lounge",
     title: "Luxury Family Lounge",
-    description: "Premium dining experience for the whole family"
+    description: "Premium dining experience for the whole family",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800"
   },
   {
     id: "spicy-darbar",
     title: "Spicy Darbar",
-    description: "Fiery Indian delicacies that tantalize your taste buds"
+    description: "Fiery Indian delicacies that tantalize your taste buds",
+    image: "https://images.unsplash.com/photo-1628294895950-9805252327bc?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=800"
   },
   {
     id: "takeaway",
     title: "Takeaway Treats",
-    description: "Delicious meals to enjoy at home"
+    description: "Delicious meals to enjoy at home",
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800"
   }
 ];
 

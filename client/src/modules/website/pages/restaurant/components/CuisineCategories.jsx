@@ -1,111 +1,10 @@
 import { motion } from "framer-motion";
 import { cuisineCategories } from "@/data/restaurantData";
-import { UtensilsCrossed, Users, Flame, ShoppingBag } from "lucide-react";
-import { useEffect, useRef } from "react";
-
-const CATEGORY_ICONS = {
-  "italian": UtensilsCrossed,
-  "luxury-lounge": Users,
-  "spicy-darbar": Flame,
-  "takeaway": ShoppingBag
-};
-
-// Animated Dots Background Component
-const AnimatedDotsBackground = () => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const resizeCanvas = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    const dots = [];
-    const numDots = 40;
-    const maxDistance = 120;
-
-    for (let i = 0; i < numDots; i++) {
-      dots.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        radius: Math.random() * 1.5 + 0.5
-      });
-    }
-
-    const getPrimaryColor = () => {
-      const style = getComputedStyle(document.documentElement);
-      const primaryHSL = style.getPropertyValue('--primary').trim();
-      return `hsl(${primaryHSL})`;
-    };
-
-    let animationFrameId;
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const primaryColor = getPrimaryColor();
-
-      dots.forEach((dot, i) => {
-        dot.x += dot.vx;
-        dot.y += dot.vy;
-
-        if (dot.x < 0 || dot.x > canvas.width) dot.vx *= -1;
-        if (dot.y < 0 || dot.y > canvas.height) dot.vy *= -1;
-
-        ctx.beginPath();
-        ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
-        ctx.fillStyle = primaryColor;
-        ctx.globalAlpha = 0.3;
-        ctx.fill();
-
-        for (let j = i + 1; j < dots.length; j++) {
-          const dx = dots[j].x - dot.x;
-          const dy = dots[j].y - dot.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < maxDistance) {
-            ctx.beginPath();
-            ctx.moveTo(dot.x, dot.y);
-            ctx.lineTo(dots[j].x, dots[j].y);
-            ctx.strokeStyle = primaryColor;
-            ctx.globalAlpha = (1 - distance / maxDistance) * 0.2;
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-          }
-        }
-      });
-
-      ctx.globalAlpha = 1;
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ opacity: 0.5 }}
-    />
-  );
-};
+import { ArrowRight, Sparkles } from "lucide-react";
 
 export default function CuisineCategories() {
   const handleCategoryClick = (categoryId) => {
+    // Logic to filter or navigate to menu
     const menuSection = document.getElementById('menu');
     if (menuSection) {
       const elementPosition = menuSection.getBoundingClientRect().top;
@@ -119,150 +18,86 @@ export default function CuisineCategories() {
 
   return (
     <section className="relative py-12 md:py-16 bg-background overflow-hidden">
-      {/* Animated Dots Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <AnimatedDotsBackground />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background/90" />
-        
-        {/* Compact Organic Shapes */}
-        <motion.div
-          animate={{ 
-            scale: [1, 1.15, 1],
-            opacity: [0.02, 0.04, 0.02]
-          }}
-          transition={{ 
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-0 right-[10%] w-[300px] h-[300px] bg-primary rounded-full blur-3xl"
-        />
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-1/3 h-2/3 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl opacity-50" />
       </div>
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        {/* Compact Section Header */}
+        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-10"
+          className="text-center mb-12"
         >
-          <span className="inline-block px-3 py-1.5 bg-primary/10 border border-primary/30 rounded-full text-primary text-xs font-medium mb-3">
-            Our Specialties
+          <span className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-primary text-xs font-medium mb-3">
+            Culinary Offerings
           </span>
-          
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Explore Our Cuisines
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+            Explore Our Sub-Verticals
           </h2>
-          
-          <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto">
-            Discover a world of flavors crafted with passion
+          <p className="text-muted-foreground text-base max-w-2xl mx-auto">
+            From authentic Italian to fiery Indian flavors, discover the unique dining experiences we offer.
           </p>
         </motion.div>
 
-        {/* Compact Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-          {cuisineCategories.map((category, index) => {
-            const Icon = CATEGORY_ICONS[category.id] || UtensilsCrossed;
-            
-            return (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ 
-                  duration: 0.5, 
-                  delay: index * 0.1
-                }}
-                onClick={() => handleCategoryClick(category.id)}
-                className="group cursor-pointer"
-              >
-                <motion.div
-                  whileHover={{ 
-                    y: -6,
-                    transition: { duration: 0.3 }
-                  }}
-                  className="relative overflow-hidden rounded-2xl bg-card/80 backdrop-blur-sm border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/15 h-full"
-                >
-                  {/* Image Placeholder */}
-                  <div className="relative h-36 overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10">
-                    {/* Replace this div with <img> when images are available */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Icon className="w-16 h-16 text-primary/30" />
+        {/* Categories Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {cuisineCategories.map((category, index) => (
+            <motion.div
+              key={category.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              onClick={() => handleCategoryClick(category.id)}
+              className="group cursor-pointer"
+            >
+              <div className="relative h-[320px] rounded-2xl overflow-hidden shadow-lg border border-border group-hover:shadow-xl transition-all duration-500">
+                {/* Background Image */}
+                <div className="absolute inset-0 bg-muted">
+                  <img
+                    src={category.image || `https://source.unsplash.com/800x600/?${category.title}`}
+                    alt={category.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                </div>
+
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
+
+                {/* Content Overlay */}
+                <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col justify-end h-full">
+                  
+                  {/* Decorative Icon */}
+                  <div className="mb-auto opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -translate-y-4 group-hover:translate-y-0">
+                    <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+                      <Sparkles className="w-5 h-5 fill-current" />
                     </div>
-                    
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent opacity-60" />
-                    
-                    {/* Floating Icon Badge */}
-                    <motion.div
-                      animate={{ 
-                        y: [0, -5, 0]
-                      }}
-                      transition={{ 
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                      className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center shadow-lg"
-                    >
-                      <Icon className="w-5 h-5 text-primary" />
-                    </motion.div>
                   </div>
 
-                  {/* Compact Content */}
-                  <div className="relative p-4">
-                    {/* Title */}
-                    <h3 className="text-lg font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors duration-300">
-                      {category.title}
-                    </h3>
+                  <h3 className="text-2xl font-bold text-white mb-2 leading-tight group-hover:text-primary-foreground transition-colors">
+                    {category.title}
+                  </h3>
+                  
+                  <p className="text-white/80 text-sm leading-relaxed mb-4 line-clamp-2">
+                    {category.description}
+                  </p>
 
-                    {/* Description */}
-                    <p className="text-muted-foreground text-xs leading-relaxed mb-3">
-                      {category.description}
-                    </p>
-
-                    {/* Explore Link */}
-                    <div className="flex items-center gap-1.5 text-primary font-medium text-xs">
-                      <span className="group-hover:underline">Explore Menu</span>
-                      <motion.svg
-                        className="w-3 h-3"
-                        animate={{ x: [0, 3, 0] }}
-                        transition={{ 
-                          duration: 1.5,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </motion.svg>
-                    </div>
-
-                    {/* Bottom Accent Line */}
-                    <motion.div
-                      className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-primary to-transparent"
-                      initial={{ width: "0%" }}
-                      whileInView={{ width: "100%" }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-                    />
+                  <div className="flex items-center gap-2 text-white font-medium text-sm group-hover:gap-3 transition-all duration-300">
+                    <span>View Menu</span>
+                    <ArrowRight className="w-4 h-4" />
                   </div>
-                </motion.div>
-              </motion.div>
-            );
-          })}
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
+
