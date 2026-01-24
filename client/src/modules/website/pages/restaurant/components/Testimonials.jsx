@@ -33,7 +33,7 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="relative py-10 md:py-14 bg-background overflow-hidden">
+    <section className="relative py-8 md:py-12 bg-background overflow-hidden">
       {/* Compact Background */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -59,7 +59,7 @@ export default function Testimonials() {
         />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
         {/* Compact Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}

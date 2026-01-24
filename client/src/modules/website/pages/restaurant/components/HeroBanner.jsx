@@ -28,7 +28,7 @@ export default function HeroBanner() {
   };
 
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-background pt-24 pb-12">
+    <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-background pt-24 pb-8">
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Organic Shape - Top Right - Continuous Animation */}
@@ -90,7 +90,7 @@ export default function HeroBanner() {
         />
       </div>
 
-      <div className="container mx-auto px-4 xl:px-12 relative z-10">
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* LEFT COLUMN - Content */}
           <motion.div

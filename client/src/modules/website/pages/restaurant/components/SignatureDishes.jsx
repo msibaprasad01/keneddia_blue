@@ -148,7 +148,7 @@ export default function SignatureDishes() {
         />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
         {/* Compact Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -237,10 +237,15 @@ export default function SignatureDishes() {
                   className="h-full bg-card/60 backdrop-blur-sm border border-border rounded-xl overflow-hidden hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300"
                 >
                   {/* Compact Image */}
-                  <div className="relative aspect-square bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <MenuIcon className="w-12 h-12 text-primary/20 group-hover:text-primary/30 transition-colors" />
-                    </div>
+                  <div className="relative aspect-square bg-muted overflow-hidden">
+                    <img 
+                      src={dish.image || `https://source.unsplash.com/400x400/?${dish.name.replace(/\s+/g, ',')},food`} 
+                      alt={dish.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => {
+                        e.target.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format&fit=crop";
+                      }}
+                    />
                     
                     {/* Sparkle Effect */}
                     <motion.div
@@ -253,24 +258,24 @@ export default function SignatureDishes() {
                         repeat: Infinity,
                         repeatDelay: 3
                       }}
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 z-10"
                     >
-                      <Sparkles className="w-4 h-4 text-primary/50" />
+                      <Sparkles className="w-4 h-4 text-white drop-shadow-md" />
                     </motion.div>
 
                     {/* Hover Overlay */}
                     <motion.div
                       initial={{ opacity: 0 }}
                       whileHover={{ opacity: 1 }}
-                      className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent flex items-end justify-center p-3"
+                      className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center transition-opacity duration-300"
                     >
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-foreground rounded-full text-xs font-medium shadow-lg"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-white text-black rounded-full text-xs font-bold shadow-lg"
                       >
                         <Eye className="w-3 h-3" />
-                        View
+                        View Details
                       </motion.button>
                     </motion.div>
                   </div>

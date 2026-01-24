@@ -139,7 +139,7 @@ export default function CuisineCategories() {
         />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
         {/* Compact Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

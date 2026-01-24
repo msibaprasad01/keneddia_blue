@@ -6,8 +6,8 @@ export default function AboutRestaurant() {
   const { name, description, hours, contact, specialOffer } = restaurantInfo;
 
   return (
-    <section id="about" className="py-16 md:py-24 bg-muted/30">
-      <div className="container mx-auto px-4">
+    <section id="about" className="py-12 md:py-16 bg-muted/30">
+      <div className="container mx-auto px-6 max-w-7xl">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Image */}
           <motion.div

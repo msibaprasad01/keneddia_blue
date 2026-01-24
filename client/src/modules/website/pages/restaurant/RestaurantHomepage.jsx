@@ -4,7 +4,7 @@ import Footer from "@/modules/website/components/Footer";
 import HeroBanner from "./components/HeroBanner";
 import CuisineCategories from "./components/CuisineCategories";
 import AboutRestaurant from "./components/AboutRestaurant";
-import RestaurantStats from "./components/RestaurantStats";
+import PerformanceMetrics from "./components/PerformanceMetrics";
 import BanquetsAndCatering from "./components/BanquetsAndCatering";
 import EventsSchedule from "./components/EventsSchedule";
 import SignatureDishes from "./components/SignatureDishes";
@@ -46,7 +46,7 @@ export default function RestaurantHomepage() {
         <AboutRestaurant />
 
         {/* Statistics */}
-        <RestaurantStats />
+        <PerformanceMetrics />
 
         {/* Banquets & Catering */}
         <BanquetsAndCatering />

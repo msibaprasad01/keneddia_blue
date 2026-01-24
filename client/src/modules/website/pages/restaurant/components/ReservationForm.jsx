@@ -74,7 +74,8 @@ export default function ReservationForm() {
   };
 
   return (
-    <section id="reservation" className="relative py-10 md:py-14 bg-background overflow-hidden">
+    <section id="reservation" className="relative py-8 md:py-12 bg-background overflow-hidden">
+
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -99,7 +100,7 @@ export default function ReservationForm() {
         />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
         <div className="max-w-5xl mx-auto">
           {/* Compact Header */}
           <motion.div

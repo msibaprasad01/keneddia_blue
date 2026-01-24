@@ -66,7 +66,7 @@ export default function BanquetsAndCatering() {
         />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
         {/* Compact Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -122,7 +122,7 @@ export default function BanquetsAndCatering() {
                     transition={{ duration: 0.4, delay: (index % banquetServices.length) * 0.1 }}
                     className="group flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
                   >
-                    <div className="h-full bg-card/60 backdrop-blur-sm border border-border rounded-xl p-6 md:p-7 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer min-h-[220px] flex flex-col">
+                    <div className="h-full bg-card/60 backdrop-blur-sm border border-border rounded-xl p-5 md:p-6 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer min-h-[220px] flex flex-col">
                       {/* Icon */}
                       <div className="mb-5">
                         <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors group-hover:scale-110 duration-300">
