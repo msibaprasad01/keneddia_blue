@@ -1,28 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Navigation } from "swiper/modules";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, ChevronDown, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight, Loader2 } from "lucide-react";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import "swiper/css/effect-fade";
 import "swiper/css/navigation";
-
+import { getHeroSection } from "@/Api/Api";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
-// Assets
+// Assets - Fallback
 import video1 from "@assets/video/video1.mp4";
 
-const slides = [
+// Default slides as fallback
+const defaultSlides = [
   {
     type: "video" as const,
     media: video1,
-    mobileMedia: video1, // Start with same media, allows replacement
+    mobileMedia: video1,
     thumbnail: siteContent.images.hero.slide1,
     title: siteContent.text.hero.slides[0].title,
     subtitle: siteContent.text.hero.slides[0].subtitle,
-    // cta: "Know More",
   },
   {
     type: "image" as const,
@@ -44,9 +44,99 @@ const slides = [
   },
 ];
 
+interface HeroSlide {
+  type: "video" | "image";
+  media: string | any;
+  mobileMedia: string | any;
+  thumbnail: string | any;
+  title: string;
+  subtitle: string;
+  cta?: string;
+  fallbackMedia?: any;
+  fallbackThumbnail?: any;
+}
+
 export default function Hero() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
+  const [slides, setSlides] = useState<HeroSlide[]>(defaultSlides);
+  const [loading, setLoading] = useState(true);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetchHeroSection();
+  }, []);
+
+  const fetchHeroSection = async () => {
+    try {
+      setLoading(true);
+      const response = await getHeroSection();
+      
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        // Get the latest hero section (highest id)
+        const latestHero = response.data.reduce((latest: any, current: any) => 
+          current.id > latest.id ? current : latest
+        );
+        
+        // Only use if active
+        if (latestHero.active) {
+          const isVideo = latestHero.backgroundMediaType === "VIDEO";
+          const hasSubMedia = latestHero.subMediaUrl && latestHero.subMediaType;
+          
+          // Create single slide from latest hero with fallbacks
+          const apiSlide: HeroSlide = {
+            type: isVideo ? "video" : "image",
+            media: latestHero.backgroundMediaUrl,
+            mobileMedia: hasSubMedia ? latestHero.subMediaUrl : latestHero.backgroundMediaUrl,
+            thumbnail: isVideo 
+              ? (hasSubMedia && latestHero.subMediaType === "IMAGE" ? latestHero.subMediaUrl : latestHero.backgroundMediaUrl)
+              : latestHero.backgroundMediaUrl,
+            title: latestHero.mainTitle,
+            subtitle: latestHero.subTitle,
+            cta: latestHero.ctaText,
+            // Add fallbacks
+            fallbackMedia: defaultSlides[0].media,
+            fallbackThumbnail: defaultSlides[0].thumbnail,
+          };
+          
+          // Replace only the first slide with API data, keep others as default
+          setSlides([
+            { ...apiSlide },
+            { ...defaultSlides[1], fallbackMedia: defaultSlides[1].media, fallbackThumbnail: defaultSlides[1].thumbnail },
+            { ...defaultSlides[2], fallbackMedia: defaultSlides[2].media, fallbackThumbnail: defaultSlides[2].thumbnail }
+          ]);
+          console.log("Loaded latest hero section:", latestHero);
+        } else {
+          console.log("Latest hero section is not active, using default slides");
+          setSlides(defaultSlides.map(slide => ({ 
+            ...slide, 
+            fallbackMedia: slide.media, 
+            fallbackThumbnail: slide.thumbnail 
+          })));
+        }
+      } else {
+        console.log("No hero sections from API, using default slides");
+        setSlides(defaultSlides.map(slide => ({ 
+          ...slide, 
+          fallbackMedia: slide.media, 
+          fallbackThumbnail: slide.thumbnail 
+        })));
+      }
+    } catch (error) {
+      console.error("Error fetching hero section:", error);
+      setSlides(defaultSlides.map(slide => ({ 
+        ...slide, 
+        fallbackMedia: slide.media, 
+        fallbackThumbnail: slide.thumbnail 
+      })));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageError = (url: string) => {
+    setImageErrors(prev => new Set(prev).add(url));
+  };
 
   const handleThumbnailClick = (index: number) => {
     if (swiperInstance) {
@@ -60,6 +150,83 @@ export default function Hero() {
       businessSection.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  const renderMedia = (slide: HeroSlide, isMobile: boolean = false) => {
+    const mediaUrl = isMobile ? slide.mobileMedia : slide.media;
+    const shouldUseFallback = typeof mediaUrl === 'string' && imageErrors.has(mediaUrl);
+    const finalMedia = shouldUseFallback ? slide.fallbackMedia : mediaUrl;
+
+    if (slide.type === "video" && typeof finalMedia === 'string') {
+      return (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          className="w-full h-full object-cover"
+          key={finalMedia}
+          onError={() => handleImageError(finalMedia)}
+        >
+          <source src={finalMedia} type="video/mp4" />
+        </video>
+      );
+    }
+
+    if (typeof finalMedia === 'string') {
+      return (
+        <img 
+          src={finalMedia} 
+          alt={slide.title}
+          className="w-full h-full object-cover"
+          onError={() => handleImageError(finalMedia)}
+        />
+      );
+    }
+
+    return (
+      <OptimizedImage
+        {...finalMedia}
+        className="w-full h-full object-cover"
+      />
+    );
+  };
+
+  const renderThumbnail = (slide: HeroSlide) => {
+    const thumbnailUrl = slide.thumbnail;
+    const shouldUseFallback = typeof thumbnailUrl === 'string' && imageErrors.has(thumbnailUrl);
+    const finalThumbnail = shouldUseFallback ? slide.fallbackThumbnail : thumbnailUrl;
+
+    if (typeof finalThumbnail === 'string') {
+      return (
+        <img 
+          src={finalThumbnail} 
+          alt={slide.subtitle}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          onError={() => handleImageError(finalThumbnail)}
+        />
+      );
+    }
+
+    return (
+      <OptimizedImage
+        {...finalThumbnail}
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+      />
+    );
+  };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <section className="relative w-full h-screen overflow-hidden bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 size={48} className="animate-spin text-white" />
+          <p className="text-white/80 text-lg">Loading...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative w-full h-screen overflow-hidden bg-background">
@@ -77,46 +244,12 @@ export default function Hero() {
           <SwiperSlide key={index} className="relative w-full h-full">
             {/* Background Media - Desktop */}
             <div className="hidden md:block absolute inset-0 w-full h-full overflow-hidden">
-              {slide.type === "video" ? (
-                <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  poster={slide.thumbnail.src}
-                  className="w-full h-full object-cover"
-                >
-                  <source src={slide.media as string} type="video/mp4" />
-                </video>
-              ) : (
-                <OptimizedImage
-                  {...slide.media}
-                  className="w-full h-full object-cover"
-                />
-              )}
+              {renderMedia(slide, false)}
             </div>
 
             {/* Background Media - Mobile (Distinct Asset Support) */}
             <div className="block md:hidden absolute inset-0 w-full h-full overflow-hidden">
-              {slide.type === "video" ? (
-                <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  poster={slide.thumbnail.src}
-                  className="w-full h-full object-cover"
-                >
-                  <source src={slide.mobileMedia as string} type="video/mp4" />
-                </video>
-              ) : (
-                <OptimizedImage
-                  {...slide.mobileMedia}
-                  className="w-full h-full object-cover"
-                />
-              )}
+              {renderMedia(slide, true)}
             </div>
 
             {/* Gradient Overlay - Increased opacity for better text contrast */}
@@ -127,6 +260,7 @@ export default function Hero() {
               <div className="container mx-auto h-full px-8 md:px-16 lg:px-24 flex items-center">
                 <div className="w-full md:w-[70%] xl:w-[75%] pointer-events-auto">
                   <motion.h1
+                    key={`title-${index}`}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
@@ -135,6 +269,7 @@ export default function Hero() {
                     {slide.title}
                   </motion.h1>
                   <motion.p
+                    key={`subtitle-${index}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.8 }}
@@ -144,6 +279,7 @@ export default function Hero() {
                   </motion.p>
                   {slide.cta && (
                     <motion.button
+                      key={`cta-${index}`}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.7, duration: 0.8 }}
@@ -170,7 +306,7 @@ export default function Hero() {
 
                       {/* Button content */}
                       <span className="relative z-10">{slide.cta}</span>
-                      <ArrowRight className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                      {/* <ArrowRight className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" /> */}
 
                       {/* Glow effect on hover */}
                       <span className="absolute inset-0 bg-gradient-to-r from-amber-300 to-yellow-400 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
@@ -213,10 +349,7 @@ export default function Hero() {
                 : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
                 }`}
             >
-              <OptimizedImage
-                {...slide.thumbnail}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
+              {renderThumbnail(slide)}
               {slide.type === "video" && (
                 <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
                   <svg
@@ -228,7 +361,7 @@ export default function Hero() {
                   </svg>
                 </div>
               )}
-              <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-linear-to-t from-black/90 to-transparent">
+              <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-gradient-to-t from-black/90 to-transparent">
                 <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
                   {slide.subtitle}
                 </p>
@@ -280,8 +413,6 @@ export default function Hero() {
           </div>
         </div>
       </div>
-
-
 
       {/* Mobile Navigation */}
       <div className="md:hidden absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
