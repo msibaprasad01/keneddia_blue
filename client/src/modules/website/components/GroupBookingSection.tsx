@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, PartyPopper, ArrowRight, ChevronRight, Check, Calendar, MapPin, Sparkles } from "lucide-react";
+import { Users, PartyPopper, ArrowRight, ChevronRight, Check, Calendar, MapPin, Sparkles, Phone, MessageCircle } from "lucide-react";
+import { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -55,7 +56,7 @@ const UPCOMING_EVENTS = [
       title: "Sufi Night with Live Band",
       date: "2nd Nov 2024",
       location: "Kennedia Blu Delhi",
-      image: siteContent.images.bars.poolside,
+      image: siteContent.images.bars.rooftop,
       price: "Entry Free for Guests",
       badge: "Exclusive"
     }
@@ -110,29 +111,22 @@ export default function GroupBookingSection() {
   // Wizard State
   const [city, setCity] = useState("");
   const [hotel, setHotel] = useState<Hotel | null>(null);
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   const handleOpenBooking = (option: typeof GROUP_BOOKING_OPTIONS[0]) => {
     setSelectedOffer({ id: option.id, title: option.title, icon: option.icon });
     setStep(1);
     setCity("");
     setHotel(null);
-    setDate(undefined);
+    setDateRange(undefined);
   };
 
   const handleNext = () => setStep(s => s + 1);
   const handleBack = () => setStep(s => s - 1);
 
   const handleFinish = () => {
-    if (!selectedOffer || !hotel) return;
-
-    const params = new URLSearchParams();
-    params.append("type", selectedOffer.id);
-    params.append("hotel", hotel.name);
-    params.append("location", hotel.city);
-    if (date) params.append("checkIn", date.toISOString());
-
-    navigate(`/checkout?${params.toString()}`);
+    // Show Success Step instead of Navigation
+    setStep(4);
   };
 
   const filteredHotels = city ? HOTELS_DATA.filter(h => h.city === city) : [];
@@ -151,63 +145,9 @@ export default function GroupBookingSection() {
 
         {/* Split Layout Container */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* LEFT SIDE: Group Booking (30%) */}
-          <div className="lg:col-span-4">
-            <div className="bg-gradient-to-br from-primary/5 via-background to-background border border-border/50 rounded-2xl p-5 h-full shadow-sm flex flex-col">
-              <div className="mb-4">
-                <h3 className="text-lg font-serif font-semibold mb-1 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-primary" />
-                  Group Booking
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Special packages for your celebrations
-                </p>
-              </div>
 
-              <div className="space-y-2.5 flex-1">
-                {GROUP_BOOKING_OPTIONS.map((option) => (
-                  <div
-                    key={option.id}
-                    onClick={() => handleOpenBooking(option)}
-                    className={cn(
-                      "group relative overflow-hidden rounded-xl border-2 p-3.5 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5",
-                      option.color
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        <option.icon className="w-4.5 h-4.5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm mb-0.5 group-hover:text-primary transition-colors">
-                          {option.title}
-                        </h4>
-                        <p className="text-xs text-muted-foreground line-clamp-2 mb-1.5">
-                          {option.description}
-                        </p>
-                        <div className="flex items-center gap-1 text-xs font-medium text-primary">
-                          <span>Plan Now</span>
-                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Additional Info */}
-              <div className="mt-4 pt-4 border-t border-border/50">
-                <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                  <p>Custom packages, flexible booking, and dedicated event coordinators available</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT SIDE: Upcoming Events Carousel (70%) */}
-          <div className="lg:col-span-8">
+          {/* LEFT SIDE: Upcoming Events Carousel (70%) */}
+          <div className="lg:col-span-8 order-2 lg:order-1">
             <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
               <div className="mb-5">
                 <h3 className="text-lg font-serif font-semibold mb-1 flex items-center gap-2">
@@ -224,7 +164,7 @@ export default function GroupBookingSection() {
                 <Swiper
                   modules={[Autoplay, Pagination]}
                   autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-                  pagination={{ 
+                  pagination={{
                     clickable: true,
                     el: '.events-pagination',
                   }}
@@ -236,16 +176,22 @@ export default function GroupBookingSection() {
                     <SwiperSlide key={slideIndex}>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {eventPair.map((event) => (
-                          <div 
+                          <div
                             key={event.id}
                             className="group bg-background border border-border/60 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer"
                           >
-                            {/* Event Image */}
-                            <div className="relative h-[140px] overflow-hidden">
-                              <OptimizedImage 
-                                {...event.image} 
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                            {/* Event Image or Video */}
+                            <div className="relative h-[160px] overflow-hidden">
+                              {/* Placeholder logic for video/reel support if we had videoSrc */}
+                              <OptimizedImage
+                                {...event.image}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                               />
+                              {/* Play Icon Overlay if it were a video */}
+                              {/* <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition-all">
+                                 <PlayCircle className="w-10 h-10 text-white/80" />
+                              </div> */}
+
                               {/* Badge */}
                               <div className="absolute top-2.5 right-2.5">
                                 <span className="bg-black/70 backdrop-blur-sm text-white text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
@@ -255,7 +201,7 @@ export default function GroupBookingSection() {
                             </div>
 
                             {/* Event Content */}
-                            <div className="p-3.5">
+                            <div className="p-4">
                               <div className="flex items-center gap-3 flex-wrap text-[10px] text-muted-foreground mb-2">
                                 <span className="flex items-center gap-1 font-medium text-primary">
                                   <Calendar className="w-3 h-3" /> {event.date}
@@ -264,17 +210,17 @@ export default function GroupBookingSection() {
                                   <MapPin className="w-3 h-3" /> {event.location}
                                 </span>
                               </div>
-                              
-                              <h4 className="font-serif text-sm font-semibold mb-2.5 line-clamp-1 group-hover:text-primary transition-colors">
+
+                              <h4 className="font-serif text-base font-semibold mb-3 line-clamp-1 group-hover:text-primary transition-colors">
                                 {event.title}
                               </h4>
 
-                              <div className="flex items-center justify-between pt-2.5 border-t border-border/40">
+                              <div className="flex items-center justify-between pt-3 border-t border-border/40">
                                 <span className="text-sm font-bold text-foreground">{event.price}</span>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="h-7 text-xs px-3.5 rounded-full hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-8 text-xs px-4 rounded-full hover:bg-primary hover:text-primary-foreground hover:border-primary"
                                 >
                                   View Details
                                 </Button>
@@ -289,6 +235,59 @@ export default function GroupBookingSection() {
 
                 {/* Dot Pagination */}
                 <div className="events-pagination flex justify-center gap-2 mt-5" />
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT SIDE: Group Booking (30%) */}
+          <div className="lg:col-span-4 order-1 lg:order-2">
+            <div className="bg-gradient-to-br from-primary/5 via-background to-background border border-border/50 rounded-2xl p-6 h-full shadow-sm flex flex-col">
+              <div className="mb-6">
+                <h3 className="text-xl font-serif font-semibold mb-2 flex items-center gap-2">
+                  <Users className="w-6 h-6 text-primary" />
+                  Group Booking
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Planning a special event? Let us make it unforgettable.
+                </p>
+              </div>
+
+              <div className="space-y-3 flex-1">
+                {GROUP_BOOKING_OPTIONS.map((option) => (
+                  <div
+                    key={option.id}
+                    onClick={() => handleOpenBooking(option)}
+                    className={cn(
+                      "group relative overflow-hidden rounded-xl border-2 p-4 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1",
+                      option.color
+                    )}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-sm">
+                        <option.icon className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">
+                          {option.title}
+                        </h4>
+                        <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wide mt-2">
+                          <span>Enquire Now</span>
+                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Additional Contact Options */}
+              <div className="mt-8 pt-6 border-t border-border/50 grid grid-cols-2 gap-3">
+                <Button variant="outline" className="w-full gap-2 text-xs h-10">
+                  <Phone className="w-3.5 h-3.5" /> Call Us
+                </Button>
+                <Button variant="outline" className="w-full gap-2 text-xs h-10 bg-[#25D366]/10 text-[#25D366] border-[#25D366]/20 hover:bg-[#25D366]/20 hover:text-[#25D366]">
+                  <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                </Button>
               </div>
             </div>
           </div>
@@ -318,7 +317,7 @@ export default function GroupBookingSection() {
             </div>
           </div>
 
-          <div className="px-6 pb-6 min-h-[300px]">
+          <div className="px-6 pb-6 min-h-[350px]">
             {/* STEP 1: CITY */}
             {step === 1 && (
               <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
@@ -371,38 +370,61 @@ export default function GroupBookingSection() {
               </div>
             )}
 
-            {/* STEP 3: DATE */}
+            {/* STEP 3: DATE RANGE */}
             {step === 3 && (
               <div className="space-y-4 animate-in slide-in-from-right-4 duration-300 flex flex-col items-center">
-                <h3 className="font-medium text-lg self-start">Select Event Date</h3>
+                <h3 className="font-medium text-lg self-start">Select Event Dates</h3>
                 <div className="border rounded-lg p-3 bg-card/50">
                   <CalendarComponent
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={setDateRange}
                     className="rounded-md border"
                     initialFocus
+                    numberOfMonths={1}
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  *Select start and end date for your event
+                </p>
               </div>
             )}
-          </div>
 
-          <div className="p-4 bg-muted/20 border-t flex justify-between items-center">
-            <Button variant="ghost" onClick={handleBack} disabled={step === 1}>
-              Back
-            </Button>
-
-            {step < 3 ? (
-              <Button onClick={handleNext} disabled={step === 1 ? !city : !hotel}>
-                Next <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            ) : (
-              <Button onClick={handleFinish} disabled={!date}>
-                Proceed to Checkout
-              </Button>
+            {/* STEP 4: SUCCESS (Virtual Step) */}
+            {step === 4 && (
+              <div className="flex flex-col items-center justify-center text-center h-full py-8 animate-in zoom-in-50 duration-300">
+                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+                  <Check className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-serif font-bold mb-2">Enquiry Sent!</h3>
+                <p className="text-muted-foreground max-w-xs mb-6">
+                  Thank you for your interest. Our event coordinator will contact you shortly to plan your {selectedOffer?.title}.
+                </p>
+                <Button onClick={() => setSelectedOffer(null)} className="min-w-[150px]">
+                  Close
+                </Button>
+              </div>
             )}
+
           </div>
+
+          {step < 4 && (
+            <div className="p-4 bg-muted/20 border-t flex justify-between items-center">
+              <Button variant="ghost" onClick={handleBack} disabled={step === 1}>
+                Back
+              </Button>
+
+              {step < 3 ? (
+                <Button onClick={handleNext} disabled={step === 1 ? !city : !hotel}>
+                  Next <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              ) : (
+                <Button onClick={handleFinish} disabled={!dateRange?.from}>
+                  Send Enquiry
+                </Button>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

@@ -282,5 +282,27 @@ export default function RightSidebar({ hotel, selectedRoom }: RightSidebarProps)
       )}
 
     </div>
+      
+      {/* Also Available On - NEW */ }
+  <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+    <h4 className="text-sm font-serif font-bold text-foreground mb-3 text-center">Also Available On</h4>
+    <div className="flex items-center justify-center gap-4 opacity-70 grayscale hover:grayscale-0 transition-all">
+      {/* Simple Text Logos / Icons for demo */}
+      <div className="text-[10px] font-bold border border-border px-2 py-1 rounded">Goibibo</div>
+      <div className="text-[10px] font-bold border border-border px-2 py-1 rounded">MakeMyTrip</div>
+      <div className="text-[10px] font-bold border border-border px-2 py-1 rounded">Agoda</div>
+    </div>
+  </div>
+
+  {/* Hotel Specific WhatsApp */ }
+  <Button
+    variant="outline"
+    className="w-full h-12 gap-2 text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10 hover:text-[#25D366] font-bold shadow-sm"
+    onClick={() => window.open(`https://wa.me/919876543210?text=I'm interested in booking a room at ${hotel.name}`, '_blank')}
+  >
+    <MessageSquare className="w-5 h-5" /> Chat on WhatsApp
+  </Button>
+
+    </div >
   );
 }

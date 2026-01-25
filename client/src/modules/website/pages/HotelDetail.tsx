@@ -11,7 +11,9 @@ import {
   ChevronRight,
   Utensils,
   Map as MapIcon,
-  Navigation
+  Navigation,
+  ArrowRight,
+  Calendar
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
@@ -127,12 +129,22 @@ export default function HotelDetail() {
                 <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2">{hotel.name}</h1>
 
                 {/* Location Only */}
-                <div className="mb-4">
+                <div className="mb-4 space-y-2">
                   <p className="text-muted-foreground flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-primary" />
                     {hotel.location}
                     <span className="text-primary hover:underline cursor-pointer text-xs font-semibold ml-2" onClick={() => document.getElementById('location')?.scrollIntoView({ behavior: 'smooth' })}>View Map</span>
                   </p>
+
+                  {/* Nearby Landmark Info - Moved Here */}
+                  {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1"><Navigation className="w-3 h-3 text-green-500" /> {hotel.nearbyPlaces[0].distance} from {hotel.nearbyPlaces[0].name}</span>
+                      {hotel.nearbyPlaces.length > 1 && (
+                        <span className="flex items-center gap-1"><Navigation className="w-3 h-3 text-green-500" /> {hotel.nearbyPlaces[1].distance} from {hotel.nearbyPlaces[1].name}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Rating & Reviews */}
@@ -149,7 +161,6 @@ export default function HotelDetail() {
                 </div>
               </div>
 
-              {/* Right Side - Actions & Nearby Places */}
               <div className="flex flex-col items-end gap-3">
                 {/* Share & Like Buttons */}
                 <div className="flex gap-2">
@@ -160,25 +171,6 @@ export default function HotelDetail() {
                     <Heart className="w-4 h-4" />
                   </Button>
                 </div>
-
-                {/* Nearby Landmark Info */}
-                {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
-                  <div className="bg-secondary/30 rounded-lg px-3 py-2 border border-border/50">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <Navigation className="w-3 h-3 text-green-500" />
-                      <span className="text-xs text-muted-foreground">
-                        {hotel.nearbyPlaces[0].distance} from {hotel.nearbyPlaces[0].name}
-                      </span>
-                    </div>
-                    {hotel.nearbyPlaces.length > 1 && (
-                      <div className="flex items-center gap-1.5 ml-4">
-                        <span className="text-xs text-muted-foreground">
-                          {hotel.nearbyPlaces[1].distance} from {hotel.nearbyPlaces[1].name}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -284,25 +276,54 @@ export default function HotelDetail() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5 }}
-                    className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-md transition-shadow"
+                    className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-lg hover:border-primary/40 transition-all duration-300 group"
                   >
-                    <div className="h-48 relative group cursor-pointer">
-                      <OptimizedImage {...event.image} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+                    <div className="h-56 relative cursor-pointer overflow-hidden">
+                      {/* Video/Reel Support Placeholder Logic */}
+                      {event.mediaType === 'video' || event.mediaType === 'reel' ? (
+                        // If videoSrc existed, we would render a video tag here. 
+                        // Using Image with Play Overlay as we don't have video URLs in data yet.
+                        <>
+                          <OptimizedImage {...event.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/40 group-hover:bg-primary group-hover:border-primary transition-colors">
+                              <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[14px] border-l-white border-b-[8px] border-b-transparent ml-1" />
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <OptimizedImage {...event.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      )}
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
+
                       {event.tag && (
-                        <div className="absolute top-3 right-3">
-                          <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold">
+                        <div className="absolute top-3 left-3">
+                          <span className="bg-primary/90 text-primary-foreground px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md">
                             {event.tag}
                           </span>
                         </div>
                       )}
+
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <div className="flex items-center gap-3 text-xs text-white/90 mb-1">
+                          <span className="flex items-center gap-1 font-medium"><Calendar className="w-3.5 h-3.5" /> {event.date}</span>
+                          <span className="flex items-center gap-1 font-medium"><Check className="w-3.5 h-3.5" /> {event.time}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <h3 className="text-lg font-serif font-bold mb-2">{event.title}</h3>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="font-semibold text-primary">{event.date}</span>
-                        <span>•</span>
-                        <span>{event.time}</span>
+
+                    <div className="p-5 flex-1 flex flex-col bg-card relative">
+                      <h3 className="text-xl font-serif font-bold mb-2 group-hover:text-primary transition-colors">{event.title}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                        Join us for an exclusive experience. Limited seats available.
+                      </p>
+
+                      <div className="mt-auto pt-4 border-t border-border/50 flex justify-between items-center">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">View Details</span>
+                        <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
+                          <ArrowRight className="w-4 h-4" />
+                        </div>
                       </div>
                     </div>
                   </motion.div>

@@ -18,8 +18,10 @@ export interface Event {
   title: string;
   date: string;
   time: string;
-  image: ImageAsset;
+  image: ImageAsset; // Used as thumbnail for video
   tag?: string;
+  mediaType?: 'image' | 'video' | 'reel';
+  videoSrc?: string;
 }
 
 export interface Hotel {

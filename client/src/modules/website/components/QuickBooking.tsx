@@ -138,19 +138,22 @@ export default function QuickBooking() {
         className="bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-md"
       >
         {/* Header */}
-        <div className="p-4 bg-primary/5 border-b border-border/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-              <Search className="w-4 h-4" />
+        <div className="p-6 bg-primary/5 border-b border-border/10 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-lg">
+              <Search className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-serif font-medium">Find Your Stay</h3>
+            <div>
+              <h3 className="text-xl font-serif font-medium text-foreground">Find Your Stay</h3>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Best Prices Guaranteed</p>
+            </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-8">
           {/* Search Fields Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             {/* Location Selector */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -161,7 +164,7 @@ export default function QuickBooking() {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-between text-left font-normal bg-background/50 h-11 group",
+                      "w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors",
                       !location && "text-muted-foreground"
                     )}
                   >
@@ -221,7 +224,7 @@ export default function QuickBooking() {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-between text-left font-normal bg-background/50 h-11 group",
+                      "w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors",
                       !checkIn && "text-muted-foreground"
                     )}
                   >
@@ -272,7 +275,7 @@ export default function QuickBooking() {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-between text-left font-normal bg-background/50 h-11 group",
+                      "w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors",
                       !checkOut && "text-muted-foreground"
                     )}
                   >
@@ -326,7 +329,7 @@ export default function QuickBooking() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full justify-between text-left font-normal bg-background/50 h-11 group"
+                    className="w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors"
                   >
                     <span className="flex items-center">
                       <Users className="mr-2 h-4 w-4 text-primary" />
@@ -478,7 +481,7 @@ export default function QuickBooking() {
             <div className="flex items-end">
               <Button
                 onClick={handleSearch}
-                className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-bold uppercase tracking-wide text-sm shadow-lg hover:shadow-xl transition-all"
+                className="w-full h-14 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-bold uppercase tracking-wide text-base shadow-lg hover:shadow-xl transition-all"
               >
                 <Search className="w-4 h-4" />
                 Book
