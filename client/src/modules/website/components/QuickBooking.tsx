@@ -18,8 +18,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import CalendarComponent from "@/components/ui/calendar";
+import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { MapContainer, TileLayer, Marker, Popup as MapPopup } from "react-leaflet";
@@ -240,12 +240,16 @@ export default function QuickBooking() {
                     <p className="text-sm font-semibold text-foreground">Select Check-in Date</p>
                   </div>
                   <CalendarComponent
-                    mode="single"
-                    selected={checkIn}
-                    onSelect={handleCheckInSelect}
-                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                    initialFocus
+                    value={checkIn}
+                    onChange={(value) => {
+                      if (value instanceof Date) {
+                        handleCheckInSelect(value);
+                      }
+                    }}
+                    minDate={new Date()}
+                    maxDate={addDays(new Date(), 365)}
                   />
+
                   {checkIn && (
                     <div className="p-3 border-t bg-muted/30 flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">
@@ -291,14 +295,16 @@ export default function QuickBooking() {
                     <p className="text-sm font-semibold text-foreground">Select Check-out Date</p>
                   </div>
                   <CalendarComponent
-                    mode="single"
-                    selected={checkOut}
-                    onSelect={handleCheckOutSelect}
-                    disabled={(date) =>
-                      checkIn ? date <= checkIn : date < new Date(new Date().setHours(0, 0, 0, 0))
-                    }
-                    initialFocus
+                    value={checkOut}
+                    onChange={(value) => {
+                      if (value instanceof Date) {
+                        handleCheckOutSelect(value);
+                      }
+                    }}
+                    minDate={checkIn ? addDays(checkIn, 1) : new Date()}
+                    maxDate={addDays(new Date(), 365)}
                   />
+
                   <div className="p-3 border-t bg-muted/30 flex items-center justify-between">
                     {checkIn && (
                       <span className="text-xs text-muted-foreground">

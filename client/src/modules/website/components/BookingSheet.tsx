@@ -6,7 +6,8 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Calendar } from "@/components/ui/calendar"
+import Calendar from "@/components/ui/calendar"
+
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Check, ChevronRight, User, Calendar as CalendarIcon, CreditCard, ChevronLeft, Users, Minus, Plus, BedDouble, Utensils, ShoppingBag, X } from "lucide-react"
 import { format, differenceInDays, addDays } from "date-fns"
@@ -486,15 +487,15 @@ function DatePicker({ date, onSelect, label, minDate }: DatePickerProps) {
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
-            mode="single"
-            selected={date}
-            onSelect={onSelect}
-            disabled={(date) => {
-              if (minDate && date < minDate) return true
-              if (date > DATE_CONFIG.maxDate) return true
-              return false
+            value={date}
+            onChange={(value) => {
+              if (value instanceof Date) {
+                onSelect(value);
+              } else if (Array.isArray(value) && value[0]) {
+                onSelect(value[0]);
+              }
             }}
-            initialFocus
+            minDate={minDate}
           />
         </PopoverContent>
       </Popover>

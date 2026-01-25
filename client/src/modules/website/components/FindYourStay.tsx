@@ -1,27 +1,29 @@
 
 import { useState } from 'react';
-import { DateRange } from 'react-day-picker';
 import { addDays, format } from 'date-fns';
 import { Calendar as CalendarIcon, Users, ArrowRight } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
+import Calendar from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
+type CalendarValue = Date | null | [Date | null, Date | null];
+
 interface FindYourStayProps {
-  initialDate?: DateRange;
+  initialDate?: [Date | null, Date | null];
   initialGuests?: { adults: number; children: number; rooms: number };
 }
 
 export default function FindYourStay({ initialDate, initialGuests }: FindYourStayProps) {
-  const [date, setDate] = useState<DateRange | undefined>(initialDate || {
-    from: new Date(),
-    to: addDays(new Date(), 2),
-  });
+  const [date, setDate] = useState<CalendarValue>(initialDate || [new Date(), addDays(new Date(), 2)]);
 
   const [guests, setGuests] = useState(initialGuests || { adults: 2, children: 0, rooms: 1 });
   const [isOpen, setIsOpen] = useState(false);
+
+  // Helper to safely get start/end dates
+  const startDate = Array.isArray(date) ? date[0] : date;
+  const endDate = Array.isArray(date) ? date[1] : null;
 
   return (
     <motion.div
@@ -38,17 +40,15 @@ export default function FindYourStay({ initialDate, initialGuests }: FindYourSta
               <PopoverTrigger asChild>
                 <button className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors text-left">
                   <CalendarIcon className="w-4 h-4 text-primary" />
-                  {date?.from ? format(date.from, "EEE, dd MMM") : "Select"}
+                  {startDate ? format(startDate, "EEE, dd MMM") : "Select"}
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={date?.from}
-                  selected={date}
-                  onSelect={setDate}
-                  numberOfMonths={2}
+                  selectRange={true}
+                  value={date}
+                  onChange={setDate}
+                  minDate={new Date()}
                 />
               </PopoverContent>
             </Popover>
@@ -61,7 +61,7 @@ export default function FindYourStay({ initialDate, initialGuests }: FindYourSta
               onClick={() => document.getElementById('date-trigger')?.click()}
             >
               <CalendarIcon className="w-4 h-4 text-primary" />
-              {date?.to ? format(date.to, "EEE, dd MMM") : "Select"}
+              {endDate ? format(endDate, "EEE, dd MMM") : "Select"}
             </button>
           </div>
         </div>
