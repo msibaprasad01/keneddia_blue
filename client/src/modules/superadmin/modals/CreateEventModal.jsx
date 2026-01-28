@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { X, Upload, Loader2, MapPin, Tag, Link as LinkIcon, FileText, Calendar as CalendarIcon } from 'lucide-react';
+import { X, Upload, Loader2, MapPin, Tag, Link as LinkIcon, FileText, Calendar as CalendarIcon, Building2, Globe, Image as ImageIcon } from 'lucide-react';
 import { createEvent, updateEventById, getAllLocations } from '@/Api/Api';
 import { toast } from 'react-hot-toast';
 
 function CreateEventModal({ isOpen, onClose, editingEvent }) {
   const [formData, setFormData] = useState({
     title: '',
+    slug: '',
     locationId: '',
+    propertyType: '', 
     eventDate: '',
     description: '',
     status: 'ACTIVE',
     ctaText: '',
     ctaLink: '',
-    imageMediaId: null,
     active: true
   });
 
@@ -24,45 +25,63 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
 
-  // Fetch locations on mount
-  useEffect(() => {
-    fetchLocations();
-  }, []);
+  const generateSlug = (text) => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+  };
 
-  // Populate form when editing
+  useEffect(() => {
+    if (isOpen) {
+      fetchLocations();
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (editingEvent) {
       setFormData({
         title: editingEvent.title || '',
+        slug: editingEvent.slug || '',
         locationId: editingEvent.location?.id || '',
+        propertyType: editingEvent.propertyType || '',
         eventDate: editingEvent.eventDate || '',
         description: editingEvent.description || '',
         status: editingEvent.status || 'ACTIVE',
         ctaText: editingEvent.ctaText || '',
         ctaLink: editingEvent.ctaLink || '',
-        imageMediaId: editingEvent.imageMediaId || null,
         active: editingEvent.active ?? true
       });
-      setImagePreview(editingEvent.imageMediaUrl || null);
-      setImageUrl(editingEvent.imageMediaUrl || '');
+      
+      const eventImage = editingEvent.imageMediaUrl || null;
+      setImagePreview(eventImage);
+      setImageUrl(eventImage?.startsWith('http') ? eventImage : '');
+      setUploadMethod(eventImage?.startsWith('data:') ? 'upload' : 'url');
     } else {
-      // Reset form for new event
-      setFormData({
-        title: '',
-        locationId: '',
-        eventDate: '',
-        description: '',
-        status: 'ACTIVE',
-        ctaText: '',
-        ctaLink: '',
-        imageMediaId: null,
-        active: true
-      });
-      setImagePreview(null);
-      setSelectedFile(null);
-      setImageUrl('');
+      resetForm();
     }
-  }, [editingEvent]);
+  }, [editingEvent, isOpen]);
+
+  const resetForm = () => {
+    setFormData({
+      title: '', 
+      slug: '', 
+      locationId: '', 
+      propertyType: '',
+      eventDate: '', 
+      description: '', 
+      status: 'ACTIVE',
+      ctaText: '', 
+      ctaLink: '', 
+      active: true
+    });
+    setImagePreview(null);
+    setSelectedFile(null);
+    setImageUrl('');
+    setUploadMethod('url');
+  };
 
   const fetchLocations = async () => {
     try {
@@ -71,26 +90,35 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
         setLocations(response.data.data || []);
       }
     } catch (error) {
-      console.error('Error fetching locations:', error);
-      toast.error('Failed to fetch locations');
+      console.error('Failed to load locations:', error);
+      toast.error('Failed to load locations');
+      setLocations([]);
     }
   };
 
-  const handleInputChange = (field, value) => {
+  const handleTitleChange = (val) => {
+    const trimmedVal = val.slice(0, 200); // Limit title length
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      title: trimmedVal,
+      slug: generateSlug(trimmedVal)
     }));
   };
 
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleFileSelect = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
       if (!file.type.startsWith('image/')) {
         toast.error('Please select a valid image file');
         return;
       }
 
+      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error('Image size should be less than 5MB');
         return;
@@ -99,25 +127,27 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        setImagePreview(reader.result); // Base64 string for static persistence
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read image file');
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setImagePreview(null);
-    setImageUrl('');
-  };
-
   const handleUrlChange = (url) => {
     setImageUrl(url);
-    setImagePreview(url);
+    if (url.trim()) {
+      setImagePreview(url);
+      setSelectedFile(null);
+    } else {
+      setImagePreview(null);
+    }
   };
 
   const validateForm = () => {
-    if (!formData.title.trim()) {
+    if (!formData.title?.trim()) {
       toast.error('Event title is required');
       return false;
     }
@@ -125,28 +155,28 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       toast.error('Location is required');
       return false;
     }
+    if (!formData.propertyType) {
+      toast.error('Property type is required');
+      return false;
+    }
     if (!formData.eventDate) {
       toast.error('Event date is required');
       return false;
     }
-    if (!formData.description.trim()) {
+    if (!formData.description?.trim()) {
       toast.error('Description is required');
       return false;
     }
-    if (!formData.ctaText.trim()) {
+    if (!formData.ctaText?.trim()) {
       toast.error('CTA text is required');
       return false;
     }
-    if (!formData.ctaLink.trim()) {
+    if (!formData.ctaLink?.trim()) {
       toast.error('CTA link is required');
       return false;
     }
-    if (uploadMethod === 'url' && !imageUrl.trim()) {
-      toast.error('Image URL is required');
-      return false;
-    }
-    if (uploadMethod === 'upload' && !selectedFile && !editingEvent) {
-      toast.error('Please select an image');
+    if (!imagePreview) {
+      toast.error('Event image is required');
       return false;
     }
     return true;
@@ -157,566 +187,406 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
 
     try {
       setLoading(true);
-
-      // Prepare payload
+      
+      // STATIC WAY: Use imagePreview (Base64 or URL) as the final source
       const payload = {
-        title: formData.title,
+        ...formData,
         locationId: parseInt(formData.locationId),
-        eventDate: formData.eventDate,
-        description: formData.description,
-        status: formData.status,
-        ctaText: formData.ctaText,
-        ctaLink: formData.ctaLink,
-        imageMediaId: formData.imageMediaId ? parseInt(formData.imageMediaId) : null,
-        active: formData.active
+        imageMediaUrl: imagePreview,
       };
 
-      // If using URL method, add image URL to payload
-      if (uploadMethod === 'url' && imageUrl) {
-        payload.imageUrl = imageUrl;
-      }
-
-      // If using file upload, you might need to upload the file first
-      if (uploadMethod === 'upload' && selectedFile) {
-        // TODO: Implement file upload to get imageMediaId
-        // const uploadResponse = await uploadImage(selectedFile);
-        // payload.imageMediaId = uploadResponse.data.id;
-        toast.info('File upload not yet implemented. Please use URL method.');
-        setLoading(false);
-        return;
-      }
-
-      let response;
       if (editingEvent) {
-        response = await updateEventById(editingEvent.id, payload);
+        await updateEventById(editingEvent.id, payload);
         toast.success('Event updated successfully');
       } else {
-        response = await createEvent(payload);
-        toast.success('Event created successfully');
+        await createEvent(payload);
+        toast.success('Event published successfully');
       }
-
-      console.log('Response:', response.data);
-      onClose(true); // Pass true to indicate refresh needed
       
+      onClose(true);
+      resetForm();
     } catch (error) {
       console.error('Error saving event:', error);
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          'Failed to save event';
-      toast.error(errorMessage);
+      toast.error(error.response?.data?.message || 'Failed to save event');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleClose = () => {
+    resetForm();
+    onClose(false);
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div
-        className="rounded-lg p-5 w-[90%] max-h-[90vh] overflow-y-auto"
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div 
+        className="rounded-xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-2xl" 
         style={{ backgroundColor: colors.contentBg }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between mb-5">
-          <h3 
-            className="text-lg font-semibold m-0"
-            style={{ color: colors.textPrimary }}
+        <div 
+          className="flex items-center justify-between mb-6 border-b pb-4" 
+          style={{ borderColor: colors.border }}
+        >
+          <div>
+            <h3 className="text-xl font-bold" style={{ color: colors.textPrimary }}>
+              {editingEvent ? 'Edit Event' : 'Create New Event'}
+            </h3>
+            <p className="text-xs mt-1" style={{ color: colors.textSecondary }}>
+              Static upload enabled - Images save as local strings
+            </p>
+          </div>
+          <button 
+            onClick={handleClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            aria-label="Close modal"
           >
-            {editingEvent ? 'Edit Event' : 'Create New Event'}
-          </h3>
-          <button
-            onClick={() => onClose(false)}
-            className="p-1 rounded-md transition-colors"
-            style={{ 
-              backgroundColor: 'transparent',
-              color: colors.textSecondary
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.border;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
-          >
-            <X size={20} />
+            <X size={20} style={{ color: colors.textSecondary }} />
           </button>
         </div>
 
-        {/* Form */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column: Form Fields */}
+          <div className="space-y-5">
             {/* Event Title */}
             <div>
               <label 
-                className="flex items-center gap-1.5 text-xs font-medium mb-1.5"
+                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
                 style={{ color: colors.textSecondary }}
               >
-                <Tag size={14} />
-                Event Title <span style={{ color: colors.error }}>*</span>
+                <Tag size={14} /> Event Title *
               </label>
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                className="w-full px-3 py-2 rounded border text-sm outline-none transition-colors"
+                onChange={(e) => handleTitleChange(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.mainBg,
-                  color: colors.textPrimary
+                  borderColor: colors.border, 
+                  backgroundColor: colors.mainBg, 
+                  color: colors.textPrimary 
                 }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = colors.primary;
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = colors.border;
-                }}
-                placeholder="Jazz Night Under the Stars"
+                placeholder="e.g., Summer Wine Festival"
+                maxLength={200}
               />
+              
+              {/* Slug Preview */}
+              <div 
+                className="mt-2 flex items-center gap-2 text-[10px] font-mono p-2 rounded bg-gray-50 border border-dashed" 
+                style={{ color: colors.textSecondary, borderColor: colors.border }}
+              >
+                <Globe size={12} /> 
+                <span className="truncate">
+                  {window.location.origin}/events/{formData.slug || 'slug-preview'}
+                </span>
+              </div>
             </div>
 
-            {/* Location and Event Date */}
+            {/* Property Type & Location */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label 
-                  className="flex items-center gap-1.5 text-xs font-medium mb-1.5"
+                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
                   style={{ color: colors.textSecondary }}
                 >
-                  <MapPin size={14} />
-                  Location <span style={{ color: colors.error }}>*</span>
+                  <Building2 size={14} /> Property Type *
                 </label>
                 <select
-                  value={formData.locationId}
-                  onChange={(e) => handleInputChange('locationId', e.target.value)}
-                  className="w-full px-3 py-2 rounded border text-sm outline-none transition-colors"
+                  value={formData.propertyType}
+                  onChange={(e) => handleInputChange('propertyType', e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   style={{ 
-                    borderColor: colors.border,
-                    backgroundColor: colors.mainBg,
-                    color: colors.textPrimary
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = colors.primary;
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = colors.border;
+                    borderColor: colors.border, 
+                    backgroundColor: colors.mainBg, 
+                    color: formData.propertyType ? colors.textPrimary : '#9CA3AF'
                   }}
                 >
-                  <option value="">Select Location</option>
-                  {locations.map((location) => (
-                    <option key={location.id} value={location.id}>
-                      {location.name}
-                    </option>
-                  ))}
+                  <option value="">Select Type</option>
+                  <option value="HOTEL">Hotel</option>
+                  <option value="RESTAURANT">Restaurant</option>
+                  <option value="CAFE">Cafe</option>
                 </select>
               </div>
 
               <div>
                 <label 
-                  className="flex items-center gap-1.5 text-xs font-medium mb-1.5"
+                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
                   style={{ color: colors.textSecondary }}
                 >
-                  <CalendarIcon size={14} />
-                  Event Date <span style={{ color: colors.error }}>*</span>
+                  <MapPin size={14} /> Location *
+                </label>
+                <select
+                  value={formData.locationId}
+                  onChange={(e) => handleInputChange('locationId', e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  style={{ 
+                    borderColor: colors.border, 
+                    backgroundColor: colors.mainBg, 
+                    color: formData.locationId ? colors.textPrimary : '#9CA3AF'
+                  }}
+                >
+                  <option value="">Select Location</option>
+                  {locations.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Event Date & Status */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label 
+                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
+                  style={{ color: colors.textSecondary }}
+                >
+                  <CalendarIcon size={14} /> Event Date *
                 </label>
                 <input
                   type="date"
                   value={formData.eventDate}
                   onChange={(e) => handleInputChange('eventDate', e.target.value)}
-                  className="w-full px-3 py-2 rounded border text-sm outline-none transition-colors"
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   style={{ 
-                    borderColor: colors.border,
-                    backgroundColor: colors.mainBg,
-                    color: colors.textPrimary
+                    borderColor: colors.border, 
+                    backgroundColor: colors.mainBg, 
+                    color: colors.textPrimary 
                   }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = colors.primary;
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = colors.border;
-                  }}
+                  min={new Date().toISOString().split('T')[0]}
                 />
+              </div>
+              
+              <div>
+                <label 
+                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
+                  style={{ color: colors.textSecondary }}
+                >
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => handleInputChange('status', e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  style={{ 
+                    borderColor: colors.border, 
+                    backgroundColor: colors.mainBg, 
+                    color: colors.textPrimary 
+                  }}
+                >
+                  <option value="ACTIVE">Active</option>
+                  <option value="COMING_SOON">Coming Soon</option>
+                  <option value="SOLD_OUT">Sold Out</option>
+                </select>
               </div>
             </div>
 
             {/* Description */}
             <div>
               <label 
-                className="flex items-center gap-1.5 text-xs font-medium mb-1.5"
+                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
                 style={{ color: colors.textSecondary }}
               >
-                <FileText size={14} />
-                Description <span style={{ color: colors.error }}>*</span>
+                <FileText size={14} /> Description *
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 rounded border text-sm outline-none transition-colors resize-none"
+                placeholder="Describe your event in detail..."
+                className="w-full px-4 py-2.5 rounded-lg border outline-none resize-none focus:ring-2 focus:ring-primary/20 transition-all"
                 style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.mainBg,
-                  color: colors.textPrimary
+                  borderColor: colors.border, 
+                  backgroundColor: colors.mainBg, 
+                  color: colors.textPrimary 
                 }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = colors.primary;
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = colors.border;
-                }}
-                placeholder="An evening of smooth jazz and signature cocktails..."
+                maxLength={1000}
               />
+              <div className="text-right text-[10px] text-gray-400 mt-1">
+                {formData.description.length}/1000 characters
+              </div>
             </div>
 
-            {/* Status */}
-            <div>
-              <label 
-                className="block text-xs font-medium mb-1.5"
-                style={{ color: colors.textSecondary }}
-              >
-                Status <span style={{ color: colors.error }}>*</span>
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => handleInputChange('status', e.target.value)}
-                className="w-full px-3 py-2 rounded border text-sm outline-none transition-colors"
-                style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.mainBg,
-                  color: colors.textPrimary
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = colors.primary;
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = colors.border;
-                }}
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="COMING_SOON">Coming Soon</option>
-                <option value="SOLD_OUT">Sold Out</option>
-              </select>
-            </div>
-
-            {/* CTA Text and Link */}
+            {/* CTA Text & Link */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label 
-                  className="block text-xs font-medium mb-1.5"
+                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
                   style={{ color: colors.textSecondary }}
                 >
-                  CTA Text <span style={{ color: colors.error }}>*</span>
+                  CTA Button Text *
                 </label>
                 <input
                   type="text"
+                  placeholder="e.g., Book Now"
                   value={formData.ctaText}
                   onChange={(e) => handleInputChange('ctaText', e.target.value)}
-                  className="w-full px-3 py-2 rounded border text-sm outline-none transition-colors"
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   style={{ 
-                    borderColor: colors.border,
-                    backgroundColor: colors.mainBg,
-                    color: colors.textPrimary
+                    borderColor: colors.border, 
+                    backgroundColor: colors.mainBg, 
+                    color: colors.textPrimary 
                   }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = colors.primary;
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = colors.border;
-                  }}
-                  placeholder="Details →"
+                  maxLength={30}
                 />
               </div>
-
+              
               <div>
                 <label 
-                  className="flex items-center gap-1.5 text-xs font-medium mb-1.5"
+                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
                   style={{ color: colors.textSecondary }}
                 >
-                  <LinkIcon size={14} />
-                  CTA Link <span style={{ color: colors.error }}>*</span>
+                  <LinkIcon size={14} /> CTA Link *
                 </label>
                 <input
-                  type="text"
+                  type="url"
+                  placeholder="https://example.com/booking"
                   value={formData.ctaLink}
                   onChange={(e) => handleInputChange('ctaLink', e.target.value)}
-                  className="w-full px-3 py-2 rounded border text-sm outline-none transition-colors"
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   style={{ 
-                    borderColor: colors.border,
-                    backgroundColor: colors.mainBg,
-                    color: colors.textPrimary
+                    borderColor: colors.border, 
+                    backgroundColor: colors.mainBg, 
+                    color: colors.textPrimary 
                   }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = colors.primary;
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = colors.border;
-                  }}
-                  placeholder="https://www.example.com"
                 />
               </div>
-            </div>
-
-            {/* Image Media ID (Optional) */}
-            <div>
-              <label 
-                className="block text-xs font-medium mb-1.5"
-                style={{ color: colors.textSecondary }}
-              >
-                Image Media ID (Optional)
-              </label>
-              <input
-                type="number"
-                value={formData.imageMediaId || ''}
-                onChange={(e) => handleInputChange('imageMediaId', e.target.value)}
-                className="w-full px-3 py-2 rounded border text-sm outline-none transition-colors"
-                style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.mainBg,
-                  color: colors.textPrimary
-                }}
-                placeholder="Enter media ID"
-                min="1"
-              />
-            </div>
-
-            {/* Active Status */}
-            <div className="flex items-center gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="activeStatus"
-                checked={formData.active}
-                onChange={(e) => handleInputChange('active', e.target.checked)}
-                className="w-4 h-4 cursor-pointer"
-                style={{ accentColor: colors.primary }}
-              />
-              <label
-                htmlFor="activeStatus"
-                className="text-xs font-medium cursor-pointer"
-                style={{ color: colors.textSecondary }}
-              >
-                Set as Active
-              </label>
             </div>
           </div>
 
-          {/* Right Column - Image Section */}
-          <div className="space-y-4">
-            <div className="border rounded-lg p-4 h-full" style={{ borderColor: colors.border }}>
-              <h4 
-                className="text-sm font-semibold mb-3 flex items-center gap-2"
-                style={{ color: colors.textPrimary }}
+          {/* Right Column: Image Upload */}
+          <div className="space-y-5">
+            <div 
+              className="border rounded-xl p-5 h-full" 
+              style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}
+            >
+              <label 
+                className="flex items-center gap-2 text-xs font-semibold uppercase mb-4" 
+                style={{ color: colors.textSecondary }}
               >
-                <Upload size={16} />
-                Event Image
-              </h4>
+                <ImageIcon size={14} /> Event Image *
+              </label>
 
-              {/* Upload Method Toggle */}
-              <div className="flex gap-2 mb-4">
-                <button
+              {/* Upload Method Tabs */}
+              <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
+                <button 
                   type="button"
-                  onClick={() => setUploadMethod('url')}
-                  className="flex-1 px-3 py-2 rounded text-xs font-medium transition-colors"
-                  style={{
-                    backgroundColor: uploadMethod === 'url' ? colors.primary : 'transparent',
-                    color: uploadMethod === 'url' ? '#ffffff' : colors.textSecondary,
-                    border: `1px solid ${uploadMethod === 'url' ? colors.primary : colors.border}`
-                  }}
+                  onClick={() => setUploadMethod('url')} 
+                  className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${
+                    uploadMethod === 'url' ? 'bg-white shadow-sm text-primary' : 'text-gray-600'
+                  }`}
                 >
-                  <LinkIcon size={14} className="inline mr-1" />
-                  Image URL
+                  URL
                 </button>
-                <button
+                <button 
                   type="button"
-                  onClick={() => setUploadMethod('upload')}
-                  className="flex-1 px-3 py-2 rounded text-xs font-medium transition-colors"
-                  style={{
-                    backgroundColor: uploadMethod === 'upload' ? colors.primary : 'transparent',
-                    color: uploadMethod === 'upload' ? '#ffffff' : colors.textSecondary,
-                    border: `1px solid ${uploadMethod === 'upload' ? colors.primary : colors.border}`
-                  }}
+                  onClick={() => setUploadMethod('upload')} 
+                  className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${
+                    uploadMethod === 'upload' ? 'bg-white shadow-sm text-primary' : 'text-gray-600'
+                  }`}
                 >
-                  <Upload size={14} className="inline mr-1" />
-                  Upload File
+                  Upload
                 </button>
               </div>
 
-              <div className="space-y-3">
-                {uploadMethod === 'url' ? (
-                  /* URL Input */
-                  <div>
-                    <label 
-                      className="block text-xs font-medium mb-1.5"
-                      style={{ color: colors.textSecondary }}
-                    >
-                      Image URL
-                    </label>
-                    <input
-                      type="text"
-                      value={imageUrl}
-                      onChange={(e) => handleUrlChange(e.target.value)}
-                      className="w-full px-3 py-2 rounded border text-sm outline-none transition-colors"
-                      style={{ 
-                        borderColor: colors.border,
-                        backgroundColor: colors.mainBg,
-                        color: colors.textPrimary
-                      }}
-                      onFocus={(e) => {
-                        e.currentTarget.style.borderColor = colors.primary;
-                      }}
-                      onBlur={(e) => {
-                        e.currentTarget.style.borderColor = colors.border;
-                      }}
-                      placeholder="https://example.com/image.jpg"
-                    />
-                  </div>
-                ) : (
-                  /* File Upload */
-                  <div>
-                    <label 
-                      className="block text-xs font-medium mb-1.5"
-                      style={{ color: colors.textSecondary }}
-                    >
-                      Upload Image
-                    </label>
-                    <div
-                      className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors"
-                      style={{ 
-                        borderColor: colors.border,
-                        backgroundColor: colors.mainBg
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = colors.primary;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = colors.border;
-                      }}
-                      onClick={() => document.getElementById('eventFileInput').click()}
-                    >
-                      <input
-                        id="eventFileInput"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                      />
-                      {selectedFile ? (
-                        <div className="space-y-2">
-                          <FileText size={32} className="mx-auto" style={{ color: colors.primary }} />
-                          <p className="text-sm font-medium" style={{ color: colors.textPrimary }}>
-                            {selectedFile.name}
-                          </p>
-                          <p className="text-xs" style={{ color: colors.textSecondary }}>
-                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveImage();
-                            }}
-                            className="text-xs px-3 py-1 rounded transition-colors"
-                            style={{
-                              color: colors.error,
-                              backgroundColor: 'transparent',
-                              border: `1px solid ${colors.error}`
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <Upload size={32} className="mx-auto" style={{ color: colors.textSecondary }} />
-                          <p className="text-sm font-medium" style={{ color: colors.textPrimary }}>
-                            Click to upload or drag and drop
-                          </p>
-                          <p className="text-xs" style={{ color: colors.textSecondary }}>
-                            PNG, JPG, WEBP up to 5MB
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+              {/* Upload Method Content */}
+              {uploadMethod === 'url' ? (
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Paste image URL..."
+                    value={imageUrl}
+                    onChange={(e) => handleUrlChange(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    style={{ borderColor: colors.border, backgroundColor: 'white' }}
+                  />
+                  <p className="text-[10px] text-gray-400 mt-2">
+                    Enter a direct image URL (must start with http:// or https://)
+                  </p>
+                </div>
+              ) : (
+                <div 
+                  className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary hover:bg-gray-50 transition-all"
+                  onClick={() => document.getElementById('file-static')?.click()}
+                  style={{ borderColor: colors.border }}
+                >
+                  <input 
+                    id="file-static" 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleFileSelect} 
+                  />
+                  <Upload size={30} className="mx-auto mb-2 opacity-20" />
+                  <p className="text-xs font-medium text-gray-600">
+                    {selectedFile ? selectedFile.name : 'Click to upload image'}
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    PNG, JPG up to 5MB
+                  </p>
+                </div>
+              )}
 
-                {/* Image Preview */}
-                {imagePreview && (
-                  <div className="mt-4">
-                    <label 
-                      className="block text-xs font-medium mb-1.5"
-                      style={{ color: colors.textSecondary }}
-                    >
-                      Preview
-                    </label>
-                    <div className="relative">
-                      <img
-                        src={imagePreview}
-                        alt="Event preview"
-                        className="w-full h-64 object-cover rounded-lg border"
-                        style={{ borderColor: colors.border }}
-                        onError={() => {
-                          setImagePreview(null);
-                          toast.error('Failed to load image');
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="mt-6 relative">
+                  <img 
+                    src={imagePreview} 
+                    className="w-full h-56 object-cover rounded-xl shadow-lg border" 
+                    style={{ borderColor: colors.border }} 
+                    alt="Event preview" 
+                  />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImagePreview(null);
+                      setSelectedFile(null);
+                      setImageUrl('');
+                    }}
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                    aria-label="Remove image"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Modal Actions */}
-        <div className="flex gap-3 mt-6 pt-4 border-t" style={{ borderColor: colors.border }}>
-          <button
-            onClick={() => onClose(false)}
+        {/* Footer Actions */}
+        <div 
+          className="flex gap-4 mt-8 pt-6 border-t" 
+          style={{ borderColor: colors.border }}
+        >
+          <button 
+            type="button"
+            onClick={handleClose}
             disabled={loading}
-            className="flex-1 px-4 py-2 rounded border text-sm font-medium transition-colors"
-            style={{ 
-              borderColor: colors.border,
-              color: colors.textPrimary,
-              backgroundColor: 'transparent'
-            }}
-            onMouseEnter={(e) => {
-              if (!loading) {
-                e.currentTarget.style.backgroundColor = colors.border;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!loading) {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }
-            }}
+            className="flex-1 py-3 rounded-lg font-bold text-sm border hover:bg-gray-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ borderColor: colors.border, color: colors.textPrimary }}
           >
             Cancel
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ 
-              backgroundColor: colors.primary,
-              color: '#ffffff'
-            }}
-            onMouseEnter={(e) => {
-              if (!loading) {
-                e.currentTarget.style.backgroundColor = colors.primaryHover;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!loading) {
-                e.currentTarget.style.backgroundColor = colors.primary;
-              }
-            }}
+          <button 
+            type="button"
+            onClick={handleSubmit} 
+            disabled={loading || !formData.title || !formData.locationId || !imagePreview}
+            className="flex-[2] py-3 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: colors.primary }}
           >
             {loading ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
-                <span>Saving...</span>
+                <Loader2 className="animate-spin" size={18} />
+                Saving...
               </>
             ) : (
-              <span>{editingEvent ? 'Update Event' : 'Create Event'}</span>
+              editingEvent ? 'Update Event' : 'Publish Event'
             )}
           </button>
         </div>

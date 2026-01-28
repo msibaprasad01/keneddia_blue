@@ -1,9 +1,10 @@
 import axios from "axios";
 
-const apiUrl = "http://192.168.0.135:6090/";
+// const apiUrl = "http://192.168.0.135:6090/";
+const qaUrl = "http://103.152.79.63:6090/";
 
 const API = axios.create({
-  baseURL: apiUrl,
+  baseURL: qaUrl,
 });
 
 API.interceptors.request.use(
