@@ -1,43 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { Plus, Edit, MapPin, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit, MapPin, Sparkles, ChevronLeft, ChevronRight, Loader2, Calendar, Clock } from 'lucide-react';
+import { getDailyOffers, updateDailyOfferStatus } from '@/Api/Api';
+import { toast } from 'react-hot-toast';
+import CreateOfferModal from '../../modals/CreateOfferModal';
 
 function DailyOffers() {
-  const [offers, setOffers] = useState([
-    {
-      id: 1,
-      title: 'Winter Alpine Retreat',
-      location: 'Manali',
-      code: 'WINTER2025',
-      image: '/api/placeholder/400/200',
-      badge: 'Hotel',
-      ctaText: 'Explore Winter Stay',
-      ctaLink: '#'
-    },
-    {
-      id: 2,
-      title: 'Luxury Spa Weekend',
-      location: 'Udaipur',
-      code: 'SPA2025',
-      image: '/api/placeholder/400/200',
-      badge: 'Restaurant',
-      ctaText: 'Book Spa Package',
-      ctaLink: '#'
-    }
-  ]);
-
+  const [offers, setOffers] = useState([]);
+  const [pageTitle, setPageTitle] = useState('Exclusive Daily Offers');
   const [showModal, setShowModal] = useState(false);
   const [editingOffer, setEditingOffer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [statusUpdating, setStatusUpdating] = useState(null);
 
   // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const itemsPerPage = 6;
 
-  // Calculate pagination
-  const totalPages = Math.ceil(offers.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentOffers = offers.slice(startIndex, endIndex);
+  // Filter state
+  const [targetType, setTargetType] = useState('GLOBAL'); 
+
+  // Fetch offers
+  const fetchOffers = async () => {
+    try {
+      setLoading(true);
+      const response = await getDailyOffers({
+        targetType,
+        page: currentPage,
+        size: itemsPerPage
+      });
+
+      console.log('API Response:', response.data);
+
+      if (response.data) {
+        // Handle recommended format: { success: true, data: { title, offers } }
+        if (response.data.data) {
+          const { title, offers: offersList } = response.data.data;
+          setPageTitle(title || 'Exclusive Daily Offers');
+          setOffers(offersList || []);
+          // Calculate pagination from offers length if not provided
+          setTotalElements(offersList?.length || 0);
+          setTotalPages(Math.ceil((offersList?.length || 0) / itemsPerPage));
+        } 
+        // Handle paginated format: { content, totalPages, totalElements }
+        else if (response.data.content) {
+          const { content, totalPages: pages, totalElements: total } = response.data;
+          setOffers(content || []);
+          setTotalPages(pages || 0);
+          setTotalElements(total || 0);
+        }
+        // Handle direct array
+        else if (Array.isArray(response.data)) {
+          setOffers(response.data);
+          setTotalElements(response.data.length);
+          setTotalPages(Math.ceil(response.data.length / itemsPerPage));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching offers:', error);
+      toast.error('Failed to load daily offers');
+      setOffers([]);
+      setTotalPages(0);
+      setTotalElements(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOffers();
+  }, [currentPage, targetType]);
 
   const handleEdit = (offer) => {
     setEditingOffer(offer);
@@ -49,19 +83,63 @@ function DailyOffers() {
     setShowModal(true);
   };
 
+  const handleStatusToggle = async (offerId, currentStatus) => {
+    try {
+      setStatusUpdating(offerId);
+      const response = await updateDailyOfferStatus(offerId, !currentStatus);
+      
+      if (response.data) {
+        toast.success(`Offer ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+        // Update local state
+        setOffers(prevOffers =>
+          prevOffers.map(offer =>
+            offer.id === offerId ? { ...offer, active: !currentStatus } : offer
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error updating offer status:', error);
+      toast.error('Failed to update offer status');
+    } finally {
+      setStatusUpdating(null);
+    }
+  };
+
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
   const handlePrevPage = () => {
-    if (currentPage > 1) {
+    if (currentPage > 0) {
       setCurrentPage(currentPage - 1);
     }
   };
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
+    if (currentPage < totalPages - 1) {
       setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handleModalClose = (shouldRefresh) => {
+    setShowModal(false);
+    setEditingOffer(null);
+    if (shouldRefresh) {
+      fetchOffers();
+    }
+  };
+
+  const formatExpiryDate = (expiresAt) => {
+    if (!expiresAt) return null;
+    try {
+      const date = new Date(expiresAt);
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric' 
+      });
+    } catch {
+      return null;
     }
   };
 
@@ -72,24 +150,52 @@ function DailyOffers() {
         className="rounded-lg p-4 sm:p-5 shadow-sm mb-3"
         style={{ backgroundColor: colors.contentBg }}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <h2 
             className="text-base sm:text-lg font-semibold m-0"
             style={{ color: colors.textPrimary }}
           >
-            Exclusive Daily Offers
+            {pageTitle}
           </h2>
-          <button
-            onClick={handleAddNew}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors"
-            style={{ 
-              backgroundColor: colors.primary,
-              color: '#ffffff'
-            }}
-          >
-            <Plus size={16} />
-            Add New Offer
-          </button>
+          
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            {/* Target Type Filter */}
+            <select
+              value={targetType}
+              onChange={(e) => {
+                setTargetType(e.target.value);
+                setCurrentPage(0);
+              }}
+              className="px-3 py-1.5 rounded-md border text-xs sm:text-sm outline-none"
+              style={{
+                borderColor: colors.border,
+                backgroundColor: colors.mainBg,
+                color: colors.textPrimary
+              }}
+            >
+              <option value="GLOBAL">Global Offers</option>
+              <option value="LOCATION">Location Offers</option>
+              <option value="PROPERTY">Property Offers</option>
+            </select>
+
+            <button
+              onClick={handleAddNew}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap"
+              style={{ 
+                backgroundColor: colors.primary,
+                color: '#ffffff'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.primaryHover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.primary;
+              }}
+            >
+              <Plus size={16} />
+              Add Offer
+            </button>
+          </div>
         </div>
       </div>
 
@@ -98,350 +204,283 @@ function DailyOffers() {
         className="rounded-lg p-4 sm:p-5 shadow-sm"
         style={{ backgroundColor: colors.contentBg }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-          {currentOffers.map((offer) => (
-            <div
-              key={offer.id}
-              className="rounded-lg overflow-hidden shadow-sm border"
-              style={{ 
-                backgroundColor: colors.mainBg,
-                borderColor: colors.border
-              }}
-            >
-              {/* Image Section */}
-              <div className="relative h-48">
-                <img
-                  src={offer.image}
-                  alt={offer.title}
-                  className="w-full h-full object-cover"
-                />
-                {/* Badge */}
-                <div
-                  className="absolute top-3 left-3 px-2.5 py-1 rounded text-xs font-medium"
-                  style={{ 
-                    backgroundColor: colors.primary,
-                    color: '#ffffff'
-                  }}
-                >
-                  {offer.badge}
-                </div>
-                {/* Active Badge */}
-                <div
-                  className="absolute top-3 right-3 px-2.5 py-1 rounded text-xs font-medium"
-                  style={{ 
-                    backgroundColor: colors.success,
-                    color: '#ffffff'
-                  }}
-                >
-                  Active
-                </div>
-              </div>
-
-              {/* Content Section */}
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 
-                    className="text-sm font-semibold m-0"
-                    style={{ color: colors.textPrimary }}
-                  >
-                    {offer.title}
-                  </h3>
-                </div>
-
-                <div 
-                  className="flex items-center gap-1.5 mb-3 text-xs"
-                  style={{ color: colors.textSecondary }}
-                >
-                  <MapPin size={14} />
-                  <span>{offer.location}</span>
-                </div>
-
-                <div className="mb-3">
-                  <div 
-                    className="text-[10px] uppercase font-medium mb-1"
-                    style={{ color: colors.textSecondary }}
-                  >
-                    Code
-                  </div>
-                  <div 
-                    className="text-xs font-medium"
-                    style={{ color: colors.textPrimary }}
-                  >
-                    {offer.code}
-                  </div>
-                </div>
-
-                <div 
-                  className="flex items-center gap-1.5 mb-3 text-xs"
-                  style={{ color: colors.primary }}
-                >
-                  <Sparkles size={14} />
-                  <span>{offer.ctaText} →</span>
-                </div>
-
-                {/* Edit Button */}
-                <button
-                  onClick={() => handleEdit(offer)}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded border text-xs font-medium transition-colors"
-                  style={{ 
-                    borderColor: colors.border,
-                    color: colors.textPrimary,
-                    backgroundColor: 'transparent'
-                  }}
-                >
-                  <Edit size={14} />
-                  Edit
-                </button>
-              </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 size={32} className="animate-spin" style={{ color: colors.primary }} />
+              <p className="text-sm" style={{ color: colors.textSecondary }}>
+                Loading offers...
+              </p>
             </div>
-          ))}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-6">
+          </div>
+        ) : offers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Sparkles size={48} style={{ color: colors.border }} className="mb-3" />
+            <p className="text-base font-medium mb-1" style={{ color: colors.textPrimary }}>
+              No offers found
+            </p>
+            <p className="text-sm mb-4" style={{ color: colors.textSecondary }}>
+              Create your first daily offer to get started
+            </p>
             <button
-              onClick={handlePrevPage}
-              disabled={currentPage === 1}
-              className="p-2 rounded border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              onClick={handleAddNew}
+              className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors"
               style={{ 
-                borderColor: colors.border,
-                backgroundColor: colors.mainBg,
-                color: colors.textPrimary
+                backgroundColor: colors.primary,
+                color: '#ffffff'
               }}
             >
-              <ChevronLeft size={16} />
+              <Plus size={16} />
+              Add First Offer
             </button>
-
-            <div className="flex gap-1">
-              {[...Array(totalPages)].map((_, index) => (
-                <button
-                  key={index + 1}
-                  onClick={() => handlePageChange(index + 1)}
-                  className="px-3 py-1.5 rounded text-xs font-medium transition-colors"
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              {offers.map((offer) => (
+                <div
+                  key={offer.id}
+                  className="rounded-lg overflow-hidden shadow-sm border transition-all"
                   style={{ 
-                    backgroundColor: currentPage === index + 1 ? colors.primary : colors.mainBg,
-                    color: currentPage === index + 1 ? '#ffffff' : colors.textPrimary,
-                    border: `1px solid ${colors.border}`
+                    backgroundColor: colors.mainBg,
+                    borderColor: colors.border,
+                    opacity: offer.active ? 1 : 0.6
                   }}
                 >
-                  {index + 1}
-                </button>
+                  {/* Image Section */}
+                  <div className="relative h-48">
+                    <img
+                      src={offer.image?.src || offer.imageUrl || '/api/placeholder/400/200'}
+                      alt={offer.image?.alt || offer.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Active/Inactive Badge */}
+                    <div
+                      className="absolute top-3 right-3 px-2.5 py-1 rounded text-xs font-medium cursor-pointer"
+                      style={{ 
+                        backgroundColor: offer.active ? colors.success : colors.error,
+                        color: '#ffffff'
+                      }}
+                      onClick={() => handleStatusToggle(offer.id, offer.active)}
+                    >
+                      {statusUpdating === offer.id ? (
+                        <Loader2 size={12} className="animate-spin" />
+                      ) : (
+                        offer.active ? 'Active' : 'Inactive'
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 
+                        className="text-sm font-semibold m-0 line-clamp-2"
+                        style={{ color: colors.textPrimary }}
+                      >
+                        {offer.title}
+                      </h3>
+                    </div>
+
+                    {/* Description */}
+                    {offer.description && (
+                      <p 
+                        className="text-xs mb-3 line-clamp-2"
+                        style={{ color: colors.textSecondary }}
+                      >
+                        {offer.description}
+                      </p>
+                    )}
+
+                    {/* Location */}
+                    {offer.location && (
+                      <div 
+                        className="flex items-center gap-1.5 mb-3 text-xs"
+                        style={{ color: colors.textSecondary }}
+                      >
+                        <MapPin size={14} />
+                        <span>{offer.location}</span>
+                      </div>
+                    )}
+
+                    {/* Coupon Code */}
+                    {offer.couponCode && (
+                      <div className="mb-3">
+                        <div 
+                          className="text-[10px] uppercase font-medium mb-1"
+                          style={{ color: colors.textSecondary }}
+                        >
+                          Coupon Code
+                        </div>
+                        <div 
+                          className="inline-block px-2.5 py-1 rounded text-xs font-semibold"
+                          style={{ 
+                            backgroundColor: colors.primary + '15',
+                            color: colors.primary,
+                            border: `1px dashed ${colors.primary}`
+                          }}
+                        >
+                          {offer.couponCode}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Expiry and Available Hours */}
+                    <div className="flex flex-wrap gap-3 mb-3">
+                      {offer.expiresAt && (
+                        <div 
+                          className="flex items-center gap-1.5 text-[11px]"
+                          style={{ color: colors.textSecondary }}
+                        >
+                          <Calendar size={12} />
+                          <span>Expires: {formatExpiryDate(offer.expiresAt)}</span>
+                        </div>
+                      )}
+                      {offer.availableHours && (
+                        <div 
+                          className="flex items-center gap-1.5 text-[11px]"
+                          style={{ color: colors.textSecondary }}
+                        >
+                          <Clock size={12} />
+                          <span>{offer.availableHours}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* CTA Text */}
+                    {offer.ctaText && (
+                      <div 
+                        className="flex items-center gap-1.5 mb-3 text-xs"
+                        style={{ color: colors.primary }}
+                      >
+                        <Sparkles size={14} />
+                        <span className="line-clamp-1">{offer.ctaText} →</span>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(offer)}
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded border text-xs font-medium transition-colors"
+                        style={{ 
+                          borderColor: colors.border,
+                          color: colors.textPrimary,
+                          backgroundColor: 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.border;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                      >
+                        <Edit size={14} />
+                        Edit
+                      </button>
+                      
+                      <button
+                        onClick={() => handleStatusToggle(offer.id, offer.active)}
+                        disabled={statusUpdating === offer.id}
+                        className="px-3 py-1.5 rounded text-xs font-medium transition-colors disabled:opacity-50"
+                        style={{ 
+                          backgroundColor: offer.active ? colors.error : colors.success,
+                          color: '#ffffff'
+                        }}
+                      >
+                        {statusUpdating === offer.id ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          offer.active ? 'Deactivate' : 'Activate'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
 
-            <button
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-              className="p-2 rounded border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ 
-                borderColor: colors.border,
-                backgroundColor: colors.mainBg,
-                color: colors.textPrimary
-              }}
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        )}
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 0}
+                  className="p-2 rounded border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ 
+                    borderColor: colors.border,
+                    backgroundColor: colors.mainBg,
+                    color: colors.textPrimary
+                  }}
+                >
+                  <ChevronLeft size={16} />
+                </button>
 
-        {/* Pagination Info */}
-        {totalPages > 1 && (
-          <div 
-            className="text-center mt-3 text-xs"
-            style={{ color: colors.textSecondary }}
-          >
-            Showing {startIndex + 1}-{Math.min(endIndex, offers.length)} of {offers.length} items
-          </div>
+                <div className="flex gap-1">
+                  {[...Array(Math.min(totalPages, 5))].map((_, index) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = index;
+                    } else if (currentPage < 3) {
+                      pageNum = index;
+                    } else if (currentPage > totalPages - 3) {
+                      pageNum = totalPages - 5 + index;
+                    } else {
+                      pageNum = currentPage - 2 + index;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className="px-3 py-1.5 rounded text-xs font-medium transition-colors"
+                        style={{ 
+                          backgroundColor: currentPage === pageNum ? colors.primary : colors.mainBg,
+                          color: currentPage === pageNum ? '#ffffff' : colors.textPrimary,
+                          border: `1px solid ${colors.border}`
+                        }}
+                      >
+                        {pageNum + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages - 1}
+                  className="p-2 rounded border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ 
+                    borderColor: colors.border,
+                    backgroundColor: colors.mainBg,
+                    color: colors.textPrimary
+                  }}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
+
+            {/* Pagination Info */}
+            {totalElements > 0 && (
+              <div 
+                className="text-center mt-3 text-xs"
+                style={{ color: colors.textSecondary }}
+              >
+                Showing {currentPage * itemsPerPage + 1}-{Math.min((currentPage + 1) * itemsPerPage, totalElements)} of {totalElements} offers
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {/* Modal - Add/Edit Offer */}
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div
-            className="rounded-lg p-5 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: colors.contentBg }}
-          >
-            <h3 
-              className="text-lg font-semibold mb-4"
-              style={{ color: colors.textPrimary }}
-            >
-              {editingOffer ? 'Edit Offer' : 'Add New Offer'}
-            </h3>
-
-            <div className="space-y-4">
-              <div>
-                <label 
-                  className="block text-xs font-medium mb-1.5"
-                  style={{ color: colors.textSecondary }}
-                >
-                  Offer Title
-                </label>
-                <input
-                  type="text"
-                  defaultValue={editingOffer?.title}
-                  className="w-full px-3 py-2 rounded border text-sm"
-                  style={{ 
-                    borderColor: colors.border,
-                    backgroundColor: colors.mainBg,
-                    color: colors.textPrimary
-                  }}
-                  placeholder="Winter Alpine Retreat"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label 
-                    className="block text-xs font-medium mb-1.5"
-                    style={{ color: colors.textSecondary }}
-                  >
-                    Location
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue={editingOffer?.location}
-                    className="w-full px-3 py-2 rounded border text-sm"
-                    style={{ 
-                      borderColor: colors.border,
-                      backgroundColor: colors.mainBg,
-                      color: colors.textPrimary
-                    }}
-                    placeholder="Manali"
-                  />
-                </div>
-
-                <div>
-                  <label 
-                    className="block text-xs font-medium mb-1.5"
-                    style={{ color: colors.textSecondary }}
-                  >
-                    Offer Code
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue={editingOffer?.code}
-                    className="w-full px-3 py-2 rounded border text-sm"
-                    style={{ 
-                      borderColor: colors.border,
-                      backgroundColor: colors.mainBg,
-                      color: colors.textPrimary
-                    }}
-                    placeholder="WINTER2025"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label 
-                  className="block text-xs font-medium mb-1.5"
-                  style={{ color: colors.textSecondary }}
-                >
-                  Badge Type
-                </label>
-                <select
-                  defaultValue={editingOffer?.badge}
-                  className="w-full px-3 py-2 rounded border text-sm"
-                  style={{ 
-                    borderColor: colors.border,
-                    backgroundColor: colors.mainBg,
-                    color: colors.textPrimary
-                  }}
-                >
-                  <option value="Hotel">Hotel</option>
-                  <option value="Restaurant">Restaurant</option>
-                  <option value="Spa">Spa</option>
-                  <option value="Event">Event</option>
-                </select>
-              </div>
-
-              <div>
-                <label 
-                  className="block text-xs font-medium mb-1.5"
-                  style={{ color: colors.textSecondary }}
-                >
-                  CTA Button Text
-                </label>
-                <input
-                  type="text"
-                  defaultValue={editingOffer?.ctaText}
-                  className="w-full px-3 py-2 rounded border text-sm"
-                  style={{ 
-                    borderColor: colors.border,
-                    backgroundColor: colors.mainBg,
-                    color: colors.textPrimary
-                  }}
-                  placeholder="Explore Winter Stay"
-                />
-              </div>
-
-              <div>
-                <label 
-                  className="block text-xs font-medium mb-1.5"
-                  style={{ color: colors.textSecondary }}
-                >
-                  CTA Link
-                </label>
-                <input
-                  type="text"
-                  defaultValue={editingOffer?.ctaLink}
-                  className="w-full px-3 py-2 rounded border text-sm"
-                  style={{ 
-                    borderColor: colors.border,
-                    backgroundColor: colors.mainBg,
-                    color: colors.textPrimary
-                  }}
-                  placeholder="www.example.com"
-                />
-              </div>
-
-              <div>
-                <label 
-                  className="block text-xs font-medium mb-1.5"
-                  style={{ color: colors.textSecondary }}
-                >
-                  Upload Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="w-full px-3 py-2 rounded border text-sm"
-                  style={{ 
-                    borderColor: colors.border,
-                    backgroundColor: colors.mainBg,
-                    color: colors.textPrimary
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-2 rounded border text-sm font-medium transition-colors"
-                style={{ 
-                  borderColor: colors.border,
-                  color: colors.textPrimary,
-                  backgroundColor: 'transparent'
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-2 rounded text-sm font-medium transition-colors"
-                style={{ 
-                  backgroundColor: colors.primary,
-                  color: '#ffffff'
-                }}
-              >
-                {editingOffer ? 'Save Changes' : 'Add Offer'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <CreateOfferModal
+          isOpen={showModal}
+          onClose={handleModalClose}
+          editingOffer={editingOffer}
+        />
       )}
     </div>
   );

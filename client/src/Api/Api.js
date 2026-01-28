@@ -184,4 +184,31 @@ export const createOrUpdateKennediaGroup = (data) =>
 
 export const getKennediaGroup = () => API.get("api/v1/kennedia-group");
 
+// ==================================================
+// 🎁 DAILY OFFERS
+// ==================================================
+export const createDailyOffer = (data) =>API.post("api/v1/daily-offers/create", data);
+export const getDailyOffers = ({ targetType, page = 0, size = 10 }) =>API.get("api/v1/daily-offers/showAll", {
+    params: { targetType, page, size },
+  });
+export const updateDailyOfferById = (id, data) =>API.put(`api/v1/daily-offers/${id}`, data);
+export const updateDailyOfferStatus = (id, isActive) =>API.patch(`api/v1/daily-offers/${id}/status`, null, {
+    params: { isActive },
+  });
+
+
+// ==================================================
+// 📅 UPCOMING EVENTS
+// ==================================================
+
+export const createEvent = (data) =>API.post("api/v1/events/create", data);
+export const getEvents = ({ status = "ACTIVE", page = 0, size = 10 }) =>API.get("api/v1/events/showAll", {
+    params: { status, page, size },
+  });
+export const updateEventById = (id, data) =>API.put(`api/v1/events/${id}`, data);
+export const updateEventStatus = (id, isActive) =>API.patch(`api/v1/events/${id}/status`, null, {
+    params: { isActive },
+  });
+
+
 export default API;

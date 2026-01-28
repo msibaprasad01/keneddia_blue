@@ -6,7 +6,7 @@ import { Navigation, Autoplay } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import type { Swiper as SwiperType } from "swiper";
-
+import { getDailyOffers } from "@/Api/Api";
 import "swiper/css";
 import "swiper/css/navigation";
 

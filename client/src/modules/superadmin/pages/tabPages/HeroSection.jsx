@@ -1,187 +1,311 @@
 // components/HeroSection.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { colors } from "@/lib/colors/colors";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, X, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { createOrUpdateHeroSection, getHeroSection } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 
 function HeroSection() {
-  const [formData, setFormData] = useState({
-    mainTitle: "",
-    subTitle: "",
-    ctaText: "",
-    active: true,
-  });
+  // Array of hero slides, each with its own content and media
+  const [heroSlides, setHeroSlides] = useState([
+    {
+      mainTitle: "",
+      subTitle: "",
+      ctaText: "",
+      backgroundFile: null,
+      backgroundPreview: null,
+      backgroundMediaType: "IMAGE",
+      subFile: null,
+      subPreview: null,
+      subMediaType: "IMAGE",
+    }
+  ]);
 
-  const [files, setFiles] = useState({
-    backgroundMedia: null,
-    subMedia: null,
-  });
-
-  const [mediaTypes, setMediaTypes] = useState({
-    backgroundMediaType: "IMAGE",
-    subMediaType: "IMAGE",
-  });
-
-  const [previews, setPreviews] = useState({
-    backgroundMedia: null,
-    subMedia: null,
-  });
-
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [existingData, setExistingData] = useState(null);
+  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
+  const [formData, setFormData] = useState({
+    active: true,
+  });
 
-  // Fetch hero section data on component mount only
+  // Fetch hero section data on component mount
   const fetchHeroSection = useCallback(async () => {
     try {
       setFetching(true);
       const response = await getHeroSection();
       
       if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-        // Get the latest hero section (last item in array or highest id)
         const latestHero = response.data.reduce((latest, current) => 
           current.id > latest.id ? current : latest
         );
         
         setExistingData(latestHero);
-        
-        // Populate form with latest data
         setFormData({
-          mainTitle: latestHero.mainTitle || "",
-          subTitle: latestHero.subTitle || "",
-          ctaText: latestHero.ctaText || "",
           active: latestHero.active ?? true,
         });
 
-        // Set media types from API
-        setMediaTypes({
-          backgroundMediaType: latestHero.backgroundMediaType || "IMAGE",
-          subMediaType: latestHero.subMediaType || "IMAGE",
-        });
+        // Parse existing hero slides data
+        const existingSlides = [];
+        
+        // Handle background media arrays
+        const backgroundUrls = latestHero.backgroundMediaUrls || 
+                               (latestHero.backgroundMediaUrl ? [latestHero.backgroundMediaUrl] : []);
+        const backgroundTypes = latestHero.backgroundMediaTypes || 
+                               (latestHero.backgroundMediaType ? [latestHero.backgroundMediaType] : []);
+        const mainTitles = latestHero.mainTitles || 
+                          (latestHero.mainTitle ? [latestHero.mainTitle] : []);
+        const subTitles = latestHero.subTitles || 
+                         (latestHero.subTitle ? [latestHero.subTitle] : []);
+        const ctaTexts = latestHero.ctaTexts || 
+                        (latestHero.ctaText ? [latestHero.ctaText] : []);
+        
+        // Handle sub media arrays
+        const subUrls = latestHero.subMediaUrls || 
+                       (latestHero.subMediaUrl ? [latestHero.subMediaUrl] : []);
+        const subTypes = latestHero.subMediaTypes || 
+                        (latestHero.subMediaType ? [latestHero.subMediaType] : []);
 
-        // Set previews from API URLs
-        setPreviews({
-          backgroundMedia: latestHero.backgroundMediaUrl || null,
-          subMedia: latestHero.subMediaUrl || null,
-        });
+        // Create slides from existing data
+        for (let i = 0; i < backgroundUrls.length; i++) {
+          existingSlides.push({
+            mainTitle: mainTitles[i] || "",
+            subTitle: subTitles[i] || "",
+            ctaText: ctaTexts[i] || "",
+            backgroundFile: null,
+            backgroundPreview: backgroundUrls[i],
+            backgroundMediaType: backgroundTypes[i] || "IMAGE",
+            subFile: null,
+            subPreview: subUrls[i] || null,
+            subMediaType: subTypes[i] || "IMAGE",
+          });
+        }
+
+        if (existingSlides.length > 0) {
+          setHeroSlides(existingSlides);
+        }
 
         console.log("Latest Hero Section:", latestHero);
       } else {
-        // Set default values if no data
-        setFormData({
-          mainTitle: "Where Luxury Meets Experience",
-          subTitle: "KENNEDIA BLU GROUP",
-          ctaText: "Explore →",
-          active: true,
-        });
+        setHeroSlides([
+          {
+            mainTitle: "Where Luxury Meets Experience",
+            subTitle: "KENNEDIA BLU GROUP",
+            ctaText: "Explore →",
+            backgroundFile: null,
+            backgroundPreview: null,
+            backgroundMediaType: "IMAGE",
+            subFile: null,
+            subPreview: null,
+            subMediaType: "IMAGE",
+          }
+        ]);
       }
     } catch (error) {
       console.error("Error fetching hero section:", error);
       toast.error("Failed to load hero section data");
-      
-      // Set default values on error
-      setFormData({
-        mainTitle: "Where Luxury Meets Experience",
-        subTitle: "KENNEDIA BLU GROUP",
-        ctaText: "Explore →",
-        active: true,
-      });
     } finally {
       setFetching(false);
     }
   }, []);
 
-  // Fetch on mount only
   useEffect(() => {
     fetchHeroSection();
-  }, []); // Empty dependency array - runs once on mount
+  }, []);
 
+  // Handle input changes for current slide
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setHeroSlides((prev) => {
+      const updated = [...prev];
+      updated[currentSlideIndex] = {
+        ...updated[currentSlideIndex],
+        [field]: value,
+      };
+      return updated;
+    });
   };
 
-  const handleFileChange = (field, file) => {
+  // Handle background media file for current slide
+  const handleBackgroundFileChange = (file) => {
     if (!file) return;
 
-    // Validate file type
     const isImage = file.type.startsWith("image/");
     const isVideo = file.type.startsWith("video/");
 
     if (!isImage && !isVideo) {
-      toast.error("Please upload an image or video file");
+      toast.error("Please select a valid image or video file");
       return;
     }
 
-    // Update media type based on file
     const mediaType = isImage ? "IMAGE" : "VIDEO";
-    const typeField =
-      field === "backgroundMedia" ? "backgroundMediaType" : "subMediaType";
-
-    setMediaTypes((prev) => ({ ...prev, [typeField]: mediaType }));
-    setFiles((prev) => ({ ...prev, [field]: file }));
-
-    // Create preview URL
     const previewUrl = URL.createObjectURL(file);
-    setPreviews((prev) => ({ ...prev, [field]: previewUrl }));
+
+    setHeroSlides((prev) => {
+      const updated = [...prev];
+      updated[currentSlideIndex] = {
+        ...updated[currentSlideIndex],
+        backgroundFile: file,
+        backgroundPreview: previewUrl,
+        backgroundMediaType: mediaType,
+      };
+      return updated;
+    });
+  };
+
+  // Handle sub media file for current slide
+  const handleSubFileChange = (file) => {
+    if (!file) return;
+
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+
+    if (!isImage && !isVideo) {
+      toast.error("Please select a valid image or video file");
+      return;
+    }
+
+    const mediaType = isImage ? "IMAGE" : "VIDEO";
+    const previewUrl = URL.createObjectURL(file);
+
+    setHeroSlides((prev) => {
+      const updated = [...prev];
+      updated[currentSlideIndex] = {
+        ...updated[currentSlideIndex],
+        subFile: file,
+        subPreview: previewUrl,
+        subMediaType: mediaType,
+      };
+      return updated;
+    });
+  };
+
+  // Remove background media from current slide
+  const removeBackgroundMedia = () => {
+    setHeroSlides((prev) => {
+      const updated = [...prev];
+      updated[currentSlideIndex] = {
+        ...updated[currentSlideIndex],
+        backgroundFile: null,
+        backgroundPreview: null,
+        backgroundMediaType: "IMAGE",
+      };
+      return updated;
+    });
+  };
+
+  // Remove sub media from current slide
+  const removeSubMedia = () => {
+    setHeroSlides((prev) => {
+      const updated = [...prev];
+      updated[currentSlideIndex] = {
+        ...updated[currentSlideIndex],
+        subFile: null,
+        subPreview: null,
+        subMediaType: "IMAGE",
+      };
+      return updated;
+    });
+  };
+
+  // Add a new slide
+  const addSlide = () => {
+    setHeroSlides((prev) => [
+      ...prev,
+      {
+        mainTitle: "",
+        subTitle: "",
+        ctaText: "",
+        backgroundFile: null,
+        backgroundPreview: null,
+        backgroundMediaType: "IMAGE",
+        subFile: null,
+        subPreview: null,
+        subMediaType: "IMAGE",
+      }
+    ]);
+    setCurrentSlideIndex(heroSlides.length);
+  };
+
+  // Remove current slide
+  const removeSlide = () => {
+    if (heroSlides.length === 1) {
+      toast.error("At least one slide is required");
+      return;
+    }
+
+    setHeroSlides((prev) => prev.filter((_, index) => index !== currentSlideIndex));
+    setCurrentSlideIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  // Navigate between slides
+  const goToPreviousSlide = () => {
+    setCurrentSlideIndex((prev) => (prev > 0 ? prev - 1 : heroSlides.length - 1));
+  };
+
+  const goToNextSlide = () => {
+    setCurrentSlideIndex((prev) => (prev < heroSlides.length - 1 ? prev + 1 : 0));
   };
 
   const handleSubmit = async () => {
     // Validation
-    if (!formData.mainTitle.trim()) {
-      toast.error("Main title is required");
-      return;
-    }
-    if (!formData.subTitle.trim()) {
-      toast.error("Subtitle is required");
-      return;
-    }
-    if (!formData.ctaText.trim()) {
-      toast.error("CTA button text is required");
-      return;
-    }
-    
-    // Only require background media if no existing data
-    if (!files.backgroundMedia && !existingData?.backgroundMediaUrl) {
-      toast.error("Background media is required");
-      return;
+    for (let i = 0; i < heroSlides.length; i++) {
+      const slide = heroSlides[i];
+      if (!slide.mainTitle.trim()) {
+        toast.error(`Main title is required for slide ${i + 1}`);
+        return;
+      }
+      if (!slide.subTitle.trim()) {
+        toast.error(`Subtitle is required for slide ${i + 1}`);
+        return;
+      }
+      if (!slide.ctaText.trim()) {
+        toast.error(`CTA button text is required for slide ${i + 1}`);
+        return;
+      }
+      if (!slide.backgroundFile && !slide.backgroundPreview) {
+        toast.error(`Background media is required for slide ${i + 1}`);
+        return;
+      }
     }
 
     try {
       setLoading(true);
 
-      // Prepare FormData
       const payload = new FormData();
-      payload.append("mainTitle", formData.mainTitle);
-      payload.append("subTitle", formData.subTitle);
-      payload.append("ctaText", formData.ctaText);
       payload.append("active", formData.active);
 
-      // Only append background media if a new file is selected
-      if (files.backgroundMedia) {
-        payload.append("backgroundMediaType", mediaTypes.backgroundMediaType);
-        payload.append("backgroundMedia", files.backgroundMedia);
-      }
+      // Append data for each slide
+      heroSlides.forEach((slide, index) => {
+        payload.append("mainTitles", slide.mainTitle);
+        payload.append("subTitles", slide.subTitle);
+        payload.append("ctaTexts", slide.ctaText);
+        
+        // Only append new files
+        if (slide.backgroundFile) {
+          payload.append("backgroundMedia", slide.backgroundFile);
+          payload.append("backgroundMediaTypes", slide.backgroundMediaType);
+        } else if (slide.backgroundPreview) {
+          // Keep existing media reference
+          payload.append("existingBackgroundUrls", slide.backgroundPreview);
+          payload.append("backgroundMediaTypes", slide.backgroundMediaType);
+        }
 
-      // Only append sub media if a new file is selected
-      if (files.subMedia) {
-        payload.append("subMediaType", mediaTypes.subMediaType);
-        payload.append("subMedia", files.subMedia);
-      }
+        if (slide.subFile) {
+          payload.append("subMedia", slide.subFile);
+          payload.append("subMediaTypes", slide.subMediaType);
+        } else if (slide.subPreview) {
+          payload.append("existingSubUrls", slide.subPreview);
+          payload.append("subMediaTypes", slide.subMediaType);
+        }
+      });
 
       const response = await createOrUpdateHeroSection(payload);
 
       toast.success("Hero section saved successfully!");
       console.log("Response:", response.data);
 
-      // Refresh data after successful save
       await fetchHeroSection();
-      
-      // Clear file inputs
-      setFiles({
-        backgroundMedia: null,
-        subMedia: null,
-      });
       
     } catch (error) {
       console.error("Error saving hero section:", error);
@@ -193,7 +317,19 @@ function HeroSection() {
     }
   };
 
-  // Show loading state while fetching
+  // Auto-rotate preview slides
+  useEffect(() => {
+    if (heroSlides.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentPreviewIndex((prev) => 
+          (prev + 1) % heroSlides.length
+        );
+      }, 4000);
+
+      return () => clearInterval(interval);
+    }
+  }, [heroSlides.length]);
+
   if (fetching) {
     return (
       <div
@@ -208,6 +344,8 @@ function HeroSection() {
     );
   }
 
+  const currentSlide = heroSlides[currentSlideIndex];
+
   return (
     <div
       className="rounded-lg p-6 shadow-sm"
@@ -216,13 +354,88 @@ function HeroSection() {
       <div className="grid grid-cols-2 gap-8">
         {/* Left Column - Form */}
         <div className="flex flex-col gap-5">
-          <h2
-            className="text-xl font-semibold m-0 mb-2"
-            style={{ color: colors.textPrimary }}
-          >
-            Hero Section
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2
+              className="text-xl font-semibold m-0"
+              style={{ color: colors.textPrimary }}
+            >
+              Hero Section
+            </h2>
+            <button
+              onClick={addSlide}
+              className="flex items-center gap-2 px-3 py-1.5 border-none rounded-md text-xs font-medium cursor-pointer transition-colors"
+              style={{
+                backgroundColor: colors.primary,
+                color: colors.sidebarText,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.primaryHover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.primary;
+              }}
+            >
+              <Plus size={14} />
+              <span>Add Slide</span>
+            </button>
+          </div>
 
+          {/* Slide Navigation */}
+          <div className="flex items-center justify-between p-3 rounded-md border" style={{ borderColor: colors.border }}>
+            <button
+              onClick={goToPreviousSlide}
+              className="p-1.5 border-none rounded cursor-pointer transition-colors"
+              style={{ backgroundColor: "transparent" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.border;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+            >
+              <ChevronLeft size={20} style={{ color: colors.textPrimary }} />
+            </button>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium" style={{ color: colors.textPrimary }}>
+                Slide {currentSlideIndex + 1} of {heroSlides.length}
+              </span>
+              {heroSlides.length > 1 && (
+                <button
+                  onClick={removeSlide}
+                  className="px-2 py-1 border-none rounded text-xs cursor-pointer transition-colors"
+                  style={{
+                    backgroundColor: "#fee",
+                    color: "#ef4444",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#fdd";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#fee";
+                  }}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={goToNextSlide}
+              className="p-1.5 border-none rounded cursor-pointer transition-colors"
+              style={{ backgroundColor: "transparent" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.border;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+            >
+              <ChevronRight size={20} style={{ color: colors.textPrimary }} />
+            </button>
+          </div>
+
+          {/* Slide Content Form */}
           <div className="flex flex-col gap-2">
             <label
               className="text-[13px] font-medium"
@@ -232,7 +445,7 @@ function HeroSection() {
             </label>
             <input
               type="text"
-              value={formData.mainTitle}
+              value={currentSlide.mainTitle}
               onChange={(e) => handleInputChange("mainTitle", e.target.value)}
               className="px-3 py-2.5 border rounded-md text-sm outline-none transition-colors"
               style={{
@@ -257,7 +470,7 @@ function HeroSection() {
             </label>
             <input
               type="text"
-              value={formData.subTitle}
+              value={currentSlide.subTitle}
               onChange={(e) => handleInputChange("subTitle", e.target.value)}
               className="px-3 py-2.5 border rounded-md text-sm outline-none transition-colors"
               style={{
@@ -283,7 +496,7 @@ function HeroSection() {
             </label>
             <input
               type="text"
-              value={formData.ctaText}
+              value={currentSlide.ctaText}
               onChange={(e) => handleInputChange("ctaText", e.target.value)}
               className="px-3 py-2.5 border rounded-md text-sm outline-none transition-colors"
               style={{
@@ -299,111 +512,171 @@ function HeroSection() {
             />
           </div>
 
+          {/* Background Media Section */}
           <div className="flex flex-col gap-2">
             <label
               className="text-[13px] font-medium"
               style={{ color: colors.textSecondary }}
             >
               Background Image/Video{" "}
-              {!existingData?.backgroundMediaUrl && (
-                <span style={{ color: "#ef4444" }}>*</span>
-              )}
+              <span style={{ color: "#ef4444" }}>*</span>
             </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="file"
-                id="backgroundMedia"
-                accept="image/*,video/*"
-                onChange={(e) =>
-                  handleFileChange("backgroundMedia", e.target.files[0])
-                }
-                className="hidden"
-              />
-              <label
-                htmlFor="backgroundMedia"
-                className="flex items-center gap-2 px-4 py-2.5 border-none rounded-md text-sm font-medium cursor-pointer transition-colors"
-                style={{
-                  backgroundColor: colors.primary,
-                  color: colors.sidebarText,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primaryHover;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primary;
-                }}
+            
+            {currentSlide.backgroundPreview ? (
+              <div
+                className="flex items-center gap-3 p-3 border rounded-md"
+                style={{ borderColor: colors.border }}
               >
-                <Upload size={16} />
-                <span>{files.backgroundMedia ? "Change" : "Upload"}</span>
-              </label>
-              {files.backgroundMedia ? (
-                <span
-                  className="text-xs"
-                  style={{ color: colors.textSecondary }}
+                {currentSlide.backgroundMediaType === "IMAGE" ? (
+                  <img
+                    src={currentSlide.backgroundPreview}
+                    alt="Background"
+                    className="w-20 h-20 object-cover rounded"
+                  />
+                ) : (
+                  <video
+                    src={currentSlide.backgroundPreview}
+                    className="w-20 h-20 object-cover rounded"
+                    muted
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="text-sm font-medium m-0" style={{ color: colors.textPrimary }}>
+                    {currentSlide.backgroundMediaType}
+                  </p>
+                  {currentSlide.backgroundFile && (
+                    <p className="text-xs m-0" style={{ color: colors.textSecondary }}>
+                      {currentSlide.backgroundFile.name}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={removeBackgroundMedia}
+                  className="p-2 border-none rounded cursor-pointer transition-colors"
+                  style={{ backgroundColor: "transparent" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#fee";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
-                  {files.backgroundMedia.name}
-                </span>
-              ) : existingData?.backgroundMediaUrl ? (
-                <span
-                  className="text-xs"
-                  style={{ color: colors.textSecondary }}
+                  <X size={18} style={{ color: "#ef4444" }} />
+                </button>
+              </div>
+            ) : (
+              <div>
+                <input
+                  type="file"
+                  id={`backgroundMedia-${currentSlideIndex}`}
+                  accept="image/*,video/*"
+                  onChange={(e) => handleBackgroundFileChange(e.target.files[0])}
+                  className="hidden"
+                />
+                <label
+                  htmlFor={`backgroundMedia-${currentSlideIndex}`}
+                  className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-md text-sm font-medium cursor-pointer transition-colors"
+                  style={{
+                    borderColor: colors.border,
+                    color: colors.textSecondary,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = colors.primary;
+                    e.currentTarget.style.color = colors.primary;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = colors.border;
+                    e.currentTarget.style.color = colors.textSecondary;
+                  }}
                 >
-                  Current: {mediaTypes.backgroundMediaType}
-                </span>
-              ) : null}
-            </div>
+                  <Upload size={18} />
+                  <span>Choose Background Media</span>
+                </label>
+              </div>
+            )}
           </div>
 
+          {/* Sub Media Section */}
           <div className="flex flex-col gap-2">
             <label
               className="text-[13px] font-medium"
               style={{ color: colors.textSecondary }}
             >
-              Add Sub Image/Video
+              Sub Image/Video (Optional)
             </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="file"
-                id="subMedia"
-                accept="image/*,video/*"
-                onChange={(e) =>
-                  handleFileChange("subMedia", e.target.files[0])
-                }
-                className="hidden"
-              />
-              <label
-                htmlFor="subMedia"
-                className="flex items-center gap-2 px-4 py-2.5 border-none rounded-md text-sm font-medium cursor-pointer transition-colors"
-                style={{
-                  backgroundColor: colors.primary,
-                  color: colors.sidebarText,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primaryHover;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primary;
-                }}
+            
+            {currentSlide.subPreview ? (
+              <div
+                className="flex items-center gap-3 p-3 border rounded-md"
+                style={{ borderColor: colors.border }}
               >
-                <Upload size={16} />
-                <span>{files.subMedia ? "Change" : "Upload"}</span>
-              </label>
-              {files.subMedia ? (
-                <span
-                  className="text-xs"
-                  style={{ color: colors.textSecondary }}
+                {currentSlide.subMediaType === "IMAGE" ? (
+                  <img
+                    src={currentSlide.subPreview}
+                    alt="Sub media"
+                    className="w-20 h-20 object-cover rounded"
+                  />
+                ) : (
+                  <video
+                    src={currentSlide.subPreview}
+                    className="w-20 h-20 object-cover rounded"
+                    muted
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="text-sm font-medium m-0" style={{ color: colors.textPrimary }}>
+                    {currentSlide.subMediaType}
+                  </p>
+                  {currentSlide.subFile && (
+                    <p className="text-xs m-0" style={{ color: colors.textSecondary }}>
+                      {currentSlide.subFile.name}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={removeSubMedia}
+                  className="p-2 border-none rounded cursor-pointer transition-colors"
+                  style={{ backgroundColor: "transparent" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#fee";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
-                  {files.subMedia.name}
-                </span>
-              ) : existingData?.subMediaUrl ? (
-                <span
-                  className="text-xs"
-                  style={{ color: colors.textSecondary }}
+                  <X size={18} style={{ color: "#ef4444" }} />
+                </button>
+              </div>
+            ) : (
+              <div>
+                <input
+                  type="file"
+                  id={`subMedia-${currentSlideIndex}`}
+                  accept="image/*,video/*"
+                  onChange={(e) => handleSubFileChange(e.target.files[0])}
+                  className="hidden"
+                />
+                <label
+                  htmlFor={`subMedia-${currentSlideIndex}`}
+                  className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-md text-sm font-medium cursor-pointer transition-colors"
+                  style={{
+                    borderColor: colors.border,
+                    color: colors.textSecondary,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = colors.primary;
+                    e.currentTarget.style.color = colors.primary;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = colors.border;
+                    e.currentTarget.style.color = colors.textSecondary;
+                  }}
                 >
-                  Current: {mediaTypes.subMediaType}
-                </span>
-              ) : null}
-            </div>
+                  <Upload size={18} />
+                  <span>Choose Sub Media</span>
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -411,7 +684,7 @@ function HeroSection() {
               type="checkbox"
               id="active"
               checked={formData.active}
-              onChange={(e) => handleInputChange("active", e.target.checked)}
+              onChange={(e) => setFormData({ active: e.target.checked })}
               className="w-4 h-4 cursor-pointer"
               style={{ accentColor: colors.primary }}
             />
@@ -468,27 +741,30 @@ function HeroSection() {
               backgroundColor: "#1a1a2e",
             }}
           >
-            {/* Background Media - Video or Image */}
-            {mediaTypes.backgroundMediaType === "VIDEO" && previews.backgroundMedia ? (
-              <video
-                key={previews.backgroundMedia} // Force re-render when URL changes
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ filter: "brightness(0.7)" }}
-              >
-                <source src={previews.backgroundMedia} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            ) : mediaTypes.backgroundMediaType === "IMAGE" && previews.backgroundMedia ? (
-              <div
-                className="absolute inset-0 w-full h-full bg-cover bg-center"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('${previews.backgroundMedia}')`,
-                }}
-              />
+            {/* Background Media with rotation */}
+            {heroSlides[currentPreviewIndex]?.backgroundPreview ? (
+              <>
+                {heroSlides[currentPreviewIndex].backgroundMediaType === "VIDEO" ? (
+                  <video
+                    key={heroSlides[currentPreviewIndex].backgroundPreview}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+                    style={{ filter: "brightness(0.7)" }}
+                  >
+                    <source src={heroSlides[currentPreviewIndex].backgroundPreview} type="video/mp4" />
+                  </video>
+                ) : (
+                  <div
+                    className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000"
+                    style={{
+                      backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('${heroSlides[currentPreviewIndex].backgroundPreview}')`,
+                    }}
+                  />
+                )}
+              </>
             ) : (
               <div
                 className="absolute inset-0 w-full h-full"
@@ -496,6 +772,24 @@ function HeroSection() {
                   background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                 }}
               />
+            )}
+
+            {/* Indicator Dots */}
+            {heroSlides.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
+                {heroSlides.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentPreviewIndex(index)}
+                    className="w-2 h-2 rounded-full border-none cursor-pointer transition-all"
+                    style={{
+                      backgroundColor: index === currentPreviewIndex 
+                        ? colors.primary 
+                        : "rgba(255,255,255,0.5)",
+                    }}
+                  />
+                ))}
+              </div>
             )}
 
             {/* Content Overlay */}
@@ -507,13 +801,13 @@ function HeroSection() {
                   textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
                 }}
               >
-                {formData.mainTitle || "Your Main Title"}
+                {heroSlides[currentPreviewIndex]?.mainTitle || "Your Main Title"}
               </h1>
               <p
                 className="text-sm font-medium m-0 mb-6 tracking-[2px]"
                 style={{ color: colors.sidebarText }}
               >
-                {formData.subTitle || "Your Subtitle"}
+                {heroSlides[currentPreviewIndex]?.subTitle || "Your Subtitle"}
               </p>
               <button
                 className="px-8 py-3 border-none rounded-md text-sm font-semibold cursor-pointer transition-colors"
@@ -528,38 +822,66 @@ function HeroSection() {
                   e.currentTarget.style.backgroundColor = colors.primary;
                 }}
               >
-                {formData.ctaText || "Button Text"}
+                {heroSlides[currentPreviewIndex]?.ctaText || "Button Text"}
               </button>
             </div>
           </div>
 
-          {previews.subMedia && (
+          {/* Current Slide Sub Media Preview */}
+          {currentSlide.subPreview && (
             <div className="mt-4">
               <p
                 className="text-xs font-medium mb-2"
                 style={{ color: colors.textSecondary }}
               >
-                Sub Media Preview:
+                Sub Media for Current Slide:
               </p>
-              {mediaTypes.subMediaType === "IMAGE" ? (
-                <img
-                  src={previews.subMedia}
-                  alt="Sub media preview"
-                  className="w-full h-32 object-cover rounded-md"
-                />
-              ) : (
-                <video 
-                  key={previews.subMedia}
-                  controls 
-                  className="w-full h-32 object-cover rounded-md"
-                  playsInline
-                >
-                  <source src={previews.subMedia} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              )}
+              <div>
+                {currentSlide.subMediaType === "IMAGE" ? (
+                  <img
+                    src={currentSlide.subPreview}
+                    alt="Sub media"
+                    className="w-full h-32 object-cover rounded-md"
+                  />
+                ) : (
+                  <video 
+                    key={currentSlide.subPreview}
+                    controls 
+                    className="w-full h-32 object-cover rounded-md"
+                    playsInline
+                  >
+                    <source src={currentSlide.subPreview} type="video/mp4" />
+                  </video>
+                )}
+              </div>
             </div>
           )}
+
+          {/* Slide Summary */}
+          <div className="mt-2 p-3 rounded-md" style={{ backgroundColor: colors.border }}>
+            <p className="text-xs font-medium m-0 mb-1" style={{ color: colors.textSecondary }}>
+              All Slides ({heroSlides.length}):
+            </p>
+            <div className="flex flex-col gap-1">
+              {heroSlides.map((slide, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlideIndex(index)}
+                  className="text-left px-2 py-1.5 rounded text-xs cursor-pointer transition-colors border-none"
+                  style={{
+                    backgroundColor: index === currentSlideIndex 
+                      ? colors.primary 
+                      : "transparent",
+                    color: index === currentSlideIndex 
+                      ? colors.sidebarText 
+                      : colors.textSecondary,
+                  }}
+                >
+                  {index + 1}. {slide.mainTitle || "Untitled"}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
