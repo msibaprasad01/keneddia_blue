@@ -64,6 +64,7 @@ export const updateRecognition = (recognitionId, data) => API.put(`api/v1/admin/
 export const getRecognitionsByAboutUsId = (aboutUsId) => API.get(`api/v1/admin/about-us/${aboutUsId}/recognitions`);
 export const getPublicRecognitionsByAboutUsId = (aboutUsId) => API.get(`api/v1/public/about-us/${aboutUsId}/recognitions`);
 
+export const createGuestExperienceByGuest = (formData) =>API.post("api/v1/guest-experience/byGuests", formData);
 export const addGuestExperienceSection = (data) => API.post("api/v1/guest-experience/section", data);
 export const getGuestExperienceSection = () => API.get("api/v1/guest-experience/section");
 export const addGuestExperienceItem = (formData) => API.post("api/v1/guest-experience", formData);
@@ -87,6 +88,9 @@ export const createEvent = (data) => API.post("api/v1/events/create", data);
 export const getEvents = ({ status = "ACTIVE", page = 0, size = 10 }) => API.get("api/v1/events/showAll", { params: { status, page, size } });
 export const updateEventById = (id, data) => API.put(`api/v1/events/${id}`, data);
 export const updateEventStatus = (id, isActive) => API.patch(`api/v1/events/${id}/status`, null, { params: { isActive } });
+export const createEventUpdated = (formData) =>API.post("api/v1/events-updated/events", formData);
+export const getEventsUpdated = () =>API.get("api/v1/events-updated/showAll");
+
 
 export const createNews = (data) => API.post("api/v1/news/create", data);
 export const getAllNews = ({ category = "PRESS", page = 0, size = 10 }) => API.get("api/v1/news/showAll", { params: { category, page, size } });

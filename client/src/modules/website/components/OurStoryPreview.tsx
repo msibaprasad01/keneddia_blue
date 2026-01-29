@@ -12,42 +12,127 @@ import {
   Play,
   Volume2,
   VolumeX,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { motion, AnimatePresence } from "framer-motion";
-import { getGuestExperienceSection } from "@/Api/Api";
+import {
+  getGuestExperienceSection,
+  createGuestExperienceByGuest,
+} from "@/Api/Api";
 import "swiper/css";
+
+interface MediaPreview {
+  type: "image" | "video";
+  url: string;
+  file?: File;
+}
+
+interface GuestExperienceItem {
+  id: number;
+  title: string;
+  description: string;
+  author: string;
+  mediaType: "image" | "video" | "youtube" | "text";
+  imageUrl?: string;
+  videoUrl?: string;
+  youtubeUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function OurStoryPreview() {
   const { experienceShowcase } = siteContent.text;
-  const [mediaPreviews, setMediaPreviews] = useState<
-    { type: "image" | "video"; url: string }[]
-  >([]);
+  const [guestExperiences, setGuestExperiences] = useState<any[]>([]);
+  const [isLoadingExperiences, setIsLoadingExperiences] = useState(true);
+  const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
   const [youtubeLink, setYoutubeLink] = useState("");
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
+  const [authorName, setAuthorName] = useState("");
   const [playingVideo, setPlayingVideo] = useState<number | null>(null);
   const [mutedVideos, setMutedVideos] = useState<{ [key: number]: boolean }>(
     {},
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
 
   useEffect(() => {
     const fetchGuestExperience = async () => {
       try {
+        setIsLoadingExperiences(true);
         const res = await getGuestExperienceSection();
         console.log("Guest Experience API full response:", res);
         console.log("Guest Experience API data:", res.data);
+
+        if (res?.data && Array.isArray(res.data)) {
+          // Map API data to display format
+          const mappedExperiences = res.data.map((item: GuestExperienceItem) => {
+            const baseItem = {
+              title: item.title,
+              description: item.description,
+              author: item.author,
+            };
+
+            // Handle different media types
+            if (item.mediaType === "video" && item.videoUrl) {
+              return {
+                ...baseItem,
+                type: "video",
+                videoUrl: item.videoUrl,
+                thumbnail: item.imageUrl ? { src: item.imageUrl } : undefined,
+              };
+            } else if (item.mediaType === "youtube" && item.youtubeUrl) {
+              return {
+                ...baseItem,
+                type: "video",
+                videoUrl: item.youtubeUrl,
+                thumbnail: item.imageUrl ? { src: item.imageUrl } : undefined,
+              };
+            } else if (item.mediaType === "image" && item.imageUrl) {
+              return {
+                ...baseItem,
+                type: "image",
+                image: {
+                  src: item.imageUrl,
+                  alt: item.title,
+                },
+              };
+            } else {
+              // Text only or fallback
+              return {
+                ...baseItem,
+                type: "image",
+                image: {
+                  src: siteContent.images.hero.slide1.src,
+                  alt: item.title,
+                },
+              };
+            }
+          });
+
+          setGuestExperiences(mappedExperiences);
+        }
       } catch (error) {
         console.error("Error fetching Guest Experience section:", error);
+      } finally {
+        setIsLoadingExperiences(false);
       }
     };
     fetchGuestExperience();
   }, []);
+
+  // Combine API data with fallback static data
+  const displayItems = guestExperiences.length > 0 
+    ? guestExperiences 
+    : experienceShowcase?.items || [];
 
   // Fallback if data isn't ready type-safe check
   if (!experienceShowcase) return null;
@@ -60,6 +145,7 @@ export default function OurStoryPreview() {
           ? ("video" as const)
           : ("image" as const),
         url: URL.createObjectURL(file),
+        file: file,
       }));
       setMediaPreviews((prev) => [...prev, ...newPreviews]);
     }
@@ -98,8 +184,111 @@ export default function OurStoryPreview() {
     }
   };
 
+  const handleSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+      setSubmitError(null);
+
+      const formData = new FormData();
+
+      // Required fields
+      formData.append("title", feedbackText.substring(0, 50) || "Guest Experience");
+      formData.append("description", feedbackText || "No description provided");
+      formData.append("author", authorName.trim() || "Anonymous Guest");
+
+      // Determine media type
+      if (youtubeLink) {
+        formData.append("mediaType", "youtube");
+        formData.append("youtubeUrl", youtubeLink);
+      } else if (mediaPreviews.length > 0) {
+        const firstMedia = mediaPreviews[0];
+        formData.append("mediaType", firstMedia.type === "video" ? "video" : "image");
+        
+        // Append the actual file
+        if (firstMedia.file) {
+          formData.append("file", firstMedia.file);
+        }
+      } else {
+        formData.append("mediaType", "text");
+      }
+
+      console.log("Submitting FormData...");
+      const response = await createGuestExperienceByGuest(formData);
+      console.log("Submission response:", response);
+
+      // Success handling
+      setSubmitSuccess(true);
+      
+      // Refresh guest experiences
+      const res = await getGuestExperienceSection();
+      if (res?.data && Array.isArray(res.data)) {
+        const mappedExperiences = res.data.map((item: GuestExperienceItem) => {
+          const baseItem = {
+            title: item.title,
+            description: item.description,
+            author: item.author,
+          };
+
+          if (item.mediaType === "video" && item.videoUrl) {
+            return {
+              ...baseItem,
+              type: "video",
+              videoUrl: item.videoUrl,
+              thumbnail: item.imageUrl ? { src: item.imageUrl } : undefined,
+            };
+          } else if (item.mediaType === "youtube" && item.youtubeUrl) {
+            return {
+              ...baseItem,
+              type: "video",
+              videoUrl: item.youtubeUrl,
+              thumbnail: item.imageUrl ? { src: item.imageUrl } : undefined,
+            };
+          } else if (item.mediaType === "image" && item.imageUrl) {
+            return {
+              ...baseItem,
+              type: "image",
+              image: {
+                src: item.imageUrl,
+                alt: item.title,
+              },
+            };
+          } else {
+            return {
+              ...baseItem,
+              type: "image",
+              image: {
+                src: siteContent.images.hero.slide1.src,
+                alt: item.title,
+              },
+            };
+          }
+        });
+        setGuestExperiences(mappedExperiences);
+      }
+      
+      // Reset form after 2 seconds
+      setTimeout(() => {
+        setFeedbackText("");
+        setAuthorName("");
+        setMediaPreviews([]);
+        setYoutubeLink("");
+        setShowYoutubeInput(false);
+        setSubmitSuccess(false);
+      }, 2000);
+
+    } catch (error: any) {
+      console.error("Error submitting guest experience:", error);
+      setSubmitError(
+        error?.response?.data?.message || 
+        "Failed to submit. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const hasMedia = mediaPreviews.length > 0 || youtubeLink;
-  const canSubmit = feedbackText.trim() || hasMedia;
+  const canSubmit = (feedbackText.trim() || hasMedia) && !isSubmitting;
 
   return (
     <section
@@ -135,11 +324,27 @@ export default function OurStoryPreview() {
                   disableOnInteraction: false,
                   pauseOnMouseEnter: true,
                 }}
-                loop={true}
+                loop={displayItems.length > 1}
                 watchSlidesProgress={true}
                 className="w-full experience-swiper py-2 !pb-12 lg:!pb-2"
               >
-                {experienceShowcase.items.map((item: any, index: number) => (
+                {isLoadingExperiences ? (
+                  // Loading state
+                  <SwiperSlide>
+                    <div className="h-96 flex items-center justify-center bg-card border border-border rounded-lg">
+                      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                    </div>
+                  </SwiperSlide>
+                ) : displayItems.length === 0 ? (
+                  // Empty state
+                  <SwiperSlide>
+                    <div className="h-96 flex flex-col items-center justify-center bg-card border border-border rounded-lg p-6 text-center">
+                      <p className="text-sm text-muted-foreground">No guest experiences yet.</p>
+                      <p className="text-xs text-muted-foreground mt-2">Be the first to share your moment!</p>
+                    </div>
+                  </SwiperSlide>
+                ) : (
+                  displayItems.map((item: any, index: number) => (
                   <SwiperSlide key={index} className="h-auto">
                     <div className="group bg-background border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-300 h-full flex flex-col shadow-sm hover:shadow-md">
                       {item.type === "video" ? (
@@ -256,7 +461,8 @@ export default function OurStoryPreview() {
                       )}
                     </div>
                   </SwiperSlide>
-                ))}
+                ))
+                )}
               </Swiper>
             </div>
 
@@ -300,6 +506,56 @@ export default function OurStoryPreview() {
             </div>
 
             <div className="space-y-4 flex-grow flex flex-col">
+              {/* Success Message */}
+              <AnimatePresence>
+                {submitSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center gap-2"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                      Successfully submitted!
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Error Message */}
+              <AnimatePresence>
+                {submitError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-center justify-between"
+                  >
+                    <span className="text-xs text-red-600 dark:text-red-400 font-medium">
+                      {submitError}
+                    </span>
+                    <button
+                      onClick={() => setSubmitError(null)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Author Name Input */}
+              <div>
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="Your name (optional)..."
+                  className="w-full bg-secondary/20 border border-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-muted-foreground/70"
+                />
+              </div>
+
               {/* Media Preview Area - Shows when media exists */}
               <AnimatePresence>
                 {hasMedia && (
@@ -450,12 +706,22 @@ export default function OurStoryPreview() {
               {/* Submit Button */}
               <button
                 disabled={!canSubmit}
+                onClick={handleSubmit}
                 className="w-full bg-primary text-primary-foreground text-xs font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
               >
-                {hasMedia && !feedbackText
-                  ? "Submit Media"
-                  : "Confirm Submission"}
-                <Send className="w-3 h-3" />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    {hasMedia && !feedbackText
+                      ? "Submit Media"
+                      : "Confirm Submission"}
+                    <Send className="w-3 h-3" />
+                  </>
+                )}
               </button>
 
               {/* Submission Info */}

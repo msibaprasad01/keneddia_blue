@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { X, Upload, Loader2, MapPin, Tag, Link as LinkIcon, FileText, Calendar as CalendarIcon, Building2, Globe, Image as ImageIcon } from 'lucide-react';
-import { createEvent, updateEventById, getAllLocations } from '@/Api/Api';
+import { createEventUpdated, updateEventById, getAllLocations, getPropertyTypes, uploadMedia } from '@/Api/Api';
 import { toast } from 'react-hot-toast';
 
 function CreateEventModal({ isOpen, onClose, editingEvent }) {
@@ -9,7 +9,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     title: '',
     slug: '',
     locationId: '',
-    propertyType: '', 
+    propertyTypeId: '', 
     eventDate: '',
     description: '',
     status: 'ACTIVE',
@@ -19,24 +19,28 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
   });
 
   const [locations, setLocations] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [uploadMethod, setUploadMethod] = useState('url');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadMethod, setUploadMethod] = useState('upload');
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [uploadedMediaId, setUploadedMediaId] = useState(null);
 
   const generateSlug = (text) => {
     return text
       .toLowerCase()
       .trim()
-      .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
   };
 
   useEffect(() => {
     if (isOpen) {
       fetchLocations();
+      fetchPropertyTypes();
     }
   }, [isOpen]);
 
@@ -45,8 +49,8 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       setFormData({
         title: editingEvent.title || '',
         slug: editingEvent.slug || '',
-        locationId: editingEvent.location?.id || '',
-        propertyType: editingEvent.propertyType || '',
+        locationId: editingEvent.locationId || '',
+        propertyTypeId: editingEvent.propertyTypeId || '',
         eventDate: editingEvent.eventDate || '',
         description: editingEvent.description || '',
         status: editingEvent.status || 'ACTIVE',
@@ -55,10 +59,13 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
         active: editingEvent.active ?? true
       });
       
-      const eventImage = editingEvent.imageMediaUrl || null;
-      setImagePreview(eventImage);
-      setImageUrl(eventImage?.startsWith('http') ? eventImage : '');
-      setUploadMethod(eventImage?.startsWith('data:') ? 'upload' : 'url');
+      // Handle existing image
+      if (editingEvent.image?.url) {
+        setImagePreview(editingEvent.image.url);
+        setImageUrl(editingEvent.image.url);
+        setUploadedMediaId(editingEvent.image.mediaId);
+        setUploadMethod('url');
+      }
     } else {
       resetForm();
     }
@@ -69,7 +76,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       title: '', 
       slug: '', 
       locationId: '', 
-      propertyType: '',
+      propertyTypeId: '',
       eventDate: '', 
       description: '', 
       status: 'ACTIVE',
@@ -80,14 +87,18 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     setImagePreview(null);
     setSelectedFile(null);
     setImageUrl('');
-    setUploadMethod('url');
+    setUploadedMediaId(null);
+    setUploadMethod('upload');
   };
 
   const fetchLocations = async () => {
     try {
       const response = await getAllLocations();
-      if (response.data.success) {
-        setLocations(response.data.data || []);
+      console.log("Locations response:", response);
+      
+      if (response?.data && Array.isArray(response.data)) {
+        const activeLocations = response.data.filter(loc => loc.isActive);
+        setLocations(activeLocations);
       }
     } catch (error) {
       console.error('Failed to load locations:', error);
@@ -96,8 +107,24 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     }
   };
 
+  const fetchPropertyTypes = async () => {
+    try {
+      const response = await getPropertyTypes();
+      console.log("Property types response:", response);
+      
+      if (response?.data && Array.isArray(response.data)) {
+        const activeTypes = response.data.filter(type => type.isActive);
+        setPropertyTypes(activeTypes);
+      }
+    } catch (error) {
+      console.error('Failed to load property types:', error);
+      toast.error('Failed to load property types');
+      setPropertyTypes([]);
+    }
+  };
+
   const handleTitleChange = (val) => {
-    const trimmedVal = val.slice(0, 200); // Limit title length
+    const trimmedVal = val.slice(0, 200);
     setFormData(prev => ({
       ...prev,
       title: trimmedVal,
@@ -109,30 +136,87 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select a valid image file');
-        return;
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.onerror = () => {
+      toast.error('Failed to read image file');
+    };
+    reader.readAsDataURL(file);
+
+    // Upload the image immediately
+    await uploadImageFile(file);
+  };
+
+  const uploadImageFile = async (file) => {
+    try {
+      setUploadingImage(true);
+      
+      // Create FormData for upload
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('type', 'IMAGE');
+      formDataUpload.append('alt', formData.title || 'Event image');
+      formDataUpload.append('width', '800');
+      formDataUpload.append('height', '600');
+
+      // Upload media
+      const response = await uploadMedia(formDataUpload);
+      
+      console.log('Upload response:', response);
+      
+      // Handle different response formats
+      let mediaId = null;
+      
+      if (typeof response === 'number') {
+        mediaId = response;
+      } else if (typeof response?.data === 'number') {
+        mediaId = response.data;
+      } else if (typeof response?.data?.data === 'number') {
+        mediaId = response.data.data;
+      } else if (response?.data?.data?.id) {
+        mediaId = response.data.data.id;
+      } else if (response?.data?.id) {
+        mediaId = response.data.id;
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image size should be less than 5MB');
-        return;
-      }
+      console.log('Extracted media ID:', mediaId);
 
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result); // Base64 string for static persistence
-      };
-      reader.onerror = () => {
-        toast.error('Failed to read image file');
-      };
-      reader.readAsDataURL(file);
+      if (mediaId) {
+        setUploadedMediaId(mediaId);
+        toast.success(`Image uploaded successfully (ID: ${mediaId})`);
+      } else {
+        console.error('Could not extract media ID from response:', response);
+        throw new Error('Invalid response from upload');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error(error?.response?.data?.message || 'Failed to upload image');
+      // Clear the preview if upload failed
+      setImagePreview(null);
+      setSelectedFile(null);
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -141,6 +225,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     if (url.trim()) {
       setImagePreview(url);
       setSelectedFile(null);
+      setUploadedMediaId(null);
     } else {
       setImagePreview(null);
     }
@@ -155,7 +240,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       toast.error('Location is required');
       return false;
     }
-    if (!formData.propertyType) {
+    if (!formData.propertyTypeId) {
       toast.error('Property type is required');
       return false;
     }
@@ -175,10 +260,13 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       toast.error('CTA link is required');
       return false;
     }
-    if (!imagePreview) {
+    
+    // Validate image - must have either uploadedMediaId or imageUrl
+    if (!uploadedMediaId && !imageUrl) {
       toast.error('Event image is required');
       return false;
     }
+    
     return true;
   };
 
@@ -188,26 +276,53 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     try {
       setLoading(true);
       
-      // STATIC WAY: Use imagePreview (Base64 or URL) as the final source
-      const payload = {
-        ...formData,
-        locationId: parseInt(formData.locationId),
-        imageMediaUrl: imagePreview,
-      };
+      // Create FormData
+      const formDataToSend = new FormData();
+      
+      // Append core fields
+      formDataToSend.append('title', formData.title.trim());
+      formDataToSend.append('slug', formData.slug);
+      formDataToSend.append('locationId', parseInt(formData.locationId));
+      formDataToSend.append('propertyTypeId', parseInt(formData.propertyTypeId));
+      formDataToSend.append('eventDate', formData.eventDate);
+      formDataToSend.append('description', formData.description.trim());
+      formDataToSend.append('status', formData.status);
+      formDataToSend.append('ctaText', formData.ctaText.trim());
+      formDataToSend.append('ctaLink', formData.ctaLink.trim());
+      formDataToSend.append('active', formData.active);
+      
+      // Append image (ONLY ONE of these)
+      if (uploadedMediaId) {
+        // Priority 1: Use uploaded media ID
+        formDataToSend.append('imageMediaId', uploadedMediaId);
+      } else if (imageUrl) {
+        // Priority 2: External URL
+        formDataToSend.append('imageMediaUrl', imageUrl);
+      }
+
+      // Log FormData for debugging
+      console.log('Submitting FormData:');
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`${key}:`, value);
+      }
 
       if (editingEvent) {
-        await updateEventById(editingEvent.id, payload);
+        await updateEventById(editingEvent.id, formDataToSend);
         toast.success('Event updated successfully');
       } else {
-        await createEvent(payload);
-        toast.success('Event published successfully');
+        const response = await createEventUpdated(formDataToSend);
+        console.log('Create event response:', response);
+        toast.success('Event created successfully');
       }
       
       onClose(true);
       resetForm();
     } catch (error) {
       console.error('Error saving event:', error);
-      toast.error(error.response?.data?.message || 'Failed to save event');
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          'Failed to save event';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -236,7 +351,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
               {editingEvent ? 'Edit Event' : 'Create New Event'}
             </h3>
             <p className="text-xs mt-1" style={{ color: colors.textSecondary }}>
-              Static upload enabled - Images save as local strings
+              Fill in the event details and upload an image
             </p>
           </div>
           <button 
@@ -295,19 +410,21 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   <Building2 size={14} /> Property Type *
                 </label>
                 <select
-                  value={formData.propertyType}
-                  onChange={(e) => handleInputChange('propertyType', e.target.value)}
+                  value={formData.propertyTypeId}
+                  onChange={(e) => handleInputChange('propertyTypeId', e.target.value)}
                   className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   style={{ 
                     borderColor: colors.border, 
                     backgroundColor: colors.mainBg, 
-                    color: formData.propertyType ? colors.textPrimary : '#9CA3AF'
+                    color: formData.propertyTypeId ? colors.textPrimary : '#9CA3AF'
                   }}
                 >
                   <option value="">Select Type</option>
-                  <option value="HOTEL">Hotel</option>
-                  <option value="RESTAURANT">Restaurant</option>
-                  <option value="CAFE">Cafe</option>
+                  {propertyTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.typeName}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -331,7 +448,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   <option value="">Select Location</option>
                   {locations.map((loc) => (
                     <option key={loc.id} value={loc.id}>
-                      {loc.name}
+                      {loc.locationName}
                     </option>
                   ))}
                 </select>
@@ -366,7 +483,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
                   style={{ color: colors.textSecondary }}
                 >
-                  Status
+                  Status *
                 </label>
                 <select
                   value={formData.status}
@@ -381,6 +498,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   <option value="ACTIVE">Active</option>
                   <option value="COMING_SOON">Coming Soon</option>
                   <option value="SOLD_OUT">Sold Out</option>
+                  <option value="INACTIVE">Inactive</option>
                 </select>
               </div>
             </div>
@@ -475,30 +593,63 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
               <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
                 <button 
                   type="button"
-                  onClick={() => setUploadMethod('url')} 
-                  className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${
-                    uploadMethod === 'url' ? 'bg-white shadow-sm text-primary' : 'text-gray-600'
-                  }`}
-                >
-                  URL
-                </button>
-                <button 
-                  type="button"
                   onClick={() => setUploadMethod('upload')} 
                   className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${
                     uploadMethod === 'upload' ? 'bg-white shadow-sm text-primary' : 'text-gray-600'
                   }`}
                 >
-                  Upload
+                  Upload File
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setUploadMethod('url')} 
+                  className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${
+                    uploadMethod === 'url' ? 'bg-white shadow-sm text-primary' : 'text-gray-600'
+                  }`}
+                >
+                  Image URL
                 </button>
               </div>
 
               {/* Upload Method Content */}
-              {uploadMethod === 'url' ? (
+              {uploadMethod === 'upload' ? (
+                <div 
+                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary hover:bg-gray-50 transition-all ${uploadingImage ? 'pointer-events-none opacity-60' : ''}`}
+                  onClick={() => !uploadingImage && document.getElementById('file-upload')?.click()}
+                  style={{ borderColor: colors.border }}
+                >
+                  <input 
+                    id="file-upload" 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleFileSelect}
+                    disabled={uploadingImage}
+                  />
+                  {uploadingImage ? (
+                    <>
+                      <Loader2 size={30} className="mx-auto mb-2 animate-spin text-primary" />
+                      <p className="text-xs text-gray-500 mb-1">
+                        Uploading image...
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={30} className="mx-auto mb-2 opacity-20" />
+                      <p className="text-xs font-medium text-gray-600">
+                        {selectedFile ? selectedFile.name : 'Click to upload image'}
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-1">
+                        PNG, JPG, WEBP up to 5MB
+                      </p>
+                    </>
+                  )}
+                </div>
+              ) : (
                 <div>
                   <input
                     type="text"
-                    placeholder="Paste image URL..."
+                    placeholder="https://example.com/image.jpg"
                     value={imageUrl}
                     onChange={(e) => handleUrlChange(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
@@ -506,27 +657,6 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   />
                   <p className="text-[10px] text-gray-400 mt-2">
                     Enter a direct image URL (must start with http:// or https://)
-                  </p>
-                </div>
-              ) : (
-                <div 
-                  className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary hover:bg-gray-50 transition-all"
-                  onClick={() => document.getElementById('file-static')?.click()}
-                  style={{ borderColor: colors.border }}
-                >
-                  <input 
-                    id="file-static" 
-                    type="file" 
-                    className="hidden" 
-                    accept="image/*" 
-                    onChange={handleFileSelect} 
-                  />
-                  <Upload size={30} className="mx-auto mb-2 opacity-20" />
-                  <p className="text-xs font-medium text-gray-600">
-                    {selectedFile ? selectedFile.name : 'Click to upload image'}
-                  </p>
-                  <p className="text-[10px] text-gray-400 mt-1">
-                    PNG, JPG up to 5MB
                   </p>
                 </div>
               )}
@@ -540,6 +670,12 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                     style={{ borderColor: colors.border }} 
                     alt="Event preview" 
                   />
+                  {uploadedMediaId && (
+                    <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs rounded-full flex items-center gap-1">
+                      <span>✓</span>
+                      <span>ID: {uploadedMediaId}</span>
+                    </div>
+                  )}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -547,8 +683,10 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                       setImagePreview(null);
                       setSelectedFile(null);
                       setImageUrl('');
+                      setUploadedMediaId(null);
                     }}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                    disabled={uploadingImage}
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg disabled:opacity-50"
                     aria-label="Remove image"
                   >
                     <X size={16} />
@@ -567,7 +705,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
           <button 
             type="button"
             onClick={handleClose}
-            disabled={loading}
+            disabled={loading || uploadingImage}
             className="flex-1 py-3 rounded-lg font-bold text-sm border hover:bg-gray-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ borderColor: colors.border, color: colors.textPrimary }}
           >
@@ -576,7 +714,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
           <button 
             type="button"
             onClick={handleSubmit} 
-            disabled={loading || !formData.title || !formData.locationId || !imagePreview}
+            disabled={loading || uploadingImage || !formData.title || !formData.locationId || !formData.propertyTypeId || (!uploadedMediaId && !imageUrl)}
             className="flex-[2] py-3 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: colors.primary }}
           >
@@ -584,6 +722,11 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
               <>
                 <Loader2 className="animate-spin" size={18} />
                 Saving...
+              </>
+            ) : uploadingImage ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                Uploading Image...
               </>
             ) : (
               editingEvent ? 'Update Event' : 'Publish Event'
