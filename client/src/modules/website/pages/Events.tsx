@@ -1,16 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, MapPin, Clock, ArrowRight, X, Users, Music, GlassWater, Sparkles, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Clock, ArrowRight, X, Users, GlassWater, Sparkles, Loader2 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
-import HeaderLogo from "@/modules/website/components/HeaderLogo";
-
-// Assets
-import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { BackButton } from "@/components/ui/BackButton";
+import { getEvents } from "@/Api/Api";
 
-// Event Navigation Items
+// Event Navigation Items (Kept as requested)
 const EVENT_NAV_ITEMS = [
   { type: 'link', label: 'WEDDINGS', key: 'weddings', href: '#collection' },
   { type: 'link', label: 'CORPORATE', key: 'corporate', href: '#collection' },
@@ -18,76 +14,58 @@ const EVENT_NAV_ITEMS = [
   { type: 'link', label: 'PLANNING', key: 'planning', href: '#collection' },
 ] as any[];
 
-const events = [
-  {
-    id: 1,
-    title: "Jazz & Wine Night",
-    category: "Music & Dining",
-    date: "Dec 15, 2025",
-    time: "7:00 PM - 11:00 PM",
-    location: "The Blue Note Mumbai",
-    image: siteContent.images.events.jazz,
-    description: "An evening of smooth jazz performance by the 'Midnight Quartet' accompanied by a curated selection of vintage wines.",
-    highlights: ["Live Quartet", "Sommelier Selection", "Tapas Menu"],
-  },
-  {
-    id: 2,
-    title: "New Year's Eve Gala",
-    category: "Celebration",
-    date: "Dec 31, 2025",
-    time: "8:00 PM onwards",
-    location: "Skyline High, Bengaluru",
-    image: siteContent.images.events.gala,
-    description: "Welcome 2026 under the stars. Champagne toast, gourmet buffet, and a spectacular view of the city fireworks.",
-    highlights: ["Champagne Toast", "Fireworks View", "Gourmet Buffet", "Live DJ"],
-  },
-  {
-    id: 3,
-    title: "Spring High Tea Showcase",
-    category: "Culinary",
-    date: "Jan 10, 2026",
-    time: "3:00 PM - 6:00 PM",
-    location: "The Orchid Room, New Delhi",
-    image: siteContent.images.events.highTea,
-    description: "Experience the art of tea blending with our master sommeliers, paired with floral-inspired pastries.",
-    highlights: ["Tea Blending Workshop", "Floral Pastries", "Take-home Gift"],
-  },
-  {
-    id: 4,
-    title: "Artisan Market",
-    category: "Community",
-    date: "Jan 25, 2026",
-    time: "10:00 AM - 6:00 PM",
-    location: "Courtyard, Goa",
-    image: siteContent.images.events.wedding, // Placeholder for market/community event
-    description: "Discover local crafts, organic produce, and handmade goods from artisans across the region.",
-    highlights: ["Local Artisans", "Organic Food Stalls", "Live Folk Music"],
-  },
-];
-
-// Hero Images
-const HERO_IMAGES = [
-  siteContent.images.events.gala,
-  siteContent.images.events.jazz,
-  siteContent.images.events.wedding
-];
-
 const categories = ["All Categories", "Music & Dining", "Celebration", "Culinary", "Community"];
 
 export default function Events() {
-  const [selectedEvent, setSelectedEvent] = useState<typeof events[0] | null>(null);
+  const [eventList, setEventList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
-  // Hero Auto-play
   useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        const response = await getEvents({});
+        // Mapping the "content" array from your specific API response format
+        const data = response?.content || response?.data?.content || [];
+        setEventList(data);
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  // Use event images for Hero if available, otherwise fallback to a default
+  const HERO_IMAGES = eventList.length > 0 
+    ? eventList.slice(0, 3).map(e => ({ src: e.imageUrl, alt: e.title }))
+    : [{ src: "/images/placeholder.jpg", alt: "Events" }];
+
+  useEffect(() => {
+    if (HERO_IMAGES.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [HERO_IMAGES.length]);
 
-  const filteredEvents = events.filter(event => selectedCategory === "All Categories" || event.category === selectedCategory);
+  // Filtering Logic (mapping 'category' which might be dynamic or default)
+  const filteredEvents = eventList.filter(event => {
+    const eventCat = event.category || "Music & Dining";
+    return selectedCategory === "All Categories" || eventCat === selectedCategory;
+  });
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -105,7 +83,8 @@ export default function Events() {
             className="absolute inset-0"
           >
             <OptimizedImage
-              {...HERO_IMAGES[currentHeroIndex]}
+              src={HERO_IMAGES[currentHeroIndex]?.src}
+              alt={HERO_IMAGES[currentHeroIndex]?.alt}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40" />
@@ -161,7 +140,6 @@ export default function Events() {
             <h2 className="text-3xl md:text-4xl font-serif text-foreground">Events & Happenings</h2>
           </div>
 
-          {/* Filter Categories */}
           <div className="flex justify-center flex-wrap gap-4 mb-12">
             {categories.map((cat) => (
               <button
@@ -177,60 +155,67 @@ export default function Events() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <AnimatePresence mode="popLayout">
-              {filteredEvents.map((event, index) => (
-                <motion.div
-                  key={event.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  onClick={() => setSelectedEvent(event)}
-                  className="group cursor-pointer bg-card rounded-lg overflow-hidden border border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div className="relative h-64 overflow-hidden">
-                    <OptimizedImage
-                      {...event.image}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute top-4 left-4 bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm shadow-sm">
-                      {event.category}
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <div className="flex items-center text-xs text-primary font-bold uppercase tracking-widest mb-3">
-                      <Calendar className="w-3 h-3 mr-1" />
-                      {event.date}
-                    </div>
-
-                    <h3 className="text-2xl font-serif text-foreground mb-3 group-hover:text-primary transition-colors">{event.title}</h3>
-
-                    <div className="space-y-2 mb-4 text-sm text-muted-foreground">
-                      <div className="flex items-center">
-                        <Clock className="w-4 h-4 mr-2 opacity-70" />
-                        {event.time}
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="w-4 h-4 mr-2 opacity-70" />
-                        {event.location}
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <AnimatePresence mode="popLayout">
+                {filteredEvents.map((event, index) => (
+                  <motion.div
+                    key={event.id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    onClick={() => setSelectedEvent(event)}
+                    className="group cursor-pointer bg-card rounded-lg overflow-hidden border border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="relative h-64 overflow-hidden">
+                      <OptimizedImage
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute top-4 left-4 bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm shadow-sm">
+                        {event.category || "General"}
                       </div>
                     </div>
 
-                    <p className="text-muted-foreground/80 text-sm leading-relaxed mb-6 line-clamp-2">
-                      {event.description}
-                    </p>
+                    <div className="p-6">
+                      <div className="flex items-center text-xs text-primary font-bold uppercase tracking-widest mb-3">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        {formatDate(event.eventDate)}
+                      </div>
 
-                    <button className="w-full py-3 border border-primary/20 text-primary font-bold text-xs uppercase tracking-widest group-hover:bg-primary group-hover:text-primary-foreground transition-colors rounded flex items-center justify-center">
-                      Event Details
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+                      <h3 className="text-2xl font-serif text-foreground mb-3 group-hover:text-primary transition-colors">{event.title}</h3>
+
+                      <div className="space-y-2 mb-4 text-sm text-muted-foreground">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-2 opacity-70" />
+                          {event.time || "Time TBA"}
+                        </div>
+                        <div className="flex items-center">
+                          <MapPin className="w-4 h-4 mr-2 opacity-70" />
+                          {event.locationName}
+                        </div>
+                      </div>
+
+                      <p className="text-muted-foreground/80 text-sm leading-relaxed mb-6 line-clamp-2">
+                        {event.description}
+                      </p>
+
+                      <button className="w-full py-3 border border-primary/20 text-primary font-bold text-xs uppercase tracking-widest group-hover:bg-primary group-hover:text-primary-foreground transition-colors rounded flex items-center justify-center">
+                        {event.ctaText || "Event Details"}
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
       </section>
 
@@ -239,7 +224,8 @@ export default function Events() {
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-6">
           <div className="order-2 md:order-1 relative h-[500px] w-full rounded-lg overflow-hidden">
             <OptimizedImage
-              {...siteContent.images.events.wedding}
+              src={eventList[0]?.imageUrl || "/images/placeholder.jpg"}
+              alt="Weddings"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8 text-white">
@@ -291,11 +277,12 @@ export default function Events() {
 
               <div className="relative aspect-[21/9] overflow-hidden">
                 <OptimizedImage
-                  {...selectedEvent.image}
+                  src={selectedEvent.imageUrl}
+                  alt={selectedEvent.title}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute bottom-4 left-4 bg-primary/90 backdrop-blur px-3 py-1 rounded-full">
-                  <span className="text-xs font-bold text-primary-foreground uppercase tracking-widest">{selectedEvent.category}</span>
+                  <span className="text-xs font-bold text-primary-foreground uppercase tracking-widest">{selectedEvent.category || "General"}</span>
                 </div>
               </div>
 
@@ -306,15 +293,11 @@ export default function Events() {
                     <div className="space-y-2">
                       <div className="flex items-center text-muted-foreground">
                         <Calendar className="w-4 h-4 mr-2 text-primary" />
-                        <span className="text-sm font-bold uppercase tracking-wide text-foreground">{selectedEvent.date}</span>
-                      </div>
-                      <div className="flex items-center text-muted-foreground">
-                        <Clock className="w-4 h-4 mr-2 text-primary" />
-                        <span className="text-sm uppercase tracking-wide">{selectedEvent.time}</span>
+                        <span className="text-sm font-bold uppercase tracking-wide text-foreground">{formatDate(selectedEvent.eventDate)}</span>
                       </div>
                       <div className="flex items-center text-muted-foreground">
                         <MapPin className="w-4 h-4 mr-2 text-primary" />
-                        <span className="text-sm uppercase tracking-wide">{selectedEvent.location}</span>
+                        <span className="text-sm uppercase tracking-wide">{selectedEvent.locationName}</span>
                       </div>
                     </div>
                   </div>
@@ -324,28 +307,20 @@ export default function Events() {
                   {selectedEvent.description}
                 </p>
 
-                <div className="mb-8 bg-secondary/10 p-6 rounded-lg border border-primary/5">
-                  <h3 className="text-xs uppercase tracking-widest text-primary mb-4 font-bold">Event Highlights</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {selectedEvent.highlights.map((highlight) => (
-                      <div key={highlight} className="flex items-center">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary mr-2" />
-                        <span className="text-sm font-medium text-foreground">{highlight}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <button className="w-full bg-primary text-primary-foreground py-4 rounded flex items-center justify-center hover:bg-primary/90 transition-colors uppercase tracking-widest text-xs font-bold">
-                  RSVP to Event
+                <a 
+                  href={selectedEvent.ctaLink} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="w-full bg-primary text-primary-foreground py-4 rounded flex items-center justify-center hover:bg-primary/90 transition-colors uppercase tracking-widest text-xs font-bold no-underline"
+                >
+                  {selectedEvent.ctaText || "RSVP to Event"}
                   <ArrowRight className="w-4 h-4 ml-2" />
-                </button>
+                </a>
               </div>
             </motion.div>
           </motion.div>
-        )
-        }
-      </AnimatePresence >
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>
