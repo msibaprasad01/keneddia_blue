@@ -1,184 +1,146 @@
-// Adapted from existing logic but with theme tokens
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  Building2,
-  Coffee,
-  Wine,
-  Music,
-  Drama,
-  Briefcase,
-  ArrowRight
-} from "lucide-react";
-import { siteContent } from "@/data/siteContent";
+import { Building2, Coffee, Wine, Music, Briefcase, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { getKennediaGroup } from "@/Api/Api";
 
-// Lucide icon map
-const IconMap = {
-  hotels: Building2,
-  cafes: Coffee,
-  bars: Wine,
-  events: Briefcase,
-  entertainment: Music,
+// 1. Static Fallback Data
+const STATIC_DATA = {
+  mainTitle: "Kennedia Group",
+  subTitle: "A diverse ecosystem of luxury hospitality brands.",
+  logoText: "KB",
+  logoSubText: "Group",
+  divisions: [
+    { id: 1, title: "Hotels & Resorts", icon: "HOTEL", description: "Luxury stays globally", displayOrder: 1 },
+    { id: 2, title: "Cafes & Dining", icon: "CAFE", description: "Artisan culinary delights", displayOrder: 2 },
+    { id: 3, title: "Bars & Lounges", icon: "BAR", description: "Signature cocktails", displayOrder: 3 },
+  ],
 };
 
-interface VerticalItem {
-  id: string;
-  title: string;
-  icon: keyof typeof IconMap;
-  description: string;
-}
-
-const verticals: VerticalItem[] = [
-  { id: "hotels", title: "Hotels & Resorts", icon: "hotels", description: "Luxury stays globally" },
-  { id: "cafes", title: "Cafes & Dining", icon: "cafes", description: "Artisan culinary delights" },
-  { id: "bars", title: "Bars & Lounges", icon: "bars", description: "Signature cocktails" },
-  { id: "events", title: "Events & Conf.", icon: "events", description: "Grand venues" },
-  { id: "entertainment", title: "Entertainment", icon: "entertainment", description: "Live shows & nightlife" },
-];
+const IconMap: Record<string, any> = {
+  HOTEL: Building2,
+  CAFE: Coffee,
+  BAR: Wine,
+  EVENT: Briefcase,
+  MUSIC: Music,
+};
 
 export default function BusinessVerticals() {
   const [isMobile, setIsMobile] = useState(false);
+  // 2. Initialize with Static Data to prevent "undefined" errors
+  const [groupData, setGroupData] = useState(STATIC_DATA);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
     window.addEventListener("resize", checkMobile);
+
+    const fetchData = async () => {
+      try {
+        const res = await getKennediaGroup();
+        // Check if response has the expected structure
+        const validData = res?.divisions ? res : res?.data; 
+        if (validData && Array.isArray(validData.divisions)) {
+          setGroupData(validData);
+        }
+      } catch (error) {
+        console.warn("API failed, staying with static fallback", error);
+      }
+    };
+
+    fetchData();
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   return (
     <section className="py-2 bg-gradient-to-b from-background to-secondary/10 overflow-hidden relative">
-      {/* Background Decor */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-
       <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center mb-6">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2"
-          >
-            Kennedia Group
-          </motion.h2>
+        <div className="text-center mb-2">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2">
+            {groupData.mainTitle}
+          </h2>
           <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-            A diverse ecosystem of luxury hospitality brands.
+            {groupData.subTitle}
           </p>
         </div>
 
         {isMobile ? (
-          <MobileTimeline verticals={verticals} />
+          <MobileTimeline verticals={groupData.divisions} />
         ) : (
-          <DesktopTree verticals={verticals} />
+          <DesktopTree 
+            divisions={groupData.divisions} 
+            logoText={groupData.logoText} 
+            logoSubText={groupData.logoSubText} 
+          />
         )}
       </div>
     </section>
   );
 }
 
-function DesktopTree({ verticals }: { verticals: VerticalItem[] }) {
+function DesktopTree({ divisions, logoText, logoSubText }: any) {
+  // 3. Safety Check: If API fails and returns null/obj, fallback to empty array
+  const safeDivisions = Array.isArray(divisions) ? [...divisions] : [];
+  const sortedDivisions = safeDivisions.sort((a, b) => a.displayOrder - b.displayOrder);
+
   return (
     <div className="relative w-full max-w-6xl mx-auto min-h-[500px] flex flex-col items-center justify-center py-10">
-
-      {/* 1. Parent Node (Top Center) */}
       <div className="relative z-20 mb-16">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          className="w-32 h-32 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20"
-        >
+        <div className="w-32 h-32 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20">
           <div className="text-center">
-            <h2 className="text-5xl font-serif font-bold text-foreground tracking-wider leading-none">
-              KB
-            </h2>
-            <p className="text-[10px] uppercase tracking-widest text-primary mt-1 font-bold">Group</p>
+            <h2 className="text-2xl font-serif font-bold text-foreground leading-none">{logoText}</h2>
+            <p className="text-[10px] uppercase tracking-widest text-primary mt-1 font-bold">{logoSubText}</p>
           </div>
-
-          {/* Pulsing rings */}
-          <div className="absolute inset-0 rounded-full border border-primary/30 animate-[ping_3s_ease-in-out_infinite] opacity-20" />
-          <div className="absolute -inset-4 rounded-full border border-primary/10 opacity-20" />
-        </motion.div>
-
-        {/* Central Vertical Connector going DOWN */}
-        <div className="absolute left-1/2 top-full -translate-x-1/2 h-16 w-[1px] bg-linear-to-b from-primary/50 to-primary/20" />
+        </div>
+        <div className="absolute left-1/2 top-full -translate-x-1/2 h-16 w-[1px] bg-primary/20" />
       </div>
 
-      {/* 2. Horizontal Connector Bar */}
-      {/* Spans across the width of the children to connect them */}
-      <div className="relative w-4/5 h-[1px] bg-primary/20 mb-8">
-        {/* Vertical lines connecting to each child will branch from here */}
-      </div>
+      <div className="relative w-4/5 h-[1px] bg-primary/20 mb-8" />
 
-      <div className="flex justify-between items-start w-full px-4 relative -mt-8"> {/* Negative margin to pull up to line */}
-        {verticals.map((v: VerticalItem, i: number) => (
-          <BranchNode key={v.id} item={v} index={i} total={verticals.length} />
+      <div className="flex justify-between items-start w-full px-4 relative -mt-8">
+        {sortedDivisions.map((v: any, i: number) => (
+          <BranchNode key={v.id} item={v} index={i} />
         ))}
       </div>
     </div>
   );
 }
 
-function BranchNode({ item, index, total }: { item: any, index: number, total: number }) {
-  const Icon = IconMap[item.icon as keyof typeof IconMap] || Building2;
-  const isCenter = index === Math.floor(total / 2);
-
+function BranchNode({ item, index }: any) {
+  const Icon = IconMap[item.icon] || Building2;
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="flex flex-col items-center text-center group relative w-1/5"
+      className="flex flex-col items-center text-center group relative flex-1"
     >
-      {/* Vertical Connector Line from horizontal bar to visual node */}
-      <div className="h-8 w-[1px] bg-primary/20 mb-4 group-hover:bg-primary/60 transition-colors duration-500" />
-
-      {/* Visual Icon Node */}
-      <Link to={`/${item.id}`} className="block">
-        <div className="w-16 h-16 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 group-hover:border-primary/50 group-hover:shadow-xl transition-all duration-300">
-          <Icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors duration-300" strokeWidth={1.5} />
+      <div className="h-8 w-[1px] bg-primary/20 mb-4" />
+      <Link to={`/#`}>
+        <div className="w-16 h-16 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 transition-all">
+          <Icon className="w-6 h-6 text-muted-foreground group-hover:text-primary" />
         </div>
       </Link>
-
-      {/* Text Content */}
-      <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
-        {item.title}
-      </h3>
-      <p className="text-xs text-muted-foreground/70 leading-snug max-w-[120px]">
-        {item.description}
-      </p>
+      <h3 className="text-sm font-bold">{item.title}</h3>
+      <p className="text-xs text-muted-foreground/70 max-w-[120px]">{item.description}</p>
     </motion.div>
   );
 }
 
-function MobileTimeline({ verticals }: { verticals: VerticalItem[] }) {
+function MobileTimeline({ verticals }: any) {
+  const safeVerticals = Array.isArray(verticals) ? verticals : [];
   return (
     <div className="relative pl-6 border-l border-dashed border-primary/20 space-y-8 py-4">
-      {verticals.map((v: VerticalItem, i: number) => {
-        const Icon = IconMap[v.icon as keyof typeof IconMap] || Building2;
+      {safeVerticals.map((v: any) => {
+        const Icon = IconMap[v.icon] || Building2;
         return (
-          <motion.div
-            key={v.id}
-            initial={{ opacity: 0, x: -15 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="relative"
-          >
-            <div className="absolute -left-[31px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary border-2 border-background shadow-sm" />
-
-            <Link to={`/${v.id}`} className="block bg-card p-4 rounded-xl shadow-sm border border-border hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-full text-primary">
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-foreground">{v.title}</h3>
-                </div>
-                <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
-              </div>
-            </Link>
-          </motion.div>
+          <Link key={v.id} to={`/division/${v.id}`} className="block bg-card p-4 rounded-xl border border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-full text-primary"><Icon className="w-4 h-4" /></div>
+              <h3 className="text-base font-bold">{v.title}</h3>
+              <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
+            </div>
+          </Link>
         );
       })}
     </div>

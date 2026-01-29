@@ -1,7 +1,14 @@
 // components/HeroSection.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { colors } from "@/lib/colors/colors";
-import { Upload, Loader2, X, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Upload,
+  Loader2,
+  X,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { createOrUpdateHeroSection, getHeroSection } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 
@@ -18,7 +25,7 @@ function HeroSection() {
       subFile: null,
       subPreview: null,
       subMediaType: "IMAGE",
-    }
+    },
   ]);
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -35,59 +42,41 @@ function HeroSection() {
     try {
       setFetching(true);
       const response = await getHeroSection();
-      
-      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-        const latestHero = response.data.reduce((latest, current) => 
-          current.id > latest.id ? current : latest
-        );
+
+      if (
+        response.data &&
+        Array.isArray(response.data) &&
+        response.data.length > 0
+      ) {
+        // Sort by ID to get latest entries first
+        const sortedData = [...response.data].sort((a, b) => b.id - a.id);
         
-        setExistingData(latestHero);
+        // Set the latest one as existing data for reference
+        setExistingData(sortedData[0]);
         setFormData({
-          active: latestHero.active ?? true,
+          active: sortedData[0].active ?? true,
         });
 
-        // Parse existing hero slides data
-        const existingSlides = [];
-        
-        // Handle background media arrays
-        const backgroundUrls = latestHero.backgroundMediaUrls || 
-                               (latestHero.backgroundMediaUrl ? [latestHero.backgroundMediaUrl] : []);
-        const backgroundTypes = latestHero.backgroundMediaTypes || 
-                               (latestHero.backgroundMediaType ? [latestHero.backgroundMediaType] : []);
-        const mainTitles = latestHero.mainTitles || 
-                          (latestHero.mainTitle ? [latestHero.mainTitle] : []);
-        const subTitles = latestHero.subTitles || 
-                         (latestHero.subTitle ? [latestHero.subTitle] : []);
-        const ctaTexts = latestHero.ctaTexts || 
-                        (latestHero.ctaText ? [latestHero.ctaText] : []);
-        
-        // Handle sub media arrays
-        const subUrls = latestHero.subMediaUrls || 
-                       (latestHero.subMediaUrl ? [latestHero.subMediaUrl] : []);
-        const subTypes = latestHero.subMediaTypes || 
-                        (latestHero.subMediaType ? [latestHero.subMediaType] : []);
-
-        // Create slides from existing data
-        for (let i = 0; i < backgroundUrls.length; i++) {
-          existingSlides.push({
-            mainTitle: mainTitles[i] || "",
-            subTitle: subTitles[i] || "",
-            ctaText: ctaTexts[i] || "",
-            backgroundFile: null,
-            backgroundPreview: backgroundUrls[i],
-            backgroundMediaType: backgroundTypes[i] || "IMAGE",
-            subFile: null,
-            subPreview: subUrls[i] || null,
-            subMediaType: subTypes[i] || "IMAGE",
-          });
-        }
+        // Convert each hero section item to a slide
+        const existingSlides = sortedData.map(item => ({
+          mainTitle: item.mainTitle || "",
+          subTitle: item.subTitle || "",
+          ctaText: item.ctaText || "",
+          backgroundFile: null,
+          backgroundPreview: item.backgroundMediaUrl || null,
+          backgroundMediaType: item.backgroundMediaType || "IMAGE",
+          subFile: null,
+          subPreview: item.subMediaUrl || null,
+          subMediaType: item.subMediaType || "IMAGE",
+        }));
 
         if (existingSlides.length > 0) {
           setHeroSlides(existingSlides);
         }
 
-        console.log("Latest Hero Section:", latestHero);
+        console.log("Loaded Hero Sections:", existingSlides.length, "slides");
       } else {
+        // Default slide if no data
         setHeroSlides([
           {
             mainTitle: "Where Luxury Meets Experience",
@@ -99,12 +88,27 @@ function HeroSection() {
             subFile: null,
             subPreview: null,
             subMediaType: "IMAGE",
-          }
+          },
         ]);
       }
     } catch (error) {
       console.error("Error fetching hero section:", error);
       toast.error("Failed to load hero section data");
+      
+      // Set default slide on error
+      setHeroSlides([
+        {
+          mainTitle: "Where Luxury Meets Experience",
+          subTitle: "KENNEDIA BLU GROUP",
+          ctaText: "Explore →",
+          backgroundFile: null,
+          backgroundPreview: null,
+          backgroundMediaType: "IMAGE",
+          subFile: null,
+          subPreview: null,
+          subMediaType: "IMAGE",
+        },
+      ]);
     } finally {
       setFetching(false);
     }
@@ -222,7 +226,7 @@ function HeroSection() {
         subFile: null,
         subPreview: null,
         subMediaType: "IMAGE",
-      }
+      },
     ]);
     setCurrentSlideIndex(heroSlides.length);
   };
@@ -234,35 +238,45 @@ function HeroSection() {
       return;
     }
 
-    setHeroSlides((prev) => prev.filter((_, index) => index !== currentSlideIndex));
+    setHeroSlides((prev) =>
+      prev.filter((_, index) => index !== currentSlideIndex),
+    );
     setCurrentSlideIndex((prev) => Math.max(0, prev - 1));
   };
 
   // Navigate between slides
   const goToPreviousSlide = () => {
-    setCurrentSlideIndex((prev) => (prev > 0 ? prev - 1 : heroSlides.length - 1));
+    setCurrentSlideIndex((prev) =>
+      prev > 0 ? prev - 1 : heroSlides.length - 1,
+    );
   };
 
   const goToNextSlide = () => {
-    setCurrentSlideIndex((prev) => (prev < heroSlides.length - 1 ? prev + 1 : 0));
+    setCurrentSlideIndex((prev) =>
+      prev < heroSlides.length - 1 ? prev + 1 : 0,
+    );
   };
 
   const handleSubmit = async () => {
-    // Validation
+    // -------- Validation --------
     for (let i = 0; i < heroSlides.length; i++) {
       const slide = heroSlides[i];
+
       if (!slide.mainTitle.trim()) {
         toast.error(`Main title is required for slide ${i + 1}`);
         return;
       }
+
       if (!slide.subTitle.trim()) {
         toast.error(`Subtitle is required for slide ${i + 1}`);
         return;
       }
+
       if (!slide.ctaText.trim()) {
-        toast.error(`CTA button text is required for slide ${i + 1}`);
+        toast.error(`CTA text is required for slide ${i + 1}`);
         return;
       }
+
       if (!slide.backgroundFile && !slide.backgroundPreview) {
         toast.error(`Background media is required for slide ${i + 1}`);
         return;
@@ -273,44 +287,103 @@ function HeroSection() {
       setLoading(true);
 
       const payload = new FormData();
-      payload.append("active", formData.active);
 
-      // Append data for each slide
-      heroSlides.forEach((slide, index) => {
-        payload.append("mainTitles", slide.mainTitle);
-        payload.append("subTitles", slide.subTitle);
-        payload.append("ctaTexts", slide.ctaText);
-        
-        // Only append new files
+      // -------- Build indexed payload with proper handling --------
+      for (let index = 0; index < heroSlides.length; index++) {
+        const slide = heroSlides[index];
+
+        // Text fields - ALWAYS REQUIRED
+        payload.append(`heroSections[${index}].mainTitle`, slide.mainTitle);
+        payload.append(`heroSections[${index}].subTitle`, slide.subTitle);
+        payload.append(`heroSections[${index}].ctaText`, slide.ctaText);
+        payload.append(
+          `heroSections[${index}].backgroundMediaType`,
+          slide.backgroundMediaType,
+        );
+        payload.append(
+          `heroSections[${index}].subMediaType`,
+          slide.subMediaType,
+        );
+        payload.append(`heroSections[${index}].active`, "true");
+
+        // Background media - ALWAYS REQUIRED
         if (slide.backgroundFile) {
-          payload.append("backgroundMedia", slide.backgroundFile);
-          payload.append("backgroundMediaTypes", slide.backgroundMediaType);
-        } else if (slide.backgroundPreview) {
-          // Keep existing media reference
-          payload.append("existingBackgroundUrls", slide.backgroundPreview);
-          payload.append("backgroundMediaTypes", slide.backgroundMediaType);
+          // New file upload
+          payload.append(`backgroundMedia[${index}]`, slide.backgroundFile);
+        } else if (slide.backgroundPreview && slide.backgroundPreview.startsWith('http')) {
+          // Existing URL from server - fetch and convert to file
+          try {
+            const response = await fetch(slide.backgroundPreview);
+            const blob = await response.blob();
+            const filename = slide.backgroundPreview.split('/').pop() || `background-${index}`;
+            const file = new File([blob], filename, { type: blob.type });
+            payload.append(`backgroundMedia[${index}]`, file);
+          } catch (error) {
+            console.error(`Failed to fetch background media for slide ${index}:`, error);
+            toast.error(`Failed to process background media for slide ${index + 1}`);
+            setLoading(false);
+            return;
+          }
+        } else if (slide.backgroundPreview && slide.backgroundPreview.startsWith('blob:')) {
+          // Blob URL - convert to file
+          try {
+            const response = await fetch(slide.backgroundPreview);
+            const blob = await response.blob();
+            const file = new File([blob], `background-${index}.${blob.type.split('/')[1]}`, { type: blob.type });
+            payload.append(`backgroundMedia[${index}]`, file);
+          } catch (error) {
+            console.error(`Failed to process blob for slide ${index}:`, error);
+            toast.error(`Failed to process background media for slide ${index + 1}`);
+            setLoading(false);
+            return;
+          }
         }
 
+        // Sub media - OPTIONAL but must follow same pattern if exists
         if (slide.subFile) {
-          payload.append("subMedia", slide.subFile);
-          payload.append("subMediaTypes", slide.subMediaType);
-        } else if (slide.subPreview) {
-          payload.append("existingSubUrls", slide.subPreview);
-          payload.append("subMediaTypes", slide.subMediaType);
+          payload.append(`subMedia[${index}]`, slide.subFile);
+        } else if (slide.subPreview && slide.subPreview.startsWith('http')) {
+          try {
+            const response = await fetch(slide.subPreview);
+            const blob = await response.blob();
+            const filename = slide.subPreview.split('/').pop() || `sub-${index}`;
+            const file = new File([blob], filename, { type: blob.type });
+            payload.append(`subMedia[${index}]`, file);
+          } catch (error) {
+            console.warn(`Failed to fetch sub media for slide ${index}:`, error);
+            // Sub media is optional, so we just warn and continue
+          }
+        } else if (slide.subPreview && slide.subPreview.startsWith('blob:')) {
+          try {
+            const response = await fetch(slide.subPreview);
+            const blob = await response.blob();
+            const file = new File([blob], `sub-${index}.${blob.type.split('/')[1]}`, { type: blob.type });
+            payload.append(`subMedia[${index}]`, file);
+          } catch (error) {
+            console.warn(`Failed to process sub blob for slide ${index}:`, error);
+          }
         }
-      });
+      }
 
+      // Debug: Log payload contents
+      console.log('=== FormData Payload ===');
+      for (let pair of payload.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
+      // -------- API call --------
       const response = await createOrUpdateHeroSection(payload);
 
       toast.success("Hero section saved successfully!");
-      console.log("Response:", response.data);
+      console.log("Hero section response:", response?.data);
 
+      // Re-fetch latest data
       await fetchHeroSection();
-      
     } catch (error) {
       console.error("Error saving hero section:", error);
+
       toast.error(
-        error.response?.data?.message || "Failed to save hero section"
+        error?.response?.data?.message || "Failed to save hero section",
       );
     } finally {
       setLoading(false);
@@ -321,9 +394,7 @@ function HeroSection() {
   useEffect(() => {
     if (heroSlides.length > 1) {
       const interval = setInterval(() => {
-        setCurrentPreviewIndex((prev) => 
-          (prev + 1) % heroSlides.length
-        );
+        setCurrentPreviewIndex((prev) => (prev + 1) % heroSlides.length);
       }, 4000);
 
       return () => clearInterval(interval);
@@ -337,7 +408,11 @@ function HeroSection() {
         style={{ backgroundColor: colors.contentBg }}
       >
         <div className="flex flex-col items-center gap-3">
-          <Loader2 size={32} className="animate-spin" style={{ color: colors.primary }} />
+          <Loader2
+            size={32}
+            className="animate-spin"
+            style={{ color: colors.primary }}
+          />
           <p style={{ color: colors.textSecondary }}>Loading hero section...</p>
         </div>
       </div>
@@ -381,7 +456,10 @@ function HeroSection() {
           </div>
 
           {/* Slide Navigation */}
-          <div className="flex items-center justify-between p-3 rounded-md border" style={{ borderColor: colors.border }}>
+          <div
+            className="flex items-center justify-between p-3 rounded-md border"
+            style={{ borderColor: colors.border }}
+          >
             <button
               onClick={goToPreviousSlide}
               className="p-1.5 border-none rounded cursor-pointer transition-colors"
@@ -395,9 +473,12 @@ function HeroSection() {
             >
               <ChevronLeft size={20} style={{ color: colors.textPrimary }} />
             </button>
-            
+
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium" style={{ color: colors.textPrimary }}>
+              <span
+                className="text-sm font-medium"
+                style={{ color: colors.textPrimary }}
+              >
                 Slide {currentSlideIndex + 1} of {heroSlides.length}
               </span>
               {heroSlides.length > 1 && (
@@ -450,7 +531,8 @@ function HeroSection() {
               className="px-3 py-2.5 border rounded-md text-sm outline-none transition-colors"
               style={{
                 borderColor: colors.border,
-                color: colors.textPrimary,
+                backgroundColor: '#F3F4F6',
+                color: '#000000',
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = colors.primary;
@@ -475,7 +557,8 @@ function HeroSection() {
               className="px-3 py-2.5 border rounded-md text-sm outline-none transition-colors"
               style={{
                 borderColor: colors.border,
-                color: colors.textPrimary,
+                backgroundColor: '#F3F4F6',
+                color: '#000000',
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = colors.primary;
@@ -501,7 +584,8 @@ function HeroSection() {
               className="px-3 py-2.5 border rounded-md text-sm outline-none transition-colors"
               style={{
                 borderColor: colors.border,
-                color: colors.textPrimary,
+                backgroundColor: '#F3F4F6',
+                color: '#000000',
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = colors.primary;
@@ -518,10 +602,9 @@ function HeroSection() {
               className="text-[13px] font-medium"
               style={{ color: colors.textSecondary }}
             >
-              Background Image/Video{" "}
-              <span style={{ color: "#ef4444" }}>*</span>
+              Background Image/Video <span style={{ color: "#ef4444" }}>*</span>
             </label>
-            
+
             {currentSlide.backgroundPreview ? (
               <div
                 className="flex items-center gap-3 p-3 border rounded-md"
@@ -541,11 +624,17 @@ function HeroSection() {
                   />
                 )}
                 <div className="flex-1">
-                  <p className="text-sm font-medium m-0" style={{ color: colors.textPrimary }}>
+                  <p
+                    className="text-sm font-medium m-0"
+                    style={{ color: colors.textPrimary }}
+                  >
                     {currentSlide.backgroundMediaType}
                   </p>
                   {currentSlide.backgroundFile && (
-                    <p className="text-xs m-0" style={{ color: colors.textSecondary }}>
+                    <p
+                      className="text-xs m-0"
+                      style={{ color: colors.textSecondary }}
+                    >
                       {currentSlide.backgroundFile.name}
                     </p>
                   )}
@@ -570,7 +659,9 @@ function HeroSection() {
                   type="file"
                   id={`backgroundMedia-${currentSlideIndex}`}
                   accept="image/*,video/*"
-                  onChange={(e) => handleBackgroundFileChange(e.target.files[0])}
+                  onChange={(e) =>
+                    handleBackgroundFileChange(e.target.files[0])
+                  }
                   className="hidden"
                 />
                 <label
@@ -604,7 +695,7 @@ function HeroSection() {
             >
               Sub Image/Video (Optional)
             </label>
-            
+
             {currentSlide.subPreview ? (
               <div
                 className="flex items-center gap-3 p-3 border rounded-md"
@@ -624,11 +715,17 @@ function HeroSection() {
                   />
                 )}
                 <div className="flex-1">
-                  <p className="text-sm font-medium m-0" style={{ color: colors.textPrimary }}>
+                  <p
+                    className="text-sm font-medium m-0"
+                    style={{ color: colors.textPrimary }}
+                  >
                     {currentSlide.subMediaType}
                   </p>
                   {currentSlide.subFile && (
-                    <p className="text-xs m-0" style={{ color: colors.textSecondary }}>
+                    <p
+                      className="text-xs m-0"
+                      style={{ color: colors.textSecondary }}
+                    >
                       {currentSlide.subFile.name}
                     </p>
                   )}
@@ -744,9 +841,10 @@ function HeroSection() {
             {/* Background Media with rotation */}
             {heroSlides[currentPreviewIndex]?.backgroundPreview ? (
               <>
-                {heroSlides[currentPreviewIndex].backgroundMediaType === "VIDEO" ? (
+                {heroSlides[currentPreviewIndex]?.backgroundMediaType ===
+                "VIDEO" ? (
                   <video
-                    key={heroSlides[currentPreviewIndex].backgroundPreview}
+                    key={heroSlides[currentPreviewIndex]?.backgroundPreview}
                     autoPlay
                     loop
                     muted
@@ -754,13 +852,16 @@ function HeroSection() {
                     className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
                     style={{ filter: "brightness(0.7)" }}
                   >
-                    <source src={heroSlides[currentPreviewIndex].backgroundPreview} type="video/mp4" />
+                    <source
+                      src={heroSlides[currentPreviewIndex]?.backgroundPreview}
+                      type="video/mp4"
+                    />
                   </video>
                 ) : (
                   <div
                     className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000"
                     style={{
-                      backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('${heroSlides[currentPreviewIndex].backgroundPreview}')`,
+                      backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('${heroSlides[currentPreviewIndex]?.backgroundPreview}')`,
                     }}
                   />
                 )}
@@ -769,7 +870,8 @@ function HeroSection() {
               <div
                 className="absolute inset-0 w-full h-full"
                 style={{
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                 }}
               />
             )}
@@ -783,9 +885,10 @@ function HeroSection() {
                     onClick={() => setCurrentPreviewIndex(index)}
                     className="w-2 h-2 rounded-full border-none cursor-pointer transition-all"
                     style={{
-                      backgroundColor: index === currentPreviewIndex 
-                        ? colors.primary 
-                        : "rgba(255,255,255,0.5)",
+                      backgroundColor:
+                        index === currentPreviewIndex
+                          ? colors.primary
+                          : "rgba(255,255,255,0.5)",
                     }}
                   />
                 ))}
@@ -801,7 +904,8 @@ function HeroSection() {
                   textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
                 }}
               >
-                {heroSlides[currentPreviewIndex]?.mainTitle || "Your Main Title"}
+                {heroSlides[currentPreviewIndex]?.mainTitle ||
+                  "Your Main Title"}
               </h1>
               <p
                 className="text-sm font-medium m-0 mb-6 tracking-[2px]"
@@ -844,9 +948,9 @@ function HeroSection() {
                     className="w-full h-32 object-cover rounded-md"
                   />
                 ) : (
-                  <video 
+                  <video
                     key={currentSlide.subPreview}
-                    controls 
+                    controls
                     className="w-full h-32 object-cover rounded-md"
                     playsInline
                   >
@@ -858,8 +962,14 @@ function HeroSection() {
           )}
 
           {/* Slide Summary */}
-          <div className="mt-2 p-3 rounded-md" style={{ backgroundColor: colors.border }}>
-            <p className="text-xs font-medium m-0 mb-1" style={{ color: colors.textSecondary }}>
+          <div
+            className="mt-2 p-3 rounded-md"
+            style={{ backgroundColor: colors.border }}
+          >
+            <p
+              className="text-xs font-medium m-0 mb-1"
+              style={{ color: colors.textSecondary }}
+            >
               All Slides ({heroSlides.length}):
             </p>
             <div className="flex flex-col gap-1">
@@ -869,12 +979,14 @@ function HeroSection() {
                   onClick={() => setCurrentSlideIndex(index)}
                   className="text-left px-2 py-1.5 rounded text-xs cursor-pointer transition-colors border-none"
                   style={{
-                    backgroundColor: index === currentSlideIndex 
-                      ? colors.primary 
-                      : "transparent",
-                    color: index === currentSlideIndex 
-                      ? colors.sidebarText 
-                      : colors.textSecondary,
+                    backgroundColor:
+                      index === currentSlideIndex
+                        ? colors.primary
+                        : "transparent",
+                    color:
+                      index === currentSlideIndex
+                        ? colors.sidebarText
+                        : colors.textSecondary,
                   }}
                 >
                   {index + 1}. {slide.mainTitle || "Untitled"}
@@ -887,5 +999,5 @@ function HeroSection() {
     </div>
   );
 }
-
+ 
 export default HeroSection;

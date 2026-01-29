@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { X, Upload, Loader2, MapPin, Tag, FileText, Calendar, Clock, Image as ImageIcon, Building2, Hotel } from 'lucide-react';
-import { createDailyOffer, updateDailyOfferById } from '@/Api/Api';
+import { createDailyOffer, updateDailyOfferById, uploadMedia, getMediaById, getAllProperties } from '@/Api/Api';
 import { toast } from 'react-hot-toast';
+
+// Add styles for placeholder text
+const inputStyles = `
+  input::placeholder, textarea::placeholder {
+    color: #9CA3AF !important;
+    opacity: 1;
+  }
+  input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {
+    color: #9CA3AF !important;
+    opacity: 1;
+  }
+  input::-moz-placeholder, textarea::-moz-placeholder {
+    color: #9CA3AF !important;
+    opacity: 1;
+  }
+`;
 
 function CreateOfferModal({ isOpen, onClose, editingOffer }) {
   const [formData, setFormData] = useState({
@@ -11,52 +27,118 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     couponCode: '',
     ctaText: 'Claim Offer',
     location: '',
-    propertyType: '',
+    propertyId: null,
     propertyName: '',
+    propertyType: '',
     expiresAt: '',
     availableHours: '',
+    imageMediaId: null,
     image: { src: '', alt: '', width: 800, height: 600 },
-    active: true
+    isActive: true
   });
 
-  // Mock list of properties - replace with actual API call
-  const availableProperties = [
-    { id: 1, name: 'Kennedia Grand Hotel', type: 'HOTEL' },
-    { id: 2, name: 'Blue Lagoon Cafe', type: 'CAFE' },
-    { id: 3, name: 'The Steakhouse Grill', type: 'RESTAURANT' },
-    { id: 4, name: 'Alpine Resort & Spa', type: 'HOTEL' }
-  ];
+  // Properties state
+  const [availableProperties, setAvailableProperties] = useState([]);
+  const [loadingProperties, setLoadingProperties] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [uploadMethod, setUploadMethod] = useState('url');
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadedMediaId, setUploadedMediaId] = useState(null);
 
+  // Fetch properties when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchProperties();
+    }
+  }, [isOpen]);
+
+  // Handle editing offer data
   useEffect(() => {
     if (editingOffer) {
+      // If editing and has imageMediaId, fetch the media details
+      if (editingOffer.imageMediaId) {
+        fetchMediaDetails(editingOffer.imageMediaId);
+      }
+      
+      // Find the property to get full details
+      const selectedProperty = availableProperties.find(p => p.id === editingOffer.propertyId);
+      
       setFormData({
         title: editingOffer.title || '',
         description: editingOffer.description || '',
         couponCode: editingOffer.couponCode || '',
         ctaText: editingOffer.ctaText || 'Claim Offer',
-        location: editingOffer.location || '',
-        propertyType: editingOffer.propertyType || '',
-        propertyName: editingOffer.propertyName || '',
+        location: selectedProperty ? `${selectedProperty.area}, ${selectedProperty.locationName}` : editingOffer.location || '',
+        propertyId: editingOffer.propertyId || null,
+        propertyName: selectedProperty?.propertyName || editingOffer.propertyName || '',
+        propertyType: selectedProperty?.propertyTypes?.join(', ') || editingOffer.propertyType || '',
         expiresAt: editingOffer.expiresAt ? new Date(editingOffer.expiresAt).toISOString().split('T')[0] : '',
         availableHours: editingOffer.availableHours || '',
+        imageMediaId: editingOffer.imageMediaId || null,
         image: {
           src: editingOffer.image?.src || '',
           alt: editingOffer.image?.alt || '',
           width: editingOffer.image?.width || 800,
           height: editingOffer.image?.height || 600
         },
-        active: editingOffer.active ?? true
+        isActive: editingOffer.isActive ?? true
       });
+      setUploadedMediaId(editingOffer.imageMediaId || null);
       setImagePreview(editingOffer.image?.src || null);
     } else {
       resetForm();
     }
-  }, [editingOffer, isOpen]);
+  }, [editingOffer, isOpen, availableProperties]);
+
+  const fetchProperties = async () => {
+    try {
+      setLoadingProperties(true);
+      const response = await getAllProperties();
+      
+      // Handle different response structures
+      const propertiesData = response.data?.data || response.data || response;
+      
+      if (Array.isArray(propertiesData)) {
+        // Filter only active properties
+        const activeProperties = propertiesData.filter(p => p.isActive);
+        setAvailableProperties(activeProperties);
+        console.log('Properties loaded:', activeProperties.length);
+      } else {
+        console.warn('Unexpected properties response format:', propertiesData);
+        setAvailableProperties([]);
+      }
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      toast.error('Failed to load properties');
+      setAvailableProperties([]);
+    } finally {
+      setLoadingProperties(false);
+    }
+  };
+
+  const fetchMediaDetails = async (mediaId) => {
+    try {
+      const response = await getMediaById(mediaId);
+      const mediaData = response.data?.data;
+      
+      if (mediaData) {
+        setImagePreview(mediaData.url);
+        setFormData(prev => ({
+          ...prev,
+          image: {
+            src: mediaData.url,
+            alt: mediaData.alt || '',
+            width: mediaData.width || 800,
+            height: mediaData.height || 600
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching media details:', error);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -65,68 +147,165 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       couponCode: '',
       ctaText: 'Claim Offer',
       location: '',
-      propertyType: '',
+      propertyId: null,
       propertyName: '',
+      propertyType: '',
       expiresAt: '',
       availableHours: '',
+      imageMediaId: null,
       image: { src: '', alt: '', width: 800, height: 600 },
-      active: true
+      isActive: true
     });
     setImagePreview(null);
     setSelectedFile(null);
+    setUploadedMediaId(null);
+  };
+
+  const handlePropertySelect = (propertyId) => {
+    if (!propertyId) {
+      // Reset property-related fields
+      setFormData(prev => ({
+        ...prev,
+        propertyId: null,
+        propertyName: '',
+        propertyType: '',
+        location: ''
+      }));
+      return;
+    }
+
+    const selectedProperty = availableProperties.find(p => p.id === parseInt(propertyId));
+    
+    if (selectedProperty) {
+      // Auto-populate all property-related fields
+      setFormData(prev => ({
+        ...prev,
+        propertyId: selectedProperty.id,
+        propertyName: selectedProperty.propertyName,
+        propertyType: selectedProperty.propertyTypes?.join(', ') || '',
+        location: `${selectedProperty.area || ''}, ${selectedProperty.locationName || ''}`.replace(/^, |, $/g, '')
+      }));
+    }
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => {
-      const updated = { ...prev, [field]: value };
-      
-      // Auto-set property type if property name is selected
-      if (field === 'propertyName') {
-        const selected = availableProperties.find(p => p.name === value);
-        if (selected) {
-          updated.propertyType = selected.type;
-        } else {
-          updated.propertyType = '';
-        }
-      }
-      return updated;
-    });
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select a valid image file');
-        return;
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result;
+      setImagePreview(result);
+    };
+    reader.onerror = () => {
+      toast.error('Failed to read image file');
+    };
+    reader.readAsDataURL(file);
+
+    // Upload the image immediately
+    await uploadImageFile(file);
+  };
+
+  const uploadImageFile = async (file) => {
+    try {
+      setUploadingImage(true);
+      
+      // Create FormData for upload
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('type', 'IMAGE');
+      formDataUpload.append('alt', formData.title || 'Offer image');
+      formDataUpload.append('width', '800');
+      formDataUpload.append('height', '600');
+
+      // Upload media
+      const response = await uploadMedia(formDataUpload);
+      
+      console.log('Upload response:', response);
+      
+      // Handle different response formats:
+      // 1. Direct number: 11
+      // 2. response.data as number: { data: 11 }
+      // 3. response.data.data as number: { data: { data: 11 } }
+      // 4. response.data.data.id: { data: { data: { id: 11, url: '...' } } }
+      // 5. response.data.id: { data: { id: 11, url: '...' } }
+      
+      let mediaId = null;
+      let mediaUrl = null;
+      
+      // Extract media ID from various response formats
+      if (typeof response === 'number') {
+        mediaId = response;
+      } else if (typeof response?.data === 'number') {
+        mediaId = response.data;
+      } else if (typeof response?.data?.data === 'number') {
+        mediaId = response.data.data;
+      } else if (response?.data?.data?.id) {
+        mediaId = response.data.data.id;
+        mediaUrl = response.data.data.url;
+      } else if (response?.data?.id) {
+        mediaId = response.data.id;
+        mediaUrl = response.data.url;
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image size should be less than 5MB');
-        return;
-      }
+      console.log('Extracted media ID:', mediaId);
 
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result;
-        setImagePreview(result);
+      if (mediaId) {
+        setUploadedMediaId(mediaId);
         setFormData(prev => ({
           ...prev,
+          imageMediaId: mediaId,
           image: {
-            ...prev.image,
-            src: result,
-            alt: formData.title || 'Offer image'
+            src: mediaUrl || prev.image.src,
+            alt: formData.title || 'Offer image',
+            width: 800,
+            height: 600
           }
         }));
-      };
-      reader.onerror = () => {
-        toast.error('Failed to read image file');
-      };
-      reader.readAsDataURL(file);
+        toast.success(`Image uploaded successfully (ID: ${mediaId})`);
+      } else {
+        console.error('Could not extract media ID from response:', response);
+        throw new Error('Invalid response from upload');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error(error?.response?.data?.message || 'Failed to upload image');
+      // Clear the preview if upload failed
+      setImagePreview(null);
+      setSelectedFile(null);
+    } finally {
+      setUploadingImage(false);
     }
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    setSelectedFile(null);
+    setUploadedMediaId(null);
+    setFormData(prev => ({
+      ...prev,
+      imageMediaId: null,
+      image: { src: '', alt: '', width: 800, height: 600 }
+    }));
   };
 
   const handleSubmit = async () => {
@@ -135,7 +314,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       toast.error('Please enter offer title');
       return;
     }
-    if (!formData.propertyName) {
+    if (!formData.propertyId) {
       toast.error('Please select a property');
       return;
     }
@@ -143,11 +322,26 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     try {
       setLoading(true);
       
+      // Prepare payload matching API format
+      const payload = {
+        title: formData.title.trim(),
+        description: formData.description?.trim() || '',
+        couponCode: formData.couponCode?.trim() || '',
+        ctaText: formData.ctaText?.trim() || 'Claim Offer',
+        availableHours: formData.availableHours?.trim() || '',
+        propertyId: formData.propertyId,
+        imageMediaId: uploadedMediaId || formData.imageMediaId || null,
+        expiresAt: formData.expiresAt || null,
+        isActive: formData.isActive
+      };
+
+      console.log('Submitting offer payload:', payload);
+
       if (editingOffer) {
-        await updateDailyOfferById(editingOffer.id, formData);
+        await updateDailyOfferById(editingOffer.id, payload);
         toast.success('Offer updated successfully');
       } else {
-        await createDailyOffer(formData);
+        await createDailyOffer(payload);
         toast.success('Offer created successfully');
       }
       
@@ -170,6 +364,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <style>{inputStyles}</style>
       <div 
         className="rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl"
         style={{ backgroundColor: colors.contentBg }}
@@ -206,50 +401,92 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 <Hotel size={14} /> Assign to Property
               </label>
               
-              <select
-                value={formData.propertyName}
-                onChange={(e) => handleInputChange('propertyName', e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border outline-none bg-white font-medium focus:ring-2 focus:ring-primary/20 transition-all"
-                style={{ 
-                  borderColor: colors.primary,
-                  color: formData.propertyName ? colors.textPrimary : '#9CA3AF'
-                }}
-              >
-                <option value="">Choose Property...</option>
-                {availableProperties.map(p => (
-                  <option key={p.id} value={p.name}>
-                    {p.name} ({p.type})
+              <div className="relative">
+                <select
+                  value={formData.propertyId || ''}
+                  onChange={(e) => handlePropertySelect(e.target.value)}
+                  disabled={loadingProperties}
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none font-medium focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
+                  style={{ 
+                    borderColor: colors.primary,
+                    backgroundColor: '#F3F4F6',
+                    color: formData.propertyId ? '#000000' : '#6B7280'
+                  }}
+                >
+                  <option value="">
+                    {loadingProperties ? 'Loading properties...' : 'Choose Property...'}
                   </option>
-                ))}
-              </select>
+                  {availableProperties.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.propertyName} - {p.locationName} ({p.propertyTypes?.join(', ') || 'N/A'})
+                    </option>
+                  ))}
+                </select>
+                {loadingProperties && (
+                  <Loader2 size={16} className="absolute right-10 top-1/2 -translate-y-1/2 animate-spin text-gray-400" />
+                )}
+              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">
-                    Auto-detected Type
-                  </label>
-                  <div 
-                    className="mt-1 px-3 py-2 bg-gray-100 rounded border text-sm font-bold"
-                    style={{ color: formData.propertyType ? colors.textPrimary : '#9CA3AF' }}
-                  >
-                    {formData.propertyType || 'None'}
+              {/* Auto-populated Property Details */}
+              {formData.propertyId && (
+                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">
+                      Property Type
+                    </label>
+                    <div 
+                      className="mt-1 px-3 py-2 rounded border text-sm font-bold"
+                      style={{ 
+                        backgroundColor: '#E8F5E9',
+                        borderColor: '#81C784',
+                        color: '#2E7D32'
+                      }}
+                    >
+                      {formData.propertyType || 'N/A'}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">
+                      Location
+                    </label>
+                    <div 
+                      className="mt-1 px-3 py-2 rounded border text-sm font-bold flex items-center gap-1"
+                      style={{ 
+                        backgroundColor: '#E3F2FD',
+                        borderColor: '#64B5F6',
+                        color: '#1565C0'
+                      }}
+                    >
+                      <MapPin size={12} />
+                      {formData.location || 'N/A'}
+                    </div>
                   </div>
                 </div>
-                
-                <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">
-                    Location Display
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    placeholder="e.g. City Center"
-                    className="mt-1 w-full px-3 py-2 rounded border text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                    style={{ borderColor: colors.border }}
-                  />
+              )}
+
+              {/* Show selected property full details */}
+              {formData.propertyId && (
+                <div className="text-xs text-gray-500 bg-white p-2 rounded border">
+                  <span className="font-semibold">Selected: </span>
+                  {formData.propertyName}
+                  {(() => {
+                    const prop = availableProperties.find(p => p.id === formData.propertyId);
+                    if (prop) {
+                      return (
+                        <>
+                          {prop.address && ` • ${prop.address}`}
+                          {prop.pincode && ` - ${prop.pincode}`}
+                          {prop.parentPropertyName && (
+                            <span className="text-primary"> (Part of {prop.parentPropertyName})</span>
+                          )}
+                        </>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Offer Title */}
@@ -263,7 +500,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 placeholder="e.g., Anniversary Special 30% Off"
-                style={{ borderColor: colors.border }}
+                style={{ 
+                  borderColor: colors.border,
+                  backgroundColor: '#F3F4F6',
+                  color: '#000000'
+                }}
               />
             </div>
 
@@ -279,7 +520,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   onChange={(e) => handleInputChange('couponCode', e.target.value.toUpperCase())}
                   placeholder="e.g., SAVE30"
                   className="w-full px-4 py-2.5 rounded-lg border uppercase font-mono outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ borderColor: colors.border }}
+                  style={{ 
+                    borderColor: colors.border,
+                    backgroundColor: '#F3F4F6',
+                    color: '#000000'
+                  }}
                   maxLength={20}
                 />
               </div>
@@ -294,7 +539,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   onChange={(e) => handleInputChange('availableHours', e.target.value)}
                   placeholder="e.g., 24/7 or 9AM-5PM"
                   className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ borderColor: colors.border }}
+                  style={{ 
+                    borderColor: colors.border,
+                    backgroundColor: '#F3F4F6',
+                    color: '#000000'
+                  }}
                 />
               </div>
             </div>
@@ -310,7 +559,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 rows={3}
                 placeholder="Enter offer details and terms..."
                 className="w-full px-4 py-2.5 rounded-lg border resize-none outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                style={{ borderColor: colors.border }}
+                style={{ 
+                  borderColor: colors.border,
+                  backgroundColor: '#F3F4F6',
+                  color: '#000000'
+                }}
                 maxLength={500}
               />
             </div>
@@ -326,7 +579,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   value={formData.expiresAt}
                   onChange={(e) => handleInputChange('expiresAt', e.target.value)}
                   className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ borderColor: colors.border }}
+                  style={{ 
+                    borderColor: colors.border,
+                    backgroundColor: '#F3F4F6',
+                    color: '#000000'
+                  }}
                   min={new Date().toISOString().split('T')[0]}
                 />
               </div>
@@ -341,7 +598,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   onChange={(e) => handleInputChange('ctaText', e.target.value)}
                   placeholder="e.g., Claim Offer"
                   className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ borderColor: colors.border }}
+                  style={{ 
+                    borderColor: colors.border,
+                    backgroundColor: '#F3F4F6',
+                    color: '#000000'
+                  }}
                   maxLength={30}
                 />
               </div>
@@ -356,8 +617,8 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
               </label>
               
               <div 
-                className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer bg-white hover:bg-gray-50 hover:border-primary/50 transition-all"
-                onClick={() => document.getElementById('offer-assign-img')?.click()}
+                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer bg-white hover:bg-gray-50 hover:border-primary/50 transition-all ${uploadingImage ? 'pointer-events-none opacity-60' : ''}`}
+                onClick={() => !uploadingImage && document.getElementById('offer-assign-img')?.click()}
                 style={{ borderColor: colors.border }}
               >
                 <input
@@ -366,14 +627,26 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   className="hidden"
                   accept="image/*"
                   onChange={handleFileSelect}
+                  disabled={uploadingImage}
                 />
-                <Upload size={30} className="mx-auto mb-2 opacity-20" />
-                <p className="text-xs text-gray-400 mb-1">
-                  Click to upload property-specific offer image
-                </p>
-                <p className="text-[10px] text-gray-300">
-                  PNG, JPG up to 5MB
-                </p>
+                {uploadingImage ? (
+                  <>
+                    <Loader2 size={30} className="mx-auto mb-2 animate-spin text-primary" />
+                    <p className="text-xs text-gray-500 mb-1">
+                      Uploading image...
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={30} className="mx-auto mb-2 opacity-20" />
+                    <p className="text-xs text-gray-400 mb-1">
+                      Click to upload property-specific offer image
+                    </p>
+                    <p className="text-[10px] text-gray-300">
+                      PNG, JPG up to 5MB
+                    </p>
+                  </>
+                )}
               </div>
               
               {imagePreview && (
@@ -383,17 +656,19 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                     className="w-full h-48 object-cover rounded-xl shadow-md"
                     alt="Preview"
                   />
+                  {uploadedMediaId && (
+                    <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs rounded-full flex items-center gap-1">
+                      <span>✓</span>
+                      <span>ID: {uploadedMediaId}</span>
+                    </div>
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setImagePreview(null);
-                      setSelectedFile(null);
-                      setFormData(prev => ({
-                        ...prev,
-                        image: { ...prev.image, src: '' }
-                      }));
+                      removeImage();
                     }}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    disabled={uploadingImage}
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors disabled:opacity-50"
                     aria-label="Remove image"
                   >
                     <X size={16} />
@@ -411,20 +686,20 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 <div className="flex items-center gap-3">
                   <span 
                     className="text-sm font-medium"
-                    style={{ color: formData.active ? '#10B981' : '#EF4444' }}
+                    style={{ color: formData.isActive ? '#10B981' : '#EF4444' }}
                   >
-                    {formData.active ? 'Active' : 'Inactive'}
+                    {formData.isActive ? 'Active' : 'Inactive'}
                   </span>
                   <button
                     type="button"
-                    onClick={() => handleInputChange('active', !formData.active)}
+                    onClick={() => handleInputChange('isActive', !formData.isActive)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.active ? 'bg-green-500' : 'bg-gray-300'
+                      formData.isActive ? 'bg-green-500' : 'bg-gray-300'
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        formData.active ? 'translate-x-6' : 'translate-x-1'
+                        formData.isActive ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
@@ -441,7 +716,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         >
           <button
             onClick={handleClose}
-            disabled={loading}
+            disabled={loading || uploadingImage}
             className="flex-1 py-3 rounded-lg font-bold text-sm border hover:bg-gray-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ borderColor: colors.border, color: colors.textPrimary }}
           >
@@ -449,7 +724,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading || !formData.title?.trim() || !formData.propertyName}
+            disabled={loading || uploadingImage || !formData.title?.trim() || !formData.propertyId}
             className="flex-[2] py-3 rounded-lg font-bold text-sm text-white bg-primary flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: colors.primary }}
           >
@@ -457,6 +732,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
               <>
                 <Loader2 className="animate-spin" size={18} />
                 Saving...
+              </>
+            ) : uploadingImage ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                Uploading Image...
               </>
             ) : (
               editingOffer ? 'Update Offer' : 'Save Offer'

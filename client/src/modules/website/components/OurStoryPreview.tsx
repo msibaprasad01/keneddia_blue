@@ -1,23 +1,53 @@
-import { useState, useRef } from "react";
-import { Star, Upload, Send, Quote, X, Youtube, Image as ImageIcon, Film, ArrowRight, Play, Volume2, VolumeX } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import {
+  Star,
+  Upload,
+  Send,
+  Quote,
+  X,
+  Youtube,
+  Image as ImageIcon,
+  Film,
+  ArrowRight,
+  Play,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { getGuestExperienceSection } from "@/Api/Api";
 import "swiper/css";
 
 export default function OurStoryPreview() {
   const { experienceShowcase } = siteContent.text;
-  const [mediaPreviews, setMediaPreviews] = useState<{ type: 'image' | 'video', url: string }[]>([]);
+  const [mediaPreviews, setMediaPreviews] = useState<
+    { type: "image" | "video"; url: string }[]
+  >([]);
   const [youtubeLink, setYoutubeLink] = useState("");
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [playingVideo, setPlayingVideo] = useState<number | null>(null);
-  const [mutedVideos, setMutedVideos] = useState<{ [key: number]: boolean }>({});
+  const [mutedVideos, setMutedVideos] = useState<{ [key: number]: boolean }>(
+    {},
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
+
+  useEffect(() => {
+    const fetchGuestExperience = async () => {
+      try {
+        const res = await getGuestExperienceSection();
+        console.log("Guest Experience API full response:", res);
+        console.log("Guest Experience API data:", res.data);
+      } catch (error) {
+        console.error("Error fetching Guest Experience section:", error);
+      }
+    };
+    fetchGuestExperience();
+  }, []);
 
   // Fallback if data isn't ready type-safe check
   if (!experienceShowcase) return null;
@@ -25,16 +55,18 @@ export default function OurStoryPreview() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const newPreviews = Array.from(files).map(file => ({
-        type: file.type.startsWith('video') ? 'video' as const : 'image' as const,
-        url: URL.createObjectURL(file)
+      const newPreviews = Array.from(files).map((file) => ({
+        type: file.type.startsWith("video")
+          ? ("video" as const)
+          : ("image" as const),
+        url: URL.createObjectURL(file),
       }));
-      setMediaPreviews(prev => [...prev, ...newPreviews]);
+      setMediaPreviews((prev) => [...prev, ...newPreviews]);
     }
   };
 
   const removeMedia = (index: number) => {
-    setMediaPreviews(prev => prev.filter((_, i) => i !== index));
+    setMediaPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleYoutubeLinkAdd = () => {
@@ -48,7 +80,7 @@ export default function OurStoryPreview() {
     if (videoRefs.current[index]) {
       videoRefs.current[index]!.muted = false;
       videoRefs.current[index]!.play();
-      setMutedVideos(prev => ({ ...prev, [index]: false }));
+      setMutedVideos((prev) => ({ ...prev, [index]: false }));
     }
   };
 
@@ -62,7 +94,7 @@ export default function OurStoryPreview() {
     if (videoRefs.current[index]) {
       const video = videoRefs.current[index]!;
       video.muted = !video.muted;
-      setMutedVideos(prev => ({ ...prev, [index]: !prev[index] }));
+      setMutedVideos((prev) => ({ ...prev, [index]: !prev[index] }));
     }
   };
 
@@ -70,11 +102,13 @@ export default function OurStoryPreview() {
   const canSubmit = feedbackText.trim() || hasMedia;
 
   return (
-    <section id="story" className="py-12 bg-background relative overflow-hidden">
+    <section
+      id="story"
+      className="py-12 bg-background relative overflow-hidden"
+    >
       <div className="container mx-auto px-6 lg:px-12">
         {/* Unified Container with Same Height */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-
           {/* LEFT: Experience Slider (Span 8) */}
           <div className="lg:col-span-8 order-2 lg:order-1 bg-card border border-border rounded-lg p-5 shadow-sm hover:border-primary/50 transition-all duration-300 hover:shadow-md flex flex-col">
             <div className="mb-5">
@@ -108,10 +142,12 @@ export default function OurStoryPreview() {
                 {experienceShowcase.items.map((item: any, index: number) => (
                   <SwiperSlide key={index} className="h-auto">
                     <div className="group bg-background border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-300 h-full flex flex-col shadow-sm hover:shadow-md">
-
                       {item.type === "video" ? (
                         // VIDEO CARD - Video takes the space that image + content would take
-                        <div className="relative w-full" style={{ paddingBottom: '125%' }}>
+                        <div
+                          className="relative w-full"
+                          style={{ paddingBottom: "125%" }}
+                        >
                           <div className="absolute inset-0 bg-black">
                             <video
                               ref={(el) => (videoRefs.current[index] = el)}
@@ -131,7 +167,10 @@ export default function OurStoryPreview() {
                                 onClick={() => handleVideoPlay(index)}
                               >
                                 <div className="w-16 h-16 rounded-full bg-white/95 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform shadow-lg">
-                                  <Play className="w-8 h-8 text-primary ml-1" fill="currentColor" />
+                                  <Play
+                                    className="w-8 h-8 text-primary ml-1"
+                                    fill="currentColor"
+                                  />
                                 </div>
                               </div>
                             )}
@@ -147,7 +186,9 @@ export default function OurStoryPreview() {
                             {/* Video Badge - Top Left */}
                             <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 z-10">
                               <Film className="w-3 h-3 text-white" />
-                              <span className="text-[10px] text-white font-bold uppercase tracking-wider">REEL</span>
+                              <span className="text-[10px] text-white font-bold uppercase tracking-wider">
+                                REEL
+                              </span>
                             </div>
 
                             {/* Mute/Unmute Button */}
@@ -165,8 +206,13 @@ export default function OurStoryPreview() {
                             )}
 
                             {/* Bottom Info Overlay - Only shows on hover */}
-                            <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 transition-opacity z-10 ${playingVideo === index ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
-                              }`}>
+                            <div
+                              className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 transition-opacity z-10 ${
+                                playingVideo === index
+                                  ? "opacity-0 group-hover:opacity-100"
+                                  : "opacity-100"
+                              }`}
+                            >
                               <h3 className="text-sm font-serif font-bold text-white mb-1">
                                 {item.title}
                               </h3>
@@ -201,7 +247,9 @@ export default function OurStoryPreview() {
                               "{item.description}"
                             </p>
                             <div className="mt-auto pt-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground font-medium">
-                              <span className="text-foreground truncate">{item.author}</span>
+                              <span className="text-foreground truncate">
+                                {item.author}
+                              </span>
                             </div>
                           </div>
                         </>
@@ -223,7 +271,10 @@ export default function OurStoryPreview() {
               >
                 <div className="flex -space-x-1">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="w-3.5 h-3.5 fill-primary text-primary" />
+                    <Star
+                      key={star}
+                      className="w-3.5 h-3.5 fill-primary text-primary"
+                    />
                   ))}
                 </div>
                 <span className="text-xs font-medium text-foreground">
@@ -254,17 +305,27 @@ export default function OurStoryPreview() {
                 {hasMedia && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
+                    animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     className="grid grid-cols-3 gap-2"
                   >
                     {mediaPreviews.map((media, idx) => (
-                      <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-secondary/50 group">
-                        {media.type === 'image' ? (
-                          <img src={media.url} alt="Preview" className="w-full h-full object-cover" />
+                      <div
+                        key={idx}
+                        className="relative aspect-square rounded-md overflow-hidden bg-secondary/50 group"
+                      >
+                        {media.type === "image" ? (
+                          <img
+                            src={media.url}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <div className="relative w-full h-full bg-black">
-                            <video src={media.url} className="w-full h-full object-cover" />
+                            <video
+                              src={media.url}
+                              className="w-full h-full object-cover"
+                            />
                             <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                               <Film className="w-6 h-6 text-white" />
                             </div>
@@ -308,7 +369,7 @@ export default function OurStoryPreview() {
                       <Upload className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
                     </div>
                     <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
-                      {mediaPreviews.length > 0 ? 'Add More' : 'Upload Media'}
+                      {mediaPreviews.length > 0 ? "Add More" : "Upload Media"}
                     </p>
                     <input
                       type="file"
@@ -323,10 +384,11 @@ export default function OurStoryPreview() {
                   <div className="flex flex-col gap-2">
                     <button
                       onClick={() => setShowYoutubeInput(!showYoutubeInput)}
-                      className={`p-3 rounded-lg border transition-all ${showYoutubeInput
-                        ? 'bg-primary/10 border-primary text-primary'
-                        : 'bg-secondary/20 border-border text-muted-foreground hover:bg-secondary/40'
-                        }`}
+                      className={`p-3 rounded-lg border transition-all ${
+                        showYoutubeInput
+                          ? "bg-primary/10 border-primary text-primary"
+                          : "bg-secondary/20 border-border text-muted-foreground hover:bg-secondary/40"
+                      }`}
                       title="Add YouTube Link"
                     >
                       <Youtube className="w-5 h-5" />
@@ -390,7 +452,9 @@ export default function OurStoryPreview() {
                 disabled={!canSubmit}
                 className="w-full bg-primary text-primary-foreground text-xs font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
               >
-                {hasMedia && !feedbackText ? 'Submit Media' : 'Confirm Submission'}
+                {hasMedia && !feedbackText
+                  ? "Submit Media"
+                  : "Confirm Submission"}
                 <Send className="w-3 h-3" />
               </button>
 
