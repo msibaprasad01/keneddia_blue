@@ -96,4 +96,10 @@ export const createNews = (data) => API.post("api/v1/news/create", data);
 export const getAllNews = ({ category = "PRESS", page = 0, size = 10 }) => API.get("api/v1/news/showAll", { params: { category, page, size } });
 export const updateNewsById = (id, data) => API.put(`api/v1/news/${id}`, data);
 
+// property 
+export const createPropertyListing = (data) =>API.post("api/v1/property-listings", data);
+export const createAmenityFeature = (data) =>API.post("api/v1/admin/amenities-features", data);
+export const getAllAmenityFeatures = () =>API.get("api/v1/admin/amenities-features");
+
+
 export default API;
