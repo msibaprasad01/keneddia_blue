@@ -4,7 +4,7 @@ import { Building2, Coffee, Wine, Music, Briefcase, ArrowRight } from "lucide-re
 import { useState, useEffect } from "react";
 import { getKennediaGroup } from "@/Api/Api";
 
-// 1. Static Fallback Data
+// 1. Static Fallback Data (limited to 5)
 const STATIC_DATA = {
   mainTitle: "Kennedia Group",
   subTitle: "A diverse ecosystem of luxury hospitality brands.",
@@ -25,6 +25,14 @@ const IconMap: Record<string, any> = {
   MUSIC: Music,
 };
 
+// Helper function to truncate description to max words for 2-line display
+const truncateDescription = (text: string, maxWords: number = 6): string => {
+  if (!text) return "";
+  const words = text.trim().split(/\s+/);
+  if (words.length <= maxWords) return text;
+  return words.slice(0, maxWords).join(" ") + "...";
+};
+
 export default function BusinessVerticals() {
   const [isMobile, setIsMobile] = useState(false);
   // 2. Initialize with Static Data to prevent "undefined" errors
@@ -41,7 +49,12 @@ export default function BusinessVerticals() {
         // Check if response has the expected structure
         const validData = res?.divisions ? res : res?.data; 
         if (validData && Array.isArray(validData.divisions)) {
-          setGroupData(validData);
+          // Limit to first 5 divisions
+          const limitedData = {
+            ...validData,
+            divisions: validData.divisions.slice(0, 5)
+          };
+          setGroupData(limitedData);
         }
       } catch (error) {
         console.warn("API failed, staying with static fallback", error);
@@ -81,7 +94,11 @@ export default function BusinessVerticals() {
 function DesktopTree({ divisions, logoText, logoSubText }: any) {
   // 3. Safety Check: If API fails and returns null/obj, fallback to empty array
   const safeDivisions = Array.isArray(divisions) ? [...divisions] : [];
-  const sortedDivisions = safeDivisions.sort((a, b) => a.displayOrder - b.displayOrder);
+  
+  // Sort by displayOrder and limit to first 5 divisions max
+  const sortedDivisions = safeDivisions
+    .sort((a, b) => a.displayOrder - b.displayOrder)
+    .slice(0, 5); // HARD LIMIT: Only show first 5 divisions
 
   return (
     <div className="relative w-full max-w-6xl mx-auto min-h-[500px] flex flex-col items-center justify-center py-10">
@@ -122,13 +139,17 @@ function BranchNode({ item, index }: any) {
         </div>
       </Link>
       <h3 className="text-sm font-bold">{item.title}</h3>
-      <p className="text-xs text-muted-foreground/70 max-w-[120px]">{item.description}</p>
+      <p className="text-xs text-muted-foreground/70 max-w-[120px] line-clamp-2">
+        {truncateDescription(item.description, 6)}
+      </p>
     </motion.div>
   );
 }
 
 function MobileTimeline({ verticals }: any) {
-  const safeVerticals = Array.isArray(verticals) ? verticals : [];
+  // Limit to first 5 on mobile as well
+  const safeVerticals = Array.isArray(verticals) ? verticals.slice(0, 5) : [];
+  
   return (
     <div className="relative pl-6 border-l border-dashed border-primary/20 space-y-8 py-4">
       {safeVerticals.map((v: any) => {
