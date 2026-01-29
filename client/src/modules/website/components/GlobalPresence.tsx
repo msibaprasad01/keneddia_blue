@@ -3,8 +3,17 @@ import { MapPin, Star, Award, Users, Sparkles, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { siteContent } from "@/data/siteContent";
+import { getAllLocations } from "@/Api/Api";
 
-const locations = [
+interface LocationData {
+  id: number;
+  locationName: string;
+  country: string;
+  state: string;
+  isActive: boolean;
+}
+
+const fallbackLocations = [
   { state: "Karnataka", city: "Bangalore" },
   { state: "Uttar Pradesh", city: "Varanasi" },
   { state: "Rajasthan", city: "Jaipur" },
@@ -19,26 +28,61 @@ const highlights = [
   {
     icon: Sparkles,
     title: "Curated Experiences",
-    description: "Premium locations in heritage cities"
+    description: "Premium locations in heritage cities",
   },
   {
     icon: Award,
     title: "Excellence Awarded",
-    description: "Recognized for outstanding hospitality"
+    description: "Recognized for outstanding hospitality",
   },
   {
     icon: Users,
     title: "Guest-Centric",
-    description: "24/7 concierge & wellness amenities"
+    description: "24/7 concierge & wellness amenities",
   },
   {
     icon: Star,
     title: "Sustainable Luxury",
-    description: "Eco-conscious practices meet comfort"
+    description: "Eco-conscious practices meet comfort",
   },
 ];
 
 export default function GlobalPresence() {
+  const [locations, setLocations] = useState<{ state: string; city: string }[]>(fallbackLocations);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        setIsLoading(true);
+        const res = await getAllLocations();
+        console.log("Locations API full response:", res);
+        console.log("Locations API data:", res.data);
+
+        if (res?.data && Array.isArray(res.data)) {
+          // Filter only active locations and map to the format we need
+          const activeLocations = res.data
+            .filter((location: LocationData) => location.isActive)
+            .map((location: LocationData) => ({
+              state: location.state,
+              city: location.locationName,
+            }));
+
+          // Only update if we have active locations
+          if (activeLocations.length > 0) {
+            setLocations(activeLocations);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        // Keep fallback locations on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchLocations();
+  }, []);
+
   return (
     <section className="py-16 md:py-20 bg-secondary/20 relative overflow-hidden">
       {/* Subtle Background Pattern */}
@@ -76,8 +120,9 @@ export default function GlobalPresence() {
             transition={{ delay: 0.2 }}
             className="text-muted-foreground font-light leading-relaxed text-sm md:text-base"
           >
-            Handpicked destinations that blend heritage charm with modern excellence,
-            creating unforgettable stays in India's most iconic cities.
+            Handpicked destinations that blend heritage charm with modern
+            excellence, creating unforgettable stays in India's most iconic
+            cities.
           </motion.p>
         </div>
 
@@ -99,7 +144,7 @@ export default function GlobalPresence() {
             <div className="grid grid-cols-2 gap-4">
               {locations.map((location, index) => (
                 <motion.div
-                  key={location.city}
+                  key={`${location.city}-${index}`}
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -160,7 +205,8 @@ export default function GlobalPresence() {
           className="text-center mt-12 pt-8 border-t border-primary/10"
         >
           <p className="text-sm text-muted-foreground font-light italic">
-            Where tradition meets contemporary luxury — Experience India like never before
+            Where tradition meets contemporary luxury — Experience India like
+            never before
           </p>
         </motion.div>
       </div>
