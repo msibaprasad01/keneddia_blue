@@ -240,7 +240,7 @@ export default function AboutUsSection() {
             </div>
 
             {/* More Details Link - Dynamic with fallback */}
-            <div>
+            {/* <div>
               <Link
                 to={aboutUsData?.ctaButtonUrl || "/about"}
                 className="inline-flex items-center text-xs font-medium tracking-wide hover:underline underline-offset-4 transition-all text-muted-foreground hover:text-primary"
@@ -248,7 +248,7 @@ export default function AboutUsSection() {
                 {aboutUsData?.ctaButtonText || "More details"}
                 <ArrowRight className="w-3 h-3 ml-1.5" />
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
