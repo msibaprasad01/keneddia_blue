@@ -19,8 +19,8 @@ const BUSINESS_ITEMS = [
 // Join Us Dropdown Items
 const JOIN_US_ITEMS = [
   { label: "Careers", href: "/careers" },
-  { label: "Become a Partner", href: "#" },
-  { label: "Franchise Opportunities", href: "#" },
+  // { label: "Become a Partner", href: "#" },
+  // { label: "Franchise Opportunities", href: "#" },
   // { label: "Investor Relations", href: "#" },
   // { label: "Supplier Registration", href: "#" },
 ];
@@ -37,7 +37,7 @@ type NavItem =
   | { type: 'link'; label: string; href: string; key: string }
   | { type: 'dropdown'; label: string; key: string; items: { label: string; href: string }[] };
 
-// Main Navigation Items
+// Main Navigation Items - Updated to use hash links for home sections
 const NAV_ITEMS: NavItem[] = [
   {
     type: 'dropdown',
@@ -49,13 +49,13 @@ const NAV_ITEMS: NavItem[] = [
     type: 'link',
     label: 'EVENTS',
     key: 'events',
-    href: '#events'
+    href: '#events' // Scroll to #events section
   },
   {
     type: 'link',
     label: 'REVIEWS',
-    key: 'reviews',
-    href: '#reviews'
+    key: 'story',
+    href: '#story' // Scroll to #reviews section
   },
   {
     type: 'dropdown',
@@ -67,7 +67,7 @@ const NAV_ITEMS: NavItem[] = [
     type: 'link',
     label: 'ABOUT US',
     key: 'about',
-    href: '/about'
+    href: '#about' // Scroll to #about section
   }
 ];
 
@@ -171,21 +171,31 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
       const targetElement = document.getElementById(targetId);
 
       if (targetElement) {
-        const elementPosition = targetElement.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.scrollY - NAVBAR_CONFIG.navbarHeight;
+        // If we're on the home page, just scroll
+        if (location.pathname === '/') {
+          const elementPosition = targetElement.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.scrollY - NAVBAR_CONFIG.navbarHeight;
 
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: NAVBAR_CONFIG.scrollBehavior
-        });
-      } else if (location.pathname !== '/') {
-        // If on another page and clicking a hash link for home, navigate to home with hash
-        navigate(`/${href}`);
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: NAVBAR_CONFIG.scrollBehavior
+          });
+        } else {
+          // If on another page, navigate to home with hash
+          navigate(`/${href}`);
+        }
+      } else {
+        // Element not found, navigate to home with hash
+        if (location.pathname !== '/') {
+          navigate(`/${href}`);
+        }
       }
       setMobileMenuOpen(false);
+      setActiveDropdown(null);
     } else {
-      // For normal routes, just close menu and scroll to top
+      // For normal routes (not hash links), just close menu and scroll to top
       setMobileMenuOpen(false);
+      setActiveDropdown(null);
       window.scrollTo(0, 0);
     }
   };
