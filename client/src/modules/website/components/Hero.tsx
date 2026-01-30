@@ -163,8 +163,17 @@ const transformApiDataToSlides = (content: ApiHeroItem[]): HeroSlide[] => {
 export default function Hero() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  const [slides, setSlides] = useState<HeroSlide[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Initialize with default slides so content shows immediately
+  const [slides, setSlides] = useState<HeroSlide[]>(
+    defaultSlides.map((slide) => ({
+      ...slide,
+      fallbackMedia: slide.media,
+      fallbackThumbnail: slide.thumbnail,
+    }))
+  );
+  
+  const [isFetching, setIsFetching] = useState(true); // Track background fetch status
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const isFetchingRef = useRef(false);
   const currentHashRef = useRef<string>("");
@@ -180,16 +189,15 @@ export default function Hero() {
         console.log("Using cached hero data");
         setSlides(cachedData.data);
         currentHashRef.current = cachedData.hash;
-        setLoading(false);
+        setIsFetching(false);
         return;
       }
     }
 
     isFetchingRef.current = true;
+    setIsFetching(true);
 
     try {
-      setLoading(true);
-
       // Fetch only the first page with 3 items (the latest ones)
       const response = await getHeroSectionsPaginated({ page: 0, size: 3 });
       
@@ -213,7 +221,7 @@ export default function Hero() {
         // Check if data has changed
         if (newHash === currentHashRef.current && slides.length > 0) {
           console.log("Hero data unchanged, skipping update");
-          setLoading(false);
+          setIsFetching(false);
           isFetchingRef.current = false;
           return;
         }
@@ -243,36 +251,18 @@ export default function Hero() {
           // Cache the data
           setCachedData(finalSlides, newHash);
         } else {
-          // No valid API slides, use all defaults
-          console.log("No API slides, using defaults");
-          const defaultSlidesWithFallback = defaultSlides.map((slide) => ({
-            ...slide,
-            fallbackMedia: slide.media,
-            fallbackThumbnail: slide.thumbnail,
-          }));
-          setSlides(defaultSlidesWithFallback);
+          // No valid API slides, keep using defaults
+          console.log("No API slides, keeping defaults");
         }
       } else {
-        // No data from API, use defaults
-        console.log("No content in response, using defaults");
-        const defaultSlidesWithFallback = defaultSlides.map((slide) => ({
-          ...slide,
-          fallbackMedia: slide.media,
-          fallbackThumbnail: slide.thumbnail,
-        }));
-        setSlides(defaultSlidesWithFallback);
+        // No data from API, keep using defaults
+        console.log("No content in response, keeping defaults");
       }
     } catch (error) {
       console.error("Error fetching hero section:", error);
-      // On error, use defaults
-      const defaultSlidesWithFallback = defaultSlides.map((slide) => ({
-        ...slide,
-        fallbackMedia: slide.media,
-        fallbackThumbnail: slide.thumbnail,
-      }));
-      setSlides(defaultSlidesWithFallback);
+      // On error, keep using defaults (already set in initial state)
     } finally {
-      setLoading(false);
+      setIsFetching(false);
       isFetchingRef.current = false;
     }
   }, [slides.length]);
@@ -377,20 +367,16 @@ export default function Hero() {
     [imageErrors, handleImageError]
   );
 
-  // Show loading state
-  if (loading) {
-    return (
-      <section className="relative w-full h-screen overflow-hidden bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 size={48} className="animate-spin text-white" />
-          <p className="text-white/80 text-lg">Loading hero section...</p>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section className="relative w-full h-screen overflow-hidden bg-background">
+      {/* Optional: Show subtle loading indicator while fetching in background */}
+      {isFetching && (
+        <div className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full">
+          <Loader2 size={16} className="animate-spin text-white/80" />
+          <span className="text-xs text-white/80">Updating...</span>
+        </div>
+      )}
+
       <Swiper
         modules={[EffectFade, Autoplay, Navigation]}
         effect="fade"
