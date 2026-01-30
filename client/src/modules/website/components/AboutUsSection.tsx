@@ -6,12 +6,29 @@ import {
   UtensilsCrossed,
   Coffee,
   Wine,
-  Star,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { getAboutUsAdmin } from "@/Api/Api";
+import { 
+  getAboutUsAdmin, 
+  getVenturesByAboutUsId, 
+  getPublicRecognitionsByAboutUsId 
+} from "@/Api/Api";
+
+interface Venture {
+  id: number;
+  ventureName: string;
+  logoUrl: string;
+  isActive: boolean;
+}
+
+interface Recognition {
+  id: number;
+  value: string;
+  title: string;
+  subTitle: string;
+  isActive: boolean;
+}
 
 interface AboutUsData {
   id: number;
@@ -23,22 +40,9 @@ interface AboutUsData {
   ctaButtonText: string;
   ctaButtonUrl: string;
   isActive: boolean;
-  ventures: any[];
-  recognitions: any[];
   createdAt: string;
   updatedAt: string;
 }
-
-const brandLogos = [
-  { label: "Hotel", icon: Hotel, logo: siteContent.brand.logo_hotel.image },
-  {
-    label: "Restaurant",
-    icon: UtensilsCrossed,
-    logo: siteContent.brand.logo.image,
-  },
-  { label: "Cafe", icon: Coffee, logo: siteContent.brand.logo_cafe.image },
-  { label: "Liquor Shop", icon: Wine, logo: siteContent.brand.logo_bar.image },
-];
 
 const getYouTubeEmbedUrl = (url: string) => {
   const videoIdMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
@@ -49,16 +53,16 @@ const getYouTubeEmbedUrl = (url: string) => {
 export default function AboutUsSection() {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [aboutUsData, setAboutUsData] = useState<AboutUsData | null>(null);
+  const [ventures, setVentures] = useState<Venture[]>([]);
+  const [recognitions, setRecognitions] = useState<Recognition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Initial Fetch: About Us Section
   const fetchAboutUs = async () => {
     try {
       setIsLoading(true);
       const response = await getAboutUsAdmin();
-      console.log("About Us API response:", response?.data);
-      
       if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
-        // Get the latest entry (last item in array)
         const latestData = response.data[response.data.length - 1];
         setAboutUsData(latestData);
       }
@@ -69,18 +73,37 @@ export default function AboutUsSection() {
     }
   };
 
+  // Secondary Fetch: Ventures and Recognitions based on AboutUs ID
+  const fetchRelatedData = async (id: number) => {
+    try {
+      const [venturesRes, recognitionsRes] = await Promise.all([
+        getVenturesByAboutUsId(id),
+        getPublicRecognitionsByAboutUsId(id)
+      ]);
+
+      if (venturesRes?.data) setVentures(venturesRes.data);
+      if (recognitionsRes?.data) setRecognitions(recognitionsRes.data);
+    } catch (error) {
+      console.error("Error fetching related About Us data:", error);
+    }
+  };
+
   useEffect(() => {
     fetchAboutUs();
   }, []);
 
-  // Dynamic media items with fallback
+  useEffect(() => {
+    if (aboutUsData?.id) {
+      fetchRelatedData(aboutUsData.id);
+    }
+  }, [aboutUsData?.id]);
+
   const mediaItems = [
     {
       type: "video",
       src: aboutUsData?.videoUrl 
         ? getYouTubeEmbedUrl(aboutUsData.videoUrl)
         : "https://www.youtube.com/embed/oqqrdFmYkO0",
-      poster: siteContent.images.about.main,
     },
     {
       type: "image",
@@ -100,14 +123,10 @@ export default function AboutUsSection() {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-stretch">
+          
           {/* Left Column: Media Showcase */}
           <div className="relative group flex flex-col">
-            <div
-              className="relative flex-1 rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10"
-              style={{
-                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-              }}
-            >
+            <div className="relative flex-1 rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10 min-h-[400px]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentMediaIndex}
@@ -118,25 +137,18 @@ export default function AboutUsSection() {
                   className="w-full h-full"
                 >
                   {mediaItems[currentMediaIndex].type === "video" ? (
-                    <div className="w-full h-full relative bg-black">
-                      <iframe
-                        width="100%"
-                        height="100%"
-                        src={`${mediaItems[currentMediaIndex].src as string}?autoplay=1&mute=1&controls=1&rel=0&playsinline=1`}
-                        title={aboutUsData?.videoTitle || "Brand Video"}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src={`${mediaItems[currentMediaIndex].src}?autoplay=0&mute=1&controls=1`}
+                      title={aboutUsData?.videoTitle || "Brand Video"}
+                      className="w-full h-full object-cover aspect-video"
+                      allowFullScreen
+                    />
                   ) : (
-                    <OptimizedImage
-                      src={(mediaItems[currentMediaIndex].src as any).src}
-                      alt={
-                        (mediaItems[currentMediaIndex].src as any).alt ||
-                        "Gallery Image"
-                      }
+                    <img
+                      src={(mediaItems[currentMediaIndex].src as any).src || mediaItems[currentMediaIndex].src}
+                      alt="Showcase"
                       className="w-full h-full object-cover"
                     />
                   )}
@@ -144,111 +156,104 @@ export default function AboutUsSection() {
               </AnimatePresence>
             </div>
 
-            {/* Dot Indicators */}
             <div className="flex justify-center gap-2 mt-6">
               {mediaItems.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentMediaIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    currentMediaIndex === index
-                      ? "bg-primary w-8"
-                      : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    currentMediaIndex === index ? "bg-primary w-8" : "bg-muted-foreground/30"
                   }`}
-                  aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
             </div>
           </div>
 
           {/* Right Column: Content */}
-          <div className="flex flex-col justify-between space-y-6">
-            {/* Header Section */}
+          <div className="flex flex-col justify-center space-y-8">
             <div>
               <h2 className="text-sm font-bold uppercase tracking-[0.2em] mb-3 text-muted-foreground">
-                {aboutUsData?.sectionTitle || siteContent.text.about.sectionTitle}
+                {aboutUsData?.sectionTitle || "ABOUT US"}
               </h2>
               <h3 className="text-4xl md:text-5xl font-serif leading-tight mb-4 text-foreground">
-                {aboutUsData?.subTitle || siteContent.brand.name}
+                {aboutUsData?.subTitle || "Our Legacy"}
               </h3>
-
               <p className="text-lg font-light leading-relaxed text-muted-foreground">
-                {aboutUsData?.description || 
-                  `${siteContent.text.about.carousel[0].description} ${siteContent.brand.tagline}`
-                }
+                {aboutUsData?.description || "Loading our story..."}
               </p>
             </div>
 
-            {/* Brand Logos Grid - Static with logo text preserved */}
+            {/* Dynamic Ventures Section */}
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest mb-4 opacity-70 text-muted-foreground">
-                {aboutUsData?.ventures && aboutUsData.ventures.length > 0 
-                  ? "Our Ventures" 
-                  : "Our Ventures"}
+              <h4 className="text-xs font-bold uppercase tracking-widest mb-6 opacity-70 text-muted-foreground">
+                Our Ventures
               </h4>
-              <div className="grid grid-cols-4 gap-4">
-                {brandLogos.map((brand) => (
-                  <div
-                    key={brand.label}
-                    className="flex flex-col items-center justify-center text-center space-y-2 group cursor-pointer"
-                  >
-                    <div className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1 bg-slate-900/90 dark:bg-accent/5 border border-border/10">
-                      <img
-                        src={brand.logo.src}
-                        alt={brand.label}
-                        className="w-10 h-10 object-contain opacity-90 group-hover:opacity-100 transition-all duration-300 ease-out group-hover:scale-[1.15]"
-                        style={{
-                          filter: "none",
-                          mixBlendMode: "normal",
-                        }}
-                      />
+              <div className="flex flex-wrap gap-8">
+                {ventures.length > 0 ? (
+                  ventures.map((venture) => (
+                    <div key={venture.id} className="flex flex-col items-center space-y-3 group cursor-pointer">
+                      <div className="w-16 h-16 rounded-full flex items-center justify-center bg-slate-900/90 border border-white/10 transition-transform group-hover:-translate-y-1">
+                        <img 
+                          src={venture.logoUrl} 
+                          alt={venture.ventureName} 
+                          className="w-10 h-10 object-contain rounded-full" 
+                        />
+                      </div>
+                      <span className="text-[10px] uppercase tracking-widest font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                        {venture.ventureName}
+                      </span>
                     </div>
-                    <span className="text-[10px] uppercase tracking-wider font-medium opacity-60 group-hover:opacity-100 transition-opacity text-muted-foreground">
-                      {brand.label}
-                    </span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  // Fallback static ventures if API returns empty
+                  [
+                    { label: "Hotel", icon: Hotel },
+                    { label: "Dining", icon: UtensilsCrossed },
+                    { label: "Cafe", icon: Coffee },
+                    { label: "Bar", icon: Wine }
+                  ].map((v, i) => (
+                    <div key={i} className="flex flex-col items-center space-y-3 opacity-40">
+                      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                        <v.icon className="w-6 h-6" />
+                      </div>
+                      <span className="text-[10px] uppercase tracking-widest">{v.label}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
-            {/* Globally Recognized Section - Dynamic with fallback */}
+            {/* Dynamic Recognitions Section */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-widest mb-4 opacity-70 text-muted-foreground">
                 Globally Recognized
               </h4>
               <div className="grid grid-cols-3 gap-3">
-                {(aboutUsData?.recognitions && aboutUsData.recognitions.length > 0
-                  ? aboutUsData.recognitions
-                  : (siteContent.text as any).recognitions || []
-                ).map((item: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="bg-secondary/20 border border-border/50 rounded-lg p-3 text-center group hover:border-primary/30 transition-colors"
-                  >
-                    <div className="text-lg font-serif font-bold text-primary mb-0.5 tracking-tight">
-                      {item.score}
+                {recognitions.length > 0 ? (
+                  recognitions.map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-secondary/20 border border-border/50 rounded-lg p-4 text-center group hover:border-primary/30 transition-all"
+                    >
+                      <div className="text-xl font-serif font-bold text-primary mb-1">
+                        {item.value}
+                      </div>
+                      <div className="text-[10px] uppercase tracking-tighter font-bold text-foreground mb-1 leading-tight">
+                        {item.title}
+                      </div>
+                      <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-medium opacity-60">
+                        {item.subTitle}
+                      </div>
                     </div>
-                    <div className="text-[9px] uppercase tracking-tighter font-bold text-foreground mb-1 leading-tight">
-                      {item.title}
-                    </div>
-                    <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-medium opacity-60">
-                      {item.source}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  // Fallback skeletons/static data
+                  [1, 2, 3].map((i) => (
+                    <div key={i} className="bg-secondary/10 border border-border/20 rounded-lg p-4 h-24 animate-pulse" />
+                  ))
+                )}
               </div>
             </div>
-
-            {/* More Details Link - Dynamic with fallback */}
-            {/* <div>
-              <Link
-                to={aboutUsData?.ctaButtonUrl || "/about"}
-                className="inline-flex items-center text-xs font-medium tracking-wide hover:underline underline-offset-4 transition-all text-muted-foreground hover:text-primary"
-              >
-                {aboutUsData?.ctaButtonText || "More details"}
-                <ArrowRight className="w-3 h-3 ml-1.5" />
-              </Link>
-            </div> */}
           </div>
         </div>
       </div>

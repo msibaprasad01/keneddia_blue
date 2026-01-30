@@ -37,7 +37,7 @@ function HomePageDashboard() {
     { id: 'events', label: 'Upcoming Events', icon: Calendar, component: UpcomingEvents },
     { id: 'news', label: 'News & Press', icon: Newspaper, component: NewsPress },
     { id: 'guest', label: 'Guest Exp', icon: Star, component: GuestExp },
-    { id: 'careers', label: 'Careers', icon: Briefcase, component: Careers }
+    // { id: 'careers', label: 'Careers', icon: Briefcase, component: Careers }
   ];
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || HeroSection;

@@ -67,7 +67,7 @@ export const getPublicRecognitionsByAboutUsId = (aboutUsId) => API.get(`api/v1/p
 
 export const createGuestExperienceByGuest = (formData) =>API.post("api/v1/guest-experience/byGuests", formData);
 export const addGuestExperienceSection = (data) => API.post("api/v1/guest-experience/section", data);
-export const getGuestExperienceSection = () => API.get("api/v1/guest-experience/section");
+export const getGuestExperienceSection = () => API.get("api/v1/guest-experience/paginated?direction=DESC");
 export const addGuestExperienceItem = (formData) => API.post("api/v1/guest-experience", formData);
 export const updateGuestExperienceItem = (id, formData) => API.put(`api/v1/guest-experience/${id}`, formData);
 
