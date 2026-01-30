@@ -387,13 +387,13 @@ export default function DailyOffers() {
                         <div className="text-xs text-muted-foreground">
                           Code: <span className="font-mono text-foreground font-medium">{offer.couponCode || 'N/A'}</span>
                         </div>
-                        <Link 
+                        {/* <Link 
                           to={`/#`} 
                           className="text-xs font-semibold text-primary flex items-center gap-1 hover:underline"
                         >
                           {offer.ctaText || 'View Offer'}
                           <ArrowRight className="w-3 h-3" />
-                        </Link>
+                        </Link> */}
                       </div>
                     </div>
                   </div>
