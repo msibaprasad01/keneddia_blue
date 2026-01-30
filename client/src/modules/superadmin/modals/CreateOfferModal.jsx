@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { X, Upload, Loader2, MapPin, Tag, FileText, Calendar, Clock, Image as ImageIcon, Building2, Hotel } from 'lucide-react';
+import { X, Upload, Loader2, MapPin, Tag, FileText, Calendar, Clock, Image as ImageIcon, Building2, Hotel, AlignLeft } from 'lucide-react';
 import { createDailyOffer, updateDailyOfferById, uploadMedia, getMediaById, getAllProperties } from '@/Api/Api';
 import { toast } from 'react-hot-toast';
 
@@ -24,6 +24,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    longDesc: '',
     couponCode: '',
     ctaText: 'Claim Offer',
     location: '',
@@ -68,6 +69,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       setFormData({
         title: editingOffer.title || '',
         description: editingOffer.description || '',
+        longDesc: editingOffer.longDesc || '',
         couponCode: editingOffer.couponCode || '',
         ctaText: editingOffer.ctaText || 'Claim Offer',
         location: selectedProperty ? `${selectedProperty.area}, ${selectedProperty.locationName}` : editingOffer.location || '',
@@ -144,6 +146,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     setFormData({
       title: '',
       description: '',
+      longDesc: '',
       couponCode: '',
       ctaText: 'Claim Offer',
       location: '',
@@ -326,6 +329,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       const payload = {
         title: formData.title.trim(),
         description: formData.description?.trim() || '',
+        longDesc: formData.longDesc?.trim() || '',
         couponCode: formData.couponCode?.trim() || '',
         ctaText: formData.ctaText?.trim() || 'Claim Offer',
         availableHours: formData.availableHours?.trim() || '',
@@ -548,24 +552,62 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
               </div>
             </div>
 
-            {/* Description */}
+            {/* Short Description (max 50 chars) */}
             <div>
-              <label className="flex items-center gap-2 text-xs font-semibold uppercase mb-2 text-gray-500">
-                Description
+              <label className="flex items-center justify-between gap-2 text-xs font-semibold uppercase mb-2 text-gray-500">
+                <span className="flex items-center gap-2">
+                  <FileText size={12} /> Short Description
+                </span>
+                <span className={`text-[10px] font-mono ${formData.description.length > 50 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
+                  {formData.description.length}/50
+                </span>
               </label>
-              <textarea
+              <input
+                type="text"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={3}
-                placeholder="Enter offer details and terms..."
+                placeholder="Brief tagline (max 50 characters)"
+                className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                style={{ 
+                  borderColor: formData.description.length > 50 ? '#EF4444' : colors.border,
+                  backgroundColor: '#F3F4F6',
+                  color: '#000000'
+                }}
+                maxLength={50}
+              />
+              {formData.description.length > 50 && (
+                <p className="text-xs text-red-500 mt-1">
+                  Description must be 50 characters or less
+                </p>
+              )}
+            </div>
+
+            {/* Long Description */}
+            <div>
+              <label className="flex items-center gap-2 text-xs font-semibold uppercase mb-2 text-gray-500">
+                <AlignLeft size={12} /> Detailed Description
+              </label>
+              <textarea
+                value={formData.longDesc}
+                onChange={(e) => handleInputChange('longDesc', e.target.value)}
+                rows={4}
+                placeholder="Enter full offer details, terms & conditions..."
                 className="w-full px-4 py-2.5 rounded-lg border resize-none outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 style={{ 
                   borderColor: colors.border,
                   backgroundColor: '#F3F4F6',
                   color: '#000000'
                 }}
-                maxLength={500}
+                maxLength={1000}
               />
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-[10px] text-gray-400">
+                  Full description with all terms and conditions
+                </p>
+                <span className="text-[10px] font-mono text-gray-400">
+                  {formData.longDesc.length}/1000
+                </span>
+              </div>
             </div>
 
             {/* Expiry Date & CTA Text */}
@@ -724,7 +766,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading || uploadingImage || !formData.title?.trim() || !formData.propertyId}
+            disabled={loading || uploadingImage || !formData.title?.trim() || !formData.propertyId || formData.description.length > 50}
             className="flex-[2] py-3 rounded-lg font-bold text-sm text-white bg-primary flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: colors.primary }}
           >

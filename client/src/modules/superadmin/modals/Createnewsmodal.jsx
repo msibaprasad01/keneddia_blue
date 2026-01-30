@@ -251,7 +251,7 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
         dateBadge: formData.dateBadge || formData.newsDate,
         badgeTypeId: parseInt(formData.badgeTypeId),
         ctaText: formData.ctaText?.trim() || 'Read Story',
-        ctaLink: formData.ctaLink?.trim() || '',
+        // ctaLink: formData.ctaLink?.trim() || '',
         authorName: formData.authorName?.trim() || '',
         authorDescription: formData.authorDescription?.trim() || '',
         readTime: formData.readTime?.trim() || '',
@@ -602,7 +602,7 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label 
                   className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
                   style={{ color: colors.textSecondary }}
@@ -621,7 +621,7 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
                     color: colors.textPrimary 
                   }}
                 />
-              </div>
+              </div> */}
             </div>
           </div>
 
