@@ -33,18 +33,25 @@ function UpcomingEvents() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
+
       const res = await getEventsUpdated();
       console.log("Events Updated API full response:", res);
       console.log("Events Updated API data:", res.data);
-      
+
       if (res?.data && Array.isArray(res.data)) {
-        // Filter only active events
-        const activeEvents = res.data.filter((event) => event.active);
-        setEvents(activeEvents);
+        const latestActiveEvents = [...res.data]
+          .filter((event) => event.active)
+          .reverse();
+
+        setEvents(latestActiveEvents);
+        setCurrentPage(1); // reset pagination on refresh
+      } else {
+        setEvents([]);
       }
     } catch (error) {
       console.error("Failed to fetch events:", error);
       toast.error("Failed to load events");
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -236,7 +243,10 @@ function UpcomingEvents() {
                     >
                       {/* Image */}
                       <td className="px-4 py-3">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden border" style={{ borderColor: colors.border }}>
+                        <div
+                          className="w-16 h-16 rounded-lg overflow-hidden border"
+                          style={{ borderColor: colors.border }}
+                        >
                           {event.image?.url ? (
                             <img
                               src={event.image.url}
@@ -248,7 +258,10 @@ function UpcomingEvents() {
                               className="w-full h-full flex items-center justify-center"
                               style={{ backgroundColor: colors.mainBg }}
                             >
-                              <ImageIcon size={20} style={{ color: colors.textSecondary }} />
+                              <ImageIcon
+                                size={20}
+                                style={{ color: colors.textSecondary }}
+                              />
                             </div>
                           )}
                         </div>
@@ -287,7 +300,10 @@ function UpcomingEvents() {
                       {/* Location */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
-                          <MapPin size={14} style={{ color: colors.textSecondary }} />
+                          <MapPin
+                            size={14}
+                            style={{ color: colors.textSecondary }}
+                          />
                           <span
                             className="text-xs font-medium"
                             style={{ color: colors.textPrimary }}
@@ -319,7 +335,9 @@ function UpcomingEvents() {
                       </td>
 
                       {/* Status */}
-                      <td className="px-4 py-3">{getStatusBadge(event.status)}</td>
+                      <td className="px-4 py-3">
+                        {getStatusBadge(event.status)}
+                      </td>
 
                       {/* Actions */}
                       <td className="px-4 py-3">
@@ -355,7 +373,10 @@ function UpcomingEvents() {
                   }}
                 >
                   <div className="flex gap-3 mb-3">
-                    <div className="w-20 h-20 rounded-lg overflow-hidden border flex-shrink-0" style={{ borderColor: colors.border }}>
+                    <div
+                      className="w-20 h-20 rounded-lg overflow-hidden border flex-shrink-0"
+                      style={{ borderColor: colors.border }}
+                    >
                       {event.image?.url ? (
                         <img
                           src={event.image.url}
@@ -367,7 +388,10 @@ function UpcomingEvents() {
                           className="w-full h-full flex items-center justify-center"
                           style={{ backgroundColor: colors.contentBg }}
                         >
-                          <ImageIcon size={24} style={{ color: colors.textSecondary }} />
+                          <ImageIcon
+                            size={24}
+                            style={{ color: colors.textSecondary }}
+                          />
                         </div>
                       )}
                     </div>
@@ -379,7 +403,10 @@ function UpcomingEvents() {
                         {event.title}
                       </h3>
                       <div className="flex items-center gap-2 mb-1">
-                        <MapPin size={12} style={{ color: colors.textSecondary }} />
+                        <MapPin
+                          size={12}
+                          style={{ color: colors.textSecondary }}
+                        />
                         <span
                           className="text-xs"
                           style={{ color: colors.textSecondary }}
@@ -407,7 +434,10 @@ function UpcomingEvents() {
                     {event.description}
                   </p>
 
-                  <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: colors.border }}>
+                  <div
+                    className="flex items-center justify-between pt-2 border-t"
+                    style={{ borderColor: colors.border }}
+                  >
                     <span
                       className="text-xs font-medium"
                       style={{ color: colors.textPrimary }}
@@ -439,8 +469,8 @@ function UpcomingEvents() {
                   className="text-xs"
                   style={{ color: colors.textSecondary }}
                 >
-                  Showing {startIndex + 1} to {Math.min(endIndex, events.length)} of{" "}
-                  {events.length} events
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(endIndex, events.length)} of {events.length} events
                 </div>
                 <div className="flex items-center gap-2">
                   <button

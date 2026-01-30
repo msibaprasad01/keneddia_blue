@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { X, Upload, Loader2, MapPin, Tag, Link as LinkIcon, FileText, Calendar as CalendarIcon, Building2, Globe, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Loader2, MapPin, Tag, FileText, Calendar as CalendarIcon, Building2, Globe, Image as ImageIcon, AlignLeft } from 'lucide-react';
 import { createEventUpdated, updateEventById, getAllLocations, getPropertyTypes, uploadMedia } from '@/Api/Api';
 import { toast } from 'react-hot-toast';
 
@@ -12,9 +12,9 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     propertyTypeId: '', 
     eventDate: '',
     description: '',
+    longDesc: '',
     status: 'ACTIVE',
     ctaText: '',
-    ctaLink: '',
     active: true
   });
 
@@ -53,9 +53,9 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
         propertyTypeId: editingEvent.propertyTypeId || '',
         eventDate: editingEvent.eventDate || '',
         description: editingEvent.description || '',
+        longDesc: editingEvent.longDesc || '',
         status: editingEvent.status || 'ACTIVE',
         ctaText: editingEvent.ctaText || '',
-        ctaLink: editingEvent.ctaLink || '',
         active: editingEvent.active ?? true
       });
       
@@ -79,9 +79,9 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       propertyTypeId: '',
       eventDate: '', 
       description: '', 
+      longDesc: '',
       status: 'ACTIVE',
       ctaText: '', 
-      ctaLink: '', 
       active: true
     });
     setImagePreview(null);
@@ -249,15 +249,15 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       return false;
     }
     if (!formData.description?.trim()) {
-      toast.error('Description is required');
+      toast.error('Short description is required');
+      return false;
+    }
+    if (formData.description.length > 50) {
+      toast.error('Short description must be 50 characters or less');
       return false;
     }
     if (!formData.ctaText?.trim()) {
       toast.error('CTA text is required');
-      return false;
-    }
-    if (!formData.ctaLink?.trim()) {
-      toast.error('CTA link is required');
       return false;
     }
     
@@ -286,9 +286,9 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       formDataToSend.append('propertyTypeId', parseInt(formData.propertyTypeId));
       formDataToSend.append('eventDate', formData.eventDate);
       formDataToSend.append('description', formData.description.trim());
+      formDataToSend.append('longDesc', formData.longDesc.trim() || '');
       formDataToSend.append('status', formData.status);
       formDataToSend.append('ctaText', formData.ctaText.trim());
-      formDataToSend.append('ctaLink', formData.ctaLink.trim());
       formDataToSend.append('active', formData.active);
       
       // Append image (ONLY ONE of these)
@@ -503,19 +503,52 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
               </div>
             </div>
 
-            {/* Description */}
+            {/* Short Description (max 50 chars) */}
+            <div>
+              <label 
+                className="flex items-center justify-between gap-2 text-xs font-semibold uppercase mb-2" 
+                style={{ color: colors.textSecondary }}
+              >
+                <span className="flex items-center gap-2">
+                  <FileText size={14} /> Short Description *
+                </span>
+                <span className={`text-[10px] font-mono ${formData.description.length > 50 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
+                  {formData.description.length}/50
+                </span>
+              </label>
+              <input
+                type="text"
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                placeholder="Brief event tagline (max 50 characters)"
+                className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                style={{ 
+                  borderColor: formData.description.length > 50 ? '#EF4444' : colors.border, 
+                  backgroundColor: colors.mainBg, 
+                  color: colors.textPrimary 
+                }}
+                maxLength={50}
+              />
+              {formData.description.length > 50 && (
+                <p className="text-xs text-red-500 mt-1">
+                  Description must be 50 characters or less
+                </p>
+              )}
+            </div>
+
+            {/* Long Description */}
             <div>
               <label 
                 className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
                 style={{ color: colors.textSecondary }}
               >
-                <FileText size={14} /> Description *
+                <AlignLeft size={14} /> Detailed Description
               </label>
               <textarea
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                value={formData.longDesc}
+                onChange={(e) => handleInputChange('longDesc', e.target.value)}
                 rows={4}
-                placeholder="Describe your event in detail..."
+                placeholder="Enter full event details, agenda, terms & conditions..."
                 className="w-full px-4 py-2.5 rounded-lg border outline-none resize-none focus:ring-2 focus:ring-primary/20 transition-all"
                 style={{ 
                   borderColor: colors.border, 
@@ -524,55 +557,37 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 }}
                 maxLength={1000}
               />
-              <div className="text-right text-[10px] text-gray-400 mt-1">
-                {formData.description.length}/1000 characters
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-[10px] text-gray-400">
+                  Complete event information with all details
+                </p>
+                <span className="text-[10px] font-mono text-gray-400">
+                  {formData.longDesc.length}/1000
+                </span>
               </div>
             </div>
 
-            {/* CTA Text & Link */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label 
-                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
-                  style={{ color: colors.textSecondary }}
-                >
-                  CTA Button Text *
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Book Now"
-                  value={formData.ctaText}
-                  onChange={(e) => handleInputChange('ctaText', e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ 
-                    borderColor: colors.border, 
-                    backgroundColor: colors.mainBg, 
-                    color: colors.textPrimary 
-                  }}
-                  maxLength={30}
-                />
-              </div>
-              
-              <div>
-                <label 
-                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
-                  style={{ color: colors.textSecondary }}
-                >
-                  <LinkIcon size={14} /> CTA Link *
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://example.com/booking"
-                  value={formData.ctaLink}
-                  onChange={(e) => handleInputChange('ctaLink', e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ 
-                    borderColor: colors.border, 
-                    backgroundColor: colors.mainBg, 
-                    color: colors.textPrimary 
-                  }}
-                />
-              </div>
+            {/* CTA Text */}
+            <div>
+              <label 
+                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
+                style={{ color: colors.textSecondary }}
+              >
+                CTA Button Text *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g., Book Now"
+                value={formData.ctaText}
+                onChange={(e) => handleInputChange('ctaText', e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                style={{ 
+                  borderColor: colors.border, 
+                  backgroundColor: colors.mainBg, 
+                  color: colors.textPrimary 
+                }}
+                maxLength={30}
+              />
             </div>
           </div>
 
@@ -714,7 +729,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
           <button 
             type="button"
             onClick={handleSubmit} 
-            disabled={loading || uploadingImage || !formData.title || !formData.locationId || !formData.propertyTypeId || (!uploadedMediaId && !imageUrl)}
+            disabled={loading || uploadingImage || !formData.title || !formData.locationId || !formData.propertyTypeId || formData.description.length > 50 || (!uploadedMediaId && !imageUrl)}
             className="flex-[2] py-3 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: colors.primary }}
           >

@@ -32,26 +32,45 @@ function NewsPress() {
       setLoading(true);
       console.log("--- API Call Start ---");
 
-      const response = await getAllNews({ page: 0, size: 50 });
-      console.log("1. Raw API Response:", response);
+      // Fetch all categories (PRESS, NEWS, ANNOUNCEMENT)
+      const categories = ['PRESS', 'NEWS', 'ANNOUNCEMENT'];
+      const allNewsPromises = categories.map(category => 
+        getAllNews({ category, page: 0, size: 50 })
+      );
+
+      const responses = await Promise.all(allNewsPromises);
+      console.log("1. Raw API Responses:", responses);
 
       let newsData = [];
-      const source = response?.data ? response.data : response;
+      
+      // Combine all responses
+      responses.forEach((response, index) => {
+        console.log(`Processing category: ${categories[index]}`);
+        const source = response?.data ? response.data : response;
 
-      if (source?.content && Array.isArray(source.content)) {
-        newsData = source.content;
-        console.log("2. Success: Extracted from .content property");
-      } else if (Array.isArray(source)) {
-        newsData = source;
-        console.log("2. Success: Extracted from direct array");
-      } else {
-        console.error("2. Failure: Could not find array in response. Structure:", source);
-      }
+        if (source?.content && Array.isArray(source.content)) {
+          newsData = [...newsData, ...source.content];
+          console.log(`2. Success: Extracted ${source.content.length} items from ${categories[index]}`);
+        } else if (Array.isArray(source)) {
+          newsData = [...newsData, ...source];
+          console.log(`2. Success: Extracted ${source.length} items from ${categories[index]}`);
+        } else {
+          console.error(`2. Failure: Could not find array in ${categories[index]} response. Structure:`, source);
+        }
+      });
 
-      console.log("3. Final Array for State:", newsData);
+      console.log("3. Combined Array for State:", newsData);
+      console.log(`Total items fetched: ${newsData.length}`);
 
       if (newsData.length > 0) {
-        const activeNews = newsData.filter((news) => news.active !== false);
+        // Filter active news and sort by date (newest first)
+        const activeNews = newsData
+          .filter((news) => news.active !== false)
+          .sort((a, b) => {
+            const dateA = new Date(a.newsDate || a.dateBadge || a.createdAt);
+            const dateB = new Date(b.newsDate || b.dateBadge || b.createdAt);
+            return dateB - dateA; // Descending order (newest first)
+          });
         setNewsItems(activeNews);
       } else {
         setNewsItems([]);
@@ -296,18 +315,6 @@ function NewsPress() {
                           >
                             {news.description}
                           </p>
-                          {/* {news.ctaLink && (
-                            <a
-                              href={news.ctaLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                              style={{ color: colors.primary }}
-                            >
-                              {news.ctaText || "Read More"}
-                              <ExternalLink size={10} />
-                            </a>
-                          )} */}
                         </div>
                       </td>
 
