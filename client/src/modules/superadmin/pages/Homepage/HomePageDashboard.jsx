@@ -10,7 +10,8 @@ import {
   Building2, 
   Calendar, 
   Newspaper, 
-  Star 
+  Star,
+  Briefcase
 } from 'lucide-react';
 import HeroSection from '../tabPages/HeroSection';
 import DailyOffers from '../tabPages/DailyOffers';
@@ -20,7 +21,7 @@ import KennediaGroup from '../tabPages/KennediaGroup';
 import UpcomingEvents from '../tabPages/UpcomingEvents';
 import NewsPress from '../tabPages/NewsPress';
 import GuestExp from '../tabPages/GuestExp';
-
+import Careers from '../tabPages/Careers';
 function HomePageDashboard() {
   const [activeTab, setActiveTab] = useState('hero');
   
@@ -36,6 +37,7 @@ function HomePageDashboard() {
     { id: 'events', label: 'Upcoming Events', icon: Calendar, component: UpcomingEvents },
     { id: 'news', label: 'News & Press', icon: Newspaper, component: NewsPress },
     { id: 'guest', label: 'Guest Exp', icon: Star, component: GuestExp },
+    { id: 'careers', label: 'Careers', icon: Briefcase, component: Careers }
   ];
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || HeroSection;
