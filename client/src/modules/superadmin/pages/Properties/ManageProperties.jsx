@@ -376,11 +376,11 @@ function ManageProperties() {
       <>
       <div className="h-full overflow-y-auto">
         {/* Debug Banner - Remove this later */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+        {/* <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
           <p className="text-xs text-yellow-800 font-medium">
             ⚠️ Using static data - API integration pending. Remove static data constants when backend is ready.
           </p>
-        </div>
+        </div> */}
 
         {/* Main Properties Section */}
         <div className="bg-white rounded-lg shadow-sm mb-6">
