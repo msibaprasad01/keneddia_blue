@@ -14,6 +14,9 @@ import {
   VolumeX,
   Loader2,
   CheckCircle2,
+  User,
+  Mail,
+  Phone,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -57,115 +60,96 @@ interface ApiResponseItem {
 export default function OurStoryPreview() {
   const { experienceShowcase } = siteContent.text;
 
-  // Typed State
-  const [guestExperiences, setGuestExperiences] = useState<ExperienceItem[]>(
-    [],
-  );
-  const [isLoadingExperiences, setIsLoadingExperiences] =
-    useState<boolean>(true);
+  // --- State ---
+  const [guestExperiences, setGuestExperiences] = useState<ExperienceItem[]>([]);
+  const [isLoadingExperiences, setIsLoadingExperiences] = useState<boolean>(true);
   const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
   const [youtubeLink, setYoutubeLink] = useState<string>("");
   const [showYoutubeInput, setShowYoutubeInput] = useState<boolean>(false);
   const [feedbackText, setFeedbackText] = useState<string>("");
   const [authorName, setAuthorName] = useState<string>("");
+  
+  // New Contact Fields
+  const [email, setEmail] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [isContactVerified, setIsContactVerified] = useState<boolean>(false);
+  const [showContactPopup, setShowContactPopup] = useState<boolean>(false);
+
   const [playingVideo, setPlayingVideo] = useState<number | null>(null);
   const [mutedVideos, setMutedVideos] = useState<Record<number, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Pagination state
   const [lastId, setLastId] = useState<string | null>(null);
   const [hasNext, setHasNext] = useState<boolean>(false);
 
-  // Typed Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
 
   const fetchGuestExperience = async (loadMore: boolean = false) => {
     try {
-      if (!loadMore) {
-        setIsLoadingExperiences(true);
-      }
-
+      if (!loadMore) setIsLoadingExperiences(true);
       const params: { size: number; lastId?: string } = { size: 20 };
-      if (loadMore && lastId) {
-        params.lastId = lastId;
-      }
+      if (loadMore && lastId) params.lastId = lastId;
 
       const res = await getGuestExperienceSection(params);
-
       const responseData = res?.data?.data || res?.data || res;
 
       if (responseData?.content && Array.isArray(responseData.content)) {
         const apiItems: ApiResponseItem[] = responseData.content;
-
         const latestFirstItems = [...apiItems].reverse();
 
-        const mappedExperiences: ExperienceItem[] = latestFirstItems.map(
-          (item) => {
-            const baseItem = {
-              id: item.id,
-              title: item.title || "Guest Experience",
-              description: item.description || "",
-              author: item.author || "Anonymous Guest",
-            };
+        const mappedExperiences: ExperienceItem[] = latestFirstItems.map((item) => {
+          const baseItem = {
+            id: item.id,
+            title: item.title || "Guest Experience",
+            description: item.description || "",
+            author: item.author || "Anonymous Guest",
+          };
+          const videoExtensions = [".mp4", ".webm", ".mov", ".avi"];
 
-            const videoExtensions = [".mp4", ".webm", ".mov", ".avi"];
-
-            if (item.videoUrl) {
-              return {
-                ...baseItem,
-                type: "video",
-                videoUrl: item.videoUrl,
-                thumbnail: item.imageUrl ? { src: item.imageUrl } : undefined,
-              };
-            }
-
-            if (item.imageUrl) {
-              const isVideoInImageUrl = videoExtensions.some((ext) =>
-                item.imageUrl.toLowerCase().includes(ext),
-              );
-
-              return isVideoInImageUrl
-                ? { ...baseItem, type: "video", videoUrl: item.imageUrl }
-                : {
-                    ...baseItem,
-                    type: "image",
-                    image: {
-                      src: item.imageUrl,
-                      alt: item.title || "Experience",
-                    },
-                  };
-            }
-
+          if (item.videoUrl) {
             return {
               ...baseItem,
-              type: "image",
-              image: {
-                src: siteContent.images.hero.slide1.src,
-                alt: item.title || "Experience",
-              },
+              type: "video",
+              videoUrl: item.videoUrl,
+              thumbnail: item.imageUrl ? { src: item.imageUrl } : undefined,
             };
-          },
-        );
+          }
+
+          if (item.imageUrl) {
+            const isVideoInImageUrl = videoExtensions.some((ext) =>
+              item.imageUrl.toLowerCase().includes(ext)
+            );
+            return isVideoInImageUrl
+              ? { ...baseItem, type: "video", videoUrl: item.imageUrl }
+              : {
+                  ...baseItem,
+                  type: "image",
+                  image: { src: item.imageUrl, alt: item.title || "Experience" },
+                };
+          }
+
+          return {
+            ...baseItem,
+            type: "image",
+            image: { src: siteContent.images.hero.slide1.src, alt: item.title || "Experience" },
+          };
+        });
 
         if (loadMore) {
           setGuestExperiences((prev) => [...prev, ...mappedExperiences]);
         } else {
           setGuestExperiences(mappedExperiences);
         }
-
         setLastId(responseData.lastId);
         setHasNext(responseData.hasNext || false);
-      } else {
-        if (!loadMore) setGuestExperiences([]);
       }
     } catch (error) {
       console.error("Error fetching Guest Experience:", error);
-      if (!loadMore) setGuestExperiences([]);
     } finally {
-      setIsLoadingExperiences(false);
+      setIsExperiencesLoading(false);
     }
   };
 
@@ -173,12 +157,25 @@ export default function OurStoryPreview() {
     fetchGuestExperience();
   }, []);
 
-  const displayItems =
-    guestExperiences.length > 0
-      ? guestExperiences
-      : ((experienceShowcase?.items || []) as any[]);
+  const displayItems = guestExperiences.length > 0 ? guestExperiences : ((experienceShowcase?.items || []) as any[]);
 
   if (!experienceShowcase) return null;
+
+  // --- Handlers ---
+
+  const handleStartInteraction = () => {
+    if (!isContactVerified) {
+      setShowContactPopup(true);
+    }
+  };
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (authorName && email && phone) {
+      setIsContactVerified(true);
+      setShowContactPopup(false);
+    }
+  };
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -197,9 +194,7 @@ export default function OurStoryPreview() {
   };
 
   const handleYoutubeLinkAdd = () => {
-    if (youtubeLink.trim()) {
-      setShowYoutubeInput(false);
-    }
+    if (youtubeLink.trim()) setShowYoutubeInput(false);
   };
 
   const handleVideoPlay = (index: number) => {
@@ -232,22 +227,20 @@ export default function OurStoryPreview() {
       setSubmitError(null);
 
       const formData = new FormData();
-      formData.append(
-        "title",
-        feedbackText.substring(0, 50) || "Guest Experience",
-      );
+      formData.append("title", feedbackText.substring(0, 50) || "Guest Experience");
       formData.append("description", feedbackText || "No description provided");
       formData.append("author", authorName.trim() || "Anonymous Guest");
+      formData.append("email", email);
+      formData.append("phone", phone);
 
       if (youtubeLink) {
         formData.append("mediaType", "youtube");
         formData.append("youtubeUrl", youtubeLink);
       } else if (mediaPreviews.length > 0) {
-        const firstMedia = mediaPreviews[0];
-        formData.append("mediaType", firstMedia.type);
-        if (firstMedia.file) {
-          formData.append("file", firstMedia.file);
-        }
+        formData.append("mediaType", "multiple");
+        mediaPreviews.forEach((media) => {
+          if (media.file) formData.append("files", media.file);
+        });
       } else {
         formData.append("mediaType", "text");
       }
@@ -259,45 +252,85 @@ export default function OurStoryPreview() {
       setTimeout(() => {
         setFeedbackText("");
         setAuthorName("");
+        setEmail("");
+        setPhone("");
+        setIsContactVerified(false);
         setMediaPreviews([]);
         setYoutubeLink("");
         setShowYoutubeInput(false);
         setSubmitSuccess(false);
       }, 2000);
     } catch (error: any) {
-      setSubmitError(
-        error?.response?.data?.message || "Failed to submit. Please try again.",
-      );
+      setSubmitError(error?.response?.data?.message || "Failed to submit.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleLoadMore = () => {
-    if (hasNext && !isLoadingExperiences) {
-      fetchGuestExperience(true);
-    }
-  };
-
   const hasMedia = mediaPreviews.length > 0 || youtubeLink;
-  const canSubmit = (feedbackText.trim() || hasMedia) && !isSubmitting;
+  const canSubmit = isContactVerified && (feedbackText.trim() || hasMedia) && !isSubmitting;
 
   return (
-    <section
-      id="story"
-      className="py-12 bg-background relative overflow-hidden"
-    >
+    <section id="story" className="py-12 bg-background relative overflow-hidden">
+      {/* Contact Details Popup */}
+      <AnimatePresence>
+        {showContactPopup && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowContactPopup(false)}
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-card border border-border w-full max-w-md rounded-xl p-8 shadow-2xl"
+            >
+              <button onClick={() => setShowContactPopup(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+                <X className="w-5 h-5" />
+              </button>
+              <div className="mb-6">
+                <h3 className="text-xl font-serif font-bold text-foreground">Contact Details</h3>
+                <p className="text-sm text-muted-foreground">Please provide your details to unlock media uploads.</p>
+              </div>
+              <form onSubmit={handleContactSubmit} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Name</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                    <input required type="text" value={authorName} onChange={(e) => setAuthorName(e.target.value)} placeholder="Full Name" className="w-full bg-secondary/20 border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-1 focus:ring-primary outline-none" />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                    <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="w-full bg-secondary/20 border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-1 focus:ring-primary outline-none" />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Phone / Mobile</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                    <input required type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 234 567 890" className="w-full bg-secondary/20 border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-1 focus:ring-primary outline-none" />
+                  </div>
+                </div>
+                <button type="submit" className="w-full bg-primary text-primary-foreground py-3 rounded-lg text-sm font-bold uppercase tracking-widest hover:opacity-90 transition-opacity mt-2">
+                  Continue to Upload
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <div className="container mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+          
           {/* LEFT: Experience Slider */}
           <div className="lg:col-span-8 order-2 lg:order-1 bg-card border border-border rounded-lg p-5 shadow-sm hover:border-primary/50 transition-all duration-300 hover:shadow-md flex flex-col">
             <div className="mb-5">
-              <span className="text-xs font-bold text-primary tracking-[0.25em] uppercase block mb-2">
-                Guest Experiences
-              </span>
-              <h2 className="text-2xl md:text-3xl font-serif text-foreground">
-                {experienceShowcase.title}
-              </h2>
+              <span className="text-xs font-bold text-primary tracking-[0.25em] uppercase block mb-2">Guest Experiences</span>
+              <h2 className="text-2xl md:text-3xl font-serif text-foreground">{experienceShowcase.title}</h2>
             </div>
 
             <div className="flex-grow">
@@ -305,16 +338,9 @@ export default function OurStoryPreview() {
                 modules={[Autoplay, Navigation]}
                 spaceBetween={16}
                 slidesPerView={1.2}
-                breakpoints={{
-                  640: { slidesPerView: 2, spaceBetween: 16 },
-                  1024: { slidesPerView: 3, spaceBetween: 16 },
-                }}
+                breakpoints={{ 640: { slidesPerView: 2, spaceBetween: 16 }, 1024: { slidesPerView: 3, spaceBetween: 16 } }}
                 speed={800}
-                autoplay={{
-                  delay: 4000,
-                  disableOnInteraction: false,
-                  pauseOnMouseEnter: true,
-                }}
+                autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
                 loop={displayItems.length > 1}
                 className="w-full experience-swiper py-2 !pb-12 lg:!pb-2"
               >
@@ -327,9 +353,7 @@ export default function OurStoryPreview() {
                 ) : displayItems.length === 0 ? (
                   <SwiperSlide>
                     <div className="h-96 flex flex-col items-center justify-center bg-card border border-border rounded-lg p-6 text-center">
-                      <p className="text-sm text-muted-foreground">
-                        No guest experiences yet.
-                      </p>
+                      <p className="text-sm text-muted-foreground">No guest experiences yet.</p>
                     </div>
                   </SwiperSlide>
                 ) : (
@@ -337,94 +361,36 @@ export default function OurStoryPreview() {
                     <SwiperSlide key={item.id || index} className="h-auto">
                       <div className="group bg-background border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-300 h-full flex flex-col shadow-sm hover:shadow-md">
                         {item.type === "video" ? (
-                          <div
-                            className="relative w-full"
-                            style={{ paddingBottom: "125%" }}
-                          >
+                          <div className="relative w-full" style={{ paddingBottom: "125%" }}>
                             <div className="absolute inset-0 bg-black">
-                              <video
-                                ref={(el) => (videoRefs.current[index] = el)}
-                                src={item.videoUrl}
-                                poster={item.thumbnail?.src}
-                                className="w-full h-full object-cover"
-                                loop
-                                playsInline
-                                muted
-                                onEnded={() => setPlayingVideo(null)}
-                              />
+                              <video ref={(el) => (videoRefs.current[index] = el)} src={item.videoUrl} poster={item.thumbnail?.src} className="w-full h-full object-cover" loop playsInline muted onEnded={() => setPlayingVideo(null)} />
                               {playingVideo !== index && (
-                                <div
-                                  className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-center justify-center cursor-pointer hover:bg-black/40"
-                                  onClick={() => handleVideoPlay(index)}
-                                >
+                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center cursor-pointer hover:bg-black/40" onClick={() => handleVideoPlay(index)}>
                                   <div className="w-16 h-16 rounded-full bg-white/95 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                                    <Play
-                                      className="w-8 h-8 text-primary ml-1"
-                                      fill="currentColor"
-                                    />
+                                    <Play className="w-8 h-8 text-primary ml-1" fill="currentColor" />
                                   </div>
                                 </div>
                               )}
-                              {playingVideo === index && (
-                                <div
-                                  className="absolute inset-0 cursor-pointer"
-                                  onClick={() => handleVideoPause(index)}
-                                />
-                              )}
                               <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 z-10">
                                 <Film className="w-3 h-3 text-white" />
-                                <span className="text-[10px] text-white font-bold uppercase tracking-wider">
-                                  REEL
-                                </span>
+                                <span className="text-[10px] text-white font-bold uppercase tracking-wider">REEL</span>
                               </div>
-                              {playingVideo === index && (
-                                <button
-                                  onClick={(e) => toggleMute(index, e)}
-                                  className="absolute top-2 right-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full text-white z-10"
-                                >
-                                  {mutedVideos[index] ? (
-                                    <VolumeX className="w-3.5 h-3.5" />
-                                  ) : (
-                                    <Volume2 className="w-3.5 h-3.5" />
-                                  )}
-                                </button>
-                              )}
-                              <div
-                                className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 transition-opacity z-10 ${playingVideo === index ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
-                              >
-                                <h3 className="text-sm font-serif font-bold text-white mb-1">
-                                  {item.title}
-                                </h3>
-                                <p className="text-xs text-white/90 truncate">
-                                  {item.author}
-                                </p>
+                              <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 z-10 ${playingVideo === index ? "opacity-0" : "opacity-100"}`}>
+                                <h3 className="text-sm font-serif font-bold text-white mb-1">{item.title}</h3>
+                                <p className="text-xs text-white/90">{item.author}</p>
                               </div>
                             </div>
                           </div>
                         ) : (
                           <>
                             <div className="relative aspect-[16/10] overflow-hidden">
-                              <OptimizedImage
-                                src={item.image?.src || ""}
-                                alt={item.image?.alt || ""}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                              />
-                              <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-md p-1.5 rounded-full text-white/90">
-                                <Quote className="w-3 h-3" />
-                              </div>
+                              <OptimizedImage src={item.image?.src || ""} alt={item.image?.alt || ""} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                              <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-md p-1.5 rounded-full text-white/90"><Quote className="w-3 h-3" /></div>
                             </div>
                             <div className="p-4 flex flex-col flex-grow">
-                              <h3 className="text-base font-serif font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors line-clamp-1">
-                                {item.title}
-                              </h3>
-                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed flex-grow italic">
-                                "{item.description}"
-                              </p>
-                              <div className="mt-auto pt-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground font-medium">
-                                <span className="text-foreground truncate">
-                                  {item.author}
-                                </span>
-                              </div>
+                              <h3 className="text-base font-serif font-bold text-foreground mb-1.5 line-clamp-1">{item.title}</h3>
+                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed italic">"{item.description}"</p>
+                              <div className="mt-auto pt-2.5 border-t border-border/50 text-xs text-muted-foreground"><span className="text-foreground">{item.author}</span></div>
                             </div>
                           </>
                         )}
@@ -434,36 +400,14 @@ export default function OurStoryPreview() {
                 )}
               </Swiper>
             </div>
-
+            
             <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="flex items-center gap-2"
-              >
+              <div className="flex items-center gap-2">
                 <div className="flex -space-x-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className="w-3.5 h-3.5 fill-primary text-primary"
-                    />
-                  ))}
+                  {[1, 2, 3, 4, 5].map((star) => <Star key={star} className="w-3.5 h-3.5 fill-primary text-primary" />)}
                 </div>
-                <span className="text-xs font-medium text-foreground">
-                  5.0★ from {guestExperiences.length || 2500}+ reviews
-                </span>
-              </motion.div>
-
-              {/* {hasNext ? (
-                <button onClick={handleLoadMore} disabled={isLoadingExperiences} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors disabled:opacity-50">
-                  {isLoadingExperiences ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading...</> : <>Load more <ArrowRight className="w-3.5 h-3.5" /></>}
-                </button>
-              ) : (
-                <button className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
-                  Explore more <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              )} */}
+                <span className="text-xs font-medium text-foreground">5.0★ from {guestExperiences.length || 2500}+ reviews</span>
+              </div>
             </div>
           </div>
 
@@ -473,143 +417,79 @@ export default function OurStoryPreview() {
               <Send className="w-4 h-4 text-primary" /> Share Your Moment
             </h4>
 
-            <div className="space-y-4 flex-grow flex flex-col">
+            <div className="space-y-4 flex-grow flex flex-col" onFocus={handleStartInteraction} onClick={handleStartInteraction}>
               <AnimatePresence>
                 {submitSuccess && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center gap-2"
-                  >
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
-                    <span className="text-xs text-green-600 font-medium">
-                      Successfully submitted!
-                    </span>
+                    <span className="text-xs text-green-600 font-medium">Successfully submitted!</span>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <input
-                type="text"
-                value={authorName}
-                onChange={(e) => setAuthorName(e.target.value)}
-                placeholder="Your name (optional)..."
-                className="w-full bg-secondary/20 border border-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
-              />
+              {/* Author Display (Verified) */}
+              <div className={`w-full border rounded-lg px-3 py-2 text-sm flex items-center gap-2 ${isContactVerified ? 'bg-primary/5 border-primary/20' : 'bg-secondary/20 border-border'}`}>
+                <User className={`w-4 h-4 ${isContactVerified ? 'text-primary' : 'text-muted-foreground'}`} />
+                <span className={isContactVerified ? 'text-foreground font-medium' : 'text-muted-foreground'}>
+                  {authorName || "Your Details"}
+                </span>
+                {isContactVerified && <CheckCircle2 className="w-3.5 h-3.5 text-primary ml-auto" />}
+              </div>
 
+              {/* Multi-Media Previews Grid */}
               <AnimatePresence>
                 {hasMedia && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="grid grid-cols-3 gap-2"
-                  >
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="grid grid-cols-3 gap-2">
                     {mediaPreviews.map((media, idx) => (
-                      <div
-                        key={idx}
-                        className="relative aspect-square rounded-md overflow-hidden bg-secondary/50 group"
-                      >
-                        {media.type === "image" ? (
-                          <img
-                            src={media.url}
-                            className="w-full h-full object-cover"
-                            alt="Preview"
-                          />
-                        ) : (
-                          <div className="bg-black w-full h-full flex items-center justify-center">
-                            <Film className="text-white w-6 h-6" />
-                          </div>
-                        )}
-                        <button
-                          onClick={() => removeMedia(idx)}
-                          className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
+                      <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-secondary/50 group">
+                        {media.type === "image" ? <img src={media.url} className="w-full h-full object-cover" alt="Preview" /> : <div className="bg-black w-full h-full flex items-center justify-center"><Film className="text-white w-6 h-6" /></div>}
+                        <button onClick={(e) => { e.stopPropagation(); removeMedia(idx); }} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
                       </div>
                     ))}
                     {youtubeLink && (
                       <div className="relative aspect-square rounded-md overflow-hidden bg-red-500/10 flex items-center justify-center group">
                         <Youtube className="w-8 h-8 text-red-500" />
+                        <button onClick={(e) => { e.stopPropagation(); setYoutubeLink(""); }} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100"><X className="w-3 h-3" /></button>
                       </div>
                     )}
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {!youtubeLink && (
-                <div className="flex gap-2">
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex-grow border-2 border-dashed border-border rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/30 min-h-[100px]"
-                  >
-                    <Upload className="w-5 h-5 text-muted-foreground mb-2" />
-                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
-                      Upload Media
-                    </p>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileUpload}
-                      multiple
-                      accept="image/*,video/*"
-                      className="hidden"
-                    />
+              {/* Upload Section (Locked until verified) */}
+              <div className={`space-y-4 transition-opacity ${!isContactVerified ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+                {!youtubeLink && (
+                  <div className="flex gap-2">
+                    <div onClick={() => fileInputRef.current?.click()} className="flex-grow border-2 border-dashed border-border rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/30 min-h-[100px]">
+                      <Upload className="w-5 h-5 text-muted-foreground mb-2" />
+                      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Upload Images/Videos</p>
+                      <input type="file" ref={fileInputRef} onChange={handleFileUpload} multiple accept="image/*,video/*" className="hidden" />
+                    </div>
+                    <button onClick={() => setShowYoutubeInput(!showYoutubeInput)} className={`p-3 rounded-lg border ${showYoutubeInput ? "bg-primary/10 border-primary text-primary" : "bg-secondary/20 text-muted-foreground"}`}><Youtube className="w-5 h-5" /></button>
                   </div>
-                  <button
-                    onClick={() => setShowYoutubeInput(!showYoutubeInput)}
-                    className={`p-3 rounded-lg border ${showYoutubeInput ? "bg-primary/10 border-primary text-primary" : "bg-secondary/20 text-muted-foreground"}`}
-                  >
-                    <Youtube className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
+                )}
 
-              {showYoutubeInput && !youtubeLink && (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={youtubeLink}
-                    onChange={(e) => setYoutubeLink(e.target.value)}
-                    placeholder="Paste YouTube link..."
-                    className="w-full bg-secondary/20 border border-border rounded-lg px-3 py-2 text-xs"
-                  />
-                  <button
-                    onClick={handleYoutubeLinkAdd}
-                    className="w-full bg-primary/10 text-primary py-2 rounded-lg text-xs font-medium"
-                  >
-                    Add Link
-                  </button>
-                </div>
-              )}
+                {showYoutubeInput && !youtubeLink && (
+                  <div className="space-y-2">
+                    <input type="text" value={youtubeLink} onChange={(e) => setYoutubeLink(e.target.value)} placeholder="Paste YouTube link..." className="w-full bg-secondary/20 border border-border rounded-lg px-3 py-2 text-xs" />
+                    <button onClick={handleYoutubeLinkAdd} className="w-full bg-primary/10 text-primary py-2 rounded-lg text-xs font-medium">Add Link</button>
+                  </div>
+                )}
 
-              <textarea
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                placeholder={
-                  hasMedia
-                    ? "Add description (optional)..."
-                    : "Describe your experience..."
-                }
-                className="w-full h-full min-h-[80px] bg-secondary/20 border border-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none resize-none"
-              />
+                <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} placeholder={hasMedia ? "Add description (optional)..." : "Describe your experience..."} className="w-full min-h-[100px] bg-secondary/20 border border-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none resize-none" />
+              </div>
 
+              {/* Submit Button */}
               <button
                 disabled={!canSubmit}
                 onClick={handleSubmit}
-                className="w-full bg-primary text-primary-foreground text-xs font-bold py-3 rounded-lg flex items-center justify-center gap-2 uppercase tracking-widest disabled:opacity-50 shadow-lg shadow-primary/20"
+                className="w-full bg-primary text-primary-foreground text-xs font-bold py-4 rounded-lg flex items-center justify-center gap-2 uppercase tracking-widest disabled:opacity-50 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
               >
                 {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" /> Submitting...
-                  </>
+                  <><Loader2 className="w-3 h-3 animate-spin" /> Submitting...</>
                 ) : (
                   <>
-                    {hasMedia && !feedbackText
-                      ? "Submit Media"
-                      : "Confirm Submission"}{" "}
+                    {!isContactVerified ? "Complete Details to Submit" : "Confirm Submission"}
                     <Send className="w-3 h-3" />
                   </>
                 )}
