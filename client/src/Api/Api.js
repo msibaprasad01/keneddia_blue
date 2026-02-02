@@ -164,7 +164,7 @@ export const createPropertyListing = (data) =>
 export const GetAllPropertyListing = () => API.get("api/v1/property-listings");
 export const getPropertyListingMedia = (propertyListingId) =>
   API.get(`api/v1/property-listings/${propertyListingId}/media`);
-
+export const GetAllPropertyDetailsByID= (id) => API.get(`api/v1/properties/AllDetailsById/${id}`);
 export const createAmenityFeature = (data) =>
   API.post("api/v1/admin/amenities-features", data);
 export const getAllAmenityFeatures = () =>
