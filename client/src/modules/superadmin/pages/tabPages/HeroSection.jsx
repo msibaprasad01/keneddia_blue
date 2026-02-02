@@ -1,7 +1,14 @@
 // components/HeroSection.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { colors } from "@/lib/colors/colors";
-import { Loader2, Plus, Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Edit2,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { getHeroSectionsPaginated } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import AddHeroSectionModal from "../../modals/AddHeroSectionModal";
@@ -12,41 +19,56 @@ function HeroSection() {
   const [fetching, setFetching] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
-  
+
   // Pagination from API
-  const [currentPage, setCurrentPage] = useState(0); 
+  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const pageSize = 10;
 
   // Fetch hero section data with pagination
-  const fetchHeroSection = useCallback(async (page = 0) => {
-  try {
-    setFetching(true);
-    const response = await getHeroSectionsPaginated({ page, size: pageSize });
+  const fetchHeroSection = useCallback(
+    async (page = 0) => {
+      try {
+        setFetching(true);
+        const response = await getHeroSectionsPaginated({
+          page,
+          size: pageSize,
+        });
 
-    // ✅ Fix: Access response.data.content (not response.content)
-    const responseData = response?.data || response;
-    
-    if (responseData && responseData.content && Array.isArray(responseData.content)) {
-      setHeroSections(responseData.content);
-      setTotalPages(responseData.totalPages);
-      setTotalElements(responseData.totalElements);
-      setCurrentPage(responseData.number);
-      console.log("Loaded Hero Sections:", responseData.content.length, "of", responseData.totalElements);
-    } else {
-      setHeroSections([]);
-      setTotalPages(0);
-      setTotalElements(0);
-    }
-  } catch (error) {
-    console.error("Error fetching hero sections:", error);
-    toast.error("Failed to load hero sections");
-    setHeroSections([]);
-  } finally {
-    setFetching(false);
-  }
-}, [pageSize]);
+        // ✅ Fix: Access response.data.content (not response.content)
+        const responseData = response?.data || response;
+
+        if (
+          responseData &&
+          responseData.content &&
+          Array.isArray(responseData.content)
+        ) {
+          setHeroSections(responseData.content);
+          setTotalPages(responseData.totalPages);
+          setTotalElements(responseData.totalElements);
+          setCurrentPage(responseData.number);
+          console.log(
+            "Loaded Hero Sections:",
+            responseData.content.length,
+            "of",
+            responseData.totalElements,
+          );
+        } else {
+          setHeroSections([]);
+          setTotalPages(0);
+          setTotalElements(0);
+        }
+      } catch (error) {
+        console.error("Error fetching hero sections:", error);
+        toast.error("Failed to load hero sections");
+        setHeroSections([]);
+      } finally {
+        setFetching(false);
+      }
+    },
+    [pageSize],
+  );
 
   useEffect(() => {
     fetchHeroSection(currentPage);
@@ -72,11 +94,11 @@ function HeroSection() {
     if (section.backgroundAll && section.backgroundAll.length > 0) {
       editPayload.backgroundMediaAll = section.backgroundAll;
     }
-    
+
     if (section.backgroundLight && section.backgroundLight.length > 0) {
       editPayload.backgroundMediaLight = section.backgroundLight;
     }
-    
+
     if (section.backgroundDark && section.backgroundDark.length > 0) {
       editPayload.backgroundMediaDark = section.backgroundDark;
     }
@@ -85,11 +107,11 @@ function HeroSection() {
     if (section.subAll && section.subAll.length > 0) {
       editPayload.subMediaAll = section.subAll;
     }
-    
+
     if (section.subLight && section.subLight.length > 0) {
       editPayload.subMediaLight = section.subLight;
     }
-    
+
     if (section.subDark && section.subDark.length > 0) {
       editPayload.subMediaDark = section.subDark;
     }
@@ -112,7 +134,9 @@ function HeroSection() {
       await fetchHeroSection(currentPage);
     } catch (error) {
       console.error("Error deleting hero section:", error);
-      toast.error(error?.response?.data?.message || "Failed to delete hero section");
+      toast.error(
+        error?.response?.data?.message || "Failed to delete hero section",
+      );
     } finally {
       setLoading(false);
     }
@@ -162,8 +186,14 @@ function HeroSection() {
         style={{ backgroundColor: colors.contentBg }}
       >
         <div className="flex flex-col items-center gap-3">
-          <Loader2 size={32} className="animate-spin" style={{ color: colors.primary }} />
-          <p style={{ color: colors.textSecondary }}>Loading hero sections...</p>
+          <Loader2
+            size={32}
+            className="animate-spin"
+            style={{ color: colors.primary }}
+          />
+          <p style={{ color: colors.textSecondary }}>
+            Loading hero sections...
+          </p>
         </div>
       </div>
     );
@@ -171,11 +201,17 @@ function HeroSection() {
 
   return (
     <>
-      <div className="rounded-lg p-6 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
+      <div
+        className="rounded-lg p-6 shadow-sm"
+        style={{ backgroundColor: colors.contentBg }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold m-0 mb-1" style={{ color: colors.textPrimary }}>
+            <h2
+              className="text-xl font-semibold m-0 mb-1"
+              style={{ color: colors.textPrimary }}
+            >
               Hero Sections
             </h2>
             <p className="text-xs m-0" style={{ color: colors.textSecondary }}>
@@ -207,7 +243,9 @@ function HeroSection() {
             className="text-center py-12"
             style={{ color: colors.textSecondary }}
           >
-            <p className="text-sm">No hero sections found. Create your first one!</p>
+            <p className="text-sm">
+              No hero sections found. Create your first one!
+            </p>
           </div>
         ) : (
           <>
@@ -275,7 +313,10 @@ function HeroSection() {
                           borderBottom: `1px solid ${colors.border}`,
                         }}
                       >
-                        <td className="px-4 py-3 text-xs" style={{ color: colors.textPrimary }}>
+                        <td
+                          className="px-4 py-3 text-xs"
+                          style={{ color: colors.textPrimary }}
+                        >
                           #{section.id}
                         </td>
                         <td className="px-4 py-3">
@@ -299,21 +340,53 @@ function HeroSection() {
                             </div>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-xs" style={{ color: colors.textPrimary }}>
-                          {section.mainTitle || <span style={{ color: colors.textSecondary }}>-</span>}
+                        <td
+                          className="px-4 py-3 text-xs"
+                          style={{ color: colors.textPrimary }}
+                        >
+                          {section.mainTitle ? (
+                            section.mainTitle.length > 15 ? (
+                              `${section.mainTitle.slice(0, 15)}...`
+                            ) : (
+                              section.mainTitle
+                            )
+                          ) : (
+                            <span style={{ color: colors.textSecondary }}>
+                              -
+                            </span>
+                          )}
                         </td>
-                        <td className="px-4 py-3 text-xs" style={{ color: colors.textPrimary }}>
-                          {section.subTitle || <span style={{ color: colors.textSecondary }}>-</span>}
+
+                        <td
+                          className="px-4 py-3 text-xs"
+                          style={{ color: colors.textPrimary }}
+                        >
+                          {section.subTitle || (
+                            <span style={{ color: colors.textSecondary }}>
+                              -
+                            </span>
+                          )}
                         </td>
-                        <td className="px-4 py-3 text-xs" style={{ color: colors.textPrimary }}>
-                          {section.ctaText || <span style={{ color: colors.textSecondary }}>-</span>}
+                        <td
+                          className="px-4 py-3 text-xs"
+                          style={{ color: colors.textPrimary }}
+                        >
+                          {section.ctaText || (
+                            <span style={{ color: colors.textSecondary }}>
+                              -
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <span
                             className="px-2 py-1 rounded text-[10px] font-medium"
                             style={{
-                              backgroundColor: section.showOnHomepage ? "#dbeafe" : "#f3f4f6",
-                              color: section.showOnHomepage ? "#1d4ed8" : "#6b7280",
+                              backgroundColor: section.showOnHomepage
+                                ? "#dbeafe"
+                                : "#f3f4f6",
+                              color: section.showOnHomepage
+                                ? "#1d4ed8"
+                                : "#6b7280",
                             }}
                           >
                             {section.showOnHomepage ? "Yes" : "No"}
@@ -323,7 +396,9 @@ function HeroSection() {
                           <span
                             className="px-2 py-1 rounded text-[10px] font-medium"
                             style={{
-                              backgroundColor: section.active ? "#dcfce7" : "#fee",
+                              backgroundColor: section.active
+                                ? "#dcfce7"
+                                : "#fee",
                               color: section.active ? "#16a34a" : "#ef4444",
                             }}
                           >
@@ -337,14 +412,19 @@ function HeroSection() {
                               className="p-1.5 border-none rounded cursor-pointer transition-colors"
                               style={{ backgroundColor: "transparent" }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = colors.border;
+                                e.currentTarget.style.backgroundColor =
+                                  colors.border;
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = "transparent";
+                                e.currentTarget.style.backgroundColor =
+                                  "transparent";
                               }}
                               title="Edit"
                             >
-                              <Edit2 size={14} style={{ color: colors.primary }} />
+                              <Edit2
+                                size={14}
+                                style={{ color: colors.primary }}
+                              />
                             </button>
                             <button
                               // onClick={() => handleDelete(section.id)}
@@ -353,12 +433,14 @@ function HeroSection() {
                               style={{ backgroundColor: "transparent" }}
                               onMouseEnter={(e) => {
                                 if (!loading) {
-                                  e.currentTarget.style.backgroundColor = "#fee";
+                                  e.currentTarget.style.backgroundColor =
+                                    "#fee";
                                 }
                               }}
                               onMouseLeave={(e) => {
                                 if (!loading) {
-                                  e.currentTarget.style.backgroundColor = "transparent";
+                                  e.currentTarget.style.backgroundColor =
+                                    "transparent";
                                 }
                               }}
                               title="Delete"
@@ -377,8 +459,12 @@ function HeroSection() {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
-                <p className="text-xs m-0" style={{ color: colors.textSecondary }}>
-                  Page {currentPage + 1} of {totalPages} • Showing {heroSections.length} of {totalElements} entries
+                <p
+                  className="text-xs m-0"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Page {currentPage + 1} of {totalPages} • Showing{" "}
+                  {heroSections.length} of {totalElements} entries
                 </p>
                 <div className="flex items-center gap-2">
                   <button
@@ -397,7 +483,10 @@ function HeroSection() {
                       }
                     }}
                   >
-                    <ChevronLeft size={16} style={{ color: colors.textPrimary }} />
+                    <ChevronLeft
+                      size={16}
+                      style={{ color: colors.textPrimary }}
+                    />
                   </button>
 
                   {/* Show page numbers */}
@@ -420,8 +509,14 @@ function HeroSection() {
                         onClick={() => goToPage(pageNum)}
                         className="px-3 py-1.5 border-none rounded text-xs font-medium cursor-pointer transition-colors"
                         style={{
-                          backgroundColor: pageNum === currentPage ? colors.primary : colors.border,
-                          color: pageNum === currentPage ? colors.sidebarText : colors.textPrimary,
+                          backgroundColor:
+                            pageNum === currentPage
+                              ? colors.primary
+                              : colors.border,
+                          color:
+                            pageNum === currentPage
+                              ? colors.sidebarText
+                              : colors.textPrimary,
                         }}
                       >
                         {pageNum + 1}
@@ -445,7 +540,10 @@ function HeroSection() {
                       }
                     }}
                   >
-                    <ChevronRight size={16} style={{ color: colors.textPrimary }} />
+                    <ChevronRight
+                      size={16}
+                      style={{ color: colors.textPrimary }}
+                    />
                   </button>
                 </div>
               </div>
