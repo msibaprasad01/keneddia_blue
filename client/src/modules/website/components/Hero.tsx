@@ -147,42 +147,58 @@ const selectMediaByTheme = (
 };
 
 const transformApiDataToSlides = (content: ApiHeroItem[], theme: "light" | "dark"): HeroSlide[] => {
-  return content
-    .filter((item) => item.active) // Removed showOnHomepage restriction temporarily to verify if that's the blocker
-    .map((item, index) => {
-      const backgroundMedia = selectMediaByTheme(
-        theme,
-        item.backgroundAll,
-        item.backgroundLight,
-        item.backgroundDark
-      );
-
-      const subMedia = selectMediaByTheme(
-        theme,
-        item.subAll,
-        item.subLight,
-        item.subDark
-      );
-
-      const isVideo = backgroundMedia?.type === "VIDEO";
-      
-      let thumbnailUrl = backgroundMedia?.url || "";
-      if (subMedia && subMedia.type === "IMAGE") {
-        thumbnailUrl = subMedia.url;
-      }
-
-      return {
-        type: isVideo ? "video" : "image",
-        media: backgroundMedia?.url || "",
-        mobileMedia: subMedia?.url || backgroundMedia?.url || "",
-        thumbnail: thumbnailUrl,
-        title: item.mainTitle || `Discover Amazing Places ${index + 1}`,
-        subtitle: item.subTitle || "Book your next experience",
-        cta: item.ctaText || "Explore",
-        fallbackMedia: defaultSlides[index % defaultSlides.length].media,
-        fallbackThumbnail: defaultSlides[index % defaultSlides.length].thumbnail,
-      };
+  console.log('🔍 Filtering hero sections...');
+  
+  // CRITICAL FIX: Only show if BOTH conditions are true
+  const filteredContent = content.filter((item) => {
+    const shouldShow = item.active === true && item.showOnHomepage === true;
+    
+    console.log(`Hero Section #${item.id}:`, {
+      title: item.mainTitle,
+      active: item.active,
+      showOnHomepage: item.showOnHomepage,
+      shouldShow,
     });
+    
+    return shouldShow;
+  });
+  
+  console.log(`✅ Filtered: ${filteredContent.length} of ${content.length} sections will be shown`);
+
+  return filteredContent.map((item, index) => {
+    const backgroundMedia = selectMediaByTheme(
+      theme,
+      item.backgroundAll,
+      item.backgroundLight,
+      item.backgroundDark
+    );
+
+    const subMedia = selectMediaByTheme(
+      theme,
+      item.subAll,
+      item.subLight,
+      item.subDark
+    );
+
+    const isVideo = backgroundMedia?.type === "VIDEO";
+    
+    let thumbnailUrl = backgroundMedia?.url || "";
+    if (subMedia && subMedia.type === "IMAGE") {
+      thumbnailUrl = subMedia.url;
+    }
+
+    return {
+      type: isVideo ? "video" : "image",
+      media: backgroundMedia?.url || "",
+      mobileMedia: subMedia?.url || backgroundMedia?.url || "",
+      thumbnail: thumbnailUrl,
+      title: item.mainTitle || `Discover Amazing Places ${index + 1}`,
+      subtitle: item.subTitle || "Book your next experience",
+      cta: item.ctaText || "Explore",
+      fallbackMedia: defaultSlides[index % defaultSlides.length].media,
+      fallbackThumbnail: defaultSlides[index % defaultSlides.length].thumbnail,
+    };
+  });
 };
 
 export default function Hero() {
@@ -221,62 +237,87 @@ export default function Hero() {
     setIsFetching(true);
 
     try {
-      const response = await getHeroSectionsPaginated({ page: 0, size: 3 }); // Increased size to ensure all items are fetched
+      console.log('🔄 Fetching hero sections from API...');
+      const response = await getHeroSectionsPaginated({ page: 0, size: 100 }); // Increased to get all sections
       const pageData = response.data?.data || response.data || response;
 
       if (pageData?.content && Array.isArray(pageData.content)) {
         const apiContent: ApiHeroItem[] = pageData.content;
         apiDataRef.current = apiContent;
+        
+        console.log(`📦 Fetched ${apiContent.length} total hero sections from API`);
+        
         const newHash = generateDataHash(apiContent);
 
         if (newHash === currentHashRef.current && slides.length > 0 && !forceRefresh) {
+          console.log('✅ Data unchanged, using existing slides');
           setIsFetching(false);
           isFetchingRef.current = false;
           return;
         }
 
         const apiSlides = transformApiDataToSlides(apiContent, currentTheme);
+        
+        console.log(`🎬 Created ${apiSlides.length} slides after filtering`);
 
         if (apiSlides.length > 0) {
           const finalSlides = [...apiSlides];
-          // Fill with defaults only if API returns fewer than 3
-          while (finalSlides.length < 3) {
-            const fallbackIndex = finalSlides.length;
-            finalSlides.push({
-              ...defaultSlides[fallbackIndex % defaultSlides.length],
-              fallbackMedia: defaultSlides[fallbackIndex % defaultSlides.length].media,
-              fallbackThumbnail: defaultSlides[fallbackIndex % defaultSlides.length].thumbnail,
-            });
+          
+          // Only add default slides if NO API slides are available
+          if (finalSlides.length === 0) {
+            console.log('⚠️ No API slides available, using defaults');
+            finalSlides.push(...defaultSlides.map(slide => ({
+              ...slide,
+              fallbackMedia: slide.media,
+              fallbackThumbnail: slide.thumbnail,
+            })));
           }
 
           setSlides(finalSlides);
           currentHashRef.current = newHash;
           setCachedData(finalSlides, newHash);
+          
+          console.log(`✅ Final slides count: ${finalSlides.length}`);
+        } else {
+          // If no slides match criteria, use defaults
+          console.log('⚠️ No slides match showOnHomepage=true && active=true, using defaults');
+          const defaultSlidesWithFallback = defaultSlides.map(slide => ({
+            ...slide,
+            fallbackMedia: slide.media,
+            fallbackThumbnail: slide.thumbnail,
+          }));
+          setSlides(defaultSlidesWithFallback);
         }
       }
     } catch (error) {
-      console.error("Error fetching hero section:", error);
+      console.error("❌ Error fetching hero section:", error);
+      // Use defaults on error
+      const defaultSlidesWithFallback = defaultSlides.map(slide => ({
+        ...slide,
+        fallbackMedia: slide.media,
+        fallbackThumbnail: slide.thumbnail,
+      }));
+      setSlides(defaultSlidesWithFallback);
     } finally {
       setIsFetching(false);
       isFetchingRef.current = false;
     }
-  }, [currentTheme]);
+  }, [currentTheme, slides.length]);
 
   const updateSlidesForTheme = useCallback((newTheme: "light" | "dark") => {
     if (apiDataRef.current.length > 0) {
       const newSlides = transformApiDataToSlides(apiDataRef.current, newTheme);
       if (newSlides.length > 0) {
-        const finalSlides = [...newSlides];
-        while (finalSlides.length < 3) {
-          const fallbackIndex = finalSlides.length;
-          finalSlides.push({
-            ...defaultSlides[fallbackIndex % defaultSlides.length],
-            fallbackMedia: defaultSlides[fallbackIndex % defaultSlides.length].media,
-            fallbackThumbnail: defaultSlides[fallbackIndex % defaultSlides.length].thumbnail,
-          });
-        }
-        setSlides(finalSlides);
-        setCachedData(finalSlides, currentHashRef.current);
+        setSlides(newSlides);
+        setCachedData(newSlides, currentHashRef.current);
+      } else {
+        // If no slides for new theme, use defaults
+        const defaultSlidesWithFallback = defaultSlides.map(slide => ({
+          ...slide,
+          fallbackMedia: slide.media,
+          fallbackThumbnail: slide.thumbnail,
+        }));
+        setSlides(defaultSlidesWithFallback);
       }
     }
   }, []);
@@ -285,6 +326,7 @@ export default function Hero() {
     const observer = new MutationObserver(() => {
       const newTheme = getCurrentTheme();
       if (newTheme !== currentTheme) {
+        console.log(`🎨 Theme changed from ${currentTheme} to ${newTheme}`);
         setCurrentTheme(newTheme);
         updateSlidesForTheme(newTheme);
       }

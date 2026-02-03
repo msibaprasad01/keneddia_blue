@@ -8,8 +8,16 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Power,
+  Home,
+  Eye,
+  EyeOff,
 } from "lucide-react";
-import { getHeroSectionsPaginated } from "@/Api/Api";
+import { 
+  getHeroSectionsPaginated,
+  toggleHeroSectionActive,
+  toggleHeroSectionHomepage 
+} from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import AddHeroSectionModal from "../../modals/AddHeroSectionModal";
 
@@ -19,6 +27,7 @@ function HeroSection() {
   const [fetching, setFetching] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [togglingStatus, setTogglingStatus] = useState({});
 
   // Pagination from API
   const [currentPage, setCurrentPage] = useState(0);
@@ -36,7 +45,6 @@ function HeroSection() {
           size: pageSize,
         });
 
-        // ✅ Fix: Access response.data.content (not response.content)
         const responseData = response?.data || response;
 
         if (
@@ -121,24 +129,81 @@ function HeroSection() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this hero section?")) {
-      return;
-    }
-
+  // Toggle active status
+  const handleToggleActive = async (id, currentStatus) => {
+    const newStatus = !currentStatus;
+    const key = `active-${id}`;
+    
     try {
-      setLoading(true);
-      // await deleteHeroSection(id);
-      toast.success("Hero section deleted successfully!");
+      setTogglingStatus(prev => ({ ...prev, [key]: true }));
+      
+      await toggleHeroSectionActive(id, newStatus);
+      
+      toast.success(
+        `Hero section ${newStatus ? 'activated' : 'deactivated'} successfully!`,
+        {
+          icon: newStatus ? '✅' : '⏸️',
+          duration: 3000,
+        }
+      );
+      
       // Refresh current page
       await fetchHeroSection(currentPage);
     } catch (error) {
-      console.error("Error deleting hero section:", error);
+      console.error("Error toggling active status:", error);
       toast.error(
-        error?.response?.data?.message || "Failed to delete hero section",
+        error?.response?.data?.message || 
+        `Failed to ${newStatus ? 'activate' : 'deactivate'} hero section`,
+        {
+          icon: '❌',
+          duration: 4000,
+        }
       );
     } finally {
-      setLoading(false);
+      setTogglingStatus(prev => {
+        const newState = { ...prev };
+        delete newState[key];
+        return newState;
+      });
+    }
+  };
+
+  // Toggle homepage visibility
+  const handleToggleHomepage = async (id, currentStatus) => {
+    const newStatus = !currentStatus;
+    const key = `homepage-${id}`;
+    
+    try {
+      setTogglingStatus(prev => ({ ...prev, [key]: true }));
+      
+      await toggleHeroSectionHomepage(id, newStatus);
+      
+      toast.success(
+        `Hero section ${newStatus ? 'shown on' : 'hidden from'} homepage successfully!`,
+        {
+          icon: newStatus ? '🏠' : '👁️‍🗨️',
+          duration: 3000,
+        }
+      );
+      
+      // Refresh current page
+      await fetchHeroSection(currentPage);
+    } catch (error) {
+      console.error("Error toggling homepage visibility:", error);
+      toast.error(
+        error?.response?.data?.message || 
+        `Failed to ${newStatus ? 'show on' : 'hide from'} homepage`,
+        {
+          icon: '❌',
+          duration: 4000,
+        }
+      );
+    } finally {
+      setTogglingStatus(prev => {
+        const newState = { ...prev };
+        delete newState[key];
+        return newState;
+      });
     }
   };
 
@@ -284,19 +349,19 @@ function HeroSection() {
                       CTA Text
                     </th>
                     <th
-                      className="text-left px-4 py-3 text-xs font-semibold"
+                      className="text-center px-4 py-3 text-xs font-semibold"
                       style={{ color: colors.textPrimary }}
                     >
                       Homepage
                     </th>
                     <th
-                      className="text-left px-4 py-3 text-xs font-semibold"
+                      className="text-center px-4 py-3 text-xs font-semibold"
                       style={{ color: colors.textPrimary }}
                     >
                       Status
                     </th>
                     <th
-                      className="text-left px-4 py-3 text-xs font-semibold"
+                      className="text-center px-4 py-3 text-xs font-semibold"
                       style={{ color: colors.textPrimary }}
                     >
                       Actions
@@ -306,6 +371,9 @@ function HeroSection() {
                 <tbody>
                   {heroSections.map((section) => {
                     const previewMedia = getPreviewMedia(section);
+                    const isTogglingActive = togglingStatus[`active-${section.id}`];
+                    const isTogglingHomepage = togglingStatus[`homepage-${section.id}`];
+                    
                     return (
                       <tr
                         key={section.id}
@@ -377,75 +445,90 @@ function HeroSection() {
                             </span>
                           )}
                         </td>
+                        
+                        {/* Homepage Toggle */}
                         <td className="px-4 py-3">
-                          <span
-                            className="px-2 py-1 rounded text-[10px] font-medium"
-                            style={{
-                              backgroundColor: section.showOnHomepage
-                                ? "#dbeafe"
-                                : "#f3f4f6",
-                              color: section.showOnHomepage
-                                ? "#1d4ed8"
-                                : "#6b7280",
-                            }}
-                          >
-                            {section.showOnHomepage ? "Yes" : "No"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className="px-2 py-1 rounded text-[10px] font-medium"
-                            style={{
-                              backgroundColor: section.active
-                                ? "#dcfce7"
-                                : "#fee",
-                              color: section.active ? "#16a34a" : "#ef4444",
-                            }}
-                          >
-                            {section.active ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-center">
                             <button
-                              // onClick={() => handleEdit(section)}
-                              className="p-1.5 border-none rounded cursor-pointer transition-colors"
-                              style={{ backgroundColor: "transparent" }}
+                              onClick={() => handleToggleHomepage(section.id, section.showOnHomepage)}
+                              disabled={isTogglingHomepage}
+                              className="relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                              style={{
+                                backgroundColor: section.showOnHomepage 
+                                  ? colors.primary 
+                                  : colors.border
+                              }}
+                              title={section.showOnHomepage ? "Hide from homepage" : "Show on homepage"}
+                            >
+                              {isTogglingHomepage ? (
+                                <Loader2 
+                                  size={12} 
+                                  className="animate-spin absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                                  style={{ color: colors.sidebarText }}
+                                />
+                              ) : (
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${
+                                    section.showOnHomepage ? 'translate-x-6' : 'translate-x-1'
+                                  }`}
+                                />
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                        
+                        {/* Active Status Toggle */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-center">
+                            <button
+                              onClick={() => handleToggleActive(section.id, section.active)}
+                              disabled={isTogglingActive}
+                              className="relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                              style={{
+                                backgroundColor: section.active 
+                                  ? '#16a34a' 
+                                  : '#ef4444'
+                              }}
+                              title={section.active ? "Deactivate" : "Activate"}
+                            >
+                              {isTogglingActive ? (
+                                <Loader2 
+                                  size={12} 
+                                  className="animate-spin absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                                  style={{ color: '#ffffff' }}
+                                />
+                              ) : (
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${
+                                    section.active ? 'translate-x-6' : 'translate-x-1'
+                                  }`}
+                                />
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                        
+                        {/* Edit Action */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => handleEdit(section)}
+                              className="p-2 border-none rounded cursor-pointer transition-colors"
+                              style={{ 
+                                backgroundColor: colors.border,
+                              }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                  colors.border;
+                                e.currentTarget.style.backgroundColor = colors.primary;
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                  "transparent";
+                                e.currentTarget.style.backgroundColor = colors.border;
                               }}
-                              title="Edit"
+                              title="Edit Section"
                             >
                               <Edit2
                                 size={14}
-                                style={{ color: colors.primary }}
+                                style={{ color: colors.textPrimary }}
                               />
-                            </button>
-                            <button
-                              // onClick={() => handleDelete(section.id)}
-                              disabled={loading}
-                              className="p-1.5 border-none rounded cursor-pointer transition-colors disabled:opacity-50"
-                              style={{ backgroundColor: "transparent" }}
-                              onMouseEnter={(e) => {
-                                if (!loading) {
-                                  e.currentTarget.style.backgroundColor =
-                                    "#fee";
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (!loading) {
-                                  e.currentTarget.style.backgroundColor =
-                                    "transparent";
-                                }
-                              }}
-                              title="Delete"
-                            >
-                              <Trash2 size={14} style={{ color: "#ef4444" }} />
                             </button>
                           </div>
                         </td>
@@ -491,7 +574,6 @@ function HeroSection() {
 
                   {/* Show page numbers */}
                   {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                    // Show first, last, and pages around current
                     let pageNum;
                     if (totalPages <= 5) {
                       pageNum = i;
