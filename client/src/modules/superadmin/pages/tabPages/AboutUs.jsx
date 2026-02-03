@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { Plus, Edit2, Trash2, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  Plus, Loader2, ChevronLeft, ChevronRight, Eye, EyeOff, 
+  Info, Briefcase, Award 
+} from 'lucide-react';
 import { 
   getAboutUsAdmin, 
-  // deleteAboutUsById,
   getVenturesByAboutUsId,
-  // deleteVentureById,
   getRecognitionsByAboutUsId,
-  // deleteRecognitionById
+  enableAboutUs,
+  disableAboutUs
 } from '@/Api/Api';
 import { toast } from 'react-hot-toast';
 import AddUpdateAboutModal from '../../modals/AddUpdateAboutModal';
@@ -15,582 +17,230 @@ import AddUpdateVenturesModal from '../../modals/AddUpdateVenturesModal';
 import AddUpdateRecognitionModal from '../../modals/AddUpdateRecognitionModal';
 
 function AboutUs() {
+  const [activeTab, setActiveTab] = useState('about');
   const [aboutUsList, setAboutUsList] = useState([]);
   const [ventures, setVentures] = useState([]);
   const [recognitions, setRecognitions] = useState([]);
   
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [fetchingTab, setFetchingTab] = useState(false);
   
-  // Modal states
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isVentureModalOpen, setIsVentureModalOpen] = useState(false);
   const [isRecognitionModalOpen, setIsRecognitionModalOpen] = useState(false);
   
-  const [editingAbout, setEditingAbout] = useState(null);
-  const [editingVenture, setEditingVenture] = useState(null);
-  const [editingRecognition, setEditingRecognition] = useState(null);
   const [selectedAboutUsId, setSelectedAboutUsId] = useState(null);
 
-  // Pagination
   const [currentAboutPage, setCurrentAboutPage] = useState(1);
-  const [currentVenturePage, setCurrentVenturePage] = useState(1);
-  const [currentRecognitionPage, setCurrentRecognitionPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Debug modal states
-  useEffect(() => {
-    console.log('=== Modal States ===');
-    console.log('isAboutModalOpen:', isAboutModalOpen);
-    console.log('isVentureModalOpen:', isVentureModalOpen);
-    console.log('isRecognitionModalOpen:', isRecognitionModalOpen);
-    console.log('selectedAboutUsId:', selectedAboutUsId);
-  }, [isAboutModalOpen, isVentureModalOpen, isRecognitionModalOpen, selectedAboutUsId]);
-
-  // Fetch all data
-  const fetchAllData = useCallback(async () => {
+  const fetchAboutList = useCallback(async () => {
     try {
       setFetching(true);
+      const res = await getAboutUsAdmin();
+      const data = res?.data || res;
       
-      // Fetch About Us list
-      const aboutResponse = await getAboutUsAdmin();
-      console.log('About Us Response:', aboutResponse);
-      
-      if (aboutResponse.data && Array.isArray(aboutResponse.data)) {
-        const sortedAbout = aboutResponse.data.sort((a, b) => b.id - a.id);
-        setAboutUsList(sortedAbout);
+      if (Array.isArray(data)) {
+        const sorted = [...data].sort((a, b) => b.id - a.id);
+        setAboutUsList(sorted);
         
-        // If we have at least one about us, fetch its ventures and recognitions
-        if (sortedAbout.length > 0) {
-          const latestAboutUs = sortedAbout[0];
-          console.log('Latest About Us ID:', latestAboutUs.id);
-          setSelectedAboutUsId(latestAboutUs.id);
-          await fetchVentures(latestAboutUs.id);
-          await fetchRecognitions(latestAboutUs.id);
-        } else {
-          // FALLBACK: Set a temporary ID for testing (REMOVE THIS LATER)
-          console.warn('No About Us found, using fallback ID: 999');
-          setSelectedAboutUsId(999);
+        if (sorted.length > 0 && !selectedAboutUsId) {
+          setSelectedAboutUsId(sorted[0].id);
         }
-      } else {
-        // FALLBACK: Set a temporary ID for testing (REMOVE THIS LATER)
-        console.warn('Invalid response, using fallback ID: 999');
-        setSelectedAboutUsId(999);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
-      toast.error("Failed to load data");
-      // FALLBACK: Set a temporary ID for testing (REMOVE THIS LATER)
-      console.warn('Error occurred, using fallback ID: 999');
-      setSelectedAboutUsId(999);
+      toast.error("Failed to load About Us list");
     } finally {
       setFetching(false);
     }
-  }, []);
+  }, [selectedAboutUsId]);
 
-  const fetchVentures = async (aboutUsId) => {
+  const fetchTabData = useCallback(async () => {
+    if (!selectedAboutUsId) return;
+
     try {
-      const response = await getVenturesByAboutUsId(aboutUsId);
-      if (response.data && Array.isArray(response.data)) {
-        setVentures(response.data);
+      setFetchingTab(true);
+      if (activeTab === 'ventures') {
+        const res = await getVenturesByAboutUsId(selectedAboutUsId);
+        setVentures(res?.data || []);
+      } else if (activeTab === 'recognitions') {
+        const res = await getRecognitionsByAboutUsId(selectedAboutUsId);
+        setRecognitions(res?.data || []);
       }
     } catch (error) {
-      console.error("Error fetching ventures:", error);
-      // Set empty array on error
-      setVentures([]);
+      console.error("Tab fetch error", error);
+    } finally {
+      setFetchingTab(false);
     }
-  };
+  }, [activeTab, selectedAboutUsId]);
 
-  const fetchRecognitions = async (aboutUsId) => {
-    try {
-      const response = await getRecognitionsByAboutUsId(aboutUsId);
-      if (response.data && Array.isArray(response.data)) {
-        setRecognitions(response.data);
-      }
-    } catch (error) {
-      console.error("Error fetching recognitions:", error);
-      // Set empty array on error
-      setRecognitions([]);
-    }
-  };
+  useEffect(() => { fetchAboutList(); }, [fetchAboutList]);
+  useEffect(() => { fetchTabData(); }, [fetchTabData]);
 
-  useEffect(() => {
-    fetchAllData();
-  }, [fetchAllData]);
-
-  // Handle About Us actions
-  const handleAddAbout = () => {
-    console.log('handleAddAbout called');
-    setEditingAbout(null);
-    setIsAboutModalOpen(true);
-  };
-
-  const handleEditAbout = (about) => {
-    console.log('handleEditAbout called with:', about);
-    setEditingAbout(about);
-    setIsAboutModalOpen(true);
-  };
-
-  const handleDeleteAbout = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this About Us section?')) {
-      return;
-    }
-
+  // FIXED: Removed the ": any" type annotation for JSX compatibility
+  const handleToggleStatus = async (about) => {
     try {
       setLoading(true);
-      // await deleteAboutUsById(id);
-      toast.success('About Us deleted successfully');
-      await fetchAllData();
+      if (about.isActive) await disableAboutUs(about.id);
+      else await enableAboutUs(about.id);
+      
+      toast.success("Status updated");
+      fetchAboutList();
     } catch (error) {
-      console.error('Error deleting about us:', error);
-      toast.error(error?.response?.data?.message || 'Failed to delete');
+      toast.error("Toggle failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle Venture actions
-  const handleAddVenture = () => {
-    console.log('handleAddVenture called');
-    console.log('selectedAboutUsId:', selectedAboutUsId);
-    
-    if (!selectedAboutUsId) {
-      toast.error('Please create an About Us section first');
-      return;
-    }
-    setEditingVenture(null);
-    setIsVentureModalOpen(true);
-    console.log('isVentureModalOpen set to true');
-  };
+  const paginate = (items, page) => items.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-  const handleEditVenture = (venture) => {
-    console.log('handleEditVenture called with:', venture);
-    setEditingVenture(venture);
-    setIsVentureModalOpen(true);
-  };
-
-  const handleDeleteVenture = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this venture?')) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      // await deleteVentureById(id);
-      toast.success('Venture deleted successfully');
-      if (selectedAboutUsId) {
-        await fetchVentures(selectedAboutUsId);
-      }
-    } catch (error) {
-      console.error('Error deleting venture:', error);
-      toast.error(error?.response?.data?.message || 'Failed to delete');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle Recognition actions
-  const handleAddRecognition = () => {
-    console.log('handleAddRecognition called');
-    console.log('selectedAboutUsId:', selectedAboutUsId);
-    
-    if (!selectedAboutUsId) {
-      toast.error('Please create an About Us section first');
-      return;
-    }
-    setEditingRecognition(null);
-    setIsRecognitionModalOpen(true);
-    console.log('isRecognitionModalOpen set to true');
-  };
-
-  const handleEditRecognition = (recognition) => {
-    console.log('handleEditRecognition called with:', recognition);
-    setEditingRecognition(recognition);
-    setIsRecognitionModalOpen(true);
-  };
-
-  const handleDeleteRecognition = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this recognition?')) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      // await deleteRecognitionById(id);
-      toast.success('Recognition deleted successfully');
-      if (selectedAboutUsId) {
-        await fetchRecognitions(selectedAboutUsId);
-      }
-    } catch (error) {
-      console.error('Error deleting recognition:', error);
-      toast.error(error?.response?.data?.message || 'Failed to delete');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Pagination helpers
-  const paginate = (items, currentPage) => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return items.slice(startIndex, endIndex);
-  };
-
-  const getTotalPages = (items) => Math.ceil(items.length / itemsPerPage);
-
-  if (fetching) {
-    return (
-      <div
-        className="rounded-lg p-6 shadow-sm flex items-center justify-center h-[400px]"
-        style={{ backgroundColor: colors.contentBg }}
-      >
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 size={32} className="animate-spin" style={{ color: colors.primary }} />
-          <p style={{ color: colors.textSecondary }}>Loading about us data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const paginatedAbout = paginate(aboutUsList, currentAboutPage);
-  const paginatedVentures = paginate(ventures, currentVenturePage);
-  const paginatedRecognitions = paginate(recognitions, currentRecognitionPage);
-
-  return (
-    <div className="space-y-4">
-      {/* Debug Info */}
-      {/* <div className="rounded-lg p-3 shadow-sm bg-yellow-50 border border-yellow-200">
-        <p className="text-xs font-mono text-yellow-800 m-0">
-          <strong>DEBUG:</strong> selectedAboutUsId = {selectedAboutUsId || 'null'} | 
-          About Modal: {isAboutModalOpen ? 'OPEN' : 'CLOSED'} | 
-          Venture Modal: {isVentureModalOpen ? 'OPEN' : 'CLOSED'} | 
-          Recognition Modal: {isRecognitionModalOpen ? 'OPEN' : 'CLOSED'}
-        </p>
-      </div> */}
-
-      {/* About Us Table */}
-      <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold m-0" style={{ color: colors.textPrimary }}>
-            About Us Sections
-          </h3>
-          <button
-            onClick={handleAddAbout}
-            className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold"
-            style={{ backgroundColor: colors.primary, color: '#ffffff' }}
-          >
-            <Plus size={14} />
-            Add About Us
-          </button>
-        </div>
-
-        {aboutUsList.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-sm text-gray-500 mb-2">No About Us sections found</p>
-            <p className="text-xs text-gray-400">Click "Add About Us" to create your first section</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ backgroundColor: colors.border }}>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">ID</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Section Title</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Sub Title</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Description</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedAbout.map((about) => (
-                    <tr key={about.id} style={{ borderBottom: `1px solid ${colors.border}` }}>
-                      <td className="px-3 py-2 text-xs">#{about.id}</td>
-                      <td className="px-3 py-2 text-xs font-medium">{about.sectionTitle}</td>
-                      <td className="px-3 py-2 text-xs">{about.subTitle}</td>
-                      <td className="px-3 py-2 text-xs">
-                        <div className="max-w-xs truncate">{about.description}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleEditAbout(about)}
-                            className="p-1 rounded hover:bg-gray-100 transition-colors"
-                            title="Edit"
-                          >
-                            <Edit2 size={14} style={{ color: colors.primary }} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteAbout(about.id)}
-                            disabled={loading}
-                            className="p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
-                            title="Delete"
-                          >
-                            <Trash2 size={14} style={{ color: '#ef4444' }} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {getTotalPages(aboutUsList) > 1 && (
-              <Pagination
-                currentPage={currentAboutPage}
-                totalPages={getTotalPages(aboutUsList)}
-                onPageChange={setCurrentAboutPage}
-                totalItems={aboutUsList.length}
-                currentItems={paginatedAbout.length}
-              />
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Ventures Table */}
-      <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold m-0" style={{ color: colors.textPrimary }}>
-            Our Ventures
-          </h3>
-          <button
-            onClick={handleAddVenture}
-            className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold"
-            style={{ backgroundColor: colors.primary, color: '#ffffff' }}
-          >
-            <Plus size={14} />
-            Add Venture
-          </button>
-        </div>
-
-        {ventures.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-sm text-gray-500 mb-2">No ventures found</p>
-            <p className="text-xs text-gray-400">Click "Add Venture" to create your first venture</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ backgroundColor: colors.border }}>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">ID</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Logo</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Venture Name</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedVentures.map((venture) => (
-                    <tr key={venture.id} style={{ borderBottom: `1px solid ${colors.border}` }}>
-                      <td className="px-3 py-2 text-xs">#{venture.id}</td>
-                      <td className="px-3 py-2">
-                        {venture.logoUrl && (
-                          <img src={venture.logoUrl} alt={venture.ventureName} className="h-8 w-auto object-contain" />
-                        )}
-                      </td>
-                      <td className="px-3 py-2 text-xs font-medium">{venture.ventureName}</td>
-                      <td className="px-3 py-2">
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleEditVenture(venture)}
-                            className="p-1 rounded hover:bg-gray-100 transition-colors"
-                            title="Edit"
-                          >
-                            <Edit2 size={14} style={{ color: colors.primary }} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteVenture(venture.id)}
-                            disabled={loading}
-                            className="p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
-                            title="Delete"
-                          >
-                            <Trash2 size={14} style={{ color: '#ef4444' }} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {getTotalPages(ventures) > 1 && (
-              <Pagination
-                currentPage={currentVenturePage}
-                totalPages={getTotalPages(ventures)}
-                onPageChange={setCurrentVenturePage}
-                totalItems={ventures.length}
-                currentItems={paginatedVentures.length}
-              />
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Recognitions Table */}
-      <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold m-0" style={{ color: colors.textPrimary }}>
-            Global Recognition
-          </h3>
-          <button
-            onClick={handleAddRecognition}
-            className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold"
-            style={{ backgroundColor: colors.primary, color: '#ffffff' }}
-          >
-            <Plus size={14} />
-            Add Recognition
-          </button>
-        </div>
-
-        {recognitions.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-sm text-gray-500 mb-2">No recognitions found</p>
-            <p className="text-xs text-gray-400">Click "Add Recognition" to create your first recognition</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ backgroundColor: colors.border }}>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">ID</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Value</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Title</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Subtitle</th>
-                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedRecognitions.map((recognition) => (
-                    <tr key={recognition.id} style={{ borderBottom: `1px solid ${colors.border}` }}>
-                      <td className="px-3 py-2 text-xs">#{recognition.id}</td>
-                      <td className="px-3 py-2 text-xs font-bold">{recognition.value}</td>
-                      <td className="px-3 py-2 text-xs font-medium">{recognition.title}</td>
-                      <td className="px-3 py-2 text-xs">{recognition.subTitle}</td>
-                      <td className="px-3 py-2">
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleEditRecognition(recognition)}
-                            className="p-1 rounded hover:bg-gray-100 transition-colors"
-                            title="Edit"
-                          >
-                            <Edit2 size={14} style={{ color: colors.primary }} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteRecognition(recognition.id)}
-                            disabled={loading}
-                            className="p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
-                            title="Delete"
-                          >
-                            <Trash2 size={14} style={{ color: '#ef4444' }} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {getTotalPages(recognitions) > 1 && (
-              <Pagination
-                currentPage={currentRecognitionPage}
-                totalPages={getTotalPages(recognitions)}
-                onPageChange={setCurrentRecognitionPage}
-                totalItems={recognitions.length}
-                currentItems={paginatedRecognitions.length}
-              />
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Modals */}
-      <AddUpdateAboutModal
-        isOpen={isAboutModalOpen}
-        onClose={(refresh) => {
-          console.log('About modal closing, refresh:', refresh);
-          setIsAboutModalOpen(false);
-          setEditingAbout(null);
-          if (refresh) fetchAllData();
-        }}
-        editData={editingAbout}
-      />
-
-      <AddUpdateVenturesModal
-        isOpen={isVentureModalOpen}
-        onClose={(refresh) => {
-          console.log('Venture modal closing, refresh:', refresh);
-          setIsVentureModalOpen(false);
-          setEditingVenture(null);
-          if (refresh && selectedAboutUsId) fetchVentures(selectedAboutUsId);
-        }}
-        editData={editingVenture}
-        aboutUsId={selectedAboutUsId}
-      />
-
-      <AddUpdateRecognitionModal
-        isOpen={isRecognitionModalOpen}
-        onClose={(refresh) => {
-          console.log('Recognition modal closing, refresh:', refresh);
-          setIsRecognitionModalOpen(false);
-          setEditingRecognition(null);
-          if (refresh && selectedAboutUsId) fetchRecognitions(selectedAboutUsId);
-        }}
-        editData={editingRecognition}
-        aboutUsId={selectedAboutUsId}
-      />
+  if (fetching) return (
+    <div className="h-96 flex flex-col items-center justify-center gap-4">
+      <Loader2 className="animate-spin text-primary" size={40} />
+      <p className="text-sm font-medium text-muted-foreground">Initializing Admin Panel...</p>
     </div>
   );
-}
-
-// Pagination Component
-function Pagination({ currentPage, totalPages, onPageChange, totalItems, currentItems }) {
-  const startIndex = (currentPage - 1) * currentItems + 1;
-  const endIndex = startIndex + currentItems - 1;
 
   return (
-    <div className="flex items-center justify-between mt-3 pt-3 border-t" style={{ borderColor: colors.border }}>
-      <p className="text-[10px] m-0 text-gray-500">
-        Showing {startIndex} to {Math.min(endIndex, totalItems)} of {totalItems} entries
-      </p>
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
-          style={{ color: colors.textPrimary }}
-        >
-          <ChevronLeft size={16} />
-        </button>
-
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+    <div className="space-y-6">
+      {/* Tab Header */}
+      <div className="flex bg-card border rounded-xl overflow-hidden p-1 gap-1">
+        {[
+          { id: 'about', label: 'About Sections', icon: Info },
+          { id: 'ventures', label: 'Ventures', icon: Briefcase },
+          { id: 'recognitions', label: 'Recognitions', icon: Award },
+        ].map((tab) => (
           <button
-            key={page}
-            onClick={() => onPageChange(page)}
-            className="px-2 py-1 rounded text-xs font-medium transition-colors"
-            style={{
-              backgroundColor: page === currentPage ? colors.primary : 'transparent',
-              color: page === currentPage ? '#ffffff' : colors.textPrimary,
-            }}
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-bold uppercase transition-all ${
+              activeTab === tab.id 
+                ? 'bg-primary text-white shadow-md' 
+                : 'text-muted-foreground hover:bg-muted'
+            }`}
           >
-            {page}
+            <tab.icon size={16} />
+            {tab.label}
           </button>
         ))}
-
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
-          style={{ color: colors.textPrimary }}
-        >
-          <ChevronRight size={16} />
-        </button>
       </div>
+
+      <div className="bg-card border rounded-xl shadow-sm min-h-[400px]">
+        {activeTab === 'about' && (
+          <div className="p-6 space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-bold">Manage Content Sections</h3>
+              <button onClick={() => setIsAboutModalOpen(true)} className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2">
+                <Plus size={14} /> Add New
+              </button>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-muted/50 text-[10px] font-bold uppercase text-muted-foreground">
+                  <tr>
+                    <th className="p-4">ID</th>
+                    <th className="p-4">Title</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {paginate(aboutUsList, currentAboutPage).map((about) => (
+                    <tr 
+                      key={about.id} 
+                      onClick={() => setSelectedAboutUsId(about.id)}
+                      className={`cursor-pointer transition-colors ${selectedAboutUsId === about.id ? 'bg-primary/5' : 'hover:bg-muted/20'}`}
+                    >
+                      <td className="p-4 font-mono text-xs">
+                        {selectedAboutUsId === about.id && <span className="mr-2 text-primary">●</span>}
+                        #{about.id}
+                      </td>
+                      <td className="p-4 text-sm font-medium">{about.sectionTitle}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${about.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          {about.isActive ? 'Active' : 'Disabled'}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleToggleStatus(about); }}
+                          disabled={loading}
+                          className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
+                            about.isActive ? 'border-red-200 text-red-600' : 'border-green-200 text-green-600'
+                          }`}
+                        >
+                          {about.isActive ? "Disable" : "Enable"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'ventures' && (
+          <div className="p-6 space-y-6">
+            <div className="flex justify-between items-center border-b pb-4">
+              <div>
+                <h3 className="text-sm font-bold">Ventures for Content #{selectedAboutUsId}</h3>
+              </div>
+              <button onClick={() => setIsVentureModalOpen(true)} className="bg-primary text-white p-2 rounded-lg"><Plus size={18}/></button>
+            </div>
+            {fetchingTab ? <Loader2 className="animate-spin mx-auto mt-10 text-primary" /> : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {ventures.length === 0 ? <p className="col-span-full text-center text-sm">No Ventures Found</p> : 
+                ventures.map((v) => (
+                  <div key={v.id} className="p-4 border rounded-xl flex items-center gap-4 bg-white">
+                    <img src={v.logoUrl} className="w-12 h-12 rounded-full border" alt={v.ventureName} />
+                    <p className="font-bold text-sm truncate">{v.ventureName}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'recognitions' && (
+          <div className="p-6 space-y-6">
+            <div className="flex justify-between items-center border-b pb-4">
+              <h3 className="text-sm font-bold">Recognitions for Content #{selectedAboutUsId}</h3>
+              <button onClick={() => setIsRecognitionModalOpen(true)} className="bg-primary text-white p-2 rounded-lg"><Plus size={18}/></button>
+            </div>
+            {fetchingTab ? <Loader2 className="animate-spin mx-auto mt-10 text-primary" /> : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {recognitions.length === 0 ? <p className="col-span-full text-center text-sm">No Recognitions Found</p> : 
+                recognitions.map((r) => (
+                  <div key={r.id} className="p-5 border rounded-xl bg-white text-center">
+                    <div className="text-2xl font-serif font-bold text-primary mb-1">{r.value}</div>
+                    <div className="text-xs font-bold uppercase">{r.title}</div>
+                    <div className="text-[9px] text-muted-foreground mt-1">{r.subTitle}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <AddUpdateAboutModal
+        isOpen={isAboutModalOpen}
+        onClose={(refresh) => { setIsAboutModalOpen(false); if (refresh) fetchAboutList(); }}
+      />
+      <AddUpdateVenturesModal
+        isOpen={isVentureModalOpen}
+        aboutUsId={selectedAboutUsId}
+        onClose={(refresh) => { setIsVentureModalOpen(false); if (refresh) fetchTabData(); }}
+      />
+      <AddUpdateRecognitionModal
+        isOpen={isRecognitionModalOpen}
+        aboutUsId={selectedAboutUsId}
+        onClose={(refresh) => { setIsRecognitionModalOpen(false); if (refresh) fetchTabData(); }}
+      />
     </div>
   );
 }

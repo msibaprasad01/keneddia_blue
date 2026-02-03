@@ -81,15 +81,59 @@ export const createOrUpdateHeroSection = (formData) =>
   API.post("api/v1/hero-sections/bulk", formData);
 export const getHeroSection = () => API.get("api/v1/hero-sections");
 
-export const addAboutUs = (data) => API.post("api/v1/admin/about-us", data);
+export const addAboutUs = (payload) => {
+  const formData = new FormData();
+
+  // data → stringified JSON (MANDATORY)
+  formData.append(
+    "data",
+    JSON.stringify({
+      sectionTitle: payload.sectionTitle,
+      subTitle: payload.subTitle,
+      description: payload.description,
+      videoUrl: payload.videoUrl,
+      videoTitle: payload.videoTitle,
+      mediaUrls: payload.mediaUrls || [],
+      ctaButtonText: payload.ctaButtonText,
+      ctaButtonUrl: payload.ctaButtonUrl,
+    }),
+  );
+
+  // files → multipart
+  if (payload.files && payload.files.length > 0) {
+    payload.files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
+  return API.post("api/v1/admin/about-us", formData);
+};
+export const enableAboutUs = (id) =>
+  API.patch(`api/v1/admin/about-us/${id}/enable`);
+
+export const disableAboutUs = (id) =>
+  API.patch(`api/v1/admin/about-us/${id}/disable`);
+
 export const updateAboutUsById = (id, data) =>
   API.put(`api/v1/admin/about-us/${id}`, data);
 export const getAboutUsAdmin = () => API.get("api/v1/admin/about-us");
 export const getAboutUsPublicById = (id) =>
   API.get(`api/v1/public/about-us/${id}`);
 
-export const addVenture = (aboutUsId, formData) =>
-  API.post(`api/v1/admin/about-us/${aboutUsId}/ventures`, formData);
+export const addVenture = (aboutUsId, payload) => {
+  const formData = new FormData();
+
+  // must match @RequestParam String ventureName
+  formData.append("ventureName", payload.ventureName);
+
+  // must match @RequestParam MultipartFile logo
+  if (payload.logo) {
+    formData.append("logo", payload.logo);
+  }
+
+  return API.post(`api/v1/admin/about-us/${aboutUsId}/ventures`, formData);
+};
+
 export const updateVentureById = (ventureId, formData) =>
   API.put(`api/v1/admin/about-us/ventures/${ventureId}`, formData);
 export const getVenturesByAboutUsId = (aboutUsId) =>
@@ -130,25 +174,34 @@ export const updateOurPropertyItem = (itemId, formData) =>
 export const getOurPropertyItemsBySectionId = (sectionId) =>
   API.get(`api/v1/our-properties/${sectionId}/items`);
 
-export const createOrUpdateKennediaGroup = (data) =>API.post("api/v1/kennedia-group", data);
-export const updateDailyOfferById = (id, data) =>API.put(`api/v1/daily-offer/${id}`, data);
+export const createOrUpdateKennediaGroup = (data) =>
+  API.post("api/v1/kennedia-group", data);
+export const updateDailyOfferById = (id, data) =>
+  API.put(`api/v1/daily-offer/${id}`, data);
 export const getKennediaGroup = () => API.get("api/v1/kennedia-group");
 
-// offer section 
-export const createDailyOffer = (data) => API.post("api/v1/daily-offer/create", data);
-export const UpdateDailyOffer = (id,data) => API.put(`api/v1/daily-offer/${id}`, data);
+// offer section
+export const createDailyOffer = (data) =>
+  API.post("api/v1/daily-offer/create", data);
+export const UpdateDailyOffer = (id, data) =>
+  API.put(`api/v1/daily-offer/${id}`, data);
 export const getDailyOffers = ({ page = 0, size = 10 }) =>
   API.get("api/v1/daily-offer/paginated/all", {
     params: { page, size },
   });
-export const updateDailyOfferActiveStatus = (id, isActive) =>API.patch(`api/v1/daily-offer/${id}/status`, null, {params: { isActive },});
+export const updateDailyOfferActiveStatus = (id, isActive) =>
+  API.patch(`api/v1/daily-offer/${id}/status`, null, { params: { isActive } });
 
 //events section
 export const createEvent = (data) => API.post("api/v1/events/create", data);
-export const getEvents = ({ status = "ACTIVE", page = 0, size = 10 }) =>API.get("api/v1/events/showAll", { params: { status, page, size } });
-export const updateEventById = (id, data) =>API.put(`api/v1/events/${id}`, data);
-export const updateEventStatus = (id, isActive) =>API.patch(`api/v1/events/${id}/status`, null, { params: { isActive } });
-export const createEventUpdated = (formData) =>API.post("api/v1/events-updated/events", formData);
+export const getEvents = ({ status = "ACTIVE", page = 0, size = 10 }) =>
+  API.get("api/v1/events/showAll", { params: { status, page, size } });
+export const updateEventById = (id, data) =>
+  API.put(`api/v1/events/${id}`, data);
+export const updateEventStatus = (id, isActive) =>
+  API.patch(`api/v1/events/${id}/status`, null, { params: { isActive } });
+export const createEventUpdated = (formData) =>
+  API.post("api/v1/events-updated/events", formData);
 export const getEventsUpdated = () => API.get("api/v1/events-updated/showAll");
 
 export const createNews = (data) => API.post("api/v1/news/create", data);
@@ -164,12 +217,12 @@ export const createPropertyListing = (data) =>
 export const GetAllPropertyListing = () => API.get("api/v1/property-listings");
 export const getPropertyListingMedia = (propertyListingId) =>
   API.get(`api/v1/property-listings/${propertyListingId}/media`);
-export const GetAllPropertyDetailsByID= (id) => API.get(`api/v1/properties/AllDetailsById/${id}`);
+export const GetAllPropertyDetailsByID = (id) =>
+  API.get(`api/v1/properties/AllDetailsById/${id}`);
 export const createAmenityFeature = (data) =>
   API.post("api/v1/admin/amenities-features", data);
 export const getAllAmenityFeatures = () =>
   API.get("api/v1/admin/amenities-features");
-
 
 // ===============================
 // HERO SECTION (V2)
@@ -204,6 +257,5 @@ export const toggleHeroSectionHomepage = (id, show) =>
   API.patch(`api/v1/hero-sections/${id}/homepage`, null, {
     params: { show },
   });
-
 
 export default API;

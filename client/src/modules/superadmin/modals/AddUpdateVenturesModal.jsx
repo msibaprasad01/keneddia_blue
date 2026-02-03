@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { colors } from "@/lib/colors/colors";
-import { X, Upload, Loader2 } from 'lucide-react';
-import { addVenture, updateVentureById, uploadMedia } from '@/Api/Api';
-import { toast } from 'react-hot-toast';
+import { X, Upload, Loader2 } from "lucide-react";
+import { addVenture, updateVentureById, uploadMedia } from "@/Api/Api";
+import { toast } from "react-hot-toast";
 
-function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId }) {
+function AddUpdateVenturesModal({
+  isOpen,
+  onClose,
+  editData = null,
+  aboutUsId,
+}) {
   const [formData, setFormData] = useState({
-    ventureName: ''
+    ventureName: "",
   });
 
   const [logoFile, setLogoFile] = useState(null);
@@ -18,7 +23,7 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
   useEffect(() => {
     if (editData && isOpen) {
       setFormData({
-        ventureName: editData.ventureName || ''
+        ventureName: editData.ventureName || "",
       });
       setLogoPreview(editData.logoUrl || null);
       setUploadedMediaId(editData.logoMediaId || null);
@@ -28,27 +33,27 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
   }, [editData, isOpen]);
 
   const resetForm = () => {
-    setFormData({ ventureName: '' });
+    setFormData({ ventureName: "" });
     setLogoFile(null);
     setLogoPreview(null);
     setUploadedMediaId(null);
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file');
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file");
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('Image size should be less than 2MB');
+      toast.error("Image size should be less than 2MB");
       return;
     }
 
@@ -65,18 +70,18 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
       setUploadingLogo(true);
 
       const formDataUpload = new FormData();
-      formDataUpload.append('file', file);
-      formDataUpload.append('type', 'IMAGE');
-      formDataUpload.append('alt', formData.ventureName || 'Venture logo');
+      formDataUpload.append("file", file);
+      formDataUpload.append("type", "IMAGE");
+      formDataUpload.append("alt", formData.ventureName || "Venture logo");
 
       const response = await uploadMedia(formDataUpload);
 
       let mediaId = null;
-      if (typeof response === 'number') {
+      if (typeof response === "number") {
         mediaId = response;
-      } else if (typeof response?.data === 'number') {
+      } else if (typeof response?.data === "number") {
         mediaId = response.data;
-      } else if (typeof response?.data?.data === 'number') {
+      } else if (typeof response?.data?.data === "number") {
         mediaId = response.data.data;
       } else if (response?.data?.data?.id) {
         mediaId = response.data.data.id;
@@ -86,11 +91,11 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
 
       if (mediaId) {
         setUploadedMediaId(mediaId);
-        toast.success('Logo uploaded successfully');
+        toast.success("Logo uploaded successfully");
       }
     } catch (error) {
-      console.error('Error uploading logo:', error);
-      toast.error('Failed to upload logo');
+      console.error("Error uploading logo:", error);
+      toast.error("Failed to upload logo");
       setLogoFile(null);
       setLogoPreview(null);
     } finally {
@@ -106,13 +111,15 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
 
   const handleSubmit = async () => {
     if (!formData.ventureName.trim()) {
-      toast.error('Venture name is required');
+      toast.error("Venture name is required");
       return;
     }
 
     // Only validate aboutUsId for new ventures
     if (!editData?.id && !aboutUsId) {
-      toast.error('About Us ID is required. Please create an About Us section first.');
+      toast.error(
+        "About Us ID is required. Please create an About Us section first.",
+      );
       return;
     }
 
@@ -121,22 +128,22 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
 
       const payload = {
         ventureName: formData.ventureName.trim(),
-        logoMediaId: uploadedMediaId || null
+        logo: logoFile || null,
       };
 
       if (editData?.id) {
         await updateVentureById(editData.id, payload);
-        toast.success('Venture updated successfully!');
+        toast.success("Venture updated successfully!");
       } else {
         await addVenture(aboutUsId, payload);
-        toast.success('Venture created successfully!');
+        toast.success("Venture created successfully!");
       }
 
       onClose(true);
       resetForm();
     } catch (error) {
-      console.error('Error saving venture:', error);
-      toast.error(error?.response?.data?.message || 'Failed to save venture');
+      console.error("Error saving venture:", error);
+      toast.error(error?.response?.data?.message || "Failed to save venture");
     } finally {
       setLoading(false);
     }
@@ -150,21 +157,27 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={handleClose}
     >
-      <div 
+      <div
         className="rounded-lg p-5 w-[60%] max-w-3xl shadow-xl"
         style={{ backgroundColor: colors.contentBg }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between mb-4 pb-3 border-b" style={{ borderColor: colors.border }}>
-          <h3 className="text-base font-bold m-0" style={{ color: colors.textPrimary }}>
-            {editData ? 'Edit Venture' : 'Add Venture'}
+        <div
+          className="flex items-center justify-between mb-4 pb-3 border-b"
+          style={{ borderColor: colors.border }}
+        >
+          <h3
+            className="text-base font-bold m-0"
+            style={{ color: colors.textPrimary }}
+          >
+            {editData ? "Edit Venture" : "Add Venture"}
           </h3>
-          <button 
+          <button
             onClick={handleClose}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
           >
@@ -181,10 +194,14 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
             <input
               type="text"
               value={formData.ventureName}
-              onChange={(e) => handleInputChange('ventureName', e.target.value)}
+              onChange={(e) => handleInputChange("ventureName", e.target.value)}
               placeholder="e.g., HOTEL, RESTAURANT, SPA"
               className="w-full px-3 py-2 rounded-md border text-sm outline-none focus:ring-1 focus:ring-primary/20"
-              style={{ borderColor: colors.border, backgroundColor: '#F3F4F6', color: '#000000' }}
+              style={{
+                borderColor: colors.border,
+                backgroundColor: "#F3F4F6",
+                color: "#000000",
+              }}
             />
           </div>
 
@@ -192,12 +209,15 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
             <label className="block text-[10px] font-semibold uppercase mb-1 text-gray-500">
               Logo
             </label>
-            
+
             {logoPreview ? (
-              <div className="relative border rounded-lg p-3" style={{ borderColor: colors.border }}>
-                <img 
-                  src={logoPreview} 
-                  alt="Logo preview" 
+              <div
+                className="relative border rounded-lg p-3"
+                style={{ borderColor: colors.border }}
+              >
+                <img
+                  src={logoPreview}
+                  alt="Logo preview"
                   className="w-full h-24 object-contain rounded"
                 />
                 {uploadedMediaId && (
@@ -226,7 +246,10 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
                 <label
                   htmlFor="venture-logo-upload"
                   className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg text-sm cursor-pointer hover:border-primary/50 transition-colors"
-                  style={{ borderColor: colors.border, color: colors.textSecondary }}
+                  style={{
+                    borderColor: colors.border,
+                    color: colors.textSecondary,
+                  }}
                 >
                   {uploadingLogo ? (
                     <>
@@ -240,14 +263,19 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
                     </>
                   )}
                 </label>
-                <p className="text-[9px] text-gray-400 mt-1">PNG, JPG up to 2MB</p>
+                <p className="text-[9px] text-gray-400 mt-1">
+                  PNG, JPG up to 2MB
+                </p>
               </div>
             )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex gap-2 mt-4 pt-3 border-t" style={{ borderColor: colors.border }}>
+        <div
+          className="flex gap-2 mt-4 pt-3 border-t"
+          style={{ borderColor: colors.border }}
+        >
           <button
             onClick={handleClose}
             disabled={loading || uploadingLogo}
@@ -267,8 +295,10 @@ function AddUpdateVenturesModal({ isOpen, onClose, editData = null, aboutUsId })
                 <Loader2 className="animate-spin" size={16} />
                 Saving...
               </>
+            ) : editData ? (
+              "Update Venture"
             ) : (
-              editData ? 'Update Venture' : 'Create Venture'
+              "Create Venture"
             )}
           </button>
         </div>
