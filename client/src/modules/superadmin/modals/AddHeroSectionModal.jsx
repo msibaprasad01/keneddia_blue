@@ -1,7 +1,6 @@
-// components/modals/AddHeroSectionModal.jsx
 import React, { useState, useEffect } from "react";
 import { colors } from "@/lib/colors/colors";
-import { Upload, X, Loader2, Eye, EyeOff } from "lucide-react";
+import { Upload, X, Loader2, Sun, Moon } from "lucide-react";
 import { toast } from "react-hot-toast";
 import {
   uploadHeroMediaBulk,
@@ -15,7 +14,8 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     mainTitle: "",
     subTitle: "",
     ctaText: "",
-    active: false, // Default changed to false
+    ctaLink: "", 
+    active: false,
     showOnHomepage: false,
   });
 
@@ -33,7 +33,6 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     darkFiles: [], darkPreviews: [], darkMediaTypes: [], darkMediaIds: [],
   });
 
-  const [showPreview, setShowPreview] = useState(true);
   const [previewTheme, setPreviewTheme] = useState("LIGHT");
   const [loading, setLoading] = useState(false);
   const [currentBackgroundIndex, setCurrentBackgroundIndex] = useState(0);
@@ -41,7 +40,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
   // 2. Form Reset & Initialization
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ mainTitle: "", subTitle: "", ctaText: "", active: false, showOnHomepage: false });
+      setFormData({ mainTitle: "", subTitle: "", ctaText: "",ctaLink: "", active: false, showOnHomepage: false });
       const resetMedia = {
         theme: "ALL", allFiles: [], allPreviews: [], allMediaTypes: [], allMediaIds: [],
         lightFiles: [], lightPreviews: [], lightMediaTypes: [], lightMediaIds: [],
@@ -50,6 +49,8 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
       setBackgroundMedia(resetMedia);
       setSubMedia(resetMedia);
       setLoading(false);
+      setPreviewTheme("LIGHT");
+      setCurrentBackgroundIndex(0);
     }
   }, [isOpen]);
 
@@ -60,12 +61,20 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
         mainTitle: editData.mainTitle || "",
         subTitle: editData.subTitle || "",
         ctaText: editData.ctaText || "",
+        ctaLink: editData.ctaLink || "",
         active: editData.active ?? false,
         showOnHomepage: editData.showOnHomepage ?? false,
       });
 
       // Background Media Logic
-      if (editData.backgroundAll?.length > 0) {
+      if (editData.backgroundMediaAll?.length > 0) {
+        setBackgroundMedia(prev => ({
+          ...prev, theme: "ALL",
+          allPreviews: editData.backgroundMediaAll.map(m => m.url),
+          allMediaTypes: editData.backgroundMediaAll.map(m => m.type),
+          allMediaIds: editData.backgroundMediaAll.map(m => m.mediaId),
+        }));
+      } else if (editData.backgroundAll?.length > 0) {
         setBackgroundMedia(prev => ({
           ...prev, theme: "ALL",
           allPreviews: editData.backgroundAll.map(m => m.url),
@@ -75,17 +84,24 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
       } else {
         setBackgroundMedia(prev => ({
           ...prev, theme: "SPLIT",
-          lightPreviews: editData.backgroundLight?.map(m => m.url) || [],
-          lightMediaTypes: editData.backgroundLight?.map(m => m.type) || [],
-          lightMediaIds: editData.backgroundLight?.map(m => m.mediaId) || [],
-          darkPreviews: editData.backgroundDark?.map(m => m.url) || [],
-          darkMediaTypes: editData.backgroundDark?.map(m => m.type) || [],
-          darkMediaIds: editData.backgroundDark?.map(m => m.mediaId) || [],
+          lightPreviews: editData.backgroundMediaLight?.map(m => m.url) || editData.backgroundLight?.map(m => m.url) || [],
+          lightMediaTypes: editData.backgroundMediaLight?.map(m => m.type) || editData.backgroundLight?.map(m => m.type) || [],
+          lightMediaIds: editData.backgroundMediaLight?.map(m => m.mediaId) || editData.backgroundLight?.map(m => m.mediaId) || [],
+          darkPreviews: editData.backgroundMediaDark?.map(m => m.url) || editData.backgroundDark?.map(m => m.url) || [],
+          darkMediaTypes: editData.backgroundMediaDark?.map(m => m.type) || editData.backgroundDark?.map(m => m.type) || [],
+          darkMediaIds: editData.backgroundMediaDark?.map(m => m.mediaId) || editData.backgroundDark?.map(m => m.mediaId) || [],
         }));
       }
 
       // Sub Media Logic
-      if (editData.subAll?.length > 0) {
+      if (editData.subMediaAll?.length > 0) {
+        setSubMedia(prev => ({
+          ...prev, theme: "ALL",
+          allPreviews: editData.subMediaAll.map(m => m.url),
+          allMediaTypes: editData.subMediaAll.map(m => m.type),
+          allMediaIds: editData.subMediaAll.map(m => m.mediaId),
+        }));
+      } else if (editData.subAll?.length > 0) {
         setSubMedia(prev => ({
           ...prev, theme: "ALL",
           allPreviews: editData.subAll.map(m => m.url),
@@ -95,16 +111,43 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
       } else {
         setSubMedia(prev => ({
           ...prev, theme: "SPLIT",
-          lightPreviews: editData.subLight?.map(m => m.url) || [],
-          lightMediaTypes: editData.subLight?.map(m => m.type) || [],
-          lightMediaIds: editData.subLight?.map(m => m.mediaId) || [],
-          darkPreviews: editData.subDark?.map(m => m.url) || [],
-          darkMediaTypes: editData.subDark?.map(m => m.type) || [],
-          darkMediaIds: editData.subDark?.map(m => m.mediaId) || [],
+          lightPreviews: editData.subMediaLight?.map(m => m.url) || editData.subLight?.map(m => m.url) || [],
+          lightMediaTypes: editData.subMediaLight?.map(m => m.type) || editData.subLight?.map(m => m.type) || [],
+          lightMediaIds: editData.subMediaLight?.map(m => m.mediaId) || editData.subLight?.map(m => m.mediaId) || [],
+          darkPreviews: editData.subMediaDark?.map(m => m.url) || editData.subDark?.map(m => m.url) || [],
+          darkMediaTypes: editData.subMediaDark?.map(m => m.type) || editData.subDark?.map(m => m.type) || [],
+          darkMediaIds: editData.subMediaDark?.map(m => m.mediaId) || editData.subDark?.map(m => m.mediaId) || [],
         }));
       }
     }
   }, [editData, isOpen]);
+
+  // Auto-rotate background preview
+  useEffect(() => {
+    const getActiveBackgrounds = () => {
+      if (backgroundMedia.theme === "ALL" && backgroundMedia.allPreviews.length > 0) {
+        return backgroundMedia.allPreviews;
+      }
+      if (backgroundMedia.theme === "SPLIT") {
+        if (previewTheme === "LIGHT" && backgroundMedia.lightPreviews.length > 0) {
+          return backgroundMedia.lightPreviews;
+        }
+        if (previewTheme === "DARK" && backgroundMedia.darkPreviews.length > 0) {
+          return backgroundMedia.darkPreviews;
+        }
+      }
+      return [];
+    };
+
+    const backgrounds = getActiveBackgrounds();
+    if (backgrounds.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentBackgroundIndex(prev => (prev + 1) % backgrounds.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [backgroundMedia, previewTheme]);
 
   // 4. Input Handlers
   const handleInputChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
@@ -149,12 +192,38 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     setter(prev => ({ ...prev, theme: newTheme }));
   };
 
+  // Get preview background based on theme
+  const getPreviewBackground = () => {
+    if (backgroundMedia.theme === "ALL" && backgroundMedia.allPreviews.length > 0) {
+      return {
+        url: backgroundMedia.allPreviews[currentBackgroundIndex],
+        type: backgroundMedia.allMediaTypes[currentBackgroundIndex]
+      };
+    }
+    
+    if (backgroundMedia.theme === "SPLIT") {
+      if (previewTheme === "LIGHT" && backgroundMedia.lightPreviews.length > 0) {
+        return {
+          url: backgroundMedia.lightPreviews[currentBackgroundIndex],
+          type: backgroundMedia.lightMediaTypes[currentBackgroundIndex]
+        };
+      }
+      if (previewTheme === "DARK" && backgroundMedia.darkPreviews.length > 0) {
+        return {
+          url: backgroundMedia.darkPreviews[currentBackgroundIndex],
+          type: backgroundMedia.darkMediaTypes[currentBackgroundIndex]
+        };
+      }
+    }
+    
+    return null;
+  };
+
   // 5. API Logic
   const processUpload = async (files) => {
     if (!files || files.length === 0) return [];
     const uploadData = new FormData();
     files.forEach(f => uploadData.append("files", f));
-    // Determine mediaType based on first file
     const type = files[0].type.startsWith("image/") ? "IMAGE" : "VIDEO";
     uploadData.append("mediaType", type);
     
@@ -192,6 +261,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
         mainTitle: formData.mainTitle || null,
         subTitle: formData.subTitle || null,
         ctaText: formData.ctaText || null,
+        ctaLink: formData.ctaLink || null,
         active: formData.active,
         showOnHomepage: formData.showOnHomepage,
         backgroundAll: backgroundMedia.theme === "ALL" ? [...backgroundMedia.allMediaIds, ...bgAll] : [],
@@ -204,22 +274,52 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
 
       if (editData?.id) {
         await updateHeroSectionById(editData.id, payload);
-        toast.success("Hero Section updated!");
+        // Show success toast BEFORE closing modal
+        toast.success("Hero Section updated successfully!", {
+          duration: 4000,
+          icon: "✅",
+        });
+        
+        // Wait for toast to render then close modal and trigger refresh
+        setTimeout(() => {
+          onClose();
+          if (onSuccess) onSuccess();
+        }, 1500);
+        
       } else {
         await createHeroSection(payload);
-        toast.success("Hero Section created!");
+        // Show success toast BEFORE closing modal
+        toast.success("Hero Section created successfully!", {
+          duration: 4000,
+          icon: "🎉",
+        });
+        
+        // Wait for toast to render then close modal and trigger refresh
+        setTimeout(() => {
+          onClose();
+          if (onSuccess) onSuccess();
+        }, 1500);
       }
 
-      onSuccess?.();
-      onClose();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Operation failed.");
-    } finally {
-      setLoading(false);
+      console.error("Error saving hero section:", error);
+      setLoading(false); // Re-enable form on error
+      
+      // Show error toast and KEEP modal open
+      toast.error(
+        error.response?.data?.message || "Failed to save hero section. Please try again.",
+        {
+          duration: 5000,
+          icon: "❌",
+        }
+      );
+      // Don't close modal on error - let user retry
     }
   };
 
   if (!isOpen) return null;
+
+  const previewBg = getPreviewBackground();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -228,47 +328,85 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: colors.border }}>
-          <h2 className="text-xl font-bold" style={{ color: colors.textPrimary }}>{editData ? "Edit Hero Section" : "Add Hero Section"}</h2>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors"><X size={20} /></button>
+          <h2 className="text-xl font-bold" style={{ color: colors.textPrimary }}>
+            {editData ? "Edit Hero Section" : "Add Hero Section"}
+          </h2>
+          <button 
+            onClick={onClose} 
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            disabled={loading}
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {/* Body */}
         <div className="flex-grow overflow-y-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border-b border-t" style={{ borderColor: colors.border }}>
             
-            {/* Left Column: Form with Grid Lines */}
-            <div className="flex flex-col divide-y divide-gray-200" style={{ borderColor: colors.border }}>
+            {/* Left Column: Form */}
+            <div className="flex flex-col divide-y" style={{ borderColor: colors.border }}>
               
               {/* Text Fields Section */}
               <div className="p-6 space-y-4">
-                {[{ label: "Main Title", field: "mainTitle" }, { label: "Subtitle", field: "subTitle" }, { label: "CTA Button", field: "ctaText" }].map(item => (
+                {[
+                  { label: "Main Title", field: "mainTitle", placeholder: "Discover Amazing Places" }, 
+                  { label: "Subtitle", field: "subTitle", placeholder: "Book your next experience" }, 
+                  { label: "CTA Button", field: "ctaText", placeholder: "Explore" },
+                  { label: "CTA Link", field: "ctaLink", placeholder: "/hotels | https://example.com" }
+                ].map(item => (
                   <div key={item.field} className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">{item.label}</label>
-                    <input type="text" value={formData[item.field]} onChange={e => handleInputChange(item.field, e.target.value)} 
-                           className="px-4 py-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none" />
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                      {item.label}
+                    </label>
+                    <input 
+                      type="text" 
+                      value={formData[item.field]} 
+                      onChange={e => handleInputChange(item.field, e.target.value)} 
+                      placeholder={item.placeholder}
+                      className="px-4 py-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none" 
+                    />
                   </div>
                 ))}
               </div>
 
-              {/* Background Media with Dropdown BG fixed */}
+              {/* Background Media */}
               <div className="p-6 bg-gray-50/50">
                 <div className="flex items-center justify-between mb-6">
                   <label className="text-sm font-bold">Background Media</label>
-                  <select value={backgroundMedia.theme} onChange={e => handleThemeChange(e.target.value, true)} 
-                          className="px-3 py-2 border rounded-lg text-xs font-bold bg-white shadow-sm outline-none cursor-pointer hover:border-primary transition-colors">
+                  <select 
+                    value={backgroundMedia.theme} 
+                    onChange={e => handleThemeChange(e.target.value, true)} 
+                    className="px-3 py-2 border rounded-lg text-xs font-bold bg-white shadow-sm outline-none cursor-pointer hover:border-primary transition-colors"
+                  >
                     <option value="ALL">All Themes</option>
                     <option value="SPLIT">Separate for Light & Dark</option>
                   </select>
                 </div>
                 {backgroundMedia.theme === "ALL" ? (
-                  <MediaUploader label="All Themes" previews={backgroundMedia.allPreviews} types={backgroundMedia.allMediaTypes}
-                                 onUpload={f => handleMultipleFilesChange("bg", "ALL", f, true)} onRemove={i => removeMediaAtIndex("ALL", i, true)} />
+                  <MediaUploader 
+                    label="All Themes" 
+                    previews={backgroundMedia.allPreviews} 
+                    types={backgroundMedia.allMediaTypes}
+                    onUpload={f => handleMultipleFilesChange("bg", "ALL", f, true)} 
+                    onRemove={i => removeMediaAtIndex("ALL", i, true)} 
+                  />
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <MediaUploader label="Light Theme" previews={backgroundMedia.lightPreviews} types={backgroundMedia.lightMediaTypes}
-                                   onUpload={f => handleMultipleFilesChange("bg", "LIGHT", f, true)} onRemove={i => removeMediaAtIndex("LIGHT", i, true)} />
-                    <MediaUploader label="Dark Theme" previews={backgroundMedia.darkPreviews} types={backgroundMedia.darkMediaTypes}
-                                   onUpload={f => handleMultipleFilesChange("bg", "DARK", f, true)} onRemove={i => removeMediaAtIndex("DARK", i, true)} />
+                    <MediaUploader 
+                      label="Light Theme" 
+                      previews={backgroundMedia.lightPreviews} 
+                      types={backgroundMedia.lightMediaTypes}
+                      onUpload={f => handleMultipleFilesChange("bg", "LIGHT", f, true)} 
+                      onRemove={i => removeMediaAtIndex("LIGHT", i, true)} 
+                    />
+                    <MediaUploader 
+                      label="Dark Theme" 
+                      previews={backgroundMedia.darkPreviews} 
+                      types={backgroundMedia.darkMediaTypes}
+                      onUpload={f => handleMultipleFilesChange("bg", "DARK", f, true)} 
+                      onRemove={i => removeMediaAtIndex("DARK", i, true)} 
+                    />
                   </div>
                 )}
               </div>
@@ -277,21 +415,39 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <label className="text-sm font-bold">Sub Media (Optional)</label>
-                  <select value={subMedia.theme} onChange={e => handleThemeChange(e.target.value, false)} 
-                          className="px-3 py-2 border rounded-lg text-xs font-bold bg-white shadow-sm outline-none cursor-pointer">
+                  <select 
+                    value={subMedia.theme} 
+                    onChange={e => handleThemeChange(e.target.value, false)} 
+                    className="px-3 py-2 border rounded-lg text-xs font-bold bg-white shadow-sm outline-none cursor-pointer"
+                  >
                     <option value="ALL">All Themes</option>
                     <option value="SPLIT">Separate for Light & Dark</option>
                   </select>
                 </div>
                 {subMedia.theme === "ALL" ? (
-                  <MediaUploader label="All Themes" previews={subMedia.allPreviews} types={subMedia.allMediaTypes}
-                                 onUpload={f => handleMultipleFilesChange("sub", "ALL", f, false)} onRemove={i => removeMediaAtIndex("ALL", i, false)} />
+                  <MediaUploader 
+                    label="All Themes" 
+                    previews={subMedia.allPreviews} 
+                    types={subMedia.allMediaTypes}
+                    onUpload={f => handleMultipleFilesChange("sub", "ALL", f, false)} 
+                    onRemove={i => removeMediaAtIndex("ALL", i, false)} 
+                  />
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <MediaUploader label="Light Theme" previews={subMedia.lightPreviews} types={subMedia.lightMediaTypes}
-                                   onUpload={f => handleMultipleFilesChange("sub", "LIGHT", f, false)} onRemove={i => removeMediaAtIndex("LIGHT", i, false)} />
-                    <MediaUploader label="Dark Theme" previews={subMedia.darkPreviews} types={subMedia.darkMediaTypes}
-                                   onUpload={f => handleMultipleFilesChange("sub", "DARK", f, false)} onRemove={i => removeMediaAtIndex("DARK", i, false)} />
+                    <MediaUploader 
+                      label="Light Theme" 
+                      previews={subMedia.lightPreviews} 
+                      types={subMedia.lightMediaTypes}
+                      onUpload={f => handleMultipleFilesChange("sub", "LIGHT", f, false)} 
+                      onRemove={i => removeMediaAtIndex("LIGHT", i, false)} 
+                    />
+                    <MediaUploader 
+                      label="Dark Theme" 
+                      previews={subMedia.darkPreviews} 
+                      types={subMedia.darkMediaTypes}
+                      onUpload={f => handleMultipleFilesChange("sub", "DARK", f, false)} 
+                      onRemove={i => removeMediaAtIndex("DARK", i, false)} 
+                    />
                   </div>
                 )}
               </div>
@@ -299,32 +455,124 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
               {/* Switches Section */}
               <div className="p-6 flex items-center gap-10">
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" checked={formData.active} onChange={e => handleInputChange("active", e.target.checked)} className="w-4 h-4 rounded accent-primary" />
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">Set as Active</span>
+                  <input 
+                    type="checkbox" 
+                    checked={formData.active} 
+                    onChange={e => handleInputChange("active", e.target.checked)} 
+                    className="w-4 h-4 rounded accent-primary cursor-pointer" 
+                  />
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
+                    Set as Active
+                  </span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" checked={formData.showOnHomepage} onChange={e => handleInputChange("showOnHomepage", e.target.checked)} className="w-4 h-4 rounded accent-primary" />
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">Show on Homepage</span>
+                  <input 
+                    type="checkbox" 
+                    checked={formData.showOnHomepage} 
+                    onChange={e => handleInputChange("showOnHomepage", e.target.checked)} 
+                    className="w-4 h-4 rounded accent-primary cursor-pointer" 
+                  />
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
+                    Show on Homepage
+                  </span>
                 </label>
               </div>
             </div>
 
-            {/* Right Column: Preview */}
-            <div className="bg-gray-100 p-8 flex flex-col gap-6 border-l" style={{ borderColor: colors.border }}>
+            {/* Right Column: Live Preview */}
+            <div className={`p-8 flex flex-col gap-6 border-l transition-colors duration-300 ${
+              previewTheme === "DARK" ? "bg-gray-900" : "bg-gray-100"
+            }`} style={{ borderColor: colors.border }}>
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Live Preview</h3>
-                <button onClick={() => setPreviewTheme(t => t === "LIGHT" ? "DARK" : "LIGHT")} className="text-[10px] font-bold px-3 py-1.5 bg-white border rounded shadow-sm hover:bg-gray-50">
-                  Switching to: {previewTheme === "LIGHT" ? "Dark" : "Light"}
+                <h3 className={`text-xs font-bold uppercase tracking-widest ${
+                  previewTheme === "DARK" ? "text-gray-400" : "text-gray-500"
+                }`}>
+                  Live Preview
+                </h3>
+                <button 
+                  onClick={() => setPreviewTheme(t => t === "LIGHT" ? "DARK" : "LIGHT")} 
+                  className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-all ${
+                    previewTheme === "DARK" 
+                      ? "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700" 
+                      : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                  }`}
+                >
+                  {previewTheme === "DARK" ? (
+                    <><Moon size={12} /> Dark Mode</>
+                  ) : (
+                    <><Sun size={12} /> Light Mode</>
+                  )}
                 </button>
               </div>
               
-              <div className="w-full aspect-video rounded-xl bg-black overflow-hidden relative shadow-2xl border-4 border-white">
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center p-6 text-white bg-black/40">
-                  <h1 className="text-3xl font-bold mb-1 leading-tight">{formData.mainTitle || "Main Title Preview"}</h1>
-                  <p className="text-[10px] uppercase tracking-[0.4em] mb-6 opacity-70">{formData.subTitle || "Subtitle Display"}</p>
-                  {formData.ctaText && <button className="px-6 py-2 rounded-full text-xs font-bold bg-primary text-white shadow-lg">{formData.ctaText}</button>}
+              <div className="w-full aspect-video rounded-xl overflow-hidden relative shadow-2xl border-4 border-white">
+                {/* Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900">
+                  {previewBg ? (
+                    previewBg.type === "VIDEO" ? (
+                      <video 
+                        src={previewBg.url} 
+                        className="w-full h-full object-cover" 
+                        autoPlay 
+                        loop 
+                        muted 
+                        playsInline
+                      />
+                    ) : (
+                      <img 
+                        src={previewBg.url} 
+                        alt="Background" 
+                        className="w-full h-full object-cover transition-opacity duration-500" 
+                      />
+                    )
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+                      <p className="text-white/30 text-xs">No background media</p>
+                    </div>
+                  )}
                 </div>
-                {/* Background placeholder logic could go here */}
+
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+                
+                {/* Content */}
+                <div className="absolute inset-0 z-10 flex flex-col items-start justify-center text-left px-8">
+                  <h1 className="text-2xl font-bold mb-2 leading-tight text-white drop-shadow-lg">
+                    {formData.mainTitle || "Discover Amazing Places"}
+                  </h1>
+                  <p className="text-[10px] uppercase tracking-[0.3em] mb-4 text-white/80 drop-shadow-md">
+                    {formData.subTitle || "Book your next experience"}
+                  </p>
+                  {(formData.ctaText || "Explore") && (
+                    <button className="px-5 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-amber-400 to-yellow-400 text-gray-900 shadow-lg">
+                      {formData.ctaText || "Explore"}
+                    </button>
+                  )}
+                </div>
+
+                {/* Slide indicator */}
+                {previewBg && (backgroundMedia.allPreviews.length > 1 || 
+                  (previewTheme === "LIGHT" && backgroundMedia.lightPreviews.length > 1) ||
+                  (previewTheme === "DARK" && backgroundMedia.darkPreviews.length > 1)) && (
+                  <div className="absolute bottom-3 right-3 z-20 flex gap-1">
+                    {Array.from({ 
+                      length: backgroundMedia.theme === "ALL" 
+                        ? backgroundMedia.allPreviews.length 
+                        : previewTheme === "LIGHT" 
+                          ? backgroundMedia.lightPreviews.length 
+                          : backgroundMedia.darkPreviews.length 
+                    }).map((_, i) => (
+                      <div 
+                        key={i} 
+                        className={`h-1 rounded-full transition-all ${
+                          i === currentBackgroundIndex 
+                            ? "w-6 bg-white" 
+                            : "w-1 bg-white/40"
+                        }`} 
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -332,9 +580,26 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
 
         {/* Footer */}
         <div className="p-6 border-t flex justify-end gap-3 bg-gray-50" style={{ borderColor: colors.border }}>
-          <button onClick={onClose} className="px-6 py-2.5 rounded-lg border font-bold text-sm hover:bg-white transition-colors">Cancel</button>
-          <button onClick={handleSubmit} disabled={loading} className="px-8 py-2.5 rounded-lg font-bold text-sm text-white bg-primary disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
-            {loading ? <Loader2 size={16} className="animate-spin" /> : (editData ? "Update Hero" : "Create Hero")}
+          <button 
+            onClick={onClose} 
+            className="px-6 py-2.5 rounded-lg border font-bold text-sm hover:bg-white transition-colors"
+            disabled={loading}
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={handleSubmit} 
+            disabled={loading} 
+            className="px-8 py-2.5 rounded-lg font-bold text-sm text-white bg-primary disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+          >
+            {loading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                {editData ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              editData ? "Update Hero" : "Create Hero"
+            )}
           </button>
         </div>
       </div>
@@ -351,13 +616,33 @@ function MediaUploader({ label, previews, types, onUpload, onRemove }) {
       <div className="flex flex-wrap gap-3">
         {previews.map((p, i) => (
           <div key={i} className="relative w-20 h-20 rounded-lg border-2 overflow-hidden group bg-white shadow-sm border-white">
-            {types[i] === "IMAGE" ? <img src={p} className="w-full h-full object-cover" /> : <video src={p} className="w-full h-full object-cover" />}
-            <button onClick={() => onRemove(i)} className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-bl-md opacity-0 group-hover:opacity-100 transition-opacity"><X size={10} /></button>
+            {types[i] === "IMAGE" ? (
+              <img src={p} className="w-full h-full object-cover" alt="Media" />
+            ) : (
+              <video src={p} className="w-full h-full object-cover" muted />
+            )}
+            <button 
+              onClick={() => onRemove(i)} 
+              className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-bl-md opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <X size={10} />
+            </button>
           </div>
         ))}
-        <label htmlFor={inputId} className="w-20 h-20 border-2 border-dashed rounded-lg flex flex-col items-center justify-center text-gray-300 hover:text-primary hover:border-primary cursor-pointer transition-all hover:bg-white">
+        <label 
+          htmlFor={inputId} 
+          className="w-20 h-20 border-2 border-dashed rounded-lg flex flex-col items-center justify-center text-gray-300 hover:text-primary hover:border-primary cursor-pointer transition-all hover:bg-white"
+        >
           <Upload size={18} />
-          <input type="file" id={inputId} className="hidden" multiple accept="image/*,video/*" onChange={e => onUpload(e.target.files)} />
+          <span className="text-[8px] mt-1">Add</span>
+          <input 
+            type="file" 
+            id={inputId} 
+            className="hidden" 
+            multiple 
+            accept="image/*,video/*" 
+            onChange={e => onUpload(e.target.files)} 
+          />
         </label>
       </div>
     </div>
