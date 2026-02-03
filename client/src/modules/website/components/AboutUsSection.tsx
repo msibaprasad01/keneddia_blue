@@ -6,6 +6,9 @@ import {
   UtensilsCrossed,
   Coffee,
   Wine,
+  Loader2,
+  Video,
+  Image as ImageIcon
 } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -15,6 +18,7 @@ import {
   getPublicRecognitionsByAboutUsId 
 } from "@/Api/Api";
 
+/* --- Interfaces --- */
 interface Venture {
   id: number;
   ventureName: string;
@@ -30,6 +34,12 @@ interface Recognition {
   isActive: boolean;
 }
 
+interface MediaItem {
+  mediaId: number;
+  type: "IMAGE" | "VIDEO";
+  url: string;
+}
+
 interface AboutUsData {
   id: number;
   sectionTitle: string;
@@ -40,14 +50,18 @@ interface AboutUsData {
   ctaButtonText: string;
   ctaButtonUrl: string;
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  media?: MediaItem[]; // Array from API response
+  ventures?: Venture[]; // Nested in newer responses
+  recognitions?: Recognition[]; // Nested in newer responses
 }
 
+/* --- Helper --- */
 const getYouTubeEmbedUrl = (url: string) => {
-  const videoIdMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  if (!url) return "";
+  const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
   const videoId = videoIdMatch ? videoIdMatch[1] : null;
-  return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  // Optimized for autoplay/mute background rendering
+  return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&rel=0` : url;
 };
 
 export default function AboutUsSection() {
@@ -57,13 +71,16 @@ export default function AboutUsSection() {
   const [recognitions, setRecognitions] = useState<Recognition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initial Fetch: About Us Section
+  // Initial Fetch: About Us Section (Ensuring LATEST record)
   const fetchAboutUs = async () => {
     try {
       setIsLoading(true);
       const response = await getAboutUsAdmin();
-      if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
-        const latestData = response.data[response.data.length - 1];
+      const data = response?.data || response;
+      
+      if (Array.isArray(data) && data.length > 0) {
+        // Sort by ID descending and pick the top one (e.g., ID 12)
+        const latestData = [...data].sort((a, b) => b.id - a.id)[0];
         setAboutUsData(latestData);
       }
     } catch (error) {
@@ -73,7 +90,7 @@ export default function AboutUsSection() {
     }
   };
 
-  // Secondary Fetch: Ventures and Recognitions based on AboutUs ID
+  // Secondary Fetch: Handles ventures/recognitions from direct API or nested response
   const fetchRelatedData = async (id: number) => {
     try {
       const [venturesRes, recognitionsRes] = await Promise.all([
@@ -84,7 +101,7 @@ export default function AboutUsSection() {
       if (venturesRes?.data) setVentures(venturesRes.data);
       if (recognitionsRes?.data) setRecognitions(recognitionsRes.data);
     } catch (error) {
-      console.error("Error fetching related About Us data:", error);
+      console.error("Error fetching related data:", error);
     }
   };
 
@@ -94,28 +111,50 @@ export default function AboutUsSection() {
 
   useEffect(() => {
     if (aboutUsData?.id) {
-      fetchRelatedData(aboutUsData.id);
-    }
-  }, [aboutUsData?.id]);
+      // If data has nested arrays, use them; otherwise fetch separately
+      if (aboutUsData.ventures && aboutUsData.ventures.length > 0) {
+        setVentures(aboutUsData.ventures);
+      } else {
+        fetchRelatedData(aboutUsData.id);
+      }
 
-  const mediaItems = [
-    {
-      type: "video",
-      src: aboutUsData?.videoUrl 
-        ? getYouTubeEmbedUrl(aboutUsData.videoUrl)
-        : "https://www.youtube.com/embed/oqqrdFmYkO0",
-    },
-    {
-      type: "image",
-      src: siteContent.images.about.leadership,
-      alt: "Award Winning Service",
-    },
-    {
-      type: "image",
-      src: siteContent.images.hero.slide2,
-      alt: "Luxury Interiors",
-    },
-  ];
+      if (aboutUsData.recognitions && aboutUsData.recognitions.length > 0) {
+        setRecognitions(aboutUsData.recognitions);
+      }
+    }
+  }, [aboutUsData]);
+
+  // Construct dynamic carousel items
+  const mediaItems = [];
+  
+  // 1. Add Main Video from videoUrl
+  if (aboutUsData?.videoUrl) {
+    mediaItems.push({ 
+      type: "video", 
+      src: getYouTubeEmbedUrl(aboutUsData.videoUrl) 
+    });
+  }
+
+  // 2. Add multiple images/videos from the media array in response
+  if (aboutUsData?.media && aboutUsData.media.length > 0) {
+    aboutUsData.media.forEach((m) => {
+      mediaItems.push({
+        type: m.type === "VIDEO" ? "video" : "image",
+        src: m.type === "VIDEO" ? getYouTubeEmbedUrl(m.url) : m.url
+      });
+    });
+  }
+
+  // Fallback if no media exists
+  if (mediaItems.length === 0) {
+    mediaItems.push({ type: "image", src: siteContent.images.about.main.src });
+  }
+
+  if (isLoading) return (
+    <div className="py-20 flex justify-center">
+        <Loader2 className="animate-spin text-primary" />
+    </div>
+  );
 
   return (
     <section className="py-10 md:py-20 bg-background relative overflow-hidden">
@@ -124,15 +163,15 @@ export default function AboutUsSection() {
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-stretch">
           
-          {/* Left Column: Media Showcase */}
+          {/* Left Column: Media Showcase Carousel */}
           <div className="relative group flex flex-col">
             <div className="relative flex-1 rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10 min-h-[400px]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentMediaIndex}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.5 }}
                   className="w-full h-full"
                 >
@@ -140,33 +179,44 @@ export default function AboutUsSection() {
                     <iframe
                       width="100%"
                       height="100%"
-                      src={`${mediaItems[currentMediaIndex].src}?autoplay=0&mute=1&controls=1`}
+                      src={mediaItems[currentMediaIndex].src}
                       title={aboutUsData?.videoTitle || "Brand Video"}
-                      className="w-full h-full object-cover aspect-video"
+                      className="w-full h-full object-cover aspect-video pointer-events-none"
+                      allow="autoplay; encrypted-media"
                       allowFullScreen
                     />
                   ) : (
                     <img
-                      src={(mediaItems[currentMediaIndex].src as any).src || mediaItems[currentMediaIndex].src}
+                      src={mediaItems[currentMediaIndex].src}
                       alt="Showcase"
                       className="w-full h-full object-cover"
                     />
                   )}
                 </motion.div>
               </AnimatePresence>
+
+              {/* Overlay Indicators */}
+              <div className="absolute top-4 left-4 z-20">
+                <div className="bg-black/40 backdrop-blur-md p-2 rounded-full border border-white/10 text-white">
+                    {mediaItems[currentMediaIndex].type === "video" ? <Video size={16}/> : <ImageIcon size={16}/>}
+                </div>
+              </div>
             </div>
 
-            <div className="flex justify-center gap-2 mt-6">
-              {mediaItems.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentMediaIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    currentMediaIndex === index ? "bg-primary w-8" : "bg-muted-foreground/30"
-                  }`}
-                />
-              ))}
-            </div>
+            {/* Carousel Navigation Dots */}
+            {mediaItems.length > 1 && (
+              <div className="flex justify-center gap-2 mt-6">
+                {mediaItems.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentMediaIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      currentMediaIndex === index ? "bg-primary w-8" : "bg-muted-foreground/30"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right Column: Content */}
@@ -176,10 +226,10 @@ export default function AboutUsSection() {
                 {aboutUsData?.sectionTitle || "ABOUT US"}
               </h2>
               <h3 className="text-4xl md:text-5xl font-serif leading-tight mb-4 text-foreground">
-                {aboutUsData?.subTitle || "Our Legacy"}
+                {aboutUsData?.subTitle || "Our Story"}
               </h3>
-              <p className="text-lg font-light leading-relaxed text-muted-foreground">
-                {aboutUsData?.description || "Loading our story..."}
+              <p className="text-lg font-light leading-relaxed text-muted-foreground whitespace-pre-line">
+                {aboutUsData?.description}
               </p>
             </div>
 
@@ -189,37 +239,20 @@ export default function AboutUsSection() {
                 Our Ventures
               </h4>
               <div className="flex flex-wrap gap-8">
-                {ventures.length > 0 ? (
-                  ventures.map((venture) => (
-                    <div key={venture.id} className="flex flex-col items-center space-y-3 group cursor-pointer">
-                      <div className="w-16 h-16 rounded-full flex items-center justify-center bg-slate-900/90 border border-white/10 transition-transform group-hover:-translate-y-1">
-                        <img 
-                          src={venture.logoUrl} 
-                          alt={venture.ventureName} 
-                          className="w-10 h-10 object-contain rounded-full" 
-                        />
-                      </div>
-                      <span className="text-[10px] uppercase tracking-widest font-medium opacity-60 group-hover:opacity-100 transition-opacity">
-                        {venture.ventureName}
-                      </span>
+                {ventures.map((venture) => (
+                  <div key={venture.id} className="flex flex-col items-center space-y-3 group cursor-pointer">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center bg-slate-900/90 border border-white/10 transition-transform group-hover:-translate-y-1 overflow-hidden">
+                      <img 
+                        src={venture.logoUrl} 
+                        alt={venture.ventureName} 
+                        className="w-10 h-10 object-contain rounded-full" 
+                      />
                     </div>
-                  ))
-                ) : (
-                  // Fallback static ventures if API returns empty
-                  [
-                    { label: "Hotel", icon: Hotel },
-                    { label: "Dining", icon: UtensilsCrossed },
-                    { label: "Cafe", icon: Coffee },
-                    { label: "Bar", icon: Wine }
-                  ].map((v, i) => (
-                    <div key={i} className="flex flex-col items-center space-y-3 opacity-40">
-                      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                        <v.icon className="w-6 h-6" />
-                      </div>
-                      <span className="text-[10px] uppercase tracking-widest">{v.label}</span>
-                    </div>
-                  ))
-                )}
+                    <span className="text-[10px] uppercase tracking-widest font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                      {venture.ventureName}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -229,29 +262,22 @@ export default function AboutUsSection() {
                 Globally Recognized
               </h4>
               <div className="grid grid-cols-3 gap-3">
-                {recognitions.length > 0 ? (
-                  recognitions.map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-secondary/20 border border-border/50 rounded-lg p-4 text-center group hover:border-primary/30 transition-all"
-                    >
-                      <div className="text-xl font-serif font-bold text-primary mb-1">
-                        {item.value}
-                      </div>
-                      <div className="text-[10px] uppercase tracking-tighter font-bold text-foreground mb-1 leading-tight">
-                        {item.title}
-                      </div>
-                      <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-medium opacity-60">
-                        {item.subTitle}
-                      </div>
+                {recognitions.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-secondary/20 border border-border/50 rounded-lg p-4 text-center group hover:border-primary/30 transition-all shadow-sm"
+                  >
+                    <div className="text-xl font-serif font-bold text-primary mb-1">
+                      {item.value}
                     </div>
-                  ))
-                ) : (
-                  // Fallback skeletons/static data
-                  [1, 2, 3].map((i) => (
-                    <div key={i} className="bg-secondary/10 border border-border/20 rounded-lg p-4 h-24 animate-pulse" />
-                  ))
-                )}
+                    <div className="text-[10px] uppercase tracking-tighter font-bold text-foreground mb-1 leading-tight">
+                      {item.title}
+                    </div>
+                    <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-medium opacity-60">
+                      {item.subTitle}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
