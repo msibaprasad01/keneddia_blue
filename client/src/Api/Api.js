@@ -128,27 +128,25 @@ export const updateOurPropertyItem = (itemId, formData) =>
 export const getOurPropertyItemsBySectionId = (sectionId) =>
   API.get(`api/v1/our-properties/${sectionId}/items`);
 
-export const createOrUpdateKennediaGroup = (data) =>
-  API.post("api/v1/kennedia-group", data);
+export const createOrUpdateKennediaGroup = (data) =>API.post("api/v1/kennedia-group", data);
+export const updateDailyOfferById = (id, data) =>API.put(`api/v1/daily-offer/${id}`, data);
 export const getKennediaGroup = () => API.get("api/v1/kennedia-group");
 
-export const createDailyOffer = (data) => API.post("api/v1/daily-offer", data);
-export const getDailyOffers = ({ targetType, page = 0, size = 10 }) =>
-  API.get("api/v1/daily-offer/showAll", { params: { targetType, page, size } });
-export const updateDailyOfferById = (id, data) =>
-  API.put(`api/v1/daily-offers/${id}`, data);
-export const updateDailyOfferStatus = (id, isActive) =>
-  API.patch(`api/v1/daily-offers/${id}/status`, null, { params: { isActive } });
+// offer section 
+export const createDailyOffer = (data) => API.post("api/v1/daily-offer/create", data);
+export const UpdateDailyOffer = (id,data) => API.put(`api/v1/daily-offer/${id}`, data);
+export const getDailyOffers = ({ page = 0, size = 10 }) =>
+  API.get("api/v1/daily-offer/paginated/all", {
+    params: { page, size },
+  });
+export const updateDailyOfferActiveStatus = (id, isActive) =>API.patch(`api/v1/daily-offer/${id}/status`, null, {params: { isActive },});
 
+//events section
 export const createEvent = (data) => API.post("api/v1/events/create", data);
-export const getEvents = ({ status = "ACTIVE", page = 0, size = 10 }) =>
-  API.get("api/v1/events/showAll", { params: { status, page, size } });
-export const updateEventById = (id, data) =>
-  API.put(`api/v1/events/${id}`, data);
-export const updateEventStatus = (id, isActive) =>
-  API.patch(`api/v1/events/${id}/status`, null, { params: { isActive } });
-export const createEventUpdated = (formData) =>
-  API.post("api/v1/events-updated/events", formData);
+export const getEvents = ({ status = "ACTIVE", page = 0, size = 10 }) =>API.get("api/v1/events/showAll", { params: { status, page, size } });
+export const updateEventById = (id, data) =>API.put(`api/v1/events/${id}`, data);
+export const updateEventStatus = (id, isActive) =>API.patch(`api/v1/events/${id}/status`, null, { params: { isActive } });
+export const createEventUpdated = (formData) =>API.post("api/v1/events-updated/events", formData);
 export const getEventsUpdated = () => API.get("api/v1/events-updated/showAll");
 
 export const createNews = (data) => API.post("api/v1/news/create", data);
