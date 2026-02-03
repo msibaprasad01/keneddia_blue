@@ -1,42 +1,19 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from "react";
 import {
-  Star,
-  Upload,
-  Send,
-  Quote,
-  X,
-  Youtube,
-  Image as ImageIcon,
-  Film,
-  ArrowRight,
-  Play,
-  Volume2,
-  VolumeX,
-  Loader2,
-  CheckCircle2,
-  User,
-  Mail,
-  Phone,
+  Star, Upload, Send, Quote, X, Youtube, Image as ImageIcon,
+  Film, Play, Loader2, CheckCircle2, User, Mail, Phone, Edit2, Video
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  getGuestExperienceSection,
-  createGuestExperienceByGuest,
-} from "@/Api/Api";
+import { getGuestExperienceSection, createGuestExperienceByGuest } from "@/Api/Api";
+
 import "swiper/css";
+import "swiper/css/navigation";
 
-// --- Types & Interfaces ---
-
-interface MediaPreview {
-  type: "video" | "image";
-  url: string;
-  file: File;
-}
-
+// --- Types ---
 interface ExperienceItem {
   id: string | number;
   title: string;
@@ -44,460 +21,265 @@ interface ExperienceItem {
   author: string;
   type: "video" | "image";
   videoUrl?: string;
-  thumbnail?: { src: string };
-  image?: { src: string; alt: string };
-}
-
-interface ApiResponseItem {
-  id: string | number;
-  title?: string;
-  description?: string;
-  author?: string;
-  videoUrl?: string;
   imageUrl?: string;
+  mediaList?: any[];
 }
 
 export default function OurStoryPreview() {
   const { experienceShowcase } = siteContent.text;
-
-  // --- State ---
   const [guestExperiences, setGuestExperiences] = useState<ExperienceItem[]>([]);
-  const [isLoadingExperiences, setIsLoadingExperiences] = useState<boolean>(true);
-  const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
-  const [youtubeLink, setYoutubeLink] = useState<string>("");
-  const [showYoutubeInput, setShowYoutubeInput] = useState<boolean>(false);
-  const [feedbackText, setFeedbackText] = useState<string>("");
-  const [authorName, setAuthorName] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [mediaPreviews, setMediaPreviews] = useState<{type: string, url: string, file: File}[]>([]);
+  const [feedbackText, setFeedbackText] = useState("");
   
-  // New Contact Fields
-  const [email, setEmail] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
-  const [isContactVerified, setIsContactVerified] = useState<boolean>(false);
-  const [showContactPopup, setShowContactPopup] = useState<boolean>(false);
+  // User Info
+  const [authorName, setAuthorName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [isVerified, setIsVerified] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
-  const [playingVideo, setPlayingVideo] = useState<number | null>(null);
-  const [mutedVideos, setMutedVideos] = useState<Record<number, boolean>>({});
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const [lastId, setLastId] = useState<string | null>(null);
-  const [hasNext, setHasNext] = useState<boolean>(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
 
-  const fetchGuestExperience = async (loadMore: boolean = false) => {
-    try {
-      if (!loadMore) setIsLoadingExperiences(true);
-      const params: { size: number; lastId?: string } = { size: 20 };
-      if (loadMore && lastId) params.lastId = lastId;
-
-      const res = await getGuestExperienceSection(params);
-      const responseData = res?.data?.data || res?.data || res;
-
-      if (responseData?.content && Array.isArray(responseData.content)) {
-        const apiItems: ApiResponseItem[] = responseData.content;
-        const latestFirstItems = [...apiItems].reverse();
-
-        const mappedExperiences: ExperienceItem[] = latestFirstItems.map((item) => {
-          const baseItem = {
-            id: item.id,
-            title: item.title || "Guest Experience",
-            description: item.description || "",
-            author: item.author || "Anonymous Guest",
-          };
-          const videoExtensions = [".mp4", ".webm", ".mov", ".avi"];
-
-          if (item.videoUrl) {
-            return {
-              ...baseItem,
-              type: "video",
-              videoUrl: item.videoUrl,
-              thumbnail: item.imageUrl ? { src: item.imageUrl } : undefined,
-            };
-          }
-
-          if (item.imageUrl) {
-            const isVideoInImageUrl = videoExtensions.some((ext) =>
-              item.imageUrl.toLowerCase().includes(ext)
-            );
-            return isVideoInImageUrl
-              ? { ...baseItem, type: "video", videoUrl: item.imageUrl }
-              : {
-                  ...baseItem,
-                  type: "image",
-                  image: { src: item.imageUrl, alt: item.title || "Experience" },
-                };
-          }
-
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      try {
+        const res = await getGuestExperienceSection({ size: 20 });
+        const rawData = res?.data?.data || res?.data || res;
+        
+        // Robust mapping to handle videoUrl and video files inside imageUrl
+        const mappedData = rawData.map((item: any) => {
+          const isVideoUrl = !!item.videoUrl;
+          const isVideoInImage = item.imageUrl?.match(/\.(mp4|webm|mov|ogg)$/i);
+          
           return {
-            ...baseItem,
-            type: "image",
-            image: { src: siteContent.images.hero.slide1.src, alt: item.title || "Experience" },
+            ...item,
+            type: (isVideoUrl || isVideoInImage) ? "video" : "image",
+            // Prioritize videoUrl, fallback to imageUrl if it's a video file
+            displayVideo: item.videoUrl || (isVideoInImage ? item.imageUrl : null)
           };
         });
 
-        if (loadMore) {
-          setGuestExperiences((prev) => [...prev, ...mappedExperiences]);
-        } else {
-          setGuestExperiences(mappedExperiences);
-        }
-        setLastId(responseData.lastId);
-        setHasNext(responseData.hasNext || false);
+        setGuestExperiences(mappedData || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching Guest Experience:", error);
-    } finally {
-      setIsExperiencesLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchGuestExperience();
+    };
+    fetchExperiences();
   }, []);
 
-  const displayItems = guestExperiences.length > 0 ? guestExperiences : ((experienceShowcase?.items || []) as any[]);
-
-  if (!experienceShowcase) return null;
-
-  // --- Handlers ---
-
-  const handleStartInteraction = () => {
-    if (!isContactVerified) {
-      setShowContactPopup(true);
-    }
-  };
-
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (authorName && email && phone) {
-      setIsContactVerified(true);
-      setShowContactPopup(false);
+  const handleFileTrigger = (type: 'image' | 'video' | 'all') => {
+    if (fileInputRef.current) {
+      if (type === 'video') fileInputRef.current.accept = "video/*";
+      else if (type === 'image') fileInputRef.current.accept = "image/*";
+      else fileInputRef.current.accept = "image/*,video/*";
+      fileInputRef.current.click();
     }
   };
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const newPreviews: MediaPreview[] = Array.from(files).map((file) => ({
+      const newPreviews = Array.from(files).map(file => ({
         type: file.type.startsWith("video") ? "video" : "image",
         url: URL.createObjectURL(file),
-        file: file,
+        file
       }));
-      setMediaPreviews((prev) => [...prev, ...newPreviews]);
-    }
-  };
-
-  const removeMedia = (index: number) => {
-    setMediaPreviews((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleYoutubeLinkAdd = () => {
-    if (youtubeLink.trim()) setShowYoutubeInput(false);
-  };
-
-  const handleVideoPlay = (index: number) => {
-    setPlayingVideo(index);
-    const video = videoRefs.current[index];
-    if (video) {
-      video.muted = false;
-      video.play();
-      setMutedVideos((prev) => ({ ...prev, [index]: false }));
-    }
-  };
-
-  const handleVideoPause = (index: number) => {
-    setPlayingVideo(null);
-    videoRefs.current[index]?.pause();
-  };
-
-  const toggleMute = (index: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const video = videoRefs.current[index];
-    if (video) {
-      video.muted = !video.muted;
-      setMutedVideos((prev) => ({ ...prev, [index]: !prev[index] }));
+      setMediaPreviews(prev => [...prev, ...newPreviews]);
     }
   };
 
   const handleSubmit = async () => {
+    if (!isVerified) return setShowPopup(true);
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-      setSubmitError(null);
-
       const formData = new FormData();
-      formData.append("title", feedbackText.substring(0, 50) || "Guest Experience");
-      formData.append("description", feedbackText || "No description provided");
-      formData.append("author", authorName.trim() || "Anonymous Guest");
-      formData.append("email", email);
-      formData.append("phone", phone);
-
-      if (youtubeLink) {
-        formData.append("mediaType", "youtube");
-        formData.append("youtubeUrl", youtubeLink);
-      } else if (mediaPreviews.length > 0) {
-        formData.append("mediaType", "multiple");
-        mediaPreviews.forEach((media) => {
-          if (media.file) formData.append("files", media.file);
-        });
-      } else {
-        formData.append("mediaType", "text");
-      }
+      formData.append("title", feedbackText.slice(0, 20) || "Experience");
+      formData.append("description", feedbackText);
+      formData.append("author", authorName);
+      formData.append("authorPhone", phone);
+      formData.append("authorEmail", email);
+      mediaPreviews.forEach(m => formData.append("files", m.file));
+      formData.append("mediaType", mediaPreviews.some(m => m.type === 'video') ? "VIDEO" : "IMAGE");
 
       await createGuestExperienceByGuest(formData);
-      setSubmitSuccess(true);
-      await fetchGuestExperience(false);
-
-      setTimeout(() => {
-        setFeedbackText("");
-        setAuthorName("");
-        setEmail("");
-        setPhone("");
-        setIsContactVerified(false);
-        setMediaPreviews([]);
-        setYoutubeLink("");
-        setShowYoutubeInput(false);
-        setSubmitSuccess(false);
-      }, 2000);
-    } catch (error: any) {
-      setSubmitError(error?.response?.data?.message || "Failed to submit.");
+      setFeedbackText("");
+      setMediaPreviews([]);
+      // Refresh list
+      const res = await getGuestExperienceSection({ size: 20 });
+      setGuestExperiences(res?.data?.data || []);
+    } catch (err) {
+      console.error(err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const hasMedia = mediaPreviews.length > 0 || youtubeLink;
-  const canSubmit = isContactVerified && (feedbackText.trim() || hasMedia) && !isSubmitting;
-
   return (
-    <section id="story" className="py-12 bg-background relative overflow-hidden">
-      {/* Contact Details Popup */}
-      <AnimatePresence>
-        {showContactPopup && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => setShowContactPopup(false)}
-            />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-card border border-border w-full max-w-md rounded-xl p-8 shadow-2xl"
-            >
-              <button onClick={() => setShowContactPopup(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
-                <X className="w-5 h-5" />
-              </button>
-              <div className="mb-6">
-                <h3 className="text-xl font-serif font-bold text-foreground">Contact Details</h3>
-                <p className="text-sm text-muted-foreground">Please provide your details to unlock media uploads.</p>
-              </div>
-              <form onSubmit={handleContactSubmit} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Name</label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
-                    <input required type="text" value={authorName} onChange={(e) => setAuthorName(e.target.value)} placeholder="Full Name" className="w-full bg-secondary/20 border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-1 focus:ring-primary outline-none" />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
-                    <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="w-full bg-secondary/20 border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-1 focus:ring-primary outline-none" />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Phone / Mobile</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
-                    <input required type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 234 567 890" className="w-full bg-secondary/20 border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-1 focus:ring-primary outline-none" />
-                  </div>
-                </div>
-                <button type="submit" className="w-full bg-primary text-primary-foreground py-3 rounded-lg text-sm font-bold uppercase tracking-widest hover:opacity-90 transition-opacity mt-2">
-                  Continue to Upload
-                </button>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <div className="container mx-auto px-6 lg:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+    <section className="py-12 bg-background">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col lg:flex-row gap-6 items-stretch">
           
-          {/* LEFT: Experience Slider */}
-          <div className="lg:col-span-8 order-2 lg:order-1 bg-card border border-border rounded-lg p-5 shadow-sm hover:border-primary/50 transition-all duration-300 hover:shadow-md flex flex-col">
-            <div className="mb-5">
-              <span className="text-xs font-bold text-primary tracking-[0.25em] uppercase block mb-2">Guest Experiences</span>
-              <h2 className="text-2xl md:text-3xl font-serif text-foreground">{experienceShowcase.title}</h2>
+          {/* LEFT SECTION: Showcase */}
+          <div className="lg:w-3/4 flex flex-col bg-card border rounded-2xl p-6 shadow-sm">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-2xl font-serif font-bold italic">Moments of Excellence</h2>
+                <p className="text-muted-foreground text-sm">What our guests say about us</p>
+              </div>
+              <div className="text-right">
+                <div className="flex items-center gap-1 justify-end text-primary mb-1">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={14} className="fill-current" />)}
+                </div>
+                <p className="text-[10px] font-bold uppercase tracking-tighter">5.0★ from 2500+ reviews</p>
+              </div>
             </div>
 
             <div className="flex-grow">
               <Swiper
                 modules={[Autoplay, Navigation]}
-                spaceBetween={16}
+                spaceBetween={15}
                 slidesPerView={1.2}
-                breakpoints={{ 640: { slidesPerView: 2, spaceBetween: 16 }, 1024: { slidesPerView: 3, spaceBetween: 16 } }}
-                speed={800}
-                autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-                loop={displayItems.length > 1}
-                className="w-full experience-swiper py-2 !pb-12 lg:!pb-2"
+                breakpoints={{ 768: { slidesPerView: 3 } }}
+                autoplay={{ 
+                    delay: 6000, // Slowed down from 3500 to 6000
+                    disableOnInteraction: false 
+                }}
+                className="h-full"
               >
-                {isLoadingExperiences && guestExperiences.length === 0 ? (
-                  <SwiperSlide>
-                    <div className="h-96 flex items-center justify-center bg-card border border-border rounded-lg">
-                      <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                    </div>
-                  </SwiperSlide>
-                ) : displayItems.length === 0 ? (
-                  <SwiperSlide>
-                    <div className="h-96 flex flex-col items-center justify-center bg-card border border-border rounded-lg p-6 text-center">
-                      <p className="text-sm text-muted-foreground">No guest experiences yet.</p>
-                    </div>
-                  </SwiperSlide>
-                ) : (
-                  displayItems.map((item, index) => (
-                    <SwiperSlide key={item.id || index} className="h-auto">
-                      <div className="group bg-background border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-300 h-full flex flex-col shadow-sm hover:shadow-md">
+                {guestExperiences.map((item: any) => (
+                  <SwiperSlide key={item.id}>
+                    <div className="bg-background border rounded-xl overflow-hidden h-full flex flex-col group">
+                      <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                        
+                        {/* Improved Media Logic */}
                         {item.type === "video" ? (
-                          <div className="relative w-full" style={{ paddingBottom: "125%" }}>
-                            <div className="absolute inset-0 bg-black">
-                              <video ref={(el) => (videoRefs.current[index] = el)} src={item.videoUrl} poster={item.thumbnail?.src} className="w-full h-full object-cover" loop playsInline muted onEnded={() => setPlayingVideo(null)} />
-                              {playingVideo !== index && (
-                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center cursor-pointer hover:bg-black/40" onClick={() => handleVideoPlay(index)}>
-                                  <div className="w-16 h-16 rounded-full bg-white/95 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                                    <Play className="w-8 h-8 text-primary ml-1" fill="currentColor" />
-                                  </div>
-                                </div>
-                              )}
-                              <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 z-10">
-                                <Film className="w-3 h-3 text-white" />
-                                <span className="text-[10px] text-white font-bold uppercase tracking-wider">REEL</span>
-                              </div>
-                              <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 z-10 ${playingVideo === index ? "opacity-0" : "opacity-100"}`}>
-                                <h3 className="text-sm font-serif font-bold text-white mb-1">{item.title}</h3>
-                                <p className="text-xs text-white/90">{item.author}</p>
-                              </div>
-                            </div>
+                          <video 
+                            src={item.displayVideo} 
+                            className="w-full h-full object-cover" 
+                            autoPlay 
+                            muted 
+                            loop 
+                            playsInline
+                          />
+                        ) : item.mediaList && item.mediaList.length > 1 ? (
+                          <div className="grid grid-cols-2 h-full gap-0.5">
+                            {item.mediaList.slice(0, 4).map((m: any, idx: number) => (
+                              <img key={idx} src={m.url} className="w-full h-full object-cover" alt="grid" />
+                            ))}
                           </div>
                         ) : (
-                          <>
-                            <div className="relative aspect-[16/10] overflow-hidden">
-                              <OptimizedImage src={item.image?.src || ""} alt={item.image?.alt || ""} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                              <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-md p-1.5 rounded-full text-white/90"><Quote className="w-3 h-3" /></div>
-                            </div>
-                            <div className="p-4 flex flex-col flex-grow">
-                              <h3 className="text-base font-serif font-bold text-foreground mb-1.5 line-clamp-1">{item.title}</h3>
-                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed italic">"{item.description}"</p>
-                              <div className="mt-auto pt-2.5 border-t border-border/50 text-xs text-muted-foreground"><span className="text-foreground">{item.author}</span></div>
-                            </div>
-                          </>
+                          <OptimizedImage 
+                            src={item.imageUrl || ""} 
+                            alt={item.author} 
+                            className="w-full h-full object-cover" 
+                          />
+                        )}
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end">
+                          <p className="text-white text-xs italic mb-2 line-clamp-2">"{item.description}"</p>
+                          <p className="text-white font-bold text-sm">{item.author}</p>
+                        </div>
+                        
+                        {item.type === "video" && (
+                          <div className="absolute top-2 right-2 p-1.5 bg-black/40 rounded-full">
+                            <Video size={14} className="text-white" />
+                          </div>
                         )}
                       </div>
-                    </SwiperSlide>
-                  ))
-                )}
+                    </div>
+                  </SwiperSlide>
+                ))}
               </Swiper>
-            </div>
-            
-            <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-1">
-                  {[1, 2, 3, 4, 5].map((star) => <Star key={star} className="w-3.5 h-3.5 fill-primary text-primary" />)}
-                </div>
-                <span className="text-xs font-medium text-foreground">5.0★ from {guestExperiences.length || 2500}+ reviews</span>
-              </div>
             </div>
           </div>
 
-          {/* RIGHT: Submission Panel */}
-          <div className="lg:col-span-4 order-1 lg:order-2 bg-card border border-border rounded-lg p-5 shadow-sm hover:border-primary/50 transition-all duration-300 hover:shadow-md flex flex-col">
-            <h4 className="text-sm font-bold text-foreground flex items-center gap-2 mb-4">
-              <Send className="w-4 h-4 text-primary" /> Share Your Moment
-            </h4>
-
-            <div className="space-y-4 flex-grow flex flex-col" onFocus={handleStartInteraction} onClick={handleStartInteraction}>
-              <AnimatePresence>
-                {submitSuccess && (
-                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
-                    <span className="text-xs text-green-600 font-medium">Successfully submitted!</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Author Display (Verified) */}
-              <div className={`w-full border rounded-lg px-3 py-2 text-sm flex items-center gap-2 ${isContactVerified ? 'bg-primary/5 border-primary/20' : 'bg-secondary/20 border-border'}`}>
-                <User className={`w-4 h-4 ${isContactVerified ? 'text-primary' : 'text-muted-foreground'}`} />
-                <span className={isContactVerified ? 'text-foreground font-medium' : 'text-muted-foreground'}>
-                  {authorName || "Your Details"}
-                </span>
-                {isContactVerified && <CheckCircle2 className="w-3.5 h-3.5 text-primary ml-auto" />}
+          {/* RIGHT SECTION: Submission Panel */}
+          <div className="lg:w-1/4 flex flex-col">
+            <div className="bg-card border rounded-2xl p-6 shadow-sm h-full flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-bold text-sm">Share Experience</h4>
+                <button onClick={() => setShowPopup(true)} className="text-primary hover:bg-primary/10 p-1 rounded-full">
+                  <Edit2 size={16} />
+                </button>
               </div>
 
-              {/* Multi-Media Previews Grid */}
-              <AnimatePresence>
-                {hasMedia && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="grid grid-cols-3 gap-2">
-                    {mediaPreviews.map((media, idx) => (
-                      <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-secondary/50 group">
-                        {media.type === "image" ? <img src={media.url} className="w-full h-full object-cover" alt="Preview" /> : <div className="bg-black w-full h-full flex items-center justify-center"><Film className="text-white w-6 h-6" /></div>}
-                        <button onClick={(e) => { e.stopPropagation(); removeMedia(idx); }} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
-                      </div>
-                    ))}
-                    {youtubeLink && (
-                      <div className="relative aspect-square rounded-md overflow-hidden bg-red-500/10 flex items-center justify-center group">
-                        <Youtube className="w-8 h-8 text-red-500" />
-                        <button onClick={(e) => { e.stopPropagation(); setYoutubeLink(""); }} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100"><X className="w-3 h-3" /></button>
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div className="mb-4 p-3 bg-red-50 rounded-xl border border-red-100 flex items-center gap-3">
+                <div className="bg-white p-2 rounded-full text-red-400 shadow-sm">
+                  <User size={18} />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-red-400 leading-none">Posting as</p>
+                  <p className="text-sm font-bold text-gray-800">{authorName || "Guest User"}</p>
+                </div>
+              </div>
 
-              {/* Upload Section (Locked until verified) */}
-              <div className={`space-y-4 transition-opacity ${!isContactVerified ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
-                {!youtubeLink && (
-                  <div className="flex gap-2">
-                    <div onClick={() => fileInputRef.current?.click()} className="flex-grow border-2 border-dashed border-border rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/30 min-h-[100px]">
-                      <Upload className="w-5 h-5 text-muted-foreground mb-2" />
-                      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Upload Images/Videos</p>
-                      <input type="file" ref={fileInputRef} onChange={handleFileUpload} multiple accept="image/*,video/*" className="hidden" />
+              <textarea 
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                placeholder="Tell us about your stay..."
+                className="w-full flex-grow bg-secondary/20 border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-primary outline-none resize-none mb-4"
+              />
+
+              {/* Previews */}
+              {mediaPreviews.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                  {mediaPreviews.map((m, i) => (
+                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border">
+                      {m.type === 'image' ? <img src={m.url} className="h-full w-full object-cover" /> : <div className="h-full w-full bg-black flex items-center justify-center"><Video size={12} className="text-white" /></div>}
+                      <button onClick={() => setMediaPreviews(p => p.filter((_, idx) => idx !== i))} className="absolute top-0 right-0 bg-black/50 text-white rounded-full"><X size={10}/></button>
                     </div>
-                    <button onClick={() => setShowYoutubeInput(!showYoutubeInput)} className={`p-3 rounded-lg border ${showYoutubeInput ? "bg-primary/10 border-primary text-primary" : "bg-secondary/20 text-muted-foreground"}`}><Youtube className="w-5 h-5" /></button>
-                  </div>
-                )}
+                  ))}
+                </div>
+              )}
 
-                {showYoutubeInput && !youtubeLink && (
-                  <div className="space-y-2">
-                    <input type="text" value={youtubeLink} onChange={(e) => setYoutubeLink(e.target.value)} placeholder="Paste YouTube link..." className="w-full bg-secondary/20 border border-border rounded-lg px-3 py-2 text-xs" />
-                    <button onClick={handleYoutubeLinkAdd} className="w-full bg-primary/10 text-primary py-2 rounded-lg text-xs font-medium">Add Link</button>
-                  </div>
-                )}
-
-                <textarea value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} placeholder={hasMedia ? "Add description (optional)..." : "Describe your experience..."} className="w-full min-h-[100px] bg-secondary/20 border border-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none resize-none" />
+              <div className="flex gap-2 mb-4">
+                <button 
+                  onClick={() => handleFileTrigger('image')}
+                  className="flex-grow bg-secondary/40 hover:bg-secondary/60 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors"
+                >
+                  <ImageIcon size={16} /> Media
+                </button>
+                <button 
+                  onClick={() => handleFileTrigger('video')}
+                  className="bg-secondary/40 hover:bg-secondary/60 p-2.5 rounded-xl transition-colors"
+                >
+                  <Video size={16} />
+                </button>
+                <input type="file" ref={fileInputRef} className="hidden" multiple onChange={handleFileUpload} />
               </div>
 
-              {/* Submit Button */}
-              <button
-                disabled={!canSubmit}
+              <button 
+                disabled={isSubmitting || (!feedbackText && mediaPreviews.length === 0)}
                 onClick={handleSubmit}
-                className="w-full bg-primary text-primary-foreground text-xs font-bold py-4 rounded-lg flex items-center justify-center gap-2 uppercase tracking-widest disabled:opacity-50 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                className="w-full bg-[#f88d8d] hover:bg-[#f67a7a] text-white py-4 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95 disabled:opacity-50"
               >
-                {isSubmitting ? (
-                  <><Loader2 className="w-3 h-3 animate-spin" /> Submitting...</>
-                ) : (
-                  <>
-                    {!isContactVerified ? "Complete Details to Submit" : "Confirm Submission"}
-                    <Send className="w-3 h-3" />
-                  </>
-                )}
+                {isSubmitting ? <Loader2 className="animate-spin mx-auto" size={20} /> : "Submit Story"}
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Verification Popup */}
+      <AnimatePresence>
+        {showPopup && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-card p-8 rounded-2xl border shadow-2xl w-full max-w-sm">
+              <h3 className="text-xl font-serif font-bold mb-6">Guest Information</h3>
+              <div className="space-y-4">
+                <input value={authorName} onChange={e => setAuthorName(e.target.value)} placeholder="Full Name" className="w-full p-3 bg-muted rounded-lg outline-none" />
+                <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="w-full p-3 bg-muted rounded-lg outline-none" />
+                <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone Number" className="w-full p-3 bg-muted rounded-lg outline-none" />
+                <button onClick={() => {setIsVerified(true); setShowPopup(false)}} className="w-full bg-primary text-white py-3 rounded-lg font-bold">Save & Continue</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

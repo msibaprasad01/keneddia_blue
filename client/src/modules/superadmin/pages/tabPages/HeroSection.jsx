@@ -20,7 +20,7 @@ import {
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import AddHeroSectionModal from "../../modals/AddHeroSectionModal";
-
+import { showSuccess,showError } from "@/lib/toasters/toastUtils";
 function HeroSection() {
   const [heroSections, setHeroSections] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -139,26 +139,13 @@ function HeroSection() {
       
       await toggleHeroSectionActive(id, newStatus);
       
-      toast.success(
-        `Hero section ${newStatus ? 'activated' : 'deactivated'} successfully!`,
-        {
-          icon: newStatus ? '✅' : '⏸️',
-          duration: 3000,
-        }
-      );
-      
+      showSuccess(`Hero section ${newStatus ? 'activated' : 'deactivated'} successfully!`,);
       // Refresh current page
       await fetchHeroSection(currentPage);
     } catch (error) {
       console.error("Error toggling active status:", error);
-      toast.error(
-        error?.response?.data?.message || 
-        `Failed to ${newStatus ? 'activate' : 'deactivate'} hero section`,
-        {
-          icon: '❌',
-          duration: 4000,
-        }
-      );
+      showError(
+        error?.response?.data?.message || `Failed to ${newStatus ? 'activate' : 'deactivate'} hero section`);
     } finally {
       setTogglingStatus(prev => {
         const newState = { ...prev };
@@ -178,26 +165,13 @@ function HeroSection() {
       
       await toggleHeroSectionHomepage(id, newStatus);
       
-      toast.success(
-        `Hero section ${newStatus ? 'shown on' : 'hidden from'} homepage successfully!`,
-        {
-          icon: newStatus ? '🏠' : '👁️‍🗨️',
-          duration: 3000,
-        }
-      );
+      showSuccess(`Hero section ${newStatus ? 'shown on' : 'hidden from'} homepage successfully!`,);
       
       // Refresh current page
       await fetchHeroSection(currentPage);
     } catch (error) {
       console.error("Error toggling homepage visibility:", error);
-      toast.error(
-        error?.response?.data?.message || 
-        `Failed to ${newStatus ? 'show on' : 'hide from'} homepage`,
-        {
-          icon: '❌',
-          duration: 4000,
-        }
-      );
+      showError(error?.response?.data?.message || `Failed to ${newStatus ? 'show on' : 'hide from'} homepage`,);
     } finally {
       setTogglingStatus(prev => {
         const newState = { ...prev };

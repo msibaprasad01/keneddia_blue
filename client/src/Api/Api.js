@@ -111,7 +111,7 @@ export const createGuestExperienceByGuest = (formData) =>
 export const addGuestExperienceSection = (data) =>
   API.post("api/v1/guest-experience/section", data);
 export const getGuestExperienceSection = () =>
-  API.get("api/v1/guest-experience/paginated?direction=DESC");
+  API.get("/api/v1/guest-experience");
 export const addGuestExperienceItem = (formData) =>
   API.post("api/v1/guest-experience", formData);
 export const updateGuestExperienceItem = (id, formData) =>
