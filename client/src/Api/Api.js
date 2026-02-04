@@ -196,6 +196,10 @@ export const createOrUpdateKennediaGroup = (data) =>
 export const updateDailyOfferById = (id, data) =>
   API.put(`api/v1/daily-offer/${id}`, data);
 export const getKennediaGroup = () => API.get("api/v1/kennedia-group");
+// Enable a business division
+export const enableKennediaDivision = (id) =>API.put(`api/v1/kennedia-group/division/${id}/enable`);
+export const disableKennediaDivision = (id) =>API.put(`api/v1/kennedia-group/division/${id}/disable`);
+
 
 // offer section
 export const createDailyOffer = (data) =>
