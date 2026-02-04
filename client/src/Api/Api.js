@@ -164,7 +164,7 @@ export const updateGuestExperienceItem = (id, formData) =>
   API.put(`api/v1/guest-experience/${id}`, formData);
 
 //our presence section
-// our-presence/admin/items
+
 export const AddOurPresenceSectionItems = (data) =>API.post("api/v1/our-presence/admin/items",data);
 export const UpdateOurPresenceSectionHeaders = (data) =>API.put(
   "api/v1/our-presence/admin/section",
