@@ -59,7 +59,7 @@ export default function NewsPress() {
       try {
         setLoading(true);
         // Call API with required params
-        const res = await getAllNews({ category: "PRESS", page: 0, size: 10 });
+        const res = await getAllNews({ category: "", page: 0, size: 10 });
         
         // Handle paginated response structure from your JSON
         const data = res?.data?.content || res?.content || [];
