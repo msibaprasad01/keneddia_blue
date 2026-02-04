@@ -580,7 +580,7 @@ function KennediaGroup() {
                   </div>
 
                   {/* Delete button */}
-                  <button
+                  {/* <button
                     onClick={() => handleDeleteDivision(division.id)}
                     className="px-3 py-1.5 rounded text-xs font-medium transition-colors"
                     style={{
@@ -590,7 +590,7 @@ function KennediaGroup() {
                   >
                     <Trash2 size={14} className="inline mr-1" />
                     Delete
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}
