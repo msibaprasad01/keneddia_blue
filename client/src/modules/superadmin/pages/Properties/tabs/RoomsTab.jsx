@@ -1,8 +1,8 @@
-import React from 'react';
-import { PencilSquareIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { colors } from '@/lib/colors/colors';
+import React from "react";
+import { PencilSquareIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { colors } from "@/lib/colors/colors";
 
-const RoomsTab = ({ data, onEdit, onAdd, onDelete }) => {
+const RoomsTab = ({ data = [], onEdit, onAdd, onDelete }) => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -20,46 +20,100 @@ const RoomsTab = ({ data, onEdit, onAdd, onDelete }) => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Price</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Occupancy</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Base Price</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Occupancy</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
+
           <tbody className="bg-white divide-y divide-gray-200">
-            {data.map((room) => (
-              <tr key={room.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{room.name}</div>
+            {data.map((room, index) => (
+              <tr key={room?.id ?? index} className="hover:bg-gray-50">
+                {/* Name + Amenities */}
+                <td className="px-6 py-4">
+                  <div className="text-sm font-medium text-gray-900">
+                    {room?.name || "N/A"}
+                  </div>
+
                   <div className="text-xs text-gray-500 flex gap-1 mt-1">
-                    {room.amenities.slice(0, 2).map(a => <span key={a} className="bg-gray-100 px-1.5 rounded">{a}</span>)}
-                    {room.amenities.length > 2 && <span className="bg-gray-100 px-1.5 rounded">+{room.amenities.length - 2}</span>}
+                    {Array.isArray(room?.amenities) && room.amenities.length > 0 ? (
+                      <>
+                        {room.amenities.slice(0, 2).map((a, i) => (
+                          <span key={i} className="bg-gray-100 px-1.5 rounded">
+                            {a}
+                          </span>
+                        ))}
+                        {room.amenities.length > 2 && (
+                          <span className="bg-gray-100 px-1.5 rounded">
+                            +{room.amenities.length - 2}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="italic text-gray-400">N/A</span>
+                    )}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹{room.basePrice.toLocaleString()}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{room.maxOccupancy} Guests</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{room.size}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${room.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {room.available ? 'Available' : 'Unavailable'}
-                  </span>
+
+                {/* Base Price */}
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {typeof room?.basePrice === "number"
+                    ? `₹${room.basePrice.toLocaleString()}`
+                    : "N/A"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button onClick={() => onEdit(room)} className="text-blue-600 hover:text-blue-900 mr-4">
+
+                {/* Occupancy */}
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {room?.maxOccupancy ? `${room.maxOccupancy} Guests` : "N/A"}
+                </td>
+
+                {/* Size */}
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {room?.size || "N/A"}
+                </td>
+
+                {/* Status */}
+                <td className="px-6 py-4">
+                  {typeof room?.available === "boolean" ? (
+                    <span
+                      className={`px-2 inline-flex text-xs font-semibold rounded-full ${
+                        room.available
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {room.available ? "Available" : "Unavailable"}
+                    </span>
+                  ) : (
+                    <span className="text-xs italic text-gray-400">N/A</span>
+                  )}
+                </td>
+
+                {/* Actions */}
+                <td className="px-6 py-4 text-right text-sm font-medium">
+                  <button
+                    onClick={() => onEdit?.(room)}
+                    className="text-blue-600 hover:text-blue-900 mr-4"
+                  >
                     <PencilSquareIcon className="w-5 h-5" />
                   </button>
-                  <button onClick={() => onDelete(room.id)} className="text-red-600 hover:text-red-900">
+                  <button
+                    onClick={() => onDelete?.(room?.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
                     <TrashIcon className="w-5 h-5" />
                   </button>
                 </td>
               </tr>
             ))}
+
             {data.length === 0 && (
               <tr>
                 <td colSpan="6" className="px-6 py-10 text-center text-gray-500">
-                  No rooms found. Click "Add Room" to create one.
+                  No rooms found. Click “Add Room” to create one.
                 </td>
               </tr>
             )}
