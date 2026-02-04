@@ -4,53 +4,49 @@ import { Link } from "react-router-dom";
 import { Calendar, ArrowRight, MapPin, Loader2 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getEventsUpdated } from "@/Api/Api";
-import { siteContent } from "@/data/siteContent";
-// Swiper for Carousel logic
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
 const ROUTES = {
   allEvents: "/events",
-  eventDetail: (id: number | string) => `/events/${id}`,
+  eventDetail: (id: number | string) => `/#`,
 } as const;
 
 const STYLE_CONFIG = {
-  aspectRatio: "4/3.5" as const,
-  gridGap: "gap-5",
-  cardRadius: "rounded-xl",
+  cardHeight: "h-[280px]", // Compact card height matching your image
+  cardRadius: "rounded-2xl",
 } as const;
 
-// Interface exactly matching your API response
+// ============================================================================
+// INTERFACES
+// ============================================================================
+
 interface ApiEvent {
   id: number | string;
   title: string;
   locationName: string;
   eventDate: string;
   description: string;
+  status: "ACTIVE" | "COMING_SOON" | "SOLD_OUT";
+  active: boolean;
   image: {
     url: string;
   };
   ctaText: string;
 }
 
-export default function EventsSection() {
-  // 1. Transform static data to ApiEvent format for immediate fallback
-  const fallbackEvents: ApiEvent[] = (siteContent.text.events?.items || []).map((item: any, index: number) => ({
-    id: item.slug || `static-${index}`,
-    title: item.title,
-    locationName: item.location,
-    eventDate: item.date, // Note: Static date is "Dec 25, 2025", JS Date can parse this
-    description: item.description,
-    image: {
-      url: item.image?.src || ""
-    },
-    ctaText: "Details"
-  }));
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
 
-  // 2. Initialize state with fallback data immediately
-  const [apiEvents, setApiEvents] = useState<ApiEvent[]>(fallbackEvents);
+export default function EventsSection() {
+  const [apiEvents, setApiEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
 
@@ -61,26 +57,30 @@ export default function EventsSection() {
   const fetchEventData = async () => {
     try {
       setLoading(true);
-      const response = await getEventsUpdated({});
+      const response = await getEventsUpdated();
 
       // Extract array regardless of wrapper
-      const rawEvents = Array.isArray(response?.data) 
-        ? response.data 
-        : Array.isArray(response) 
-        ? response 
+      const rawEvents = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response)
+        ? response
         : [];
 
-      if (rawEvents.length > 0) {
+      // Filter: Only show events with status="ACTIVE" AND active=true
+      const activeEvents = rawEvents.filter(
+        (event: ApiEvent) => event.status === "ACTIVE" && event.active === true
+      );
+
+      if (activeEvents.length > 0) {
         // Sort: Latest events first
-        const sortedEvents = [...rawEvents].sort(
-          (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+        const sortedEvents = [...activeEvents].sort(
+          (a, b) =>
+            new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
         );
-        // 3. Replace fallback with actual API data
         setApiEvents(sortedEvents);
       }
     } catch (error) {
       console.error("Failed to fetch events:", error);
-      // Fallback data remains in state if API fails
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,9 @@ export default function EventsSection() {
 
   const uniqueLocations = [
     "All Locations",
-    ...Array.from(new Set(apiEvents.map((event) => event.locationName).filter(Boolean))),
+    ...Array.from(
+      new Set(apiEvents.map((event) => event.locationName).filter(Boolean))
+    ),
   ];
 
   const filteredEvents =
@@ -96,16 +98,31 @@ export default function EventsSection() {
       ? apiEvents
       : apiEvents.filter((event) => event.locationName === selectedLocation);
 
+  // Loading state
+  if (loading) {
+    return (
+      <section id="events" className="py-12 bg-background">
+        <div className="container mx-auto px-6 lg:px-12">
+          <div className="h-64 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // No events state
+  if (apiEvents.length === 0) {
+    return null; // Don't render section if no active events
+  }
+
   return (
     <section id="events" className="py-12 bg-background overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
         <SectionHeader
-          title={siteContent.text.events?.title || "Upcoming Events"}
-          viewAllLink={ROUTES.allEvents}
           selectedLocation={selectedLocation}
           setSelectedLocation={setSelectedLocation}
           uniqueLocations={uniqueLocations}
-          isLoading={loading} // Pass loading state to show subtle indicator
         />
 
         {filteredEvents.length > 0 ? (
@@ -146,22 +163,28 @@ export default function EventsSection() {
   );
 }
 
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
 function SectionHeader({
-  title,
-  viewAllLink,
   selectedLocation,
   setSelectedLocation,
   uniqueLocations,
-  isLoading,
-}: any) {
+}: {
+  selectedLocation: string;
+  setSelectedLocation: (location: string) => void;
+  uniqueLocations: string[];
+}) {
   return (
     <div className="flex items-center justify-between mb-8">
       <div className="flex items-center gap-4">
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{title}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+            Upcoming Events
+          </h2>
           <div className="h-0.5 w-16 bg-primary" />
         </div>
-        {isLoading && <Loader2 className="w-5 h-5 animate-spin text-primary mt-2" />}
       </div>
       <div className="flex items-center gap-4">
         <div className="relative hidden sm:block">
@@ -171,13 +194,15 @@ function SectionHeader({
             className="appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary outline-none cursor-pointer"
           >
             {uniqueLocations.map((loc: string) => (
-              <option key={loc} value={loc}>{loc}</option>
+              <option key={loc} value={loc}>
+                {loc}
+              </option>
             ))}
           </select>
           <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
         </div>
         <Link
-          to={viewAllLink}
+          to={ROUTES.allEvents}
           className="group flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all"
         >
           All Events <ArrowRight className="w-4 h-4" />
@@ -188,14 +213,20 @@ function SectionHeader({
 }
 
 function EventCard({ event, index }: { event: ApiEvent; index: number }) {
-  // Parsing date string to formatted date
-  const dateObj = new Date(event.eventDate);
-  const formattedDate = isNaN(dateObj.getTime()) 
-    ? event.eventDate // Fallback to raw string if parsing fails (for static "Dec 25, 2025")
-    : dateObj.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-      });
+  // Format date to match your image style (e.g., "13 FEB")
+  const formatDate = (dateString: string) => {
+    try {
+      const dateObj = new Date(dateString);
+      if (isNaN(dateObj.getTime())) return dateString;
+
+      const day = dateObj.getDate();
+      const month = dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+      
+      return `${day} ${month}`;
+    } catch {
+      return dateString;
+    }
+  };
 
   return (
     <motion.div
@@ -207,41 +238,51 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
     >
       <Link to={ROUTES.eventDetail(event.id)} className="block">
         <div
-          className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-md hover:shadow-2xl transition-shadow duration-500`}
+          className={`relative ${STYLE_CONFIG.cardHeight} ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-500`}
         >
-          <OptimizedImage
-            src={event.image?.url || ""}
-            alt={event.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
+          {/* Image with fixed height */}
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <OptimizedImage
+              src={event.image?.url || ""}
+              alt={event.title}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+          </div>
 
-          {/* Date Badge */}
-          <div className="absolute top-3 right-3 bg-primary shadow-xl border border-white/20">
-            <div className="flex items-center gap-1.5 px-3 py-1.5">
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+          {/* Date Badge - Top Right */}
+          <div className="absolute top-3 right-3 bg-primary shadow-lg rounded-md">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5">
               <Calendar className="w-3.5 h-3.5 text-white" />
-              <span className="text-xs font-bold text-white uppercase tracking-wide">
-                {formattedDate}
+              <span className="text-[11px] font-bold text-white uppercase tracking-wider">
+                {formatDate(event.eventDate)}
               </span>
             </div>
           </div>
 
+          {/* Content overlay - Bottom */}
           <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-            <div className="flex items-center gap-1 text-xs font-medium text-white mb-1">
+            {/* Location */}
+            <div className="flex items-center gap-1 text-[11px] font-medium text-white/90 mb-2">
               <MapPin className="w-3 h-3" />
               <span>{event.locationName}</span>
             </div>
-            
-            <h3 className="text-lg font-bold mb-1.5 line-clamp-2 group-hover:text-primary transition-colors drop-shadow-lg">
+
+            {/* Title */}
+            <h3 className="text-base font-bold mb-1 line-clamp-2 group-hover:text-primary transition-colors drop-shadow-lg">
               {event.title}
             </h3>
-            
-            <p className="text-xs text-white/90 mb-3 line-clamp-2 leading-relaxed drop-shadow-md">
+
+            {/* Description */}
+            <p className="text-[11px] text-white/80 mb-3 line-clamp-1 leading-relaxed drop-shadow-md">
               {event.description}
             </p>
-            
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-primary bg-white px-3 py-1.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all shadow-lg">
-              Details <ArrowRight className="w-3 h-3" />
+
+            {/* CTA Button */}
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-primary bg-white px-3 py-1.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all shadow-lg">
+              {event.ctaText || "Details"} <ArrowRight className="w-3 h-3" />
             </div>
           </div>
         </div>

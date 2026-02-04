@@ -1,179 +1,232 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, ChevronLeft, ChevronRight, Clock, MapPin, Tag } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Loader2,
+  ExternalLink,
+  Tag,
+} from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { getDailyOffers } from "@/Api/Api";
 
+// Swiper Styles
 import "swiper/css";
+import "swiper/css/navigation";
 
-import { HOTEL_OFFERS } from "@/data/hotelContent";
+/* =======================
+    REEL DETECTION (9:16)
+======================= */
+const detectBanner = (image: any) => {
+  if (!image?.width || !image?.height) return false;
+  const ratio = image.width / image.height;
+  // Aspect ratio < 0.7 covers 9:16 and 3:4 portrait formats
+  return ratio < 0.7; 
+};
 
-// Reused Countdown Component
-function CountdownTimer({ expiresAt }: { expiresAt?: string | Date }) {
-  const [timeLeft, setTimeLeft] = useState("");
+/* =======================
+    TIMER COMPONENT
+======================= */
+function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
+  const [label, setLabel] = useState("");
   const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
     if (!expiresAt) return;
-
-    const calculateTimeLeft = () => {
-      const now = Date.now();
-      const expiryTime = new Date(expiresAt).getTime();
-      const difference = expiryTime - now;
-
-      if (difference <= 0) {
+    const i = setInterval(() => {
+      const diff = new Date(expiresAt).getTime() - Date.now();
+      if (diff <= 0) {
+        setLabel("Expired");
         setIsExpired(true);
-        setTimeLeft("Expired");
-        return;
+        clearInterval(i);
+      } else {
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        setLabel(`${h}h ${m}m Remaining`);
+        setIsExpired(false);
       }
-
-      const totalSeconds = Math.floor(difference / 1000);
-      const days = Math.floor(totalSeconds / (60 * 60 * 24));
-      const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
-      const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
-
-      if (days > 0) setTimeLeft(`${days}d ${hours}h`);
-      else if (hours > 0) setTimeLeft(`${hours}h ${minutes}m`);
-      else setTimeLeft(`${minutes}m`);
-
-      setIsExpired(false);
-    };
-
-    calculateTimeLeft();
-    const interval = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(i);
   }, [expiresAt]);
 
-  if (!expiresAt) return null;
+  if (!label) return null;
 
   return (
-    <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold backdrop-blur-sm ${isExpired
-      ? 'bg-red-500/90 text-white border border-red-600'
-      : 'bg-orange-500/90 text-white border border-orange-600'
-      }`}>
+    <div className={`flex items-center gap-1 px-2.5 py-1 text-white text-[10px] font-bold rounded-full shadow-md ${
+      isExpired ? "bg-red-600" : "bg-black/70"
+    }`}>
       <Clock className="w-3 h-3" />
-      <span>{isExpired ? "Expired" : `Expires in ${timeLeft}`}</span>
+      {label}
     </div>
   );
 }
 
+/* =======================
+    MAIN COMPONENT
+======================= */
 export default function HotelOffersCarousel() {
-  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
+  const [swiper, setSwiper] = useState<SwiperType | null>(null);
+  const [offers, setOffers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handlePrev = () => {
-    if (swiperInstance) swiperInstance.slidePrev();
-  };
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        setLoading(true);
+        const res = await getDailyOffers({
+          targetType: "GLOBAL",
+          page: 0,
+          size: 100,
+        });
 
-  const handleNext = () => {
-    if (swiperInstance) swiperInstance.slideNext();
-  };
+        const rawData = res.data?.data || res.data || [];
+        const list = Array.isArray(rawData) ? rawData : (rawData.content || []);
+
+        // STRICT FILTERS: isActive, PROPERTY_PAGE, and Hotel type
+        const filtered = list.filter(
+          (o: any) =>
+            o.isActive &&
+            o.displayLocation === "PROPERTY_PAGE" &&
+            o.propertyTypeName === "Hotel"
+        );
+
+        setOffers(
+          filtered.map((o: any) => ({
+            id: o.id,
+            title: o.title,
+            description: o.description,
+            couponCode: o.couponCode || "N/A",
+            ctaText: o.ctaText || "Claim Offer",
+            ctaLink: o.ctaLink || "#",
+            expiresAt: o.expiresAt,
+            propertyType: o.propertyTypeName || "Hotel",
+            image: o.image,
+          }))
+        );
+      } catch (err) {
+        console.error("Offer fetch failed", err);
+        setOffers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOffers();
+  }, []);
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary" /></div>;
+  if (!offers.length) return null;
 
   return (
-    <section className="relative w-full bg-muted/30 py-10 overflow-hidden">
+    <section className="bg-muted/30 py-10">
       <div className="container mx-auto px-6 lg:px-12">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-serif text-foreground">
-              Exclusive Hotel Offers
-            </h2>
-            <div className="w-12 h-0.5 bg-primary mt-2" />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link to="/offers" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all text-sm mr-4">
-              View All Offers
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-
-            <button
-              onClick={handlePrev}
-              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all z-10 relative cursor-pointer"
-            >
-              <ChevronLeft className="w-4 h-4" />
+        {/* Header matched to design */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-serif text-foreground">Exclusive Hotel Offers</h2>
+          <div className="flex gap-2">
+            <button onClick={() => swiper?.slidePrev()} className="p-2 rounded-full border border-border hover:bg-white transition-colors">
+              <ChevronLeft size={20} />
             </button>
-            <button
-              onClick={handleNext}
-              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all z-10 relative cursor-pointer"
-            >
-              <ChevronRight className="w-4 h-4" />
+            <button onClick={() => swiper?.slideNext()} className="p-2 rounded-full border border-border hover:bg-white transition-colors">
+              <ChevronRight size={20} />
             </button>
           </div>
         </div>
 
-        {/* Carousel */}
-        <div className="relative">
-          <Swiper
-            modules={[Navigation, Autoplay]}
-            spaceBetween={24}
-            slidesPerView={1}
-            breakpoints={{
-              640: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-            }}
-            loop={HOTEL_OFFERS.length > 3}
-            autoplay={{ delay: 6000, disableOnInteraction: false }}
-            onSwiper={setSwiperInstance}
-            speed={600}
-            className="w-full pb-4"
-          >
-            {HOTEL_OFFERS.map((offer, index) => (
-              <SwiperSlide key={`offer-${index}`} className="h-full">
-                <div className="group relative bg-card border border-border rounded-xl overflow-hidden h-full hover:border-primary/50 transition-colors duration-300 flex flex-col shadow-sm hover:shadow-md">
-                  {/* Image */}
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <OptimizedImage
-                      src={offer.image.src}
-                      alt={offer.image.alt}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute top-3 left-3 flex gap-2">
-                      <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] uppercase font-bold tracking-wider rounded">
-                        {offer.category}
-                      </span>
+        <Swiper
+          modules={[Navigation, Autoplay]}
+          slidesPerView={1}
+          spaceBetween={16}
+          breakpoints={{
+            640: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+            1280: { slidesPerView: 4 },
+          }}
+          autoplay={{ delay: 5000 }}
+          onSwiper={setSwiper}
+        >
+          {offers.map((offer, i) => {
+            const isBanner = detectBanner(offer.image);
+            const isClickable = !!offer.ctaLink && offer.ctaLink !== "#";
+
+            return (
+              <SwiperSlide key={offer.id || i}>
+                {/* Frame strict height 520px as per dailyOffer */}
+                <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl">
+                  
+                  {/* IMAGE/REEL SECTION */}
+                  <div className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[280px]"}`}>
+                    {offer.image?.url ? (
+                      <img
+                        src={offer.image.url}
+                        alt={offer.title}
+                        className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted"><Tag className="w-10 h-10 text-muted-foreground/20" /></div>
+                    )}
+
+                    <div className="absolute top-3 left-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded z-10 font-bold uppercase tracking-wider">
+                      {offer.propertyType}
                     </div>
+
                     {offer.expiresAt && (
-                      <div className="absolute top-3 right-3">
+                      <div className="absolute top-3 right-3 z-10">
                         <CountdownTimer expiresAt={offer.expiresAt} />
+                      </div>
+                    )}
+
+                    {/* BANNER OVERLAY CTA (Only for Reels) */}
+                    {isBanner && (
+                      <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out bg-gradient-to-t from-black/90 via-black/40 to-transparent pt-10 z-20">
+                        <h3 className="text-white font-serif font-bold text-sm mb-2 line-clamp-2">{offer.title}</h3>
+                        <a
+                          href={offer.ctaLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-lg"
+                        >
+                          {offer.ctaText} <ExternalLink size={12} />
+                        </a>
                       </div>
                     )}
                   </div>
 
-                  {/* Content */}
-                  <div className="p-4 flex flex-col gap-3 flex-grow">
-                    <div className="flex justify-between items-start gap-2">
-                      <h3 className="text-lg font-serif font-bold text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                  {/* CONTENT SECTION (Only for Standard) */}
+                  {!isBanner && (
+                    <div className="p-4 flex flex-col flex-1">
+                      <h3 className="text-sm font-serif font-bold line-clamp-2 leading-tight transition-colors duration-300 group-hover:text-red-600">
                         {offer.title}
                       </h3>
-                      {offer.discount && (
-                        <span className="flex-shrink-0 px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase">
-                          {offer.discount}
-                        </span>
-                      )}
-                    </div>
+                      <p className="text-[11px] text-muted-foreground italic line-clamp-2 mt-2">
+                        {offer.description}
+                      </p>
 
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {offer.description}
-                    </p>
-
-                    <div className="mt-auto pt-3 border-t border-border/50 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Tag className="w-3 h-3" />
-                        <span>Code: <span className="font-mono text-foreground font-medium">{offer.couponCode}</span></span>
+                      <div className="mt-auto pt-3 border-t border-muted">
+                        <div className="text-[11px] mb-3 flex justify-between items-center bg-muted/50 p-2 rounded-md border border-dashed border-primary/20">
+                          <span className="text-muted-foreground font-medium uppercase">Promo Code:</span>
+                          <span className="font-mono font-black text-primary text-xs tracking-widest bg-card px-2 py-0.5 rounded shadow-sm border">
+                            {offer.couponCode}
+                          </span>
+                        </div>
+                        
+                        <a
+                          href={offer.ctaLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-md active:scale-95"
+                        >
+                          {offer.ctaText} <ExternalLink size={12} />
+                        </a>
                       </div>
-                      <Link to={`/hotel/offers/${offer.id}`} className="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
-                        Book Now
-                        <ArrowRight className="w-3 h-3" />
-                      </Link>
                     </div>
-                  </div>
+                  )}
                 </div>
               </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
+            );
+          })}
+        </Swiper>
       </div>
     </section>
   );

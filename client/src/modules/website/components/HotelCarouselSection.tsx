@@ -8,10 +8,6 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
-  Phone,
-  Mail,
-  Calendar,
-  Search,
   Home,
   Users,
   Wifi,
@@ -22,9 +18,9 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { allHotels } from "@/data/hotelData";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { GetAllPropertyListing, getPropertyListingMedia } from "@/Api/Api";
 
 // Custom CSS for Leaflet popups
 const customPopupStyles = `
@@ -45,6 +41,48 @@ const customPopupStyles = `
   }
 `;
 
+const mapApiHotelToUI = (hotel: any, media: any[]) => {
+  const basePrice = hotel.price || 0;
+
+  return {
+    id: hotel.id || "N/A",
+    name: hotel.propertyName || "N/A",
+    location: hotel.fullAddress || "N/A",
+    city: hotel.city || "N/A",
+    type: hotel.propertyType || "Hotel",
+
+    image: {
+      src: media?.[0]?.url || "",
+      alt: hotel.propertyName || "Hotel Image",
+    },
+
+    rating: hotel.rating || "N/A",
+    reviews: 0,
+    description: hotel.tagline || hotel.subTitle || "N/A",
+    amenities:
+      hotel.amenities && hotel.amenities.length > 0 ? hotel.amenities : ["N/A"],
+
+    rooms: hotel.capacity || "N/A",
+    capacity: hotel.capacity || "N/A",
+
+    pricing: {
+      basePrice,
+      discount: 0,
+      discountPercent: 0,
+      discountLabel: "Standard Price",
+      gstPercent: 12,
+    },
+
+    checkIn: "2:00 PM",
+    checkOut: "11:00 AM",
+
+    coordinates: {
+      lat: hotel.latitude || 20.5937,
+      lng: hotel.longitude || 78.9629,
+    },
+  };
+};
+
 // Inject custom styles
 if (typeof document !== "undefined") {
   const styleEl = document.createElement("style");
@@ -54,159 +92,6 @@ if (typeof document !== "undefined") {
     document.head.appendChild(styleEl);
   }
 }
-
-const featuredHotels = [
-  {
-    id: "mumbai",
-    name: "Kennedia Blu Mumbai",
-    location: "Colaba, Mumbai",
-    city: "Mumbai",
-    type: "Heritage",
-    image: siteContent.images.hotels.mumbai,
-    rating: "4.9",
-    reviews: 342,
-    description:
-      "Experience timeless elegance in the heart of South Mumbai with colonial charm.",
-    amenities: [
-      "Ocean View",
-      "Heritage Architecture",
-      "Fine Dining",
-      "Spa & Wellness",
-    ],
-    capacity: "120 Rooms",
-    pricing: {
-      basePrice: 12500,
-      discount: 1250,
-      discountPercent: 10,
-      discountLabel: "Early Bird Discount",
-      gstPercent: 12,
-    },
-    rooms: 120,
-    checkIn: "2:00 PM",
-    checkOut: "11:00 AM",
-    coordinates: { lat: 18.9067, lng: 72.8147 },
-  },
-  {
-    id: "delhi",
-    name: "Kennedia Blu Delhi",
-    location: "Connaught Place, Delhi",
-    city: "Delhi",
-    type: "Luxury",
-    image: siteContent.images.hotels.delhi,
-    rating: "5.0",
-    reviews: 512,
-    description:
-      "Unparalleled luxury in the capital's most prestigious location.",
-    amenities: [
-      "Presidential Suite",
-      "Michelin Dining",
-      "Private Butler",
-      "Infinity Pool",
-    ],
-    capacity: "200 Suites",
-    pricing: {
-      basePrice: 18900,
-      discount: 2835,
-      discountPercent: 15,
-      discountLabel: "Premium Member Discount",
-      gstPercent: 12,
-    },
-    rooms: 200,
-    checkIn: "2:00 PM",
-    checkOut: "12:00 PM",
-    coordinates: { lat: 28.6315, lng: 77.2167 },
-  },
-  {
-    id: "bengaluru",
-    name: "Kennedia Blu Bengaluru",
-    location: "Indiranagar, Bengaluru",
-    city: "Bengaluru",
-    type: "Business",
-    image: siteContent.images.hotels.bengaluru,
-    rating: "4.8",
-    reviews: 289,
-    description:
-      "Perfect for business travelers and tech professionals in Silicon Valley.",
-    amenities: [
-      "Business Center",
-      "High-Speed WiFi",
-      "Conference Rooms",
-      "Rooftop Bar",
-    ],
-    capacity: "150 Rooms",
-    pricing: {
-      basePrice: 10800,
-      discount: 1080,
-      discountPercent: 10,
-      discountLabel: "Corporate Discount",
-      gstPercent: 12,
-    },
-    rooms: 150,
-    checkIn: "2:00 PM",
-    checkOut: "11:00 AM",
-    coordinates: { lat: 12.9716, lng: 77.5946 },
-  },
-  {
-    id: "chennai",
-    name: "Kennedia Blu Chennai",
-    location: "ECR, Chennai",
-    city: "Chennai",
-    type: "Resort",
-    image: siteContent.images.hotels.chennai,
-    rating: "4.9",
-    reviews: 423,
-    description:
-      "Beachfront paradise along the scenic East Coast Road with ocean views.",
-    amenities: [
-      "Beach Access",
-      "Water Sports",
-      "Ayurvedic Spa",
-      "Seafood Restaurant",
-    ],
-    capacity: "80 Villas",
-    pricing: {
-      basePrice: 14500,
-      discount: 2175,
-      discountPercent: 15,
-      discountLabel: "Weekend Special",
-      gstPercent: 12,
-    },
-    rooms: 80,
-    checkIn: "2:00 PM",
-    checkOut: "11:00 AM",
-    coordinates: { lat: 13.0827, lng: 80.2707 },
-  },
-  {
-    id: "hyderabad",
-    name: "Kennedia Blu Hyderabad",
-    location: "Banjara Hills, Hyderabad",
-    city: "Hyderabad",
-    type: "City Hotel",
-    image: siteContent.images.hotels.hyderabad,
-    rating: "4.8",
-    reviews: 367,
-    description:
-      "Contemporary elegance in the City of Pearls with royal hospitality.",
-    amenities: [
-      "City Views",
-      "Multi-Cuisine",
-      "Fitness Center",
-      "Event Spaces",
-    ],
-    capacity: "135 Rooms",
-    pricing: {
-      basePrice: 11200,
-      discount: 1120,
-      discountPercent: 10,
-      discountLabel: "Festive Offer",
-      gstPercent: 12,
-    },
-    rooms: 135,
-    checkIn: "2:00 PM",
-    checkOut: "11:00 AM",
-    coordinates: { lat: 17.4239, lng: 78.4738 },
-  },
-];
 
 const cities = [
   "All Cities",
@@ -219,14 +104,14 @@ const cities = [
 ];
 
 // Helper function to calculate prices
-const calculatePricing = (pricing: (typeof featuredHotels)[0]["pricing"]) => {
-  const subtotal = pricing.basePrice - pricing.discount;
-  const gst = Math.round(subtotal * (pricing.gstPercent / 100));
+const calculatePricing = (pricing: any) => {
+  const subtotal = (pricing.basePrice || 0) - (pricing.discount || 0);
+  const gst = Math.round(subtotal * ((pricing.gstPercent || 0) / 100));
   const total = subtotal + gst;
 
   return {
-    basePrice: pricing.basePrice,
-    discount: pricing.discount,
+    basePrice: pricing.basePrice || 0,
+    discount: pricing.discount || 0,
     subtotal,
     gst,
     total,
@@ -238,14 +123,13 @@ function PriceBreakdown({
   pricing,
   calculated,
 }: {
-  pricing: (typeof featuredHotels)[0]["pricing"];
+  pricing: any;
   calculated: ReturnType<typeof calculatePricing>;
 }) {
   const [showDetails, setShowDetails] = useState(false);
 
   return (
     <div className="py-2.5 border-y border-border">
-      {/* Compact View */}
       {!showDetails ? (
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
@@ -283,7 +167,6 @@ function PriceBreakdown({
           </div>
         </div>
       ) : (
-        /* Detailed View */
         <div className="space-y-1.5">
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-1.5">
@@ -300,7 +183,6 @@ function PriceBreakdown({
             </button>
           </div>
 
-          {/* Base Price */}
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Base Price</span>
             <span className="font-medium">
@@ -308,7 +190,6 @@ function PriceBreakdown({
             </span>
           </div>
 
-          {/* Discount */}
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground flex items-center gap-1">
               {pricing.discountLabel}
@@ -321,7 +202,6 @@ function PriceBreakdown({
             </span>
           </div>
 
-          {/* Subtotal */}
           <div className="flex items-center justify-between text-xs pb-1.5 border-b border-border/50">
             <span className="text-muted-foreground">Subtotal</span>
             <span className="font-medium">
@@ -329,7 +209,6 @@ function PriceBreakdown({
             </span>
           </div>
 
-          {/* GST */}
           <div className="flex items-center justify-between text-[10px]">
             <span className="text-muted-foreground">
               GST ({pricing.gstPercent}%)
@@ -339,7 +218,6 @@ function PriceBreakdown({
             </span>
           </div>
 
-          {/* Total */}
           <div className="flex items-center justify-between pt-1.5 border-t border-border bg-primary/5 -mx-2 px-2 py-1.5 rounded-lg mt-1.5">
             <div>
               <p className="text-[10px] font-bold text-foreground">
@@ -384,22 +262,72 @@ export default function HotelCarouselSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [viewMode, setViewMode] = useState<"gallery" | "map">("gallery");
   const [isPaused, setIsPaused] = useState(false);
+  const [cities, setCities] = useState<string[]>(["All Cities"]);
+
   const navigate = useNavigate();
 
-  // Filter states
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [checkInDate, setCheckInDate] = useState("");
-  const [checkOutDate, setCheckOutDate] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [filteredHotels, setFilteredHotels] = useState(featuredHotels);
+  const [checkInDate] = useState("");
+  const [checkOutDate] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const [hotels, setHotels] = useState<any[]>([]);
+  const [filteredHotels, setFilteredHotels] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchHotels = async () => {
+      try {
+        setLoading(true);
+        const res = await GetAllPropertyListing();
+        const list = res.data || res;
+
+        if (!Array.isArray(list)) return;
+
+        // 1. Filter only type "Hotel" and active status
+        const hotelList = list.filter(
+          (h) => h.isActive && h.propertyType?.toLowerCase() === "hotel",
+        );
+
+        // 2. Fetch media ONLY for those filtered hotels
+        const mappedHotels = await Promise.all(
+          hotelList.map(async (hotel) => {
+            try {
+              const mediaRes = await getPropertyListingMedia(hotel.id);
+              const media = mediaRes.data || mediaRes || [];
+              return mapApiHotelToUI(hotel, media);
+            } catch {
+              return mapApiHotelToUI(hotel, []);
+            }
+          }),
+        );
+        const uniqueCities = Array.from(
+          new Set(mappedHotels.map((h) => h.city).filter(Boolean)),
+        );
+
+        // Optional: sort alphabetically
+        uniqueCities.sort((a, b) => a.localeCompare(b));
+
+        // prepend "All Cities"
+        setCities(["All Cities", ...uniqueCities]);
+
+        setHotels(mappedHotels);
+        setFilteredHotels(mappedHotels);
+      } catch (err) {
+        console.error("Failed to load hotels", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHotels();
+  }, []);
 
   const getCitySlug = (city: string) => city.toLowerCase().replace(/\s+/g, "-");
 
-  const getHotelDetailUrl = (hotel: (typeof featuredHotels)[0]) =>
+  const getHotelDetailUrl = (hotel: any) =>
     `/hotels/${getCitySlug(hotel.city)}/${hotel.id}`;
 
-  // Auto-slide every 5 seconds (only in gallery mode)
   useEffect(() => {
     if (viewMode !== "gallery" || isPaused || filteredHotels.length <= 1)
       return;
@@ -412,7 +340,6 @@ export default function HotelCarouselSection() {
     return () => clearInterval(interval);
   }, [viewMode, isPaused, filteredHotels.length]);
 
-  // Reset index when filtered hotels change
   useEffect(() => {
     setActiveIndex(0);
   }, [filteredHotels]);
@@ -429,26 +356,44 @@ export default function HotelCarouselSection() {
     );
   };
 
-  const handleSearch = () => {
-    setIsSearching(true);
-    setTimeout(() => {
-      const filtered = featuredHotels.filter((hotel) => {
-        if (selectedCity !== "All Cities" && hotel.city !== selectedCity) {
-          return false;
-        }
-        return true;
-      });
-      setFilteredHotels(filtered);
-      setIsSearching(false);
-    }, 500);
-  };
+  useEffect(() => {
+    if (selectedCity === "All Cities") {
+      setFilteredHotels(hotels);
+    } else {
+      setFilteredHotels(hotels.filter((hotel) => hotel.city === selectedCity));
+    }
+  }, [selectedCity, hotels]);
+
+  if (loading) {
+    return (
+      <section className="py-6">
+        <div className="container mx-auto px-6 lg:px-12">
+          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+            Loading hotels…
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (filteredHotels.length === 0) {
+    return (
+      <section className="py-6">
+        <div className="container mx-auto px-6 lg:px-12">
+          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+            No hotels available.
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const activeHotel = filteredHotels[activeIndex];
   const activePricing = calculatePricing(activeHotel.pricing);
 
-  // Calculate visible cards for 3D effect (Gallery mode)
   const getVisibleCards = () => {
     const total = filteredHotels.length;
+    if (total === 1) return [{ index: 0, position: "center" }];
     return [
       { index: (activeIndex - 1 + total) % total, position: "left" },
       { index: activeIndex, position: "center" },
@@ -458,7 +403,6 @@ export default function HotelCarouselSection() {
 
   const visibleCards = getVisibleCards();
 
-  // Create custom icon for map
   const createRedIcon = (isActive: boolean = false) => {
     return new L.Icon({
       iconUrl: isActive
@@ -476,21 +420,18 @@ export default function HotelCarouselSection() {
   return (
     <section className="py-6 bg-gradient-to-br from-background via-secondary/5 to-background relative overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
-        {/* Unified Header with View Toggle */}
         <div className="bg-card border border-border rounded-xl p-4 shadow-sm mb-6">
           <div className="flex flex-col gap-4">
-            {/* Top Row: Title & View Toggle */}
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1 block">
                   {viewMode === "gallery" ? "Premium Selection" : "Discover"}
                 </span>
                 <h2 className="text-xl md:text-2xl font-serif text-foreground">
-                  {viewMode === "gallery" ? "Our Collection" : "Our Collection"}
+                  Our Collection
                 </h2>
               </div>
 
-              {/* View Mode Toggle - Prominent */}
               <div className="inline-flex items-center gap-0.5 bg-background border border-border rounded-full p-0.5 shadow-sm">
                 <button
                   onClick={() => setViewMode("gallery")}
@@ -517,13 +458,11 @@ export default function HotelCarouselSection() {
               </div>
             </div>
 
-            {/* Bottom Row: Filters (Separated) */}
             <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-border/50">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1">
                 Filter By:
               </span>
 
-              {/* City Filter */}
               <div className="relative">
                 <button
                   onClick={() => setShowCityDropdown(!showCityDropdown)}
@@ -543,9 +482,12 @@ export default function HotelCarouselSection() {
                         onClick={() => {
                           setSelectedCity(city);
                           setShowCityDropdown(false);
-                          handleSearch();
                         }}
-                        className={`w-full px-3 py-2 text-left text-xs hover:bg-secondary/50 transition-colors ${selectedCity === city ? "bg-secondary/30 font-semibold" : ""}`}
+                        className={`w-full px-3 py-2 text-left text-xs hover:bg-secondary/50 transition-colors ${
+                          selectedCity === city
+                            ? "bg-secondary/30 font-semibold"
+                            : ""
+                        }`}
                       >
                         {city}
                       </button>
@@ -554,15 +496,13 @@ export default function HotelCarouselSection() {
                 )}
               </div>
 
-              {/* Type Filter (Static for now) */}
               <button className="flex items-center gap-1.5 px-3 py-1.5 bg-background border border-border rounded-full outline-none hover:border-primary/50 transition-colors text-xs shadow-sm">
                 <Building2 className="w-3 h-3 text-primary" />
-                <span className="font-medium">All Types</span>
+                <span className="font-medium">Hotel</span>
               </button>
 
               <div className="flex-1" />
 
-              {/* Property Count Badge */}
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-full text-xs">
                 <Star className="w-3 h-3 text-primary fill-current" />
                 <span className="font-semibold text-foreground">
@@ -573,7 +513,6 @@ export default function HotelCarouselSection() {
           </div>
         </div>
 
-        {/* Content Area - Switches between Gallery and Map */}
         <AnimatePresence mode="wait">
           {viewMode === "gallery" ? (
             <motion.div
@@ -583,9 +522,7 @@ export default function HotelCarouselSection() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* GALLERY VIEW: 3D Carousel + Details Panel */}
               <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-6 items-start">
-                {/* LEFT: 3D Carousel - 60% width */}
                 <div
                   className="relative h-[500px] flex items-center justify-center px-12"
                   style={{ perspective: "1000px" }}
@@ -619,7 +556,6 @@ export default function HotelCarouselSection() {
                                 {...hotel.image}
                                 className="w-full h-full object-cover"
                               />
-
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                               {isCenter && (
@@ -632,7 +568,6 @@ export default function HotelCarouselSection() {
                                       </span>
                                     </div>
                                   </div>
-
                                   <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                                     <div className="inline-block px-2.5 py-0.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-sm rounded border border-white/30">
                                       {hotel.type}
@@ -657,7 +592,6 @@ export default function HotelCarouselSection() {
                     })}
                   </div>
 
-                  {/* Navigation Buttons */}
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 z-40">
                     <button
                       onClick={handlePrev}
@@ -665,13 +599,11 @@ export default function HotelCarouselSection() {
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-
                     <div className="px-3 py-1 bg-background/90 backdrop-blur-sm rounded-full border border-border">
                       <span className="text-xs font-semibold text-foreground">
                         {activeIndex + 1} / {filteredHotels.length}
                       </span>
                     </div>
-
                     <button
                       onClick={handleNext}
                       className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-lg hover:scale-110 active:scale-95"
@@ -681,36 +613,29 @@ export default function HotelCarouselSection() {
                   </div>
                 </div>
 
-                {/* RIGHT: Content Panel - 40% width */}
                 <div className="bg-card border border-border rounded-2xl p-5 shadow-xl h-[500px] flex flex-col justify-between">
                   <div className="space-y-3.5 overflow-y-auto">
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded-full border border-primary/20">
-                          Hotel
+                          {activeHotel.type}
                         </span>
                         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-yellow-50 rounded-full border border-yellow-200">
                           <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
                           <span className="text-xs font-bold text-yellow-900">
                             {activeHotel.rating}
                           </span>
-                          <span className="text-[10px] text-yellow-700">
-                            Exceptional
-                          </span>
                         </div>
                       </div>
-
                       <h3 className="text-xl font-serif font-semibold text-foreground mb-1.5 line-clamp-2">
                         {activeHotel.name}
                       </h3>
-
                       <div className="flex items-center text-muted-foreground mb-2.5 text-sm">
                         <MapPin className="w-3.5 h-3.5 mr-1.5" />
                         <span className="line-clamp-1">
                           {activeHotel.location}
                         </span>
                       </div>
-
                       <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
                         {activeHotel.description}
                       </p>
@@ -721,19 +646,20 @@ export default function HotelCarouselSection() {
                         Featured Amenities
                       </h4>
                       <div className="grid grid-cols-2 gap-2">
-                        {activeHotel.amenities.map((amenity, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-2 text-xs text-muted-foreground"
-                          >
-                            <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
-                            <span className="line-clamp-1">{amenity}</span>
-                          </div>
-                        ))}
+                        {activeHotel.amenities.map(
+                          (amenity: string, idx: number) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2 text-xs text-muted-foreground"
+                            >
+                              <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
+                              <span className="line-clamp-1">{amenity}</span>
+                            </div>
+                          ),
+                        )}
                       </div>
                     </div>
 
-                    {/* Price Breakdown - Compact with Toggle */}
                     <PriceBreakdown
                       pricing={activeHotel.pricing}
                       calculated={activePricing}
@@ -748,20 +674,12 @@ export default function HotelCarouselSection() {
                       Book Room
                       <ArrowRight className="w-4 h-4" />
                     </button>
-
                     <button
                       onClick={() =>
                         navigate(`/hotels/${activeHotel.city}`, {
                           state: {
                             hotelId: activeHotel.id,
-                            hotelSlug: activeHotel.id,
                             city: activeHotel.city,
-                            selectedDates: {
-                              checkIn: checkInDate,
-                              checkOut: checkOutDate,
-                            },
-                            guests: 2,
-                            rooms: 1,
                           },
                         })
                       }
@@ -781,9 +699,7 @@ export default function HotelCarouselSection() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* MAP VIEW: Property Card + Interactive Map */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                {/* LEFT: Single Property Card with Navigation - 50% */}
                 <div
                   className="relative"
                   onMouseEnter={() => setIsPaused(true)}
@@ -795,27 +711,20 @@ export default function HotelCarouselSection() {
                         {...activeHotel.image}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
-
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
                       <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
                         <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-lg">
                           <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
                           <span className="text-xs font-bold text-gray-900">
                             {activeHotel.rating}
                           </span>
-                          <span className="text-[10px] text-gray-600">
-                            ({activeHotel.reviews})
-                          </span>
                         </div>
-
                         <div className="bg-primary/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-lg">
                           <span className="text-[10px] font-bold text-primary-foreground">
                             {activeIndex + 1} / {filteredHotels.length}
                           </span>
                         </div>
                       </div>
-
                       <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                         <div className="flex items-center gap-1.5 mb-1">
                           <MapPin className="w-3.5 h-3.5 text-white/90" />
@@ -830,7 +739,6 @@ export default function HotelCarouselSection() {
                           {activeHotel.description}
                         </p>
                       </div>
-
                       <button
                         onClick={handlePrev}
                         className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-900 hover:bg-white transition-all shadow-lg hover:scale-110 z-10"
@@ -859,10 +767,10 @@ export default function HotelCarouselSection() {
                         <div className="text-center">
                           <Users className="w-4 h-4 text-primary mx-auto mb-0.5" />
                           <p className="text-[10px] text-muted-foreground">
-                            Guests
+                            Capacity
                           </p>
                           <p className="text-xs font-bold text-foreground">
-                            {activeHotel.rooms * 2}
+                            {activeHotel.capacity}
                           </p>
                         </div>
                         <div className="text-center">
@@ -871,7 +779,7 @@ export default function HotelCarouselSection() {
                             Amenities
                           </p>
                           <p className="text-xs font-bold text-foreground">
-                            {activeHotel.amenities.length}+
+                            {activeHotel.amenities.length}
                           </p>
                         </div>
                       </div>
@@ -883,7 +791,7 @@ export default function HotelCarouselSection() {
                         <div className="flex flex-wrap gap-1.5">
                           {activeHotel.amenities
                             .slice(0, 6)
-                            .map((amenity, idx) => (
+                            .map((amenity: string, idx: number) => (
                               <span
                                 key={idx}
                                 className="px-2 py-0.5 bg-secondary/50 rounded-full text-[10px] font-medium text-foreground"
@@ -894,100 +802,33 @@ export default function HotelCarouselSection() {
                         </div>
                       </div>
 
-                      {/* Price Breakdown - Compact Version for Map View */}
                       <div className="mb-3 pb-3 border-b border-border bg-muted/20 rounded-lg p-2.5">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-1.5">
-                            <Tag className="w-3 h-3 text-primary" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                              Pricing
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground line-through">
-                              ₹{activePricing.basePrice.toLocaleString("en-IN")}
-                            </span>
-                            <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
-                              {activeHotel.pricing.discountPercent}% OFF
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="text-muted-foreground">
-                              After Discount
-                            </span>
-                            <span className="font-medium text-green-600">
-                              ₹{activePricing.subtotal.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="text-muted-foreground">
-                              + GST ({activeHotel.pricing.gstPercent}%)
-                            </span>
-                            <span className="font-medium">
-                              ₹{activePricing.gst.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between pt-1.5 border-t border-border/50">
-                            <div>
-                              <p className="text-[10px] font-bold text-foreground">
-                                Total
-                              </p>
-                              <p className="text-[8px] text-muted-foreground">
-                                per night
-                              </p>
-                            </div>
-                            <p className="text-lg font-bold text-primary">
-                              ₹{activePricing.total.toLocaleString("en-IN")}
+                        <div className="flex items-center justify-between pt-1.5 border-t border-border/50">
+                          <div>
+                            <p className="text-[10px] font-bold text-foreground">
+                              Total
+                            </p>
+                            <p className="text-[8px] text-muted-foreground">
+                              per night
                             </p>
                           </div>
+                          <p className="text-lg font-bold text-primary">
+                            ₹{activePricing.total.toLocaleString("en-IN")}
+                          </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <button
-                          onClick={() =>
-                            navigate(`/hotels/${activeHotel.city}`, {
-                              state: {
-                                hotelId: activeHotel.id,
-                                hotelSlug: activeHotel.id,
-                                city: activeHotel.city,
-                                selectedDates: {
-                                  checkIn: checkInDate,
-                                  checkOut: checkOutDate,
-                                },
-                                guests: 2,
-                                rooms: 1,
-                              },
-                            })
-                          }
-                          className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg text-sm"
-                        >
-                          Book Now
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-2 mt-3">
-                    {filteredHotels.map((_, idx) => (
                       <button
-                        key={idx}
-                        onClick={() => setActiveIndex(idx)}
-                        className={`transition-all duration-300 rounded-full ${
-                          idx === activeIndex
-                            ? "w-8 h-2 bg-primary"
-                            : "w-2 h-2 bg-border hover:bg-primary/50"
-                        }`}
-                      />
-                    ))}
+                        onClick={() => navigate(getHotelDetailUrl(activeHotel))}
+                        className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg text-sm"
+                      >
+                        Book Now
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* RIGHT: Interactive Map - 50% */}
                 <div className="lg:sticky lg:top-6">
                   <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden border-2 border-border shadow-2xl bg-card">
                     <MapContainer
@@ -1001,10 +842,9 @@ export default function HotelCarouselSection() {
                       style={{ zIndex: 1 }}
                     >
                       <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       />
-
                       <MapViewController
                         center={[
                           activeHotel.coordinates.lat,
@@ -1012,7 +852,6 @@ export default function HotelCarouselSection() {
                         ]}
                         zoom={12}
                       />
-
                       {filteredHotels.map((hotel, idx) => {
                         const isActive = idx === activeIndex;
                         const markerIcon = createRedIcon(isActive);
@@ -1028,24 +867,15 @@ export default function HotelCarouselSection() {
                             icon={markerIcon}
                             eventHandlers={{
                               click: () => setActiveIndex(idx),
-                              mouseover: (e: L.LeafletMouseEvent) =>
-                                e.target.openPopup(),
-                              mouseout: (e: L.LeafletMouseEvent) =>
-                                e.target.closePopup(),
                             }}
                           >
-                            <Popup
-                              closeButton={false}
-                              className="custom-popup"
-                              autoClose={false}
-                              closeOnClick={false}
-                            >
+                            <Popup closeButton={false} className="custom-popup">
                               <div className="space-y-2 min-w-[200px]">
                                 <div className="flex items-center justify-between">
-                                  <p className="font-serif text-sm font-bold text-foreground line-clamp-1">
+                                  <p className="font-serif text-sm font-bold">
                                     {hotel.name}
                                   </p>
-                                  <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-full flex-shrink-0">
+                                  <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-full">
                                     <Star className="w-3 h-3 text-yellow-500 fill-current" />
                                     <span className="text-xs font-bold">
                                       {hotel.rating}
@@ -1053,62 +883,27 @@ export default function HotelCarouselSection() {
                                   </div>
                                 </div>
                                 <div className="flex items-center text-xs text-muted-foreground">
-                                  <MapPin className="w-3 h-3 mr-1 text-red-500 flex-shrink-0" />
+                                  <MapPin className="w-3 h-3 mr-1 text-red-500" />
                                   <span className="line-clamp-1">
                                     {hotel.location}
                                   </span>
                                 </div>
-
-                                {/* Compact Pricing */}
-                                <div className="space-y-1 pt-2 border-t border-border bg-muted/30 rounded p-2">
-                                  <div className="flex items-center justify-between text-[10px]">
-                                    <span className="text-muted-foreground line-through">
-                                      ₹
-                                      {hotelPricing.basePrice.toLocaleString(
-                                        "en-IN",
-                                      )}
-                                    </span>
-                                    <span className="text-[8px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
-                                      {hotel.pricing.discountPercent}% OFF
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between pt-1 border-t border-border/50">
-                                    <span className="text-[9px] text-foreground font-bold">
-                                      Total (incl. GST)
-                                    </span>
-                                    <span className="text-sm font-bold text-primary">
-                                      ₹
-                                      {hotelPricing.total.toLocaleString(
-                                        "en-IN",
-                                      )}
-                                    </span>
-                                  </div>
-                                  <p className="text-[8px] text-muted-foreground text-center">
-                                    per night
-                                  </p>
+                                <div className="flex items-center justify-between pt-1 border-t">
+                                  <span className="text-[9px] font-bold">
+                                    Total (incl. GST)
+                                  </span>
+                                  <span className="text-sm font-bold text-primary">
+                                    ₹
+                                    {hotelPricing.total.toLocaleString("en-IN")}
+                                  </span>
                                 </div>
-
                                 <button
-                                  onClick={() => {
-                                    setActiveIndex(idx);
-                                    navigate(`/hotels/${hotel.city}`, {
-                                      state: {
-                                        hotelId: hotel.id,
-                                        hotelSlug: hotel.id,
-                                        city: hotel.city,
-                                        selectedDates: {
-                                          checkIn: checkInDate,
-                                          checkOut: checkOutDate,
-                                        },
-                                        guests: 2,
-                                        rooms: 1,
-                                      },
-                                    });
-                                  }}
-                                  className="w-full text-xs bg-primary text-primary-foreground font-bold py-2 rounded hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
+                                  onClick={() =>
+                                    navigate(getHotelDetailUrl(hotel))
+                                  }
+                                  className="w-full text-xs bg-primary text-primary-foreground font-bold py-2 rounded"
                                 >
-                                  View Details{" "}
-                                  <ArrowRight className="w-3 h-3" />
+                                  View Details
                                 </button>
                               </div>
                             </Popup>
@@ -1116,23 +911,6 @@ export default function HotelCarouselSection() {
                         );
                       })}
                     </MapContainer>
-                  </div>
-
-                  <div className="mt-3 bg-card border border-border rounded-lg p-2 shadow-sm">
-                    <div className="flex items-center justify-between text-[10px]">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-sm" />
-                        <span className="text-muted-foreground">
-                          Current Property
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full border border-white shadow-sm" />
-                        <span className="text-muted-foreground">
-                          Other Properties
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
