@@ -18,7 +18,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 
 /* =======================
-   MEDIA DETECTION RULES
+    MEDIA DETECTION RULES
 ======================= */
 const MEDIA_DETECTION_RULES = {
   instagramBannerReel: {
@@ -60,10 +60,11 @@ const detectBanner = (image: any) => {
 };
 
 /* =======================
-   TIMER COMPONENT
+    TIMER COMPONENT
 ======================= */
 function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
   const [label, setLabel] = useState("");
+  const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
     if (!expiresAt) return;
@@ -71,11 +72,14 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
       const diff = new Date(expiresAt).getTime() - Date.now();
       if (diff <= 0) {
         setLabel("Expired");
+        setIsExpired(true);
         clearInterval(i);
       } else {
         const h = Math.floor(diff / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
-        setLabel(`${h}h ${m}m`);
+        // Change: Clearer visibility for offers about to expire
+        setLabel(`${h}h ${m}m Remaining`);
+        setIsExpired(false);
       }
     }, 1000);
     return () => clearInterval(i);
@@ -84,7 +88,10 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
   if (!label) return null;
 
   return (
-    <div className="flex items-center gap-1 px-2 py-1 bg-black/70 text-white text-[10px] rounded-full">
+    // Change: Expired card shows in red background
+    <div className={`flex items-center gap-1 px-2.5 py-1 text-white text-[10px] font-bold rounded-full shadow-md ${
+      isExpired ? "bg-red-600" : "bg-black/70"
+    }`}>
       <Clock className="w-3 h-3" />
       {label}
     </div>
@@ -92,7 +99,7 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
 }
 
 /* =======================
-   MAIN COMPONENT
+    MAIN COMPONENT
 ======================= */
 export default function DailyOffers() {
   const { dailyOffers } = siteContent.text;
@@ -130,7 +137,7 @@ export default function DailyOffers() {
             description: o.description,
             couponCode: o.couponCode,
             ctaText: o.ctaText || "View Offer",
-            ctaLink: o.ctaUrl || o.ctaLink || null, // Capture the link
+            ctaLink: o.ctaUrl || o.ctaLink || null,
             expiresAt: o.expiresAt,
             propertyType: o.propertyTypeName || "Hotel",
             image: o.image?.url
@@ -204,7 +211,7 @@ export default function DailyOffers() {
 
             return (
               <SwiperSlide key={offer.id || i}>
-                <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative">
+                <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl">
                   
                   {/* IMAGE SECTION */}
                   <div
@@ -216,7 +223,7 @@ export default function DailyOffers() {
                       <img
                         src={offer.image.src}
                         alt={offer.image.alt}
-                        className="w-full h-full object-cover object-top"
+                        className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -224,7 +231,7 @@ export default function DailyOffers() {
                       </div>
                     )}
 
-                    <div className="absolute top-3 left-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded z-10">
+                    <div className="absolute top-3 left-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded z-10 font-bold uppercase tracking-wider">
                       {offer.propertyType}
                     </div>
 
@@ -242,7 +249,7 @@ export default function DailyOffers() {
                             href={offer.ctaLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full bg-white text-black py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-white/90 transition-colors"
+                            className="w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-red-700 transition-colors"
                           >
                             {offer.ctaText}
                             <ExternalLink size={12} />
@@ -250,7 +257,7 @@ export default function DailyOffers() {
                         ) : (
                           <button
                             disabled
-                            className="w-full bg-white/60 text-black/50 py-2.5 rounded-lg text-xs font-bold cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full bg-muted text-muted-foreground py-2.5 rounded-lg text-xs font-bold cursor-not-allowed flex items-center justify-center gap-2"
                           >
                             {offer.ctaText}
                             <ExternalLink size={12} />
@@ -263,27 +270,31 @@ export default function DailyOffers() {
                   {/* CONTENT SECTION (Standard format) */}
                   {!isBanner && (
                     <div className="p-4 flex flex-col flex-1">
-                      <h3 className="text-sm font-serif font-bold line-clamp-2 leading-tight">
+                      {/* Change: Theme-based hover colors for title */}
+                      <h3 className="text-sm font-serif font-bold line-clamp-2 leading-tight transition-colors duration-300 
+                        text-foreground group-hover:text-red-600 dark:group-hover:text-yellow-400">
                         {offer.title}
                       </h3>
                       <p className="text-[11px] text-muted-foreground italic line-clamp-2 mt-2">
                         {offer.description}
                       </p>
 
-                      <div className="mt-auto pt-3 border-t">
-                        <div className="text-[11px] mb-2 flex justify-between items-center">
-                          <span className="text-muted-foreground">Code:</span>
-                          <span className="font-mono font-bold text-primary">
+                      <div className="mt-auto pt-3 border-t border-muted">
+                        {/* Change: High-visibility code line */}
+                        <div className="text-[11px] mb-3 flex justify-between items-center bg-muted/50 p-2 rounded-md border border-dashed border-primary/20">
+                          <span className="text-muted-foreground font-medium uppercase">Promo Code:</span>
+                          <span className="font-mono font-black text-primary text-xs tracking-widest bg-card px-2 py-0.5 rounded shadow-sm border">
                             {offer.couponCode}
                           </span>
                         </div>
                         
+                        {/* Change: Red Claim Now button */}
                         {isClickable ? (
                           <a
                             href={offer.ctaLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full bg-primary text-primary-foreground py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                            className="w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-md active:scale-95"
                           >
                             {offer.ctaText}
                             <ExternalLink size={12} />
@@ -291,7 +302,7 @@ export default function DailyOffers() {
                         ) : (
                           <button
                             disabled
-                            className="w-full bg-muted/80 py-2 rounded-lg text-xs font-bold opacity-70 cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full bg-muted/80 py-2.5 rounded-lg text-xs font-bold opacity-70 cursor-not-allowed flex items-center justify-center gap-2"
                           >
                             {offer.ctaText}
                             <ExternalLink size={12} />
