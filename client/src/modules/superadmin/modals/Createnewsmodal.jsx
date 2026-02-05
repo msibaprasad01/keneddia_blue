@@ -1,30 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { colors } from "@/lib/colors/colors";
-import { 
-  X, Upload, Loader2, Tag, FileText, Calendar, 
-  Clock, User, Hash, Globe, Image as ImageIcon,
-  Link as LinkIcon
-} from 'lucide-react';
-import { createNews, updateNewsById, uploadMedia, getPropertyTypes } from '@/Api/Api';
-import { toast } from 'react-hot-toast';
+import {
+  X,
+  Upload,
+  Loader2,
+  Tag,
+  FileText,
+  Calendar,
+  Clock,
+  User,
+  Hash,
+  Globe,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  AlertCircle,
+} from "lucide-react";
+import {
+  createNews,
+  updateNewsById,
+  uploadMedia,
+  getPropertyTypes,
+  getMediaById,
+} from "@/Api/Api";
+import { toast } from "react-hot-toast";
 
 function CreateNewsModal({ isOpen, onClose, editingNews }) {
+  console.log(editingNews)
   const [formData, setFormData] = useState({
-    category: 'PRESS',
-    title: '',
-    slug: '',
-    description: '',
-    longDesc: '',
-    dateBadge: '',
-    badgeTypeId: '',
-    ctaText: 'Read Story',
-    ctaLink: '',
-    authorName: '',
-    authorDescription: '',
-    readTime: '',
-    tags: '',
-    newsDate: '',
-    active: true
+    category: "PRESS",
+    title: "",
+    slug: "",
+    description: "",
+    longDesc: "",
+    dateBadge: "",
+    badgeTypeId: "",
+    ctaText: "Read Story",
+    ctaLink: "",
+    authorName: "",
+    authorDescription: "",
+    readTime: "",
+    tags: "",
+    newsDate: "",
+    active: true,
   });
 
   const [badgeTypes, setBadgeTypes] = useState([]);
@@ -38,11 +55,12 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
     return text
       .toLowerCase()
       .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
   };
 
+  // Fetch Badge Types on Open
   useEffect(() => {
     if (isOpen) {
       fetchBadgeTypes();
@@ -50,157 +68,137 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
   }, [isOpen]);
 
   useEffect(() => {
-    if (editingNews) {
+    if (editingNews && isOpen) {
+      const matchedBadge = badgeTypes.find(
+        (b) =>
+          b.typeName?.toLowerCase() === editingNews.badgeType?.toLowerCase()
+      );
+
       setFormData({
-        category: editingNews.category || 'PRESS',
-        title: editingNews.title || '',
-        slug: editingNews.slug || '',
-        description: editingNews.description || '',
-        longDesc: editingNews.longDesc || '',
-        dateBadge: editingNews.dateBadge || '',
-        badgeTypeId: editingNews.badgeTypeId || '',
-        ctaText: editingNews.ctaText || 'Read Story',
-        ctaLink: editingNews.ctaLink || '',
-        authorName: editingNews.authorName || '',
-        authorDescription: editingNews.authorDescription || '',
-        readTime: editingNews.readTime || '',
-        tags: editingNews.tags || '',
-        newsDate: editingNews.newsDate || '',
-        active: editingNews.active ?? true
+        category: editingNews.category || "PRESS",
+        title: editingNews.title || "",
+        slug: editingNews.slug || "",
+        description: editingNews.description || "",
+        longDesc: editingNews.longDesc || "",
+        dateBadge: editingNews.dateBadge || "",
+        badgeTypeId: matchedBadge
+          ? matchedBadge.id
+          : editingNews.badgeTypeId || "",
+        ctaText: editingNews.ctaText || "Read Story",
+        ctaLink: editingNews.ctaLink || "",
+        authorName: editingNews.authorName || "",
+        authorDescription: editingNews.authorDescription || "",
+        readTime: editingNews.readTime || "",
+        tags: editingNews.tags || "",
+        newsDate: editingNews.newsDate || "",
+        active: editingNews.active ?? true,
       });
-      
+
+      // Fix: Properly set the media ID for editing
       if (editingNews.imageMediaId) {
-        setUploadedMediaId(editingNews.imageMediaId);
-        setImagePreview(editingNews.image || null);
+        setUploadedMediaId(editingNews.imageMediaId); // Store actual numeric ID
+        fetchExistingMedia(editingNews.imageMediaId);
+      } else if (editingNews.imageUrl) {
+        setImagePreview(editingNews.imageUrl);
+        // Set to null to indicate image exists but ID is missing
+        setUploadedMediaId(null);
       }
-    } else {
-      resetForm();
     }
-  }, [editingNews, isOpen]);
+  }, [editingNews, isOpen, badgeTypes]);
+
+  const fetchExistingMedia = async (id) => {
+    try {
+      const response = await getMediaById(id);
+      const url =
+        response?.data?.url || response?.url || response?.data?.imageUrl;
+      if (url) setImagePreview(url);
+    } catch (error) {
+      console.error("Failed to fetch media details:", error);
+    }
+  };
+
+  const fetchBadgeTypes = async () => {
+    try {
+      const response = await getPropertyTypes();
+      if (response?.data && Array.isArray(response.data)) {
+        const activeTypes = response.data.filter((type) => type.isActive);
+        setBadgeTypes(activeTypes);
+      }
+    } catch (error) {
+      console.error("Failed to load badge types:", error);
+      toast.error("Failed to load badge types");
+    }
+  };
 
   const resetForm = () => {
     setFormData({
-      category: 'PRESS',
-      title: '',
-      slug: '',
-      description: '',
-      longDesc: '',
-      dateBadge: '',
-      badgeTypeId: '',
-      ctaText: 'Read Story',
-      ctaLink: '',
-      authorName: '',
-      authorDescription: '',
-      readTime: '',
-      tags: '',
-      newsDate: '',
-      active: true
+      category: "PRESS",
+      title: "",
+      slug: "",
+      description: "",
+      longDesc: "",
+      dateBadge: "",
+      badgeTypeId: "",
+      ctaText: "Read Story",
+      ctaLink: "",
+      authorName: "",
+      authorDescription: "",
+      readTime: "",
+      tags: "",
+      newsDate: "",
+      active: true,
     });
     setImagePreview(null);
     setSelectedFile(null);
     setUploadedMediaId(null);
   };
 
-  const fetchBadgeTypes = async () => {
-    try {
-      const response = await getPropertyTypes();
-      console.log("Badge types response:", response);
-      
-      if (response?.data && Array.isArray(response.data)) {
-        const activeTypes = response.data.filter(type => type.isActive);
-        setBadgeTypes(activeTypes);
-      }
-    } catch (error) {
-      console.error('Failed to load badge types:', error);
-      toast.error('Failed to load badge types');
-      setBadgeTypes([]);
-    }
-  };
-
   const handleTitleChange = (val) => {
     const trimmedVal = val.slice(0, 200);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       title: trimmedVal,
-      slug: generateSlug(trimmedVal)
+      slug: generateSlug(trimmedVal),
     }));
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file');
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file");
       return;
     }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size should be less than 5MB');
-      return;
-    }
-
     setSelectedFile(file);
-    
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.onerror = () => {
-      toast.error('Failed to read image file');
-    };
+    reader.onloadend = () => setImagePreview(reader.result);
     reader.readAsDataURL(file);
-
     await uploadImageFile(file);
   };
 
   const uploadImageFile = async (file) => {
     try {
       setUploadingImage(true);
-      
       const formDataUpload = new FormData();
-      formDataUpload.append('file', file);
-      formDataUpload.append('type', 'IMAGE');
-      formDataUpload.append('alt', formData.title || 'News image');
-      formDataUpload.append('width', '800');
-      formDataUpload.append('height', '600');
+      formDataUpload.append("file", file);
+      formDataUpload.append("type", "IMAGE");
+      formDataUpload.append("alt", formData.title || "News image");
 
       const response = await uploadMedia(formDataUpload);
-      
-      console.log('Upload response:', response);
-      
-      let mediaId = null;
-      
-      if (typeof response === 'number') {
-        mediaId = response;
-      } else if (typeof response?.data === 'number') {
-        mediaId = response.data;
-      } else if (typeof response?.data?.data === 'number') {
-        mediaId = response.data.data;
-      } else if (response?.data?.data?.id) {
-        mediaId = response.data.data.id;
-      } else if (response?.data?.id) {
-        mediaId = response.data.id;
-      }
+      const mediaId =
+        response?.data?.id || response?.id || response?.data || response;
 
-      console.log('Extracted media ID:', mediaId);
-
-      if (mediaId) {
+      if (mediaId && typeof mediaId !== "object") {
         setUploadedMediaId(mediaId);
-        toast.success(`Image uploaded successfully (ID: ${mediaId})`);
-      } else {
-        console.error('Could not extract media ID from response:', response);
-        throw new Error('Invalid response from upload');
+        toast.success(`Image uploaded`);
       }
     } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error(error?.response?.data?.message || 'Failed to upload image');
+      toast.error("Failed to upload image");
       setImagePreview(null);
-      setSelectedFile(null);
     } finally {
       setUploadingImage(false);
     }
@@ -212,73 +210,97 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
     setUploadedMediaId(null);
   };
 
-  const validateForm = () => {
+  // Validation helper - returns array of missing fields
+  const getValidationErrors = () => {
+    const errors = [];
+
     if (!formData.title?.trim()) {
-      toast.error('Title is required');
-      return false;
-    }
-    if (!formData.description?.trim()) {
-      toast.error('Description is required');
-      return false;
+      errors.push("Title");
     }
     if (!formData.badgeTypeId) {
-      toast.error('Badge type is required');
-      return false;
+      errors.push("Badge Type");
     }
-    if (!formData.newsDate) {
-      toast.error('News date is required');
-      return false;
+    if (!formData.description?.trim()) {
+      errors.push("Description");
     }
-    if (!uploadedMediaId) {
-      toast.error('News image is required');
-      return false;
+
+    // Image validation - must have a valid numeric ID
+    const hasValidImageId =
+      uploadedMediaId !== null &&
+      uploadedMediaId !== undefined &&
+      typeof uploadedMediaId === "number";
+
+    if (!hasValidImageId) {
+      errors.push("Image (upload required)");
     }
-    return true;
+
+    return errors;
+  };
+
+  // Check if form is valid
+  const isFormValid = () => {
+    return getValidationErrors().length === 0;
+  };
+
+  // Get validation message for display
+  const getValidationMessage = () => {
+    const errors = getValidationErrors();
+    if (errors.length === 0) return null;
+
+    if (errors.length === 1) {
+      return `Missing: ${errors[0]}`;
+    }
+
+    return `Missing: ${errors.slice(0, -1).join(", ")} and ${errors[errors.length - 1]}`;
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    const errors = getValidationErrors();
+
+    if (errors.length > 0) {
+      toast.error(`Please fill required fields: ${errors.join(", ")}`);
+      return;
+    }
+
+    // Double-check image ID is a valid number
+    if (typeof uploadedMediaId !== "number") {
+      toast.error("Please upload an image. A valid image ID is required.");
+      return;
+    }
 
     try {
       setLoading(true);
-      
+
       const payload = {
         category: formData.category,
         title: formData.title.trim(),
         slug: formData.slug,
         description: formData.description.trim(),
-        longDesc: formData.longDesc?.trim() || '',
+        longDesc: formData.longDesc?.trim() || "",
         dateBadge: formData.dateBadge || formData.newsDate,
         badgeTypeId: parseInt(formData.badgeTypeId),
-        ctaText: formData.ctaText?.trim() || 'Read Story',
-        // ctaLink: formData.ctaLink?.trim() || '',
-        authorName: formData.authorName?.trim() || '',
-        authorDescription: formData.authorDescription?.trim() || '',
-        readTime: formData.readTime?.trim() || '',
-        tags: formData.tags?.trim() || '',
+        ctaText: formData.ctaText?.trim() || "Read Story",
+        authorName: formData.authorName?.trim() || "",
+        authorDescription: formData.authorDescription?.trim() || "",
+        readTime: formData.readTime?.trim() || "",
+        tags: formData.tags?.trim() || "",
         newsDate: formData.newsDate,
-        imageMediaId: uploadedMediaId,
-        active: formData.active
+        imageMediaId: uploadedMediaId, // Must be a numeric ID
+        active: formData.active,
       };
-
-      console.log('Submitting news payload:', payload);
 
       if (editingNews) {
         await updateNewsById(editingNews.id, payload);
-        toast.success('News updated successfully');
+        toast.success("News updated successfully");
       } else {
         await createNews(payload);
-        toast.success('News created successfully');
+        toast.success("News created successfully");
       }
-      
       onClose(true);
       resetForm();
     } catch (error) {
-      console.error('Error saving news:', error);
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          'Failed to save news';
-      toast.error(errorMessage);
+      console.error("Submission Error:", error);
+      toast.error(error.response?.data?.message || "Failed to save news");
     } finally {
       setLoading(false);
     }
@@ -291,54 +313,58 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
 
   if (!isOpen) return null;
 
+  const validationMessage = getValidationMessage();
+  const formValid = isFormValid();
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div 
-        className="rounded-xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-2xl" 
+      <div
+        className="rounded-xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-2xl"
         style={{ backgroundColor: colors.contentBg }}
       >
-        {/* Header */}
-        <div 
-          className="flex items-center justify-between mb-6 border-b pb-4" 
+        <div
+          className="flex items-center justify-between mb-6 border-b pb-4"
           style={{ borderColor: colors.border }}
         >
           <div>
-            <h3 className="text-xl font-bold" style={{ color: colors.textPrimary }}>
-              {editingNews ? 'Edit News' : 'Create News Article'}
+            <h3
+              className="text-xl font-bold"
+              style={{ color: colors.textPrimary }}
+            >
+              {editingNews ? "Edit News" : "Create News Article"}
             </h3>
             <p className="text-xs mt-1" style={{ color: colors.textSecondary }}>
               Fill in the news details and upload an image
             </p>
           </div>
-          <button 
+          <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Close modal"
           >
             <X size={20} style={{ color: colors.textSecondary }} />
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column: Form Fields */}
           <div className="space-y-5">
-            {/* Category & Badge Type */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label 
-                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
+                <label
+                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
                   <Tag size={14} /> Category *
                 </label>
                 <select
                   value={formData.category}
-                  onChange={(e) => handleInputChange('category', e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ 
-                    borderColor: colors.border, 
-                    backgroundColor: colors.mainBg, 
-                    color: colors.textPrimary 
+                  onChange={(e) =>
+                    handleInputChange("category", e.target.value)
+                  }
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none"
+                  style={{
+                    borderColor: colors.border,
+                    backgroundColor: colors.mainBg,
+                    color: colors.textPrimary,
                   }}
                 >
                   <option value="PRESS">PRESS</option>
@@ -348,20 +374,28 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
               </div>
 
               <div>
-                <label 
-                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
+                <label
+                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
                   Badge Type *
                 </label>
                 <select
                   value={formData.badgeTypeId}
-                  onChange={(e) => handleInputChange('badgeTypeId', e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ 
-                    borderColor: colors.border, 
-                    backgroundColor: colors.mainBg, 
-                    color: formData.badgeTypeId ? colors.textPrimary : '#9CA3AF'
+                  onChange={(e) =>
+                    handleInputChange("badgeTypeId", e.target.value)
+                  }
+                  className={`w-full px-4 py-2.5 rounded-lg border outline-none ${
+                    !formData.badgeTypeId ? "border-red-300" : ""
+                  }`}
+                  style={{
+                    borderColor: !formData.badgeTypeId
+                      ? "#FCA5A5"
+                      : colors.border,
+                    backgroundColor: colors.mainBg,
+                    color: formData.badgeTypeId
+                      ? colors.textPrimary
+                      : "#9CA3AF",
                   }}
                 >
                   <option value="">Select Badge</option>
@@ -374,10 +408,9 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
               </div>
             </div>
 
-            {/* Title */}
             <div>
-              <label 
-                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
+              <label
+                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                 style={{ color: colors.textSecondary }}
               >
                 <FileText size={14} /> News Title *
@@ -386,85 +419,87 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                style={{ 
-                  borderColor: colors.border, 
-                  backgroundColor: colors.mainBg, 
-                  color: colors.textPrimary 
+                className={`w-full px-4 py-2.5 rounded-lg border outline-none ${
+                  !formData.title?.trim() ? "border-red-300" : ""
+                }`}
+                style={{
+                  borderColor: !formData.title?.trim()
+                    ? "#FCA5A5"
+                    : colors.border,
+                  backgroundColor: colors.mainBg,
+                  color: colors.textPrimary,
                 }}
                 placeholder="e.g., Expansion Plans for 2026"
                 maxLength={200}
               />
-              
-              {/* Slug Preview */}
-              <div 
-                className="mt-2 flex items-center gap-2 text-[10px] font-mono p-2 rounded bg-gray-50 border border-dashed" 
-                style={{ color: colors.textSecondary, borderColor: colors.border }}
+              <div
+                className="mt-2 flex items-center gap-2 text-[10px] font-mono p-2 rounded bg-gray-50 border border-dashed"
+                style={{
+                  color: colors.textSecondary,
+                  borderColor: colors.border,
+                }}
               >
-                <Globe size={12} /> 
+                <Globe size={12} />{" "}
                 <span className="truncate">
-                  {window.location.origin}/news/{formData.slug || 'slug-preview'}
+                  {window.location.origin}/news/
+                  {formData.slug || "slug-preview"}
                 </span>
               </div>
             </div>
 
-            {/* Short Description */}
             <div>
-              <label 
-                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
+              <label
+                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                 style={{ color: colors.textSecondary }}
               >
                 Short Description *
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 rows={3}
-                placeholder="Brief description for card preview..."
-                className="w-full px-4 py-2.5 rounded-lg border outline-none resize-none focus:ring-2 focus:ring-primary/20 transition-all"
-                style={{ 
-                  borderColor: colors.border, 
-                  backgroundColor: colors.mainBg, 
-                  color: colors.textPrimary 
+                className={`w-full px-4 py-2.5 rounded-lg border outline-none resize-none ${
+                  !formData.description?.trim() ? "border-red-300" : ""
+                }`}
+                style={{
+                  borderColor: !formData.description?.trim()
+                    ? "#FCA5A5"
+                    : colors.border,
+                  backgroundColor: colors.mainBg,
+                  color: colors.textPrimary,
                 }}
+                placeholder="Brief summary of the news article"
                 maxLength={200}
               />
-              <div className="text-right text-[10px] text-gray-400 mt-1">
-                {formData.description.length}/200 characters
-              </div>
             </div>
 
-            {/* Long Description */}
             <div>
-              <label 
-                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
+              <label
+                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                 style={{ color: colors.textSecondary }}
               >
                 Full Article Content
               </label>
               <textarea
                 value={formData.longDesc}
-                onChange={(e) => handleInputChange('longDesc', e.target.value)}
+                onChange={(e) => handleInputChange("longDesc", e.target.value)}
                 rows={5}
-                placeholder="Full article content goes here..."
-                className="w-full px-4 py-2.5 rounded-lg border outline-none resize-none focus:ring-2 focus:ring-primary/20 transition-all"
-                style={{ 
-                  borderColor: colors.border, 
-                  backgroundColor: colors.mainBg, 
-                  color: colors.textPrimary 
+                className="w-full px-4 py-2.5 rounded-lg border outline-none resize-none"
+                style={{
+                  borderColor: colors.border,
+                  backgroundColor: colors.mainBg,
+                  color: colors.textPrimary,
                 }}
-                maxLength={5000}
+                placeholder="Full article content..."
               />
-              <div className="text-right text-[10px] text-gray-400 mt-1">
-                {formData.longDesc.length}/5000 characters
-              </div>
             </div>
 
-            {/* Author Details */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label 
-                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
+                <label
+                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
                   <User size={14} /> Author Name
@@ -472,21 +507,21 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
                 <input
                   type="text"
                   value={formData.authorName}
-                  onChange={(e) => handleInputChange('authorName', e.target.value)}
-                  placeholder="e.g., Madhurima Sit"
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ 
-                    borderColor: colors.border, 
-                    backgroundColor: colors.mainBg, 
-                    color: colors.textPrimary 
+                  onChange={(e) =>
+                    handleInputChange("authorName", e.target.value)
+                  }
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none"
+                  style={{
+                    borderColor: colors.border,
+                    backgroundColor: colors.mainBg,
+                    color: colors.textPrimary,
                   }}
-                  maxLength={100}
+                  placeholder="John Doe"
                 />
               </div>
-
               <div>
-                <label 
-                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
+                <label
+                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
                   <Clock size={14} /> Read Time
@@ -494,282 +529,220 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
                 <input
                   type="text"
                   value={formData.readTime}
-                  onChange={(e) => handleInputChange('readTime', e.target.value)}
-                  placeholder="e.g., 5 mins read"
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ 
-                    borderColor: colors.border, 
-                    backgroundColor: colors.mainBg, 
-                    color: colors.textPrimary 
+                  onChange={(e) =>
+                    handleInputChange("readTime", e.target.value)
+                  }
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none"
+                  style={{
+                    borderColor: colors.border,
+                    backgroundColor: colors.mainBg,
+                    color: colors.textPrimary,
                   }}
-                  maxLength={50}
+                  placeholder="5 min read"
                 />
               </div>
-            </div>
-
-            {/* Author Description */}
-            <div>
-              <label 
-                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
-                style={{ color: colors.textSecondary }}
-              >
-                Author Bio
-              </label>
-              <input
-                type="text"
-                value={formData.authorDescription}
-                onChange={(e) => handleInputChange('authorDescription', e.target.value)}
-                placeholder="e.g., A good author"
-                className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                style={{ 
-                  borderColor: colors.border, 
-                  backgroundColor: colors.mainBg, 
-                  color: colors.textPrimary 
-                }}
-                maxLength={200}
-              />
-            </div>
-
-            {/* Tags & Dates */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label 
-                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
-                  style={{ color: colors.textSecondary }}
-                >
-                  <Hash size={14} /> Tags
-                </label>
-                <input
-                  type="text"
-                  value={formData.tags}
-                  onChange={(e) => handleInputChange('tags', e.target.value)}
-                  placeholder="e.g., Bibi,Ki,Vines"
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ 
-                    borderColor: colors.border, 
-                    backgroundColor: colors.mainBg, 
-                    color: colors.textPrimary 
-                  }}
-                />
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Separate with commas
-                </p>
-              </div>
-
-              <div>
-                <label 
-                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
-                  style={{ color: colors.textSecondary }}
-                >
-                  <Calendar size={14} /> News Date *
-                </label>
-                <input
-                  type="date"
-                  value={formData.newsDate}
-                  onChange={(e) => handleInputChange('newsDate', e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ 
-                    borderColor: colors.border, 
-                    backgroundColor: colors.mainBg, 
-                    color: colors.textPrimary 
-                  }}
-                  max={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-            </div>
-
-            {/* CTA Details */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label 
-                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
-                  style={{ color: colors.textSecondary }}
-                >
-                  CTA Button Text
-                </label>
-                <input
-                  type="text"
-                  value={formData.ctaText}
-                  onChange={(e) => handleInputChange('ctaText', e.target.value)}
-                  placeholder="e.g., Read Story"
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ 
-                    borderColor: colors.border, 
-                    backgroundColor: colors.mainBg, 
-                    color: colors.textPrimary 
-                  }}
-                  maxLength={30}
-                />
-              </div>
-
-              {/* <div>
-                <label 
-                  className="flex items-center gap-2 text-xs font-semibold uppercase mb-2" 
-                  style={{ color: colors.textSecondary }}
-                >
-                  <LinkIcon size={14} /> CTA Link
-                </label>
-                <input
-                  type="url"
-                  value={formData.ctaLink}
-                  onChange={(e) => handleInputChange('ctaLink', e.target.value)}
-                  placeholder="https://example.com"
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ 
-                    borderColor: colors.border, 
-                    backgroundColor: colors.mainBg, 
-                    color: colors.textPrimary 
-                  }}
-                />
-              </div> */}
             </div>
           </div>
 
-          {/* Right Column: Image Upload */}
           <div className="space-y-5">
-            <div 
-              className="border rounded-xl p-5 h-full" 
-              style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}
+            <div
+              className={`border rounded-xl p-5 ${
+                typeof uploadedMediaId !== "number"
+                  ? "border-red-300 bg-red-50/30"
+                  : ""
+              }`}
+              style={{
+                borderColor:
+                  typeof uploadedMediaId !== "number"
+                    ? "#FCA5A5"
+                    : colors.border,
+                backgroundColor:
+                  typeof uploadedMediaId !== "number"
+                    ? "#FEF2F2"
+                    : colors.mainBg,
+              }}
             >
-              <label 
-                className="flex items-center gap-2 text-xs font-semibold uppercase mb-4" 
+              <label
+                className="flex items-center gap-2 text-xs font-semibold uppercase mb-4"
                 style={{ color: colors.textSecondary }}
               >
                 <ImageIcon size={14} /> News Image *
+                {typeof uploadedMediaId !== "number" && (
+                  <span className="text-red-500 font-normal normal-case ml-2">
+                    (Required - Please upload)
+                  </span>
+                )}
               </label>
 
-              <div 
-                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary hover:bg-gray-50 transition-all ${uploadingImage ? 'pointer-events-none opacity-60' : ''}`}
-                onClick={() => !uploadingImage && document.getElementById('news-file-upload')?.click()}
-                style={{ borderColor: colors.border }}
+              <div
+                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary transition-all ${uploadingImage ? "opacity-60" : ""}`}
+                onClick={() =>
+                  !uploadingImage &&
+                  document.getElementById("news-file-upload")?.click()
+                }
+                style={{
+                  borderColor:
+                    typeof uploadedMediaId !== "number"
+                      ? "#F87171"
+                      : colors.border,
+                }}
               >
-                <input 
-                  id="news-file-upload" 
-                  type="file" 
-                  className="hidden" 
-                  accept="image/*" 
+                <input
+                  id="news-file-upload"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
                   onChange={handleFileSelect}
-                  disabled={uploadingImage}
                 />
                 {uploadingImage ? (
-                  <>
-                    <Loader2 size={30} className="mx-auto mb-2 animate-spin text-primary" />
-                    <p className="text-xs text-gray-500 mb-1">
-                      Uploading image...
-                    </p>
-                  </>
+                  <Loader2
+                    size={30}
+                    className="mx-auto animate-spin text-primary"
+                  />
                 ) : (
                   <>
-                    <Upload size={30} className="mx-auto mb-2 opacity-20" />
-                    <p className="text-xs font-medium text-gray-600">
-                      {selectedFile ? selectedFile.name : 'Click to upload image'}
-                    </p>
-                    <p className="text-[10px] text-gray-400 mt-1">
-                      PNG, JPG, WEBP up to 5MB
+                    <Upload
+                      size={30}
+                      className={`mx-auto mb-2 ${typeof uploadedMediaId !== "number" ? "text-red-400" : "opacity-20"}`}
+                    />
+                    <p
+                      className={`text-xs font-medium ${typeof uploadedMediaId !== "number" ? "text-red-600" : "text-gray-600"}`}
+                    >
+                      {selectedFile
+                        ? selectedFile.name
+                        : typeof uploadedMediaId !== "number"
+                          ? "Click to upload image (Required)"
+                          : "Click to upload image"}
                     </p>
                   </>
                 )}
               </div>
 
-              {/* Image Preview */}
               {imagePreview && (
                 <div className="mt-6 relative">
-                  <img 
-                    src={imagePreview} 
-                    className="w-full h-56 object-cover rounded-xl shadow-lg border" 
-                    style={{ borderColor: colors.border }} 
-                    alt="News preview" 
+                  <img
+                    src={imagePreview}
+                    className="w-full h-56 object-cover rounded-xl border"
+                    style={{ borderColor: colors.border }}
+                    alt="Preview"
                   />
-                  {uploadedMediaId && (
-                    <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs rounded-full flex items-center gap-1">
-                      <span>✓</span>
-                      <span>ID: {uploadedMediaId}</span>
-                    </div>
-                  )}
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeImage();
-                    }}
-                    disabled={uploadingImage}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg disabled:opacity-50"
-                    aria-label="Remove image"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                   >
                     <X size={16} />
                   </button>
+
+                  {/* Show warning if image exists but no valid ID */}
+                  {imagePreview && typeof uploadedMediaId !== "number" && (
+                    <div className="absolute bottom-2 left-2 right-2 bg-red-500 text-white text-xs px-3 py-2 rounded-lg flex items-center gap-2">
+                      <AlertCircle size={14} />
+                      <span>
+                        Image ID missing. Please re-upload this image.
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Show success indicator if valid ID */}
+                  {typeof uploadedMediaId === "number" && (
+                    <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs px-3 py-1.5 rounded-lg">
+                      ✓ Image ID: {uploadedMediaId}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Status Toggle */}
-            <div 
-              className="border rounded-xl p-5" 
-              style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}
+            <div
+              className="border rounded-xl p-5"
+              style={{
+                borderColor: colors.border,
+                backgroundColor: colors.mainBg,
+              }}
             >
               <label className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase" style={{ color: colors.textSecondary }}>
-                  News Status
+                <span
+                  className="text-xs font-semibold uppercase"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Status
                 </span>
-                <div className="flex items-center gap-3">
-                  <span 
-                    className="text-sm font-medium"
-                    style={{ color: formData.active ? '#10B981' : '#EF4444' }}
-                  >
-                    {formData.active ? 'Active' : 'Inactive'}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleInputChange('active', !formData.active)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.active ? 'bg-green-500' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        formData.active ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange("active", !formData.active)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.active ? "bg-green-500" : "bg-gray-300"}`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.active ? "translate-x-6" : "translate-x-1"}`}
+                  />
+                </button>
               </label>
             </div>
+
+            {/* Validation Summary Card */}
+            {validationMessage && (
+              <div
+                className="border rounded-xl p-4 bg-amber-50 border-amber-200"
+                style={{}}
+              >
+                <div className="flex items-start gap-3">
+                  <AlertCircle
+                    size={18}
+                    className="text-amber-600 flex-shrink-0 mt-0.5"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-amber-800 uppercase mb-1">
+                      Cannot {editingNews ? "Update" : "Publish"} Yet
+                    </p>
+                    <p className="text-xs text-amber-700">{validationMessage}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div 
-          className="flex gap-4 mt-8 pt-6 border-t" 
+        <div
+          className="flex gap-4 mt-8 pt-6 border-t"
           style={{ borderColor: colors.border }}
         >
-          <button 
+          <button
             type="button"
             onClick={handleClose}
-            disabled={loading || uploadingImage}
-            className="flex-1 py-3 rounded-lg font-bold text-sm border hover:bg-gray-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-3 rounded-lg font-bold border hover:bg-gray-50 transition-colors"
             style={{ borderColor: colors.border, color: colors.textPrimary }}
           >
             Cancel
           </button>
-          <button 
+          <button
             type="button"
-            onClick={handleSubmit} 
-            disabled={loading || uploadingImage || !formData.title || !formData.badgeTypeId || !uploadedMediaId}
-            className="flex-[2] py-3 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: colors.primary }}
+            onClick={handleSubmit}
+            disabled={loading || uploadingImage || !formValid}
+            className="flex-[2] py-3 rounded-lg font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative group"
+            style={{
+              backgroundColor: formValid ? colors.primary : "#9CA3AF",
+            }}
           >
             {loading ? (
-              <>
-                <Loader2 className="animate-spin" size={18} />
-                Saving...
-              </>
+              <Loader2 className="animate-spin" size={18} />
             ) : uploadingImage ? (
               <>
                 <Loader2 className="animate-spin" size={18} />
                 Uploading Image...
               </>
+            ) : editingNews ? (
+              "Update News"
             ) : (
-              editingNews ? 'Update News' : 'Publish News'
+              "Publish News"
+            )}
+
+            {/* Tooltip on hover when disabled */}
+            {!formValid && !loading && !uploadingImage && (
+              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                {validationMessage}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+              </div>
             )}
           </button>
         </div>

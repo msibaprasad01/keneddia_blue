@@ -234,13 +234,26 @@ export const updateDailyOfferActiveStatus = (id, isActive) =>
   API.patch(`api/v1/daily-offer/${id}/status`, null, { params: { isActive } });
 
 //events section
-export const createEvent = (data) => API.post("api/v1/events/create", data);
+export const createEvent = (formData) => 
+  API.post("api/v1/events-updated/events", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 export const getEvents = ({ status = "ACTIVE", page = 0, size = 10 }) =>
-  API.get("api/v1/events/showAll", { params: { status, page, size } });
-export const updateEventById = (id, data) =>
-  API.put(`api/v1/events/${id}`, data);
-export const updateEventStatus = (id, isActive) =>
-  API.patch(`api/v1/events/${id}/status`, null, { params: { isActive } });
+  API.get("api/v1/events-updated/showAll", { params: { status, page, size } });
+export const updateEventById = (id, formData) =>
+  API.put(`api/v1/events-updated/events/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+export const updateEventStatus = (id, active) =>
+  API.patch(`api/v1/events-updated/events/${id}/status`, null, {
+    params: { active },
+  });
+
 export const createEventUpdated = (formData) =>
   API.post("api/v1/events-updated/events", formData);
 export const getEventsUpdated = () => API.get("api/v1/events-updated/showAll");
