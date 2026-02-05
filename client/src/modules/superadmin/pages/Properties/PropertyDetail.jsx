@@ -20,7 +20,6 @@ import PricingTab from './tabs/PricingTab';
 import PoliciesTab from './tabs/PoliciesTab';
 import MenuTab from './tabs/MenuTab';
 import TablesTab from './tabs/TablesTab';
-import BookingsTab from './tabs/BookingsTab';
 
 // Import Modals
 import AddEditOverviewModal from './modals/AddEditOverviewModal';
@@ -53,7 +52,6 @@ const PropertyDetail = ({ property, onBack }) => {
     policies: {},
     menu: [],
     tables: [],
-    bookings: []
   });
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -85,7 +83,7 @@ const PropertyDetail = ({ property, onBack }) => {
 
   const propertyType = data.overview.propertyType;
   const tabsByPropertyType = {
-    "Hotel": ["overview", "rooms", "amenities", "gallery", "events", "pricing", "policies", "bookings"],
+    "Hotel": ["overview", "rooms", "amenities", "gallery", "events", "pricing", "policies"],
     "Cafe": ["overview", "menu", "tables", "gallery"],
     "Restaurant": ["overview", "menu", "gallery", "events"]
   };
@@ -111,7 +109,6 @@ const PropertyDetail = ({ property, onBack }) => {
       case 'policies': return <PoliciesTab data={data.policies} propertyData={data.raw} onEdit={() => toggleModal('policy', true, data.policies)} />;
       case 'menu': return <MenuTab {...commonProps} />;
       case 'tables': return <TablesTab {...commonProps} />;
-      case 'bookings': return <BookingsTab data={data.bookings} propertyData={data.raw} />;
       default: return null;
     }
   };

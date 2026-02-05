@@ -155,28 +155,13 @@ const transformApiDataToSlides = (
   content: ApiHeroItem[],
   theme: "light" | "dark",
 ): HeroSlide[] => {
-  console.log("🔍 Filtering hero sections...");
 
   // CRITICAL FIX: Only show if BOTH conditions are true
   const filteredContent = content.filter((item) => {
     const shouldShow = item.active === true && item.showOnHomepage === true;
-
-    console.log(`Hero Section #${item.id}:`, {
-      title: item.mainTitle,
-      active: item.active,
-      showOnHomepage: item.showOnHomepage,
-      shouldShow,
-    });
-
     return shouldShow;
   });
-
-  // Sort by ID descending to get latest entries first, then take only 3
   const latestThree = filteredContent.sort((a, b) => b.id - a.id).slice(0, 3);
-
-  console.log(
-    `✅ Filtered: ${latestThree.length} of ${content.length} sections will be shown (latest 3 where both active=true AND showOnHomepage=true)`,
-  );
 
   return latestThree.map((item, index) => {
     const backgroundMedia = selectMediaByTheme(
@@ -205,9 +190,9 @@ const transformApiDataToSlides = (
       media: backgroundMedia?.url || "",
       mobileMedia: subMedia?.url || backgroundMedia?.url || "",
       thumbnail: thumbnailUrl,
-      title: item.mainTitle || `Discover Amazing Places ${index + 1}`,
-      subtitle: item.subTitle || "Book your next experience",
-      cta: item.ctaText, // ❌ don’t auto-fallback to "Explore"
+      title: item.mainTitle || ``,
+      subtitle: item.subTitle || "",
+      cta: item.ctaText,
       ctaLink: item.ctaLink ?? null,
       fallbackMedia: defaultSlides[index % defaultSlides.length].media,
       fallbackThumbnail: defaultSlides[index % defaultSlides.length].thumbnail,
@@ -254,18 +239,12 @@ export default function Hero() {
       setIsFetching(true);
 
       try {
-        console.log("🔄 Fetching hero sections from API...");
         const response = await getHeroSectionsPaginated({ page: 0, size: 100 }); // Increased to get all sections
         const pageData = response.data?.data || response.data || response;
 
         if (pageData?.content && Array.isArray(pageData.content)) {
           const apiContent: ApiHeroItem[] = pageData.content;
           apiDataRef.current = apiContent;
-
-          console.log(
-            `📦 Fetched ${apiContent.length} total hero sections from API`,
-          );
-
           const newHash = generateDataHash(apiContent);
 
           if (
@@ -273,22 +252,17 @@ export default function Hero() {
             slides.length > 0 &&
             !forceRefresh
           ) {
-            console.log("✅ Data unchanged, using existing slides");
             setIsFetching(false);
             isFetchingRef.current = false;
             return;
           }
 
           const apiSlides = transformApiDataToSlides(apiContent, currentTheme);
-
-          console.log(`🎬 Created ${apiSlides.length} slides after filtering`);
-
           if (apiSlides.length > 0) {
             const finalSlides = [...apiSlides];
 
             // Only add default slides if NO API slides are available
             if (finalSlides.length === 0) {
-              console.log("⚠️ No API slides available, using defaults");
               finalSlides.push(
                 ...defaultSlides.map((slide) => ({
                   ...slide,
@@ -301,13 +275,7 @@ export default function Hero() {
             setSlides(finalSlides);
             currentHashRef.current = newHash;
             setCachedData(finalSlides, newHash);
-
-            console.log(`✅ Final slides count: ${finalSlides.length}`);
           } else {
-            // If no slides match criteria, use defaults
-            console.log(
-              "⚠️ No slides match showOnHomepage=true && active=true, using defaults",
-            );
             const defaultSlidesWithFallback = defaultSlides.map((slide) => ({
               ...slide,
               fallbackMedia: slide.media,
@@ -317,7 +285,6 @@ export default function Hero() {
           }
         }
       } catch (error) {
-        console.error("❌ Error fetching hero section:", error);
         // Use defaults on error
         const defaultSlidesWithFallback = defaultSlides.map((slide) => ({
           ...slide,
@@ -355,7 +322,6 @@ export default function Hero() {
     const observer = new MutationObserver(() => {
       const newTheme = getCurrentTheme();
       if (newTheme !== currentTheme) {
-        console.log(`🎨 Theme changed from ${currentTheme} to ${newTheme}`);
         setCurrentTheme(newTheme);
         updateSlidesForTheme(newTheme);
       }

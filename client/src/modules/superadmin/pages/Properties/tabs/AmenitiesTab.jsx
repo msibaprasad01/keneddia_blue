@@ -6,7 +6,7 @@ import {
   BoltIcon,
 } from "@heroicons/react/24/outline";
 import { colors } from "@/lib/colors/colors";
-
+import AddAmenityModal from "../modals/AddAmenityModal";
 const AmenitiesTab = ({ data = [], onEdit, onAdd, onDelete }) => {
   return (
     <div>

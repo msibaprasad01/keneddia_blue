@@ -1,7 +1,7 @@
 import React from 'react';
 import { PencilSquareIcon, MapPinIcon, UserIcon, HomeIcon } from '@heroicons/react/24/outline';
 import { colors } from '@/lib/colors/colors';
-
+import AddEditOverviewModal from '../modals/AddEditOverviewModal';
 const OverviewTab = ({ data, onEdit }) => {
   // Combine address and area for a cleaner display
   console.log(data,"wendlq")
