@@ -1,7 +1,7 @@
 import React from "react";
 import { TrashIcon, PlusIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import { colors } from "@/lib/colors/colors";
-
+import AddMediaModal from "../modals/AddMediaModal";
 const GalleryTab = ({ data = [], onEdit, onAdd, onDelete }) => {
   return (
     <div>

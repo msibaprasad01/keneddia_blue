@@ -1,7 +1,7 @@
 import React from "react";
 import { PencilSquareIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { colors } from "@/lib/colors/colors";
-
+import AddRoomModal from "../modals/AddRoomModal";
 const RoomsTab = ({ data = [], onEdit, onAdd, onDelete }) => {
   return (
     <div>
