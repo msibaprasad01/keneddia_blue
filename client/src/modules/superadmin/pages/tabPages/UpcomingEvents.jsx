@@ -11,16 +11,20 @@ import {
   Calendar,
   ExternalLink,
   Image as ImageIcon,
+  CheckCircle2,
+  XCircle,
+  Video,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import CreateEventModal from "../../modals/CreateEventModal";
-import { getEventsUpdated } from "@/Api/Api";
+import { getEventsUpdated, updateEventStatus } from "@/Api/Api";
 
 function UpcomingEvents() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,34 +37,47 @@ function UpcomingEvents() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-
       const res = await getEventsUpdated();
-      console.log("Events Updated API full response:", res);
-      console.log("Events Updated API data:", res.data);
-
-      if (res?.data && Array.isArray(res.data)) {
-        const latestActiveEvents = [...res.data]
-          .filter((event) => event.active)
-          .reverse();
-
-        setEvents(latestActiveEvents);
-        setCurrentPage(1); // reset pagination on refresh
+      // Based on your latest format, the data is directly in res.data or res
+      const data = res?.data || res;
+      
+      if (data && Array.isArray(data)) {
+        // We keep both active and inactive so they can be managed
+        const allEvents = [...data].reverse();
+        setEvents(allEvents);
       } else {
         setEvents([]);
       }
     } catch (error) {
       console.error("Failed to fetch events:", error);
       toast.error("Failed to load events");
-      setEvents([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Pagination Logic
   const totalPages = Math.ceil(events.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentEvents = events.slice(startIndex, endIndex);
+  const currentEvents = events.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleStatusToggle = async (id, currentStatus) => {
+    try {
+      setStatusLoading(id);
+      const nextStatus = !currentStatus;
+      await updateEventStatus(id, nextStatus);
+      
+      toast.success(`Event ${nextStatus ? 'Activated' : 'Deactivated'}`);
+      
+      setEvents(prev => prev.map(ev => 
+        ev.id === id ? { ...ev, active: nextStatus } : ev
+      ));
+    } catch (error) {
+      toast.error("Failed to update status");
+    } finally {
+      setStatusLoading(null);
+    }
+  };
 
   const handleEdit = (event) => {
     setEditingEvent(event);
@@ -75,26 +92,18 @@ function UpcomingEvents() {
   const handleCloseModal = (shouldRefresh) => {
     setShowModal(false);
     setEditingEvent(null);
-    if (shouldRefresh) {
-      toast.success(
-        editingEvent
-          ? "Event updated successfully"
-          : "Event created successfully",
-      );
-      fetchEvents(); // Refresh the events list
-    }
+    if (shouldRefresh) fetchEvents();
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+      month: "short", day: "numeric", year: "numeric",
     });
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, isActive) => {
     const statusColors = {
       ACTIVE: colors.success,
       COMING_SOON: colors.warning,
@@ -103,255 +112,134 @@ function UpcomingEvents() {
     };
 
     return (
-      <span
-        className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider inline-block"
-        style={{
-          backgroundColor: statusColors[status] || colors.textSecondary,
-          color: "#ffffff",
-        }}
-      >
-        {status.replace("_", " ")}
-      </span>
+      <div className="flex flex-col items-center gap-1">
+        <span
+          className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider inline-block min-w-[85px] text-center"
+          style={{
+            backgroundColor: statusColors[status] || colors.textSecondary,
+            color: "#ffffff",
+          }}
+        >
+          {status ? status.replace("_", " ") : "UNKNOWN"}
+        </span>
+        {!isActive && (
+          <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter">Inactive</span>
+        )}
+      </div>
     );
   };
 
   return (
     <div>
       {/* Header */}
-      <div
-        className="rounded-lg p-4 sm:p-5 shadow-sm mb-3"
-        style={{ backgroundColor: colors.contentBg }}
-      >
+      <div className="rounded-lg p-4 sm:p-5 shadow-sm mb-3" style={{ backgroundColor: colors.contentBg }}>
         <div className="flex items-center justify-between">
           <div>
-            <h2
-              className="text-base sm:text-lg font-semibold m-0"
-              style={{ color: colors.textPrimary }}
-            >
-              Upcoming Events
-            </h2>
-            <p
-              className="text-xs mt-1 mb-0"
-              style={{ color: colors.textSecondary }}
-            >
-              Manage and track all upcoming events across properties
-            </p>
+            <h2 className="text-base sm:text-lg font-semibold m-0" style={{ color: colors.textPrimary }}>Upcoming Events</h2>
+            <p className="text-xs mt-1 mb-0" style={{ color: colors.textSecondary }}>Manage and toggle events for the guest application</p>
           </div>
           <button
             onClick={handleAddNew}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors"
-            style={{ backgroundColor: colors.primary, color: "#ffffff" }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-md text-xs sm:text-sm font-bold text-white transition-all active:scale-95"
+            style={{ backgroundColor: colors.primary }}
           >
             <Plus size={16} /> Add Event
           </button>
         </div>
       </div>
 
-      {/* Table View */}
-      <div
-        className="rounded-lg shadow-sm overflow-hidden"
-        style={{ backgroundColor: colors.contentBg }}
-      >
+      {/* Table Content */}
+      <div className="rounded-lg shadow-sm overflow-hidden" style={{ backgroundColor: colors.contentBg }}>
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2
-              size={32}
-              className="animate-spin"
-              style={{ color: colors.primary }}
-            />
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={32} className="animate-spin" style={{ color: colors.primary }} />
           </div>
         ) : events.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 px-4">
-            <Calendar
-              size={48}
-              style={{ color: colors.textSecondary }}
-              className="mb-3 opacity-50"
-            />
-            <p
-              className="text-sm font-medium mb-1"
-              style={{ color: colors.textPrimary }}
-            >
-              No events found
-            </p>
-            <p className="text-xs" style={{ color: colors.textSecondary }}>
-              Create your first event to get started
-            </p>
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <Calendar size={48} style={{ color: colors.textSecondary }} className="mb-3 opacity-30" />
+            <p className="text-sm font-medium" style={{ color: colors.textPrimary }}>No events found</p>
           </div>
         ) : (
           <>
-            {/* Desktop Table View */}
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr
-                    className="border-b"
-                    style={{
-                      backgroundColor: colors.mainBg,
-                      borderColor: colors.border,
-                    }}
-                  >
-                    <th
-                      className="text-left px-4 py-3 text-xs font-bold uppercase tracking-wider"
-                      style={{ color: colors.textSecondary }}
-                    >
-                      Image
-                    </th>
-                    <th
-                      className="text-left px-4 py-3 text-xs font-bold uppercase tracking-wider"
-                      style={{ color: colors.textSecondary }}
-                    >
-                      Event Details
-                    </th>
-                    <th
-                      className="text-left px-4 py-3 text-xs font-bold uppercase tracking-wider"
-                      style={{ color: colors.textSecondary }}
-                    >
-                      Location
-                    </th>
-                    <th
-                      className="text-left px-4 py-3 text-xs font-bold uppercase tracking-wider"
-                      style={{ color: colors.textSecondary }}
-                    >
-                      Property Type
-                    </th>
-                    <th
-                      className="text-left px-4 py-3 text-xs font-bold uppercase tracking-wider"
-                      style={{ color: colors.textSecondary }}
-                    >
-                      Date
-                    </th>
-                    <th
-                      className="text-left px-4 py-3 text-xs font-bold uppercase tracking-wider"
-                      style={{ color: colors.textSecondary }}
-                    >
-                      Status
-                    </th>
-                    <th
-                      className="text-center px-4 py-3 text-xs font-bold uppercase tracking-wider"
-                      style={{ color: colors.textSecondary }}
-                    >
-                      Actions
-                    </th>
+                  <tr className="border-b" style={{ backgroundColor: colors.mainBg, borderColor: colors.border }}>
+                    <th className="text-left px-4 py-4 text-xs font-bold uppercase" style={{ color: colors.textSecondary }}>Media</th>
+                    <th className="text-left px-4 py-4 text-xs font-bold uppercase" style={{ color: colors.textSecondary }}>Event Info</th>
+                    <th className="text-left px-4 py-4 text-xs font-bold uppercase" style={{ color: colors.textSecondary }}>Location</th>
+                    <th className="text-left px-4 py-4 text-xs font-bold uppercase" style={{ color: colors.textSecondary }}>Date</th>
+                    <th className="text-center px-4 py-4 text-xs font-bold uppercase" style={{ color: colors.textSecondary }}>Status</th>
+                    <th className="text-center px-4 py-4 text-xs font-bold uppercase" style={{ color: colors.textSecondary }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {currentEvents.map((event, index) => (
-                    <tr
-                      key={event.id}
-                      className="border-b hover:bg-gray-50 transition-colors"
-                      style={{ borderColor: colors.border }}
+                  {currentEvents.map((event) => (
+                    <tr 
+                      key={event.id} 
+                      className="border-b transition-colors hover:bg-gray-50/50" 
+                      style={{ borderColor: colors.border, opacity: event.active ? 1 : 0.65 }}
                     >
-                      {/* Image */}
                       <td className="px-4 py-3">
-                        <div
-                          className="w-16 h-16 rounded-lg overflow-hidden border"
-                          style={{ borderColor: colors.border }}
-                        >
+                        <div className="w-14 h-14 rounded-lg overflow-hidden border bg-gray-50 flex items-center justify-center" style={{ borderColor: colors.border }}>
                           {event.image?.url ? (
-                            <img
-                              src={event.image.url}
-                              alt={event.title}
-                              className="w-full h-full object-cover"
-                            />
+                            event.image.type === "VIDEO" ? (
+                               <div className="relative w-full h-full flex items-center justify-center bg-black/5">
+                                 <Video size={20} className="text-gray-400" />
+                                 <span className="absolute bottom-0 right-0 bg-black/50 text-[8px] text-white px-1">MP4</span>
+                               </div>
+                            ) : (
+                               <img src={event.image.url} alt={event.title} className="w-full h-full object-cover" />
+                            )
                           ) : (
-                            <div
-                              className="w-full h-full flex items-center justify-center"
-                              style={{ backgroundColor: colors.mainBg }}
-                            >
-                              <ImageIcon
-                                size={20}
-                                style={{ color: colors.textSecondary }}
-                              />
-                            </div>
+                            <ImageIcon size={20} className="text-gray-300" />
                           )}
                         </div>
                       </td>
-
-                      {/* Event Details */}
                       <td className="px-4 py-3">
-                        <div className="max-w-xs">
-                          <h3
-                            className="text-sm font-bold mb-1 line-clamp-1"
-                            style={{ color: colors.textPrimary }}
-                          >
-                            {event.title}
-                          </h3>
-                          <p
-                            className="text-xs line-clamp-2 mb-1"
-                            style={{ color: colors.textSecondary }}
-                          >
-                            {event.description}
-                          </p>
-                          {event.ctaLink && (
-                            <a
-                              href={event.ctaLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                              style={{ color: colors.primary }}
-                            >
-                              {event.ctaText || "View Details"}
-                              <ExternalLink size={10} />
-                            </a>
-                          )}
+                        <div className="max-w-[200px]">
+                          <h3 className="text-sm font-bold truncate" style={{ color: colors.textPrimary }}>{event.title}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gray-100 rounded text-gray-500">
+                               {event.typeName || "General"}
+                            </span>
+                          </div>
                         </div>
                       </td>
-
-                      {/* Location */}
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5">
-                          <MapPin
-                            size={14}
-                            style={{ color: colors.textSecondary }}
-                          />
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: colors.textPrimary }}
-                          >
-                            {event.locationName}
-                          </span>
+                        <div className="flex items-center gap-1 text-xs font-medium" style={{ color: colors.textPrimary }}>
+                          <MapPin size={12} className="text-gray-400" />
+                          {event.locationName}
                         </div>
                       </td>
-
-                      {/* Property Type */}
-                      <td className="px-4 py-3">
-                        <div
-                          className="inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-[10px] font-bold"
-                          style={{ color: colors.textSecondary }}
-                        >
-                          <Building2 size={10} />
-                          {event.typeName}
-                        </div>
-                      </td>
-
-                      {/* Date */}
-                      <td className="px-4 py-3">
-                        <span
-                          className="text-xs font-medium"
-                          style={{ color: colors.textPrimary }}
-                        >
-                          {formatDate(event.eventDate)}
-                        </span>
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-4 py-3">
-                        {getStatusBadge(event.status)}
-                      </td>
-
-                      {/* Actions */}
+                      <td className="px-4 py-3 text-xs font-medium">{formatDate(event.eventDate)}</td>
+                      <td className="px-4 py-3">{getStatusBadge(event.status, event.active)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-2">
                           <button
-                            onClick={() => handleEdit(event)}
-                            className="p-2 rounded border transition-colors hover:bg-gray-100"
-                            style={{
-                              borderColor: colors.border,
-                              color: colors.textPrimary,
+                            onClick={() => handleStatusToggle(event.id, event.active)}
+                            disabled={statusLoading === event.id}
+                            className="p-2 rounded-lg border transition-all hover:shadow-sm bg-white"
+                            style={{ 
+                              borderColor: colors.border, 
+                              color: event.active ? colors.success : colors.textSecondary 
                             }}
-                            title="Edit Event"
+                            title={event.active ? "Click to Deactivate" : "Click to Activate"}
                           >
-                            <Edit size={14} />
+                            {statusLoading === event.id ? (
+                                <Loader2 size={16} className="animate-spin" />
+                            ) : event.active ? (
+                                <CheckCircle2 size={16} />
+                            ) : (
+                                <XCircle size={16} />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleEdit(event)}
+                            className="p-2 rounded-lg border bg-white transition-all hover:shadow-sm"
+                            style={{ borderColor: colors.border, color: colors.primary }}
+                          >
+                            <Edit size={16} />
                           </button>
                         </div>
                       </td>
@@ -361,149 +249,26 @@ function UpcomingEvents() {
               </table>
             </div>
 
-            {/* Mobile Card View */}
-            <div className="lg:hidden p-4 space-y-3">
-              {currentEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="rounded-lg border p-4"
-                  style={{
-                    backgroundColor: colors.mainBg,
-                    borderColor: colors.border,
-                  }}
-                >
-                  <div className="flex gap-3 mb-3">
-                    <div
-                      className="w-20 h-20 rounded-lg overflow-hidden border flex-shrink-0"
-                      style={{ borderColor: colors.border }}
-                    >
-                      {event.image?.url ? (
-                        <img
-                          src={event.image.url}
-                          alt={event.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div
-                          className="w-full h-full flex items-center justify-center"
-                          style={{ backgroundColor: colors.contentBg }}
-                        >
-                          <ImageIcon
-                            size={24}
-                            style={{ color: colors.textSecondary }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-grow">
-                      <h3
-                        className="text-sm font-bold mb-1"
-                        style={{ color: colors.textPrimary }}
-                      >
-                        {event.title}
-                      </h3>
-                      <div className="flex items-center gap-2 mb-1">
-                        <MapPin
-                          size={12}
-                          style={{ color: colors.textSecondary }}
-                        />
-                        <span
-                          className="text-xs"
-                          style={{ color: colors.textSecondary }}
-                        >
-                          {event.locationName}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="inline-flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded text-[10px] font-bold"
-                          style={{ color: colors.textSecondary }}
-                        >
-                          <Building2 size={10} />
-                          {event.typeName}
-                        </div>
-                        {getStatusBadge(event.status)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <p
-                    className="text-xs mb-2 line-clamp-2"
-                    style={{ color: colors.textSecondary }}
-                  >
-                    {event.description}
-                  </p>
-
-                  <div
-                    className="flex items-center justify-between pt-2 border-t"
-                    style={{ borderColor: colors.border }}
-                  >
-                    <span
-                      className="text-xs font-medium"
-                      style={{ color: colors.textPrimary }}
-                    >
-                      {formatDate(event.eventDate)}
-                    </span>
-                    <button
-                      onClick={() => handleEdit(event)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded border text-xs font-medium transition-colors hover:bg-gray-50"
-                      style={{
-                        borderColor: colors.border,
-                        color: colors.textPrimary,
-                      }}
-                    >
-                      <Edit size={12} /> Edit
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Pagination Controls */}
+            {/* Pagination */}
             {totalPages > 1 && (
-              <div
-                className="flex items-center justify-between px-4 sm:px-6 py-4 border-t"
-                style={{ borderColor: colors.border }}
-              >
-                <div
-                  className="text-xs"
-                  style={{ color: colors.textSecondary }}
-                >
-                  Showing {startIndex + 1} to{" "}
-                  {Math.min(endIndex, events.length)} of {events.length} events
-                </div>
+              <div className="flex items-center justify-between px-6 py-4 border-t" style={{ borderColor: colors.border }}>
+                <span className="text-xs font-medium text-gray-500">
+                  Page {currentPage} of {totalPages}
+                </span>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
                     disabled={currentPage === 1}
-                    className="p-2 rounded-full border transition-all disabled:opacity-30 hover:bg-gray-50"
-                    style={{
-                      borderColor: colors.border,
-                      color: colors.textPrimary,
-                    }}
+                    onClick={() => setCurrentPage(p => p - 1)}
+                    className="p-1.5 rounded-md border disabled:opacity-30 hover:bg-gray-50"
+                    style={{ borderColor: colors.border }}
                   >
                     <ChevronLeft size={18} />
                   </button>
-                  <div
-                    className="text-xs font-bold"
-                    style={{ color: colors.textPrimary }}
-                  >
-                    Page{" "}
-                    <span style={{ color: colors.primary }}>{currentPage}</span>{" "}
-                    of {totalPages}
-                  </div>
                   <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                    }
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-full border transition-all disabled:opacity-30 hover:bg-gray-50"
-                    style={{
-                      borderColor: colors.border,
-                      color: colors.textPrimary,
-                    }}
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    className="p-1.5 rounded-md border disabled:opacity-30 hover:bg-gray-50"
+                    style={{ borderColor: colors.border }}
                   >
                     <ChevronRight size={18} />
                   </button>
@@ -515,10 +280,10 @@ function UpcomingEvents() {
       </div>
 
       {showModal && (
-        <CreateEventModal
-          isOpen={showModal}
-          onClose={handleCloseModal}
-          editingEvent={editingEvent}
+        <CreateEventModal 
+          isOpen={showModal} 
+          onClose={handleCloseModal} 
+          editingEvent={editingEvent} 
         />
       )}
     </div>
