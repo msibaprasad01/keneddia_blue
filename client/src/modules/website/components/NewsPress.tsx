@@ -116,7 +116,10 @@ function SectionHeader({ title, onPrev, onNext }: { title: string; onPrev: () =>
       </div>
 
       <div className="flex items-center gap-4">
-        <Link to="/news" className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">
+        <Link 
+        // to="/news" 
+        to="#" 
+        className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">
           View All <ArrowUpRight className="w-4 h-4" />
         </Link>
         <div className="flex gap-2">
@@ -202,7 +205,8 @@ function NewsCard({ item }: { item: NewsItem }) {
 
         <div className="mt-auto pt-2 border-t border-border/50">
           <Link
-            to={`/news/${item.id}`} key={item.id}
+            // to={`/news/${item.id}`} key={item.id}
+            to={`#`} key={item.id}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3"
           >
             {item.ctaText}
