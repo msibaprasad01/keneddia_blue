@@ -167,6 +167,10 @@ export const createPropertyListing = (data) =>API.post("api/v1/property-listings
 export const GetAllPropertyListing = () => API.get("api/v1/property-listings");
 export const getPropertyListingMedia = (propertyListingId) =>API.get(`api/v1/property-listings/${propertyListingId}/media`);
 export const GetAllPropertyDetailsByID = (id) =>API.get(`api/v1/properties/AllDetailsById/${id}`);
+export const enableProperty = (propertyId) =>API.patch(`api/v1/properties/enable/${propertyId}`);
+export const disableProperty = (propertyId) =>API.patch(`api/v1/properties/disable/${propertyId}`);
+export const deletePropertyListing = (propertyListingId) =>API.delete(`api/v1/property-listings/${propertyListingId}`);
+
 export const createAmenityFeature = (data) =>API.post("api/v1/admin/amenities-features", data);
 export const getAllAmenityFeatures = () =>API.get("api/v1/admin/amenities-features");
 

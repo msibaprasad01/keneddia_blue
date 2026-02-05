@@ -13,6 +13,7 @@ import {
   Building2,
   Tags,
   Layers,
+  Power,
 } from "lucide-react";
 import AddPropertyModal from "../../modals/AddPropertyModal";
 import AddPropertyTypeModal from "../../modals/AddPropertyTypeModal";
@@ -21,36 +22,30 @@ import {
   getPropertyTypes,
   getAllProperties,
   getAllPropertyCategories,
+  enableProperty,
+  disableProperty,
+  deletePropertyListing
 } from "@/Api/Api";
+import { toast } from "react-hot-toast";
 
 import PropertyDetail from "./PropertyDetail";
 
 function ManageProperties() {
-  // Navigation State
-  const [activeMainTab, setActiveMainTab] = useState("properties"); // properties, types, categories
-
+  const [activeMainTab, setActiveMainTab] = useState("properties");
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All Types");
-  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
-
-  // Modal states
+  
   const [showAddPropertyModal, setShowAddPropertyModal] = useState(false);
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
-  // State for PropertyDetail view
   const [selectedProperty, setSelectedProperty] = useState(null);
-
-  // Data states
   const [properties, setProperties] = useState([]);
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [propertyCategories, setPropertyCategories] = useState([]);
-
-  // Loading states
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(null); // Track specific row actions
 
-  // Pagination for Properties
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -62,12 +57,12 @@ function ManageProperties() {
         getPropertyTypes(),
         getAllPropertyCategories(),
       ]);
-
       setProperties(propRes?.data || propRes || []);
       setPropertyTypes(typeRes?.data || typeRes || []);
       setPropertyCategories(catRes?.data || catRes || []);
     } catch (error) {
       console.error("Error fetching management data:", error);
+      toast.error("Failed to load property data");
     } finally {
       setLoading(false);
     }
@@ -76,6 +71,42 @@ function ManageProperties() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // --- NEW FEATURE HANDLERS ---
+  
+  const handleToggleStatus = async (property) => {
+    setActionLoading(property.id);
+    try {
+      if (property.isActive) {
+        await disableProperty(property.id);
+        toast.success(`${property.propertyName} disabled`);
+      } else {
+        await enableProperty(property.id);
+        toast.success(`${property.propertyName} enabled`);
+      }
+      fetchData(); // Refresh list
+    } catch (error) {
+      toast.error("Failed to update status");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeleteProperty = async (property) => {
+    if (!window.confirm(`Are you sure you want to delete "${property.propertyName}"? This action cannot be undone.`)) return;
+    
+    setActionLoading(property.id);
+    try {
+      // Assuming property.id corresponds to the listing ID needed for deletePropertyListing
+      await deletePropertyListing(property.id);
+      toast.success("Property deleted successfully");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to delete property");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const getFilteredProperties = () => {
     let filtered = [...properties];
@@ -99,7 +130,6 @@ function ManageProperties() {
   };
 
   const displayProperties = getFilteredProperties();
-  const totalPages = Math.ceil(displayProperties.length / itemsPerPage);
   const paginatedProperties = displayProperties.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -128,14 +158,11 @@ function ManageProperties() {
   return (
     <Layout role="superadmin" showActions={false}>
       <div className="h-full overflow-hidden flex flex-col space-y-4 p-4">
-        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Portfolio Manager</h2>
-            <p className="text-sm text-gray-500">Manage properties, types, and categories in one place</p>
+            <p className="text-sm text-gray-500">Manage properties, types, and categories</p>
           </div>
-          
-          {/* Dynamic Add Button based on Tab */}
           <button
             onClick={() => {
               if (activeMainTab === "properties") setShowAddPropertyModal(true);
@@ -149,7 +176,6 @@ function ManageProperties() {
           </button>
         </div>
 
-        {/* Navigation Tabs */}
         <div className="flex gap-2 border-b border-gray-200">
           {mainTabs.map((tab) => (
             <button
@@ -161,17 +187,14 @@ function ManageProperties() {
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              {tab.icon}
-              {tab.label}
+              {tab.icon} {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Content Area */}
         <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
           {activeMainTab === "properties" && (
             <>
-              {/* Properties Filters */}
               <div className="p-4 border-b bg-gray-50/30 flex flex-wrap items-center justify-between gap-4">
                 <div className="relative">
                   <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -196,7 +219,6 @@ function ManageProperties() {
                 </div>
               </div>
 
-              {/* Properties Table */}
               <div className="flex-1 overflow-auto">
                 <table className="w-full text-left">
                   <thead className="sticky top-0 bg-gray-50 text-xs font-black text-gray-400 uppercase tracking-widest border-b">
@@ -222,8 +244,27 @@ function ManageProperties() {
                             {p.isActive ? "Active" : "Inactive"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center">
-                           <button onClick={() => setSelectedProperty(p)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={16} /></button>
+                        <td className="px-6 py-4">
+                            <div className="flex items-center justify-center gap-2">
+                                {/* View/Edit */}
+                                <button 
+                                    onClick={() => setSelectedProperty(p)} 
+                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="Edit/Details"
+                                >
+                                    <Edit2 size={16} />
+                                </button>
+
+                                {/* Toggle Enable/Disable */}
+                                <button 
+                                    onClick={() => handleToggleStatus(p)}
+                                    disabled={actionLoading === p.id}
+                                    className={`p-2 rounded-lg transition-colors ${p.isActive ? 'text-orange-500 hover:bg-orange-50' : 'text-green-600 hover:bg-green-50'}`}
+                                    title={p.isActive ? "Disable Property" : "Enable Property"}
+                                >
+                                    {actionLoading === p.id ? <Loader2 size={16} className="animate-spin" /> : <Power size={16} />}
+                                </button>
+                            </div>
                         </td>
                       </tr>
                     ))}
@@ -233,11 +274,12 @@ function ManageProperties() {
             </>
           )}
 
+          {/* Types and Categories tabs remain the same... */}
           {activeMainTab === "types" && (
             <div className="flex-1 overflow-auto p-6">
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {propertyTypes.map(type => (
-                    <div key={type.id} className="p-4 border rounded-xl hover:shadow-md transition-shadow bg-white flex items-center justify-between">
+                    <div key={type.id} className="p-4 border rounded-xl bg-white flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Tags size={20}/></div>
                         <div>
@@ -256,7 +298,7 @@ function ManageProperties() {
             <div className="flex-1 overflow-auto p-6">
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {propertyCategories.map(cat => (
-                    <div key={cat.id} className="p-4 border rounded-xl hover:shadow-md transition-shadow bg-white flex items-center justify-between">
+                    <div key={cat.id} className="p-4 border rounded-xl bg-white flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Layers size={20}/></div>
                         <div>
@@ -273,7 +315,6 @@ function ManageProperties() {
         </div>
       </div>
 
-      {/* Modals */}
       {showAddPropertyModal && <AddPropertyModal onClose={() => setShowAddPropertyModal(false)} onSuccess={() => { fetchData(); setShowAddPropertyModal(false); }} />}
       {showAddTypeModal && <AddPropertyTypeModal onClose={() => setShowAddTypeModal(false)} onSuccess={() => { fetchData(); setShowAddTypeModal(false); }} />}
       {showAddCategoryModal && <AddPropertyCategoryModal onClose={() => setShowAddCategoryModal(false)} onSuccess={() => { fetchData(); setShowAddCategoryModal(false); }} />}
