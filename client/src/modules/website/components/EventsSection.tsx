@@ -202,7 +202,8 @@ function SectionHeader({
           <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
         </div>
         <Link
-          to={ROUTES.allEvents}
+          // to={ROUTES.allEvents}
+          to="#"
           className="group flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all"
         >
           All Events <ArrowRight className="w-4 h-4" />
@@ -236,7 +237,10 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       transition={{ delay: index * 0.08, duration: 0.4 }}
       className="group relative"
     >
-      <Link to={ROUTES.eventDetail(event.id)} className="block">
+      <Link 
+      // to={ROUTES.eventDetail(event.id)} 
+      to="#"
+      className="block">
         <div
           className={`relative ${STYLE_CONFIG.cardHeight} ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-500`}
         >
