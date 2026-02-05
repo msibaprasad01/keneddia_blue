@@ -148,7 +148,6 @@ const PropertyDetail = ({ property, onBack }) => {
       "rooms",
       "amenities",
       "gallery",
-      "events",
       "pricing",
       "policies",
     ],
