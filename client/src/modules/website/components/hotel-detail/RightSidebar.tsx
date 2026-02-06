@@ -27,8 +27,18 @@ interface Hotel {
   reviews?: number;
   amenities?: string[];
   nearbyPlaces?: { name: string; distance: string; type?: string }[];
-  dining?: { name: string; cuisine: string; image?: { src: string; alt: string } }[];
-  events?: { title: string; date: string; time: string; tag?: string; image: { src: string; alt: string } }[];
+  dining?: {
+    name: string;
+    cuisine: string;
+    image?: { src: string; alt: string };
+  }[];
+  events?: {
+    title: string;
+    date: string;
+    time: string;
+    tag?: string;
+    image: { src: string; alt: string };
+  }[];
   checkIn: string;
   checkOut: string;
   coordinates?: { lat: number; lng: number } | null;
@@ -38,11 +48,13 @@ interface Hotel {
 interface RightSidebarProps {
   hotel: Hotel;
   selectedRoom: Room | null;
+  onBookNow: () => void;
 }
 
 export default function RightSidebar({
   hotel,
   selectedRoom,
+  onBookNow,
 }: RightSidebarProps) {
   const scrollToSection = (id: string, offset = 150) => {
     const element = document.getElementById(id);
@@ -66,7 +78,7 @@ export default function RightSidebar({
   const getRoomPrice = (room: Room | null): number => {
     if (!room) return 0;
     const price = room.basePrice ?? room.price ?? 0;
-    return typeof price === 'number' ? price : 0;
+    return typeof price === "number" ? price : 0;
   };
 
   // Generate dynamic map URL based on coordinates
@@ -133,9 +145,7 @@ export default function RightSidebar({
 
           <Button
             onClick={() =>
-              selectedRoom
-                ? console.log("Proceeding to book", selectedRoom.id)
-                : scrollToSection("room-options")
+              selectedRoom ? onBookNow() : scrollToSection("room-options")
             }
             className="w-full font-bold uppercase tracking-wider py-3 text-sm shadow-md hover:shadow-lg transition-all"
             variant={selectedRoom ? "default" : "secondary"}
@@ -429,7 +439,7 @@ export default function RightSidebar({
         onClick={() =>
           window.open(
             `https://wa.me/919876543210?text=I'm interested in booking a room at ${hotel.name}`,
-            "_blank"
+            "_blank",
           )
         }
       >
