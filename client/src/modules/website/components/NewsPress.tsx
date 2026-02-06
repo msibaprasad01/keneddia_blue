@@ -124,7 +124,7 @@ function SectionHeader({ title, onPrev, onNext }: { title: string; onPrev: () =>
 
       <div className="flex items-center gap-4">
         <Link 
-          to="#" 
+          to="/news" 
           className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">
           View All <ArrowUpRight className="w-4 h-4" />
         </Link>

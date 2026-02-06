@@ -17,8 +17,6 @@ const EVENT_NAV_ITEMS = [
   { type: 'link', label: 'PLANNING', key: 'planning', href: '#collection' },
 ] as any[];
 
-const categories = ["All Categories", "Music & Dining", "Celebration", "Culinary", "Community"];
-
 const dateFilters = [
   { label: "Today", value: "today" },
   { label: "Tomorrow", value: "tomorrow" },
@@ -43,12 +41,22 @@ const FilterSidebar = ({
 }: any) => {
   const uniqueLocations = useMemo(() => {
     const locations = eventList.map((e: any) => e.locationName).filter(Boolean);
-    return [...new Set(locations)];
+    return [...new Set(locations)].sort();
   }, [eventList]);
 
   const uniqueEventTypes = useMemo(() => {
     const types = eventList.map((e: any) => e.typeName).filter(Boolean);
-    return [...new Set(types)];
+    return [...new Set(types)].sort();
+  }, [eventList]);
+
+  const uniqueCategories = useMemo(() => {
+    const categories = eventList.map((e: any) => e.typeName).filter(Boolean);
+    return [...new Set(categories)].sort();
+  }, [eventList]);
+
+  const uniqueStatuses = useMemo(() => {
+    const statuses = eventList.map((e: any) => e.status).filter(Boolean);
+    return [...new Set(statuses)].sort();
   }, [eventList]);
 
   const [locationSearch, setLocationSearch] = useState("");
@@ -59,6 +67,7 @@ const FilterSidebar = ({
       categories: [],
       locations: [],
       eventTypes: [],
+      statuses: [],
     });
   };
 
@@ -66,7 +75,8 @@ const FilterSidebar = ({
     filters.dateFilter || 
     filters.categories.length > 0 || 
     filters.locations.length > 0 || 
-    filters.eventTypes.length > 0;
+    filters.eventTypes.length > 0 ||
+    filters.statuses.length > 0;
 
   return (
     <>
@@ -151,159 +161,214 @@ const FilterSidebar = ({
           </div>
 
           {/* Categories */}
-          <div className="mb-8">
-            <h4 className="text-xs font-bold text-foreground uppercase tracking-widest mb-3">
-              Categories
-            </h4>
-            <div className="space-y-2">
-              {categories.filter(c => c !== "All Categories").map((category) => (
-                <label
-                  key={category}
-                  className="flex items-center gap-3 cursor-pointer group"
-                >
-                  <input
-                    type="checkbox"
-                    checked={filters.categories.includes(category)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setFilters({
-                          ...filters,
-                          categories: [...filters.categories, category],
-                        });
-                      } else {
-                        setFilters({
-                          ...filters,
-                          categories: filters.categories.filter(
-                            (c: string) => c !== category
-                          ),
-                        });
-                      }
-                    }}
-                    className="w-4 h-4 accent-primary"
-                  />
-                  <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                    {category}
-                  </span>
-                </label>
-              ))}
-            </div>
-            {filters.categories.length > 0 && (
-              <button
-                onClick={() => setFilters({ ...filters, categories: [] })}
-                className="mt-2 text-xs text-primary hover:text-primary/80 font-bold uppercase tracking-widest"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-
-          {/* Location */}
-          <div className="mb-8">
-            <h4 className="text-xs font-bold text-foreground uppercase tracking-widest mb-3">
-              Location
-            </h4>
-            <div className="relative mb-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search location..."
-                value={locationSearch}
-                onChange={(e) => setLocationSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-background border border-border/50 rounded text-sm focus:outline-none focus:border-primary transition-colors"
-              />
-            </div>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {uniqueLocations
-                .filter((loc: string) =>
-                  loc.toLowerCase().includes(locationSearch.toLowerCase())
-                )
-                .map((location: string) => (
+          {uniqueCategories.length > 0 && (
+            <div className="mb-8">
+              <h4 className="text-xs font-bold text-foreground uppercase tracking-widest mb-3">
+                Categories
+              </h4>
+              <div className="space-y-2">
+                {uniqueCategories.map((category: string) => (
                   <label
-                    key={location}
+                    key={category}
                     className="flex items-center gap-3 cursor-pointer group"
                   >
                     <input
                       type="checkbox"
-                      checked={filters.locations.includes(location)}
+                      checked={filters.categories.includes(category)}
                       onChange={(e) => {
                         if (e.target.checked) {
                           setFilters({
                             ...filters,
-                            locations: [...filters.locations, location],
+                            categories: [...filters.categories, category],
                           });
                         } else {
                           setFilters({
                             ...filters,
-                            locations: filters.locations.filter(
-                              (l: string) => l !== location
+                            categories: filters.categories.filter(
+                              (c: string) => c !== category
                             ),
                           });
                         }
                       }}
                       className="w-4 h-4 accent-primary"
                     />
-                    <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors truncate">
-                      {location}
+                    <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                      {category}
                     </span>
                   </label>
                 ))}
+              </div>
+              {filters.categories.length > 0 && (
+                <button
+                  onClick={() => setFilters({ ...filters, categories: [] })}
+                  className="mt-2 text-xs text-primary hover:text-primary/80 font-bold uppercase tracking-widest"
+                >
+                  Clear
+                </button>
+              )}
             </div>
-            {filters.locations.length > 0 && (
-              <button
-                onClick={() => setFilters({ ...filters, locations: [] })}
-                className="mt-2 text-xs text-primary hover:text-primary/80 font-bold uppercase tracking-widest"
-              >
-                Clear
-              </button>
-            )}
-          </div>
+          )}
+
+          {/* Location */}
+          {uniqueLocations.length > 0 && (
+            <div className="mb-8">
+              <h4 className="text-xs font-bold text-foreground uppercase tracking-widest mb-3">
+                Location
+              </h4>
+              <div className="relative mb-3">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search location..."
+                  value={locationSearch}
+                  onChange={(e) => setLocationSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-background border border-border/50 rounded text-sm focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {uniqueLocations
+                  .filter((loc: string) =>
+                    loc.toLowerCase().includes(locationSearch.toLowerCase())
+                  )
+                  .map((location: string) => (
+                    <label
+                      key={location}
+                      className="flex items-center gap-3 cursor-pointer group"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={filters.locations.includes(location)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFilters({
+                              ...filters,
+                              locations: [...filters.locations, location],
+                            });
+                          } else {
+                            setFilters({
+                              ...filters,
+                              locations: filters.locations.filter(
+                                (l: string) => l !== location
+                              ),
+                            });
+                          }
+                        }}
+                        className="w-4 h-4 accent-primary"
+                      />
+                      <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors truncate">
+                        {location}
+                      </span>
+                    </label>
+                  ))}
+              </div>
+              {filters.locations.length > 0 && (
+                <button
+                  onClick={() => setFilters({ ...filters, locations: [] })}
+                  className="mt-2 text-xs text-primary hover:text-primary/80 font-bold uppercase tracking-widest"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Event Type */}
-          <div className="mb-8">
-            <h4 className="text-xs font-bold text-foreground uppercase tracking-widest mb-3">
-              Event Type
-            </h4>
-            <div className="space-y-2">
-              {uniqueEventTypes.map((type: string) => (
-                <label
-                  key={type}
-                  className="flex items-center gap-3 cursor-pointer group"
+          {uniqueEventTypes.length > 0 && (
+            <div className="mb-8">
+              <h4 className="text-xs font-bold text-foreground uppercase tracking-widest mb-3">
+                Property Type
+              </h4>
+              <div className="space-y-2">
+                {uniqueEventTypes.map((type: string) => (
+                  <label
+                    key={type}
+                    className="flex items-center gap-3 cursor-pointer group"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={filters.eventTypes.includes(type)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFilters({
+                            ...filters,
+                            eventTypes: [...filters.eventTypes, type],
+                          });
+                        } else {
+                          setFilters({
+                            ...filters,
+                            eventTypes: filters.eventTypes.filter(
+                              (t: string) => t !== type
+                            ),
+                          });
+                        }
+                      }}
+                      className="w-4 h-4 accent-primary"
+                    />
+                    <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                      {type}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {filters.eventTypes.length > 0 && (
+                <button
+                  onClick={() => setFilters({ ...filters, eventTypes: [] })}
+                  className="mt-2 text-xs text-primary hover:text-primary/80 font-bold uppercase tracking-widest"
                 >
-                  <input
-                    type="checkbox"
-                    checked={filters.eventTypes.includes(type)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setFilters({
-                          ...filters,
-                          eventTypes: [...filters.eventTypes, type],
-                        });
-                      } else {
-                        setFilters({
-                          ...filters,
-                          eventTypes: filters.eventTypes.filter(
-                            (t: string) => t !== type
-                          ),
-                        });
-                      }
-                    }}
-                    className="w-4 h-4 accent-primary"
-                  />
-                  <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                    {type}
-                  </span>
-                </label>
-              ))}
+                  Clear
+                </button>
+              )}
             </div>
-            {filters.eventTypes.length > 0 && (
-              <button
-                onClick={() => setFilters({ ...filters, eventTypes: [] })}
-                className="mt-2 text-xs text-primary hover:text-primary/80 font-bold uppercase tracking-widest"
-              >
-                Clear
-              </button>
-            )}
-          </div>
+          )}
+
+          {/* Event Status */}
+          {uniqueStatuses.length > 0 && (
+            <div className="mb-8">
+              <h4 className="text-xs font-bold text-foreground uppercase tracking-widest mb-3">
+                Status
+              </h4>
+              <div className="space-y-2">
+                {uniqueStatuses.map((status: string) => (
+                  <label
+                    key={status}
+                    className="flex items-center gap-3 cursor-pointer group"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={filters.statuses.includes(status)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFilters({
+                            ...filters,
+                            statuses: [...filters.statuses, status],
+                          });
+                        } else {
+                          setFilters({
+                            ...filters,
+                            statuses: filters.statuses.filter(
+                              (s: string) => s !== status
+                            ),
+                          });
+                        }
+                      }}
+                      className="w-4 h-4 accent-primary"
+                    />
+                    <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                      {status.replace(/_/g, ' ')}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {filters.statuses.length > 0 && (
+                <button
+                  onClick={() => setFilters({ ...filters, statuses: [] })}
+                  className="mt-2 text-xs text-primary hover:text-primary/80 font-bold uppercase tracking-widest"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </aside>
     </>
@@ -318,6 +383,22 @@ const EventCard = ({ event, onClick }: any) => {
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { bg: string; text: string }> = {
+      ACTIVE: { bg: "bg-green-500/90", text: "Active" },
+      COMING_SOON: { bg: "bg-blue-500/90", text: "Coming Soon" },
+      SOLD_OUT: { bg: "bg-red-500/90", text: "Sold Out" },
+    };
+
+    const config = statusConfig[status] || { bg: "bg-gray-500/90", text: status };
+    
+    return (
+      <div className={`${config.bg} backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg`}>
+        {config.text}
+      </div>
+    );
   };
 
   return (
@@ -336,7 +417,10 @@ const EventCard = ({ event, onClick }: any) => {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        <div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+        <div className="absolute top-4 left-4">
+          {getStatusBadge(event.status)}
+        </div>
+        <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
           {event.typeName || "General"}
         </div>
         <div className="absolute bottom-4 left-4 right-4">
@@ -386,6 +470,22 @@ const EventListRow = ({ event, onClick }: any) => {
     });
   };
 
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { bg: string; text: string }> = {
+      ACTIVE: { bg: "bg-green-500/90", text: "Active" },
+      COMING_SOON: { bg: "bg-blue-500/90", text: "Coming Soon" },
+      SOLD_OUT: { bg: "bg-red-500/90", text: "Sold Out" },
+    };
+
+    const config = statusConfig[status] || { bg: "bg-gray-500/90", text: status };
+    
+    return (
+      <div className={`${config.bg} backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg`}>
+        {config.text}
+      </div>
+    );
+  };
+
   return (
     <motion.div
       layout
@@ -401,7 +501,10 @@ const EventListRow = ({ event, onClick }: any) => {
           alt={event.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+        <div className="absolute top-4 left-4">
+          {getStatusBadge(event.status)}
+        </div>
+        <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
           {event.typeName || "General"}
         </div>
       </div>
@@ -457,7 +560,14 @@ export default function Events() {
     categories: [] as string[],
     locations: [] as string[],
     eventTypes: [] as string[],
+    statuses: [] as string[],
   });
+
+  // Dynamic categories from event list
+  const dynamicCategories = useMemo(() => {
+    const cats = eventList.map((e: any) => e.typeName).filter(Boolean);
+    return ["All Categories", ...Array.from(new Set(cats)).sort()];
+  }, [eventList]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -493,7 +603,7 @@ export default function Events() {
     // Category filter
     if (filters.categories.length > 0) {
       filtered = filtered.filter((event) =>
-        filters.categories.includes(event.typeName || "Music & Dining")
+        filters.categories.includes(event.typeName)
       );
     }
 
@@ -508,6 +618,13 @@ export default function Events() {
     if (filters.eventTypes.length > 0) {
       filtered = filtered.filter((event) =>
         filters.eventTypes.includes(event.typeName)
+      );
+    }
+
+    // Status filter
+    if (filters.statuses.length > 0) {
+      filtered = filtered.filter((event) =>
+        filters.statuses.includes(event.status)
       );
     }
 
@@ -610,9 +727,9 @@ export default function Events() {
                   </button>
                 </div>
 
-                {/* Category Chips */}
+                {/* Category Chips - Dynamic */}
                 <div className="flex flex-wrap gap-3 mb-6">
-                  {categories.map((cat) => (
+                  {dynamicCategories.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => {
@@ -712,6 +829,7 @@ export default function Events() {
                         categories: [],
                         locations: [],
                         eventTypes: [],
+                        statuses: [],
                       })
                     }
                     className="px-6 py-3 bg-primary text-primary-foreground font-bold text-sm uppercase tracking-widest hover:bg-primary/90 transition-colors rounded-lg"
@@ -733,13 +851,14 @@ export default function Events() {
                         <EventCard
                           key={event.id}
                           event={event}
-                          onClick={() => navigate(`/events/${event.id}`)}
+                          // onClick={() => navigate(`/events/${event.id}`)}
+                          onClick={() => navigate(`#`)}
                         />
                       ) : (
                         <EventListRow
                           key={event.id}
                           event={event}
-                          onClick={() => navigate(`/events/${event.id}`)}
+                          onClick={() => navigate(`#`)}
                         />
                       )
                     )}
