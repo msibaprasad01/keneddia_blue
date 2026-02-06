@@ -14,6 +14,7 @@ import {
   Building2,
   Phone,
   Mail,
+  Info,
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
@@ -29,6 +30,7 @@ import {
   GetAllPropertyDetails,
   getRoomsByPropertyId,
   getAllGalleries,
+  getAllPropertyPolicies,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 
@@ -109,16 +111,24 @@ interface HotelData {
   image: { src: string; alt: string };
 }
 
+interface PolicyData {
+  propertyId: number;
+  propertyName: string;
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  cancellationPolicy: string | null;
+  policies: Array<{ id: number; name: string; isActive: boolean }>;
+}
+
 export default function HotelDetail() {
   const params = useParams<{ propertyId?: string }>();
   const navigate = useNavigate();
-  const propertyIdFromUrl = params.propertyId
-    ? Number(params.propertyId)
-    : null;
+  const propertyIdFromUrl = params.propertyId ? Number(params.propertyId) : null;
 
   const [hotel, setHotel] = useState<HotelData | null>(null);
   const [rooms, setRooms] = useState<any[]>([]);
   const [galleryData, setGalleryData] = useState<GalleryItem[]>([]);
+  const [policies, setPolicies] = useState<PolicyData | null>(null);
   const [loading, setLoading] = useState(true);
   const [roomsLoading, setRoomsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -155,7 +165,7 @@ export default function HotelDetail() {
         });
 
         const matched = flattened.find(
-          (m: any) => Number(m.parent.id) === Number(propertyIdFromUrl),
+          (m: any) => Number(m.parent.id) === Number(propertyIdFromUrl)
         );
 
         if (!matched) {
@@ -195,6 +205,7 @@ export default function HotelDetail() {
 
         fetchRooms(parent.id);
         fetchGallery(parent.id);
+        fetchPolicies(parent.id);
       } catch (err) {
         setError("Error loading data");
       } finally {
@@ -207,7 +218,6 @@ export default function HotelDetail() {
   const fetchRooms = async (propId: number) => {
     try {
       setRoomsLoading(true);
-
       const res = await getRoomsByPropertyId(propId);
       const data = Array.isArray(res?.data) ? res.data : [];
 
@@ -222,20 +232,16 @@ export default function HotelDetail() {
           description: r.description || "",
           basePrice: r.basePrice || 0,
           maxOccupancy: r.maxOccupancy || 1,
-
-          // ✅ THIS IS THE KEY FIX
           isAvailable,
-
           amenities:
             r.amenitiesAndFeatures
               ?.filter((a: any) => a.isActive)
               ?.map((a: any) => a.name) || [],
-
           image: {
             src:
-              roomImageMap.get(propId) || // best available room image
-              hotel?.image?.src || // fallback
-              "/images/room-placeholder.jpg", // final fallback
+              roomImageMap.get(propId) ||
+              hotel?.image?.src ||
+              "/images/room-placeholder.jpg",
             alt: r.roomName || r.roomNumber,
           },
         };
@@ -252,16 +258,32 @@ export default function HotelDetail() {
       const allContent = res?.data?.content || res?.content || [];
       const filtered = allContent.filter(
         (item: any) =>
-          Number(item.propertyId) === Number(propId) && item.isActive,
+          Number(item.propertyId) === Number(propId) && item.isActive
       );
       setGalleryData(filtered);
     } catch (err) {
       setGalleryData([]);
     }
   };
+
+  const fetchPolicies = async (propId: number) => {
+    try {
+      const res = await getAllPropertyPolicies(propId);
+      const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      
+      const matchedPolicy = data.find(
+        (p: any) => Number(p.propertyId) === Number(propId)
+      );
+      if (matchedPolicy) {
+        setPolicies(matchedPolicy);
+      }
+    } catch (err) {
+      console.error("Error fetching policies", err);
+    }
+  };
+
   const roomImageMap = useMemo(() => {
     const map = new Map<number, string>();
-
     galleryData.forEach((item) => {
       if (
         item.category === "ROOM" &&
@@ -271,7 +293,6 @@ export default function HotelDetail() {
         map.set(item.propertyId, item.media.url);
       }
     });
-
     return map;
   }, [galleryData]);
 
@@ -280,15 +301,11 @@ export default function HotelDetail() {
       toast.error("Please select check-in and check-out dates");
       return;
     }
-
     if (!selectedRoomId) {
       toast.error("Please select a room");
       return;
     }
-
-    // Example: AsiaTech (replace with dynamic source later)
-    const token = "ODQ2Mg=="; // map this by propertyId later
-
+    const token = "ODQ2Mg==";
     const params = new URLSearchParams({
       token,
       checkin: searchData.checkIn.toISOString().split("T")[0],
@@ -297,9 +314,7 @@ export default function HotelDetail() {
       children: String(searchData.children),
       rooms: String(searchData.rooms),
     });
-
     const bookingUrl = `https://asiatech.in/booking_engine/index3?${params.toString()}`;
-
     window.open(bookingUrl, "_blank");
   };
 
@@ -350,13 +365,9 @@ export default function HotelDetail() {
       <div className="container mx-auto px-4 md:px-12 py-4">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <Link to="/" className="hover:text-foreground">
-            Home
-          </Link>
+          <Link to="/" className="hover:text-foreground">Home</Link>
           <ChevronRight className="w-4 h-4" />
-          <Link to="/hotels" className="hover:text-foreground">
-            Hotels
-          </Link>
+          <Link to="/hotels" className="hover:text-foreground">Hotels</Link>
           <ChevronRight className="w-4 h-4" />
           <span className="text-foreground font-medium">{hotel.name}</span>
         </div>
@@ -364,17 +375,13 @@ export default function HotelDetail() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
           <div>
-            <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2">
-              {hotel.name}
-            </h1>
+            <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2">{hotel.name}</h1>
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <MapPin className="w-4 h-4 text-primary" />
-              <span>
-                {hotel.location}, {hotel.city}
-              </span>
+              <span>{hotel.location}, {hotel.city}</span>
               {hotel.coordinates && (
                 <a
-                  href={`http://maps.google.com/?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`}
+                  href={`https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-destructive font-medium hover:underline ml-2"
@@ -402,53 +409,41 @@ export default function HotelDetail() {
         {/* Media Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[400px] mb-8 rounded-xl overflow-hidden shadow-sm cursor-pointer">
           <div
-            className="md:col-span-2 h-full bg-muted"
-            onClick={() => {
-              setInitialGalleryIndex(0);
-              setIsGalleryOpen(true);
-            }}
+            className="md:col-span-2 h-full bg-muted overflow-hidden"
+            onClick={() => { setInitialGalleryIndex(0); setIsGalleryOpen(true); }}
           >
             <OptimizedImage
               src={topGridImages[0]?.url || ""}
-              className="w-full h-full object-cover hover:scale-105 transition-transform"
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
             />
           </div>
           <div className="md:col-span-1 flex flex-col gap-2">
             <div
-              className="h-1/2 bg-muted"
-              onClick={() => {
-                setInitialGalleryIndex(1);
-                setIsGalleryOpen(true);
-              }}
+              className="h-1/2 bg-muted overflow-hidden"
+              onClick={() => { setInitialGalleryIndex(1); setIsGalleryOpen(true); }}
             >
               <OptimizedImage
                 src={topGridImages[1]?.url || ""}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
               />
             </div>
             <div
-              className="h-1/2 bg-muted"
-              onClick={() => {
-                setInitialGalleryIndex(2);
-                setIsGalleryOpen(true);
-              }}
+              className="h-1/2 bg-muted overflow-hidden"
+              onClick={() => { setInitialGalleryIndex(2); setIsGalleryOpen(true); }}
             >
               <OptimizedImage
                 src={topGridImages[2]?.url || ""}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
               />
             </div>
           </div>
           <div
-            className="md:col-span-1 bg-muted relative"
-            onClick={() => {
-              setInitialGalleryIndex(3);
-              setIsGalleryOpen(true);
-            }}
+            className="md:col-span-1 bg-muted relative overflow-hidden"
+            onClick={() => { setInitialGalleryIndex(3); setIsGalleryOpen(true); }}
           >
             <OptimizedImage
               src={topGridImages[3]?.url || ""}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
             />
             {topGridImages.length > 4 && (
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold">
@@ -464,9 +459,7 @@ export default function HotelDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 py-8">
           <div className="space-y-12">
             <section id="room-options" className="scroll-mt-40">
-              <h2 className="text-2xl font-serif font-bold mb-6">
-                Choose Your Room
-              </h2>
+              <h2 className="text-2xl font-serif font-bold mb-6">Choose Your Room</h2>
               {roomsLoading ? (
                 <Loader2 className="animate-spin mx-auto" />
               ) : (
@@ -479,12 +472,8 @@ export default function HotelDetail() {
             </section>
 
             <section id="about-hotel" className="scroll-mt-40 border-t pt-8">
-              <h2 className="text-2xl font-serif font-bold mb-4">
-                About {hotel.name}
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                {hotel.description}
-              </p>
+              <h2 className="text-2xl font-serif font-bold mb-4">About {hotel.name}</h2>
+              <p className="text-muted-foreground leading-relaxed">{hotel.description}</p>
             </section>
 
             <section id="amenities" className="scroll-mt-40 border-t pt-8">
@@ -504,16 +493,12 @@ export default function HotelDetail() {
             </section>
 
             <section id="dining" className="scroll-mt-40 border-t pt-8">
-              <h2 className="text-2xl font-serif font-bold mb-6">
-                Food & Dining
-              </h2>
+              <h2 className="text-2xl font-serif font-bold mb-6">Food & Dining</h2>
               <p className="text-muted-foreground italic">Coming soon...</p>
             </section>
 
             <section id="reviews" className="scroll-mt-40 border-t pt-8">
-              <h2 className="text-2xl font-serif font-bold mb-6">
-                Guest Reviews
-              </h2>
+              <h2 className="text-2xl font-serif font-bold mb-6">Guest Reviews</h2>
               <p className="text-muted-foreground italic">Coming soon...</p>
             </section>
 
@@ -523,10 +508,71 @@ export default function HotelDetail() {
             </section>
 
             <section id="policies" className="scroll-mt-40 border-t pt-8">
-              <h2 className="text-2xl font-serif font-bold mb-6">
-                Guest Policies
-              </h2>
-              <p className="text-muted-foreground italic">Coming soon...</p>
+              <h2 className="text-2xl font-serif font-bold mb-6">Guest Policies</h2>
+              <div className="bg-white border rounded-xl p-6 md:p-8 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                  {/* Left Column: CHECK-IN / CHECK-OUT */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-destructive font-bold text-[10px] md:text-xs uppercase tracking-widest">
+                      <Info className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      CHECK-IN / CHECK-OUT
+                    </div>
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                      <div className="flex justify-between md:justify-start md:gap-4">
+                        <span className="font-medium text-foreground min-w-[80px]">Check-in:</span>
+                        <span>{policies?.checkInTime || "2:00 PM"}</span>
+                      </div>
+                      <div className="flex justify-between md:justify-start md:gap-4">
+                        <span className="font-medium text-foreground min-w-[80px]">Check-out:</span>
+                        <span>{policies?.checkOutTime || "11:00 AM"}</span>
+                      </div>
+                      <div className="flex justify-between md:justify-start md:gap-4">
+                        <span className="font-medium text-foreground min-w-[80px]">Minimum Age:</span>
+                        <span>18 years</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: OTHER POLICIES */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-destructive font-bold text-[10px] md:text-xs uppercase tracking-widest">
+                      <Info className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      OTHER POLICIES
+                    </div>
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                      {/* Dynamic Rules */}
+                      {policies?.policies?.map((p) => {
+                        const parts = p.name.split(" ");
+                        const label = parts[0];
+                        const value = parts.slice(1).join(" ") || (p.isActive ? "Allowed" : "Not Allowed");
+                        
+                        return (
+                          <div key={p.id} className="flex justify-between md:justify-start md:gap-4">
+                            <span className="font-medium text-foreground min-w-[80px]">{label}:</span>
+                            <span>{value}</span>
+                          </div>
+                        );
+                      })}
+
+                      {/* Cancellation Policy */}
+                      <div className="flex flex-col gap-1 pt-1">
+                        <span className="font-medium text-foreground">Cancellation:</span>
+                        <span className="leading-relaxed">
+                          {policies?.cancellationPolicy || "Non-refundable for promotional rates"}
+                        </span>
+                      </div>
+
+                      {/* Fixed Layout Sample for Extra Bed (as per image) */}
+                      {!policies?.policies.some(p => p.name.toLowerCase().includes('bed')) && (
+                         <div className="flex justify-between md:justify-start md:gap-4">
+                            <span className="font-medium text-foreground min-w-[80px]">Extra Bed:</span>
+                            <span>Not available</span>
+                         </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </section>
           </div>
 
