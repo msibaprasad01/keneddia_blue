@@ -63,16 +63,42 @@ function NewsPress() {
       console.log(`Total items fetched: ${newsData.length}`);
 
       if (newsData.length > 0) {
-        // Filter active news and sort by date (newest first)
-        const activeNews = newsData
-          .filter((news) => news.active !== false)
-          .sort((a, b) => {
-            const dateA = new Date(a.newsDate || a.dateBadge || a.createdAt);
-            const dateB = new Date(b.newsDate || b.dateBadge || b.createdAt);
-            return dateB - dateA; // Descending order (newest first)
-          });
-        setNewsItems(activeNews);
-      } else {
+  const normalizedNews = newsData.map((item) => {
+    return {
+      ...item,
+
+      // ✅ NORMALIZE BADGE FIELD
+      badgeTypeName:
+        item.badgeTypeName ||
+        item.badgeType ||
+        item.badge?.name ||
+        item.badgeName ||
+        null,
+
+      // ✅ NORMALIZE CATEGORY (safety)
+      category: item.category || item.newsCategory || "NEWS",
+
+      // ✅ NORMALIZE IMAGE
+      imageUrl:
+        item.imageUrl ||
+        item.image ||
+        item.media?.[0]?.url ||
+        null,
+    };
+  });
+
+  const activeNews = normalizedNews
+    .filter((news) => news.active !== false)
+    .sort((a, b) => {
+      const dateA = new Date(a.newsDate || a.dateBadge || a.createdAt);
+      const dateB = new Date(b.newsDate || b.dateBadge || b.createdAt);
+      return dateB - dateA;
+    });
+
+  console.log("✅ FINAL NORMALIZED NEWS:", activeNews);
+  setNewsItems(activeNews);
+}
+ else {
         setNewsItems([]);
       }
     } catch (error) {
