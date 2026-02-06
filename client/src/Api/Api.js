@@ -43,6 +43,14 @@ export const createUser = (data) => API.post("api/v1/users/create", data);
 export const getUsersPaginated = () => API.get("api/v1/users/auth/paginated");
 export const addLocation = (data) => API.post("api/v1/locations/create", data);
 export const getAllLocations = () => API.get("api/v1/locations/all");
+export const updateLocationById = (id, data) =>API.put(`api/v1/locations/${id}/edit`, data);
+export const updateLocationStatus = (id, isActive) =>API.patch(
+    `api/v1/locations/${id}/status`,
+    null,
+    { params: { isActive } }
+  );
+
+
 export const addPropertyType = (data) =>
   API.post("api/v1/property-types/create", data);
 export const getPropertyTypes = () => API.get("api/v1/property-types");
