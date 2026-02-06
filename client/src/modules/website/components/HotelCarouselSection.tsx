@@ -40,67 +40,59 @@ const customPopupStyles = `
   }
 `;
 
-// Map API response to UI format
 const mapApiToHotelUI = (item: any) => {
   const parent = item.propertyResponseDTO;
-  const listing =
-    item.propertyListingResponseDTOS?.find((l: any) => l.isActive) ||
-    item.propertyListingResponseDTOS?.[0];
+  // Requirement: Filter for active listings only
+  const listing = item.propertyListingResponseDTOS?.find(
+    (l: any) => l.isActive,
+  );
 
+  // Fallback to parent details if no active listing, but show listing data if present
   const basePrice = listing?.price || 0;
   const discount = listing?.discountAmount || 0;
   const gstPercent = listing?.gstPercentage || 0;
   const discountPercent =
     basePrice > 0 ? Math.round((discount / basePrice) * 100) : 0;
 
-  // Create unique ID combining propertyId and listingId to avoid duplicates
-  const uniqueId = listing?.id 
-    ? `${parent?.id}-${listing.id}` 
-    : `property-${parent?.id}`;
-
   return {
-    id: uniqueId,
+    id: listing?.id ? `${parent?.id}-${listing.id}` : `property-${parent?.id}`,
     propertyId: parent?.id,
     listingId: listing?.id,
-    name: parent?.propertyName || listing?.mainHeading || "N/A",
+    name: parent?.propertyName || "Unnamed Property",
     location: listing?.fullAddress || parent?.address || "N/A",
-    city: parent?.locationName || "N/A",
+    city: parent?.locationName || "Unknown",
     type: listing?.propertyType || parent?.propertyTypes?.[0] || "Hotel",
 
     image: {
-      src: listing?.media?.[0]?.url || "",
-      alt: parent?.propertyName || "Hotel Image",
+      src: listing?.media?.[0]?.url || listing?.media?.[0] || "",
+      alt: parent?.propertyName,
     },
 
-    rating: listing?.rating || null,
-    reviews: 0,
-    description: listing?.tagline || listing?.subTitle || "N/A",
-    amenities:
-      listing?.amenities && listing.amenities.length > 0
-        ? listing.amenities
-        : ["N/A"],
+    rating: listing?.rating || 0,
+    description:
+      listing?.tagline ||
+      listing?.subTitle ||
+      "Luxury comfort in the heart of the city",
+    amenities: Array.isArray(listing?.amenities) ? listing.amenities : [],
 
-    rooms: listing?.capacity || "N/A",
-    capacity: listing?.capacity || "N/A",
+    // Dynamic Capacity and Rooms
+    rooms: listing?.capacity || 1,
+    capacity: listing?.capacity || parent?.capacity || 0,
 
     pricing: {
       basePrice,
       discount,
       discountPercent,
-      discountLabel: discount > 0 ? "Discount" : "Standard Price",
       gstPercent,
     },
 
-    checkIn: "2:00 PM",
-    checkOut: "11:00 AM",
-
+    // Dynamic Coordinates from propertyResponseDTO
     coordinates: {
       lat: parent?.latitude || 20.5937,
       lng: parent?.longitude || 78.9629,
     },
 
-    isActive: parent?.isActive,
-    hasListing: item.propertyListingResponseDTOS?.length > 0,
+    isActive: parent?.isActive && (listing ? listing.isActive : true),
   };
 };
 
@@ -293,42 +285,25 @@ export default function HotelCarouselSection() {
       try {
         setLoading(true);
         const response = await GetAllPropertyDetails();
-        const rawData = response?.data || response;
+        const rawData = response?.data?.data || response?.data || [];
 
-        if (!Array.isArray(rawData)) return;
-
-        // Map API response to UI format
-        const mappedHotels = rawData
-          .map((item: any) => mapApiToHotelUI(item))
-          .filter((hotel: any) => {
-            // Filter only active hotels with listings and type "Hotel"
-            return (
-              hotel.isActive &&
-              hotel.hasListing &&
-              hotel.type?.toLowerCase() === "hotel"
+        if (Array.isArray(rawData)) {
+          const mappedHotels = rawData
+            .map((item: any) => mapApiToHotelUI(item))
+            .filter(
+              (hotel: any) =>
+                hotel.isActive && hotel.type?.toLowerCase() === "hotel",
             );
-          });
 
-        // Extract unique cities from locationName
-        const uniqueCities = Array.from(
-          new Set(mappedHotels.map((h: any) => h.city).filter(Boolean))
-        ) as string[];
-
-        // Sort alphabetically
-        uniqueCities.sort((a, b) => a.localeCompare(b));
-
-        // Prepend "All Cities"
-        setCities(["All Cities", ...uniqueCities]);
-
-        setHotels(mappedHotels);
-        setFilteredHotels(mappedHotels);
+          // REQUIREMENT: Show latest data (Reverse the list)
+          setHotels([...mappedHotels].reverse());
+        }
       } catch (err) {
         console.error("Failed to load hotels", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchHotels();
   }, []);
 
@@ -343,21 +318,46 @@ export default function HotelCarouselSection() {
 
     const interval = setInterval(() => {
       setActiveIndex((prev) =>
-        prev === filteredHotels.length - 1 ? 0 : prev + 1
+        prev === filteredHotels.length - 1 ? 0 : prev + 1,
       );
     }, 5000);
     return () => clearInterval(interval);
   }, [viewMode, isPaused, filteredHotels.length]);
 
+  const handleBookNow = (hotel: any) => {
+    // Use current date for check-in and tomorrow for check-out by default
+    const checkInDate = new Date();
+    const checkOutDate = new Date();
+    checkOutDate.setDate(checkInDate.getDate() + 1);
+
+    const token = "ODQ2Mg==";
+    const params = new URLSearchParams({
+      token,
+      checkin: checkInDate.toISOString().split("T")[0],
+      checkout: checkOutDate.toISOString().split("T")[0],
+      adults: "2",
+      children: "0",
+      rooms: "1",
+      // You can optionally pass propertyId if the engine supports it
+      propertyId: String(hotel.propertyId),
+    });
+
+    const bookingUrl = `https://asiatech.in/booking_engine/index3?${params.toString()}`;
+    window.open(bookingUrl, "_blank");
+  };
+  const goToHotelDetails = (hotel: any) => {
+    navigate(`/hotels/${hotel.propertyId}`);
+  };
+
   const handlePrev = () => {
     setActiveIndex((prev) =>
-      prev === 0 ? filteredHotels.length - 1 : prev - 1
+      prev === 0 ? filteredHotels.length - 1 : prev - 1,
     );
   };
 
   const handleNext = () => {
     setActiveIndex((prev) =>
-      prev === filteredHotels.length - 1 ? 0 : prev + 1
+      prev === filteredHotels.length - 1 ? 0 : prev + 1,
     );
   };
 
@@ -396,7 +396,7 @@ export default function HotelCarouselSection() {
   }
 
   const activeHotel = filteredHotels[activeIndex];
-  
+
   // Safety check - if activeHotel is undefined, reset index
   if (!activeHotel) {
     return (
@@ -676,7 +676,7 @@ export default function HotelCarouselSection() {
                               <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
                               <span className="line-clamp-1">{amenity}</span>
                             </div>
-                          )
+                          ),
                         )}
                       </div>
                     </div>
@@ -689,21 +689,13 @@ export default function HotelCarouselSection() {
 
                   <div className="space-y-2.5 mt-4">
                     <button
-                      onClick={() => navigate(getHotelDetailUrl(activeHotel))}
-                      className="w-full py-3 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-98 flex items-center justify-center gap-2 text-sm"
+                      onClick={() => handleBookNow(activeHotel)}
+                      className="w-full py-3 bg-primary text-primary-foreground font-bold uppercase rounded-lg shadow-md flex items-center justify-center gap-2 text-sm"
                     >
-                      Book Room
-                      <ArrowRight className="w-4 h-4" />
+                      Book Room <ArrowRight className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() =>
-                        navigate(`/hotels/${activeHotel.city}`, {
-                          state: {
-                            hotelId: activeHotel.id,
-                            city: activeHotel.city,
-                          },
-                        })
-                      }
+                      onClick={() => goToHotelDetails(activeHotel)}
                       className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors"
                     >
                       View Full Details →
@@ -840,11 +832,10 @@ export default function HotelCarouselSection() {
                       </div>
 
                       <button
-                        onClick={() => navigate(getHotelDetailUrl(activeHotel))}
-                        className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg text-sm"
+                        onClick={() => handleBookNow(activeHotel)}
+                        className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg shadow-md text-sm"
                       >
-                        Book Now
-                        <ArrowRight className="w-3.5 h-3.5" />
+                        Book Now <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -919,9 +910,7 @@ export default function HotelCarouselSection() {
                                   </span>
                                 </div>
                                 <button
-                                  onClick={() =>
-                                    navigate(getHotelDetailUrl(hotel))
-                                  }
+                                  onClick={() => goToHotelDetails(hotel)}
                                   className="w-full text-xs bg-primary text-primary-foreground font-bold py-2 rounded"
                                 >
                                   View Details
