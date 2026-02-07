@@ -384,6 +384,6 @@ export const HotelAddAboutUs = (payload) => {
   return API.post("api/v1/admin/about-us", formData);
 };
 export const searchRooms = (payload) =>API.post("api/v1/rooms/search", payload);
-
+export const getHotelHomepageHeroSection = (id) => API.get(`api/v1/hero-sections/property/${id}`);
 
 export default API;

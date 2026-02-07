@@ -36,7 +36,7 @@ function HomePageDashboard() {
     { id: 'events', label: 'Upcoming Events', icon: Calendar, component: UpcomingEvents },
     { id: 'news', label: 'News & Press', icon: Newspaper, component: NewsPress },
     { id: 'guest', label: 'Guest Exp', icon: Star, component: GuestExp },
-    { id: 'presence', label: 'Our Prsence', icon: Building, component: OurPresence },
+    { id: 'presence', label: 'Our Presence', icon: Building, component: OurPresence },
     // { id: 'careers', label: 'Careers', icon: Briefcase, component: Careers }
   ];
 

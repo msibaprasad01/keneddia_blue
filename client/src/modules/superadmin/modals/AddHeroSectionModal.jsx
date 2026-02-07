@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { colors } from "@/lib/colors/colors";
-import { Upload, X, Loader2, Sun, Moon } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { Upload, X, Loader2, Sun, Moon, Home, Building2 } from "lucide-react";
+import { showSuccess, showInfo, showError, showWarning } from "@/lib/toasters/toastUtils";
 import {
   uploadHeroMediaBulk,
   createHeroSection,
   updateHeroSectionById,
+  getPropertyTypes
 } from "@/Api/Api";
 
 function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
@@ -17,7 +18,11 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     ctaLink: "", 
     active: false,
     showOnHomepage: false,
+    propertyTypeId: null, // null = homepage, number = specific property type
   });
+
+  const [propertyTypes, setPropertyTypes] = useState([]);
+  const [loadingTypes, setLoadingTypes] = useState(false);
 
   const [backgroundMedia, setBackgroundMedia] = useState({
     theme: "ALL", 
@@ -37,10 +42,48 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
   const [loading, setLoading] = useState(false);
   const [currentBackgroundIndex, setCurrentBackgroundIndex] = useState(0);
 
-  // 2. Form Reset & Initialization
+  // Check if property type is selected (simplified mode)
+  const isPropertyTypeSelected = formData.propertyTypeId !== null;
+
+  // 2. Fetch Property Types
+  useEffect(() => {
+    if (isOpen) {
+      fetchPropertyTypes();
+    }
+  }, [isOpen]);
+
+  const fetchPropertyTypes = async () => {
+    try {
+      setLoadingTypes(true);
+      const response = await getPropertyTypes();
+      const data = response?.data || response;
+      if (Array.isArray(data)) {
+        const activeTypes = data.filter(type => type.isActive);
+        setPropertyTypes(activeTypes);
+      } else {
+        setPropertyTypes([]);
+      }
+    } catch (error) {
+      console.error("Error fetching property types:", error);
+      showError("Failed to load property types");
+      setPropertyTypes([]);
+    } finally {
+      setLoadingTypes(false);
+    }
+  };
+
+  // 3. Form Reset & Initialization
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ mainTitle: "", subTitle: "", ctaText: "",ctaLink: "", active: false, showOnHomepage: false });
+      setFormData({ 
+        mainTitle: "", 
+        subTitle: "", 
+        ctaText: "",
+        ctaLink: "", 
+        active: false, 
+        showOnHomepage: false,
+        propertyTypeId: null 
+      });
       const resetMedia = {
         theme: "ALL", allFiles: [], allPreviews: [], allMediaTypes: [], allMediaIds: [],
         lightFiles: [], lightPreviews: [], lightMediaTypes: [], lightMediaIds: [],
@@ -54,7 +97,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     }
   }, [isOpen]);
 
-  // 3. Edit Data Population
+  // 4. Edit Data Population
   useEffect(() => {
     if (editData && isOpen) {
       setFormData({
@@ -64,6 +107,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
         ctaLink: editData.ctaLink || "",
         active: editData.active ?? false,
         showOnHomepage: editData.showOnHomepage ?? false,
+        propertyTypeId: editData.propertyTypeId || null,
       });
 
       // Background Media Logic
@@ -149,8 +193,24 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     return () => clearInterval(interval);
   }, [backgroundMedia, previewTheme]);
 
-  // 4. Input Handlers
-  const handleInputChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  // 5. Input Handlers
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // When property type changes, clear sub media if property type is selected
+    if (field === "propertyTypeId" && value !== null) {
+      const resetSubMedia = {
+        theme: "ALL",
+        allFiles: [], allPreviews: [], allMediaTypes: [], allMediaIds: [],
+        lightFiles: [], lightPreviews: [], lightMediaTypes: [], lightMediaIds: [],
+        darkFiles: [], darkPreviews: [], darkMediaTypes: [], darkMediaIds: [],
+      };
+      setSubMedia(resetSubMedia);
+      
+      // Reset showOnHomepage for property-specific hero
+      setFormData(prev => ({ ...prev, showOnHomepage: false }));
+    }
+  };
 
   const handleMultipleFilesChange = (mediaType, theme, files, isBackground = true) => {
     if (!files || files.length === 0) return;
@@ -219,7 +279,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     return null;
   };
 
-  // 5. API Logic
+  // 6. API Logic
   const processUpload = async (files) => {
     if (!files || files.length === 0) return [];
     const uploadData = new FormData();
@@ -233,10 +293,29 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
   };
 
   const validateForm = () => {
+    // For property type mode: title, subtitle and background required
+    if (isPropertyTypeSelected) {
+      if (!formData.mainTitle.trim()) {
+        showError("Please provide a Title");
+        return false;
+      }
+      const hasBg = backgroundMedia.allPreviews.length > 0 || 
+                    backgroundMedia.lightPreviews.length > 0 || 
+                    backgroundMedia.darkPreviews.length > 0;
+      if (!hasBg) {
+        showError("Please upload at least one background image");
+        return false;
+      }
+      return true;
+    }
+
+    // For homepage mode: flexible validation
     const hasText = formData.mainTitle.trim() || formData.subTitle.trim() || formData.ctaText.trim();
-    const hasBg = backgroundMedia.allPreviews.length > 0 || backgroundMedia.lightPreviews.length > 0 || backgroundMedia.darkPreviews.length > 0;
+    const hasBg = backgroundMedia.allPreviews.length > 0 || 
+                  backgroundMedia.lightPreviews.length > 0 || 
+                  backgroundMedia.darkPreviews.length > 0;
     if (!hasText && !hasBg) {
-      toast.error("Please provide at least a Title or Background Media.");
+      showError("Please provide at least a Title or Background Media");
       return false;
     }
     return true;
@@ -247,40 +326,49 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     setLoading(true);
 
     try {
-      // Parallel uploads per category for precise ID mapping
-      const [bgAll, bgLight, bgDark, subAll, subLight, subDark] = await Promise.all([
+      // For property type mode: only upload background media
+      const uploadPromises = isPropertyTypeSelected ? [
+        processUpload(backgroundMedia.allFiles),
+        processUpload(backgroundMedia.lightFiles),
+        processUpload(backgroundMedia.darkFiles),
+      ] : [
         processUpload(backgroundMedia.allFiles),
         processUpload(backgroundMedia.lightFiles),
         processUpload(backgroundMedia.darkFiles),
         processUpload(subMedia.allFiles),
         processUpload(subMedia.lightFiles),
         processUpload(subMedia.darkFiles),
-      ]);
+      ];
+
+      const uploadResults = await Promise.all(uploadPromises);
+      
+      const [bgAll, bgLight, bgDark, subAll, subLight, subDark] = isPropertyTypeSelected ? 
+        [...uploadResults, [], [], []] : uploadResults;
 
       const payload = {
         mainTitle: formData.mainTitle || null,
-        subTitle: formData.subTitle || null,
-        ctaText: formData.ctaText || null,
-        ctaLink: formData.ctaLink || null,
+        subTitle: formData.subTitle || null, // Include subtitle for property type mode
+        ctaText: isPropertyTypeSelected ? null : (formData.ctaText || null),
+        ctaLink: isPropertyTypeSelected ? null : (formData.ctaLink || null),
         active: formData.active,
-        showOnHomepage: formData.showOnHomepage,
+        showOnHomepage: isPropertyTypeSelected ? false : formData.showOnHomepage, // Always false for property-specific
+        propertyTypeId: formData.propertyTypeId, // null for homepage, ID for property type
         backgroundAll: backgroundMedia.theme === "ALL" ? [...backgroundMedia.allMediaIds, ...bgAll] : [],
         backgroundLight: backgroundMedia.theme === "SPLIT" ? [...backgroundMedia.lightMediaIds, ...bgLight] : [],
         backgroundDark: backgroundMedia.theme === "SPLIT" ? [...backgroundMedia.darkMediaIds, ...bgDark] : [],
-        subAll: subMedia.theme === "ALL" ? [...subMedia.allMediaIds, ...subAll] : [],
-        subLight: subMedia.theme === "SPLIT" ? [...subMedia.lightMediaIds, ...subLight] : [],
-        subDark: subMedia.theme === "SPLIT" ? [...subMedia.darkMediaIds, ...subDark] : [],
       };
+
+      // Only add sub media for homepage mode
+      if (!isPropertyTypeSelected) {
+        payload.subAll = subMedia.theme === "ALL" ? [...subMedia.allMediaIds, ...subAll] : [];
+        payload.subLight = subMedia.theme === "SPLIT" ? [...subMedia.lightMediaIds, ...subLight] : [];
+        payload.subDark = subMedia.theme === "SPLIT" ? [...subMedia.darkMediaIds, ...subDark] : [];
+      }
 
       if (editData?.id) {
         await updateHeroSectionById(editData.id, payload);
-        // Show success toast BEFORE closing modal
-        toast.success("Hero Section updated successfully!", {
-          duration: 4000,
-          icon: "✅",
-        });
+        showSuccess("Hero Section updated successfully!");
         
-        // Wait for toast to render then close modal and trigger refresh
         setTimeout(() => {
           onClose();
           if (onSuccess) onSuccess();
@@ -288,13 +376,8 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
         
       } else {
         await createHeroSection(payload);
-        // Show success toast BEFORE closing modal
-        toast.success("Hero Section created successfully!", {
-          duration: 4000,
-          icon: "🎉",
-        });
+        showSuccess("Hero Section created successfully!");
         
-        // Wait for toast to render then close modal and trigger refresh
         setTimeout(() => {
           onClose();
           if (onSuccess) onSuccess();
@@ -303,23 +386,15 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
 
     } catch (error) {
       console.error("Error saving hero section:", error);
-      setLoading(false); // Re-enable form on error
-      
-      // Show error toast and KEEP modal open
-      toast.error(
-        error.response?.data?.message || "Failed to save hero section. Please try again.",
-        {
-          duration: 5000,
-          icon: "❌",
-        }
-      );
-      // Don't close modal on error - let user retry
+      setLoading(false);
+      showError(error.response?.data?.message || "Failed to save hero section. Please try again.");
     }
   };
 
   if (!isOpen) return null;
 
   const previewBg = getPreviewBackground();
+  const selectedPropertyType = propertyTypes.find(pt => pt.id === formData.propertyTypeId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -328,9 +403,16 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: colors.border }}>
-          <h2 className="text-xl font-bold" style={{ color: colors.textPrimary }}>
-            {editData ? "Edit Hero Section" : "Add Hero Section"}
-          </h2>
+          <div>
+            <h2 className="text-xl font-bold" style={{ color: colors.textPrimary }}>
+              {editData ? "Edit Hero Section" : "Add Hero Section"}
+            </h2>
+            {selectedPropertyType && (
+              <p className="text-xs mt-1 text-primary font-medium">
+                For {selectedPropertyType.typeName} Pages
+              </p>
+            )}
+          </div>
           <button 
             onClick={onClose} 
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -347,33 +429,134 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
             {/* Left Column: Form */}
             <div className="flex flex-col divide-y" style={{ borderColor: colors.border }}>
               
-              {/* Text Fields Section */}
-              <div className="p-6 space-y-4">
-                {[
-                  { label: "Main Title", field: "mainTitle", placeholder: "Discover Amazing Places" }, 
-                  { label: "Subtitle", field: "subTitle", placeholder: "Book your next experience" }, 
-                  { label: "CTA Button", field: "ctaText", placeholder: "Explore" },
-                  { label: "CTA Link", field: "ctaLink", placeholder: "/hotels | https://example.com" }
-                ].map(item => (
-                  <div key={item.field} className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                      {item.label}
-                    </label>
-                    <input 
-                      type="text" 
-                      value={formData[item.field]} 
-                      onChange={e => handleInputChange(item.field, e.target.value)} 
-                      placeholder={item.placeholder}
-                      className="px-4 py-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none" 
+              {/* Display Location Selector */}
+              <div className="p-6 bg-blue-50/50">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 block">
+                  Where to Display?
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Homepage Option */}
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange("propertyTypeId", null)}
+                    className={`p-4 rounded-lg border-2 transition-all text-left ${
+                      formData.propertyTypeId === null
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Home size={16} className={formData.propertyTypeId === null ? "text-primary" : "text-gray-400"} />
+                      <span className={`text-sm font-bold ${formData.propertyTypeId === null ? "text-primary" : "text-gray-700"}`}>
+                        Homepage
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-gray-500">Main website hero</p>
+                  </button>
+
+                  {/* Property Type Selector */}
+                  <div className="relative">
+                    <select
+                      value={formData.propertyTypeId || ""}
+                      onChange={(e) => handleInputChange("propertyTypeId", e.target.value ? parseInt(e.target.value) : null)}
+                      className={`w-full h-full p-4 rounded-lg border-2 text-sm font-bold cursor-pointer transition-all ${
+                        formData.propertyTypeId !== null
+                          ? "border-primary bg-primary/5 text-primary shadow-md"
+                          : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+                      }`}
+                      style={{ appearance: "none" }}
+                    >
+                      <option value="">Select Property Type</option>
+                      {propertyTypes.map(type => (
+                        <option key={type.id} value={type.id}>
+                          {type.typeName}
+                        </option>
+                      ))}
+                    </select>
+                    <Building2 
+                      size={16} 
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${
+                        formData.propertyTypeId !== null ? "text-primary" : "text-gray-400"
+                      }`}
                     />
                   </div>
-                ))}
+                </div>
+                <p className="text-[10px] text-gray-500 mt-2 italic">
+                  {isPropertyTypeSelected 
+                    ? "Property mode: Title, subtitle and background images required"
+                    : "Homepage mode: All options available"
+                  }
+                </p>
+              </div>
+
+              {/* Text Fields Section */}
+              <div className="p-6 space-y-4">
+                {/* Main Title - Always shown */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                    Main Title <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    value={formData.mainTitle} 
+                    onChange={e => handleInputChange("mainTitle", e.target.value)} 
+                    placeholder="Discover Amazing Places"
+                    className="px-4 py-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none" 
+                  />
+                </div>
+
+                {/* Subtitle - Always shown */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                    Subtitle
+                  </label>
+                  <input 
+                    type="text" 
+                    value={formData.subTitle} 
+                    onChange={e => handleInputChange("subTitle", e.target.value)} 
+                    placeholder="Book your next experience"
+                    className="px-4 py-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none" 
+                  />
+                </div>
+
+                {/* CTA Button and Link - Only for homepage */}
+                {!isPropertyTypeSelected && (
+                  <>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                        CTA Button
+                      </label>
+                      <input 
+                        type="text" 
+                        value={formData.ctaText} 
+                        onChange={e => handleInputChange("ctaText", e.target.value)} 
+                        placeholder="Explore"
+                        className="px-4 py-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none" 
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                        CTA Link
+                      </label>
+                      <input 
+                        type="text" 
+                        value={formData.ctaLink} 
+                        onChange={e => handleInputChange("ctaLink", e.target.value)} 
+                        placeholder="/hotels | https://example.com"
+                        className="px-4 py-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none" 
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Background Media */}
               <div className="p-6 bg-gray-50/50">
                 <div className="flex items-center justify-between mb-6">
-                  <label className="text-sm font-bold">Background Media</label>
+                  <label className="text-sm font-bold flex items-center gap-1">
+                    Background Media <span className="text-red-500">*</span>
+                  </label>
                   <select 
                     value={backgroundMedia.theme} 
                     onChange={e => handleThemeChange(e.target.value, true)} 
@@ -411,46 +594,48 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                 )}
               </div>
 
-              {/* Sub Media Section */}
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <label className="text-sm font-bold">Sub Media (Optional)</label>
-                  <select 
-                    value={subMedia.theme} 
-                    onChange={e => handleThemeChange(e.target.value, false)} 
-                    className="px-3 py-2 border rounded-lg text-xs font-bold bg-white shadow-sm outline-none cursor-pointer"
-                  >
-                    <option value="ALL">All Themes</option>
-                    <option value="SPLIT">Separate for Light & Dark</option>
-                  </select>
-                </div>
-                {subMedia.theme === "ALL" ? (
-                  <MediaUploader 
-                    label="All Themes" 
-                    previews={subMedia.allPreviews} 
-                    types={subMedia.allMediaTypes}
-                    onUpload={f => handleMultipleFilesChange("sub", "ALL", f, false)} 
-                    onRemove={i => removeMediaAtIndex("ALL", i, false)} 
-                  />
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <MediaUploader 
-                      label="Light Theme" 
-                      previews={subMedia.lightPreviews} 
-                      types={subMedia.lightMediaTypes}
-                      onUpload={f => handleMultipleFilesChange("sub", "LIGHT", f, false)} 
-                      onRemove={i => removeMediaAtIndex("LIGHT", i, false)} 
-                    />
-                    <MediaUploader 
-                      label="Dark Theme" 
-                      previews={subMedia.darkPreviews} 
-                      types={subMedia.darkMediaTypes}
-                      onUpload={f => handleMultipleFilesChange("sub", "DARK", f, false)} 
-                      onRemove={i => removeMediaAtIndex("DARK", i, false)} 
-                    />
+              {/* Sub Media Section - Only show for homepage */}
+              {!isPropertyTypeSelected && (
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <label className="text-sm font-bold">Sub Media (Optional)</label>
+                    <select 
+                      value={subMedia.theme} 
+                      onChange={e => handleThemeChange(e.target.value, false)} 
+                      className="px-3 py-2 border rounded-lg text-xs font-bold bg-white shadow-sm outline-none cursor-pointer"
+                    >
+                      <option value="ALL">All Themes</option>
+                      <option value="SPLIT">Separate for Light & Dark</option>
+                    </select>
                   </div>
-                )}
-              </div>
+                  {subMedia.theme === "ALL" ? (
+                    <MediaUploader 
+                      label="All Themes" 
+                      previews={subMedia.allPreviews} 
+                      types={subMedia.allMediaTypes}
+                      onUpload={f => handleMultipleFilesChange("sub", "ALL", f, false)} 
+                      onRemove={i => removeMediaAtIndex("ALL", i, false)} 
+                    />
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <MediaUploader 
+                        label="Light Theme" 
+                        previews={subMedia.lightPreviews} 
+                        types={subMedia.lightMediaTypes}
+                        onUpload={f => handleMultipleFilesChange("sub", "LIGHT", f, false)} 
+                        onRemove={i => removeMediaAtIndex("LIGHT", i, false)} 
+                      />
+                      <MediaUploader 
+                        label="Dark Theme" 
+                        previews={subMedia.darkPreviews} 
+                        types={subMedia.darkMediaTypes}
+                        onUpload={f => handleMultipleFilesChange("sub", "DARK", f, false)} 
+                        onRemove={i => removeMediaAtIndex("DARK", i, false)} 
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Switches Section */}
               <div className="p-6 flex items-center gap-10">
@@ -465,17 +650,21 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                     Set as Active
                   </span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input 
-                    type="checkbox" 
-                    checked={formData.showOnHomepage} 
-                    onChange={e => handleInputChange("showOnHomepage", e.target.checked)} 
-                    className="w-4 h-4 rounded accent-primary cursor-pointer" 
-                  />
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
-                    Show on Homepage
-                  </span>
-                </label>
+                
+                {/* Show on Homepage toggle - Only for homepage mode */}
+                {!isPropertyTypeSelected && (
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.showOnHomepage} 
+                      onChange={e => handleInputChange("showOnHomepage", e.target.checked)} 
+                      className="w-4 h-4 rounded accent-primary cursor-pointer" 
+                    />
+                    <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
+                      Show on Homepage
+                    </span>
+                  </label>
+                )}
               </div>
             </div>
 
@@ -543,7 +732,8 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                   <p className="text-[10px] uppercase tracking-[0.3em] mb-4 text-white/80 drop-shadow-md">
                     {formData.subTitle || "Book your next experience"}
                   </p>
-                  {(formData.ctaText || "Explore") && (
+                  {/* Show CTA only for homepage mode */}
+                  {!isPropertyTypeSelected && (formData.ctaText || "Explore") && (
                     <button className="px-5 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-amber-400 to-yellow-400 text-gray-900 shadow-lg">
                       {formData.ctaText || "Explore"}
                     </button>
