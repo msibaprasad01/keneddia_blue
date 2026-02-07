@@ -35,8 +35,14 @@ interface ApiEvent {
   description: string;
   status: "ACTIVE" | "COMING_SOON" | "SOLD_OUT";
   active: boolean;
-  image: {
+  image?: {
+    mediaId?: number;
+    type?: "IMAGE" | "VIDEO";
     url: string;
+    fileName?: string | null;
+    alt?: string | null;
+    width?: number | null;
+    height?: number | null;
   };
   ctaText: string;
 }
@@ -63,19 +69,32 @@ export default function EventsSection() {
       const rawEvents = Array.isArray(response?.data)
         ? response.data
         : Array.isArray(response)
-        ? response
-        : [];
+          ? response
+          : [];
 
       // Filter: Only show events with status="ACTIVE" AND active=true
-      const activeEvents = rawEvents.filter(
-        (event: ApiEvent) => event.status === "ACTIVE" && event.active === true
-      );
+      const activeEvents = rawEvents
+        .filter((event) => event.status === "ACTIVE" && event.active === true)
+        .map((event) => ({
+          ...event,
+          image: event.image
+            ? {
+                mediaId: event.image.mediaId,
+                type: event.image.type, // 🔥 REQUIRED
+                url: event.image.url,
+                fileName: event.image.fileName,
+                alt: event.image.alt,
+                width: event.image.width,
+                height: event.image.height,
+              }
+            : null,
+        }));
 
       if (activeEvents.length > 0) {
         // Sort: Latest events first
         const sortedEvents = [...activeEvents].sort(
           (a, b) =>
-            new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+            new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
         );
         setApiEvents(sortedEvents);
       }
@@ -89,7 +108,7 @@ export default function EventsSection() {
   const uniqueLocations = [
     "All Locations",
     ...Array.from(
-      new Set(apiEvents.map((event) => event.locationName).filter(Boolean))
+      new Set(apiEvents.map((event) => event.locationName).filter(Boolean)),
     ),
   ];
 
@@ -221,8 +240,10 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       if (isNaN(dateObj.getTime())) return dateString;
 
       const day = dateObj.getDate();
-      const month = dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
-      
+      const month = dateObj
+        .toLocaleDateString("en-US", { month: "short" })
+        .toUpperCase();
+
       return `${day} ${month}`;
     } catch {
       return dateString;
@@ -237,20 +258,48 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       transition={{ delay: index * 0.08, duration: 0.4 }}
       className="group relative"
     >
-      <Link 
-      // to={ROUTES.eventDetail(event.id)} 
-      to="#"
-      className="block">
+      <Link
+        // to={ROUTES.eventDetail(event.id)}
+        to="#"
+        className="block"
+      >
         <div
           className={`relative ${STYLE_CONFIG.cardHeight} ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-500`}
         >
           {/* Image with fixed height */}
           <div className="absolute inset-0 w-full h-full overflow-hidden">
-            <OptimizedImage
-              src={event.image?.url || ""}
-              alt={event.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
+            {/* Image / Video with fixed height */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden">
+              {event.image?.url ? (
+                event.image.type === "VIDEO" ? (
+                  <video
+                    src={event.image.url}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    muted
+                    playsInline
+                    autoPlay
+                    loop
+                  />
+                ) : (
+                  <OptimizedImage
+                    src={event.image.url}
+                    alt={event.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                )
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-muted">
+                  <ImageIcon className="w-8 h-8 text-muted-foreground/40" />
+                </div>
+              )}
+
+              {/* VIDEO badge */}
+              {event.image?.type === "VIDEO" && (
+                <div className="absolute bottom-3 left-3 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">
+                  VIDEO
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Gradient overlay */}

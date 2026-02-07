@@ -20,7 +20,7 @@ import {
   getAllLocations,
   getPropertyTypes,
 } from "@/Api/Api";
-import { toast } from "react-hot-toast";
+import { showSuccess, showInfo, showError, showWarning } from "@/lib/toasters/toastUtils";
 
 function CreateEventModal({ isOpen, onClose, editingEvent }) {
   const [formData, setFormData] = useState({
@@ -43,7 +43,11 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
   const [uploadMethod, setUploadMethod] = useState("upload");
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [mediaType, setMediaType] = useState(null); // "IMAGE" | "VIDEO"
   const [imageUrl, setImageUrl] = useState("");
+
+  // Validation state
+  const [touchedFields, setTouchedFields] = useState({});
 
   const generateSlug = (text) => {
     return text
@@ -82,6 +86,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
         setImagePreview(editingEvent.image.url);
         setImageUrl(editingEvent.image.url);
         setUploadMethod("url");
+        setMediaType(editingEvent.image.type || "IMAGE");
       }
     } else if (isOpen) {
       // Clear form when creating new event
@@ -98,7 +103,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       }
     } catch (error) {
       console.error("Failed to load locations:", error);
-      toast.error("Failed to load locations");
+      showError("Failed to load locations");
       setLocations([]);
     }
   };
@@ -112,7 +117,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       }
     } catch (error) {
       console.error("Failed to load property types:", error);
-      toast.error("Failed to load property types");
+      showError("Failed to load property types");
       setPropertyTypes([]);
     }
   };
@@ -124,89 +129,103 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       title: trimmedVal,
       slug: generateSlug(trimmedVal),
     }));
+    setTouchedFields((prev) => ({ ...prev, title: true }));
   };
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setTouchedFields((prev) => ({ ...prev, [field]: true }));
   };
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select a valid image file");
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+
+    if (!isImage && !isVideo) {
+      showError("Unsupported file type");
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size should be less than 5MB");
+    // Size limits
+    if (isImage && file.size > 5 * 1024 * 1024) {
+      showError("Image size should be less than 5MB");
+      return;
+    }
+
+    if (isVideo && file.size > 50 * 1024 * 1024) {
+      showError("Video size should be less than 50MB");
       return;
     }
 
     setSelectedFile(file);
-    setImageUrl(""); // Clear URL if file is selected
+    setImageUrl("");
+    setMediaType(isVideo ? "VIDEO" : "IMAGE");
+    setTouchedFields((prev) => ({ ...prev, image: true }));
 
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.onerror = () => {
-      toast.error("Failed to read image file");
-    };
-    reader.readAsDataURL(file);
+    // Preview
+    if (isVideo) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleUrlChange = (url) => {
     setImageUrl(url);
-    if (url.trim()) {
-      setImagePreview(url);
-      setSelectedFile(null); // Clear file if URL is entered
-    } else {
+    setTouchedFields((prev) => ({ ...prev, image: true }));
+
+    if (!url.trim()) {
       setImagePreview(null);
+      setMediaType(null);
+      return;
     }
+
+    const isVideoUrl = /\.(mp4|webm|ogg)$/i.test(url);
+
+    setMediaType(isVideoUrl ? "VIDEO" : "IMAGE");
+    setImagePreview(url);
+    setSelectedFile(null);
   };
 
   const validateForm = () => {
+    const errors = [];
+
     if (!formData.title?.trim()) {
-      toast.error("Event title is required");
-      return false;
+      errors.push("Event Title");
     }
     if (!formData.locationId) {
-      toast.error("Location is required");
-      return false;
+      errors.push("Location");
     }
     if (!formData.propertyTypeId) {
-      toast.error("Property type is required");
-      return false;
+      errors.push("Property Type");
     }
     if (!formData.eventDate) {
-      toast.error("Event date is required");
-      return false;
+      errors.push("Event Date");
     }
     if (!formData.description?.trim()) {
-      toast.error("Short description is required");
-      return false;
+      errors.push("Short Description");
     }
     if (formData.description.length > 50) {
-      toast.error("Short description must be 50 characters or less");
-      return false;
+      errors.push("Short Description (must be ≤50 chars)");
     }
     if (!formData.ctaText?.trim()) {
-      toast.error("CTA text is required");
-      return false;
+      errors.push("CTA Button Text");
     }
-
-    // Validate image - must have either file or URL
     if (!selectedFile && !imageUrl) {
-      toast.error("Event image is required");
-      return false;
+      errors.push("Event Image");
     }
 
-    return true;
+    return errors;
+  };
+
+  const isFormValid = () => {
+    const errors = validateForm();
+    return errors.length === 0;
   };
 
   const buildFormData = () => {
@@ -237,9 +256,29 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     return formDataToSend;
   };
 
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
+  const handleButtonClick = () => {
+    // Mark all fields as touched
+    setTouchedFields({
+      title: true,
+      locationId: true,
+      propertyTypeId: true,
+      eventDate: true,
+      description: true,
+      ctaText: true,
+      image: true,
+    });
 
+    const errors = validateForm();
+
+    if (errors.length > 0) {
+      showError(`Please fill required fields: ${errors.join(", ")}`);
+      return;
+    }
+
+    handleSubmit();
+  };
+
+  const handleSubmit = async () => {
     try {
       setLoading(true);
 
@@ -248,16 +287,19 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       // Debug: Log FormData contents
       console.log("Submitting FormData:");
       for (let [key, value] of formDataToSend.entries()) {
-        console.log(`${key}:`, value instanceof File ? `File: ${value.name}` : value);
+        console.log(
+          `${key}:`,
+          value instanceof File ? `File: ${value.name}` : value,
+        );
       }
 
       if (editingEvent) {
         await updateEventById(editingEvent.id, formDataToSend);
-        toast.success("Event updated successfully");
+        showSuccess("Event updated successfully");
       } else {
         const response = await createEvent(formDataToSend);
         console.log("Create event response:", response);
-        toast.success("Event created successfully");
+        showSuccess("Event created successfully");
       }
 
       onClose(true);
@@ -268,7 +310,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
         error.response?.data?.message ||
         error.response?.data?.error ||
         "Failed to save event";
-      toast.error(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -292,6 +334,8 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     setSelectedFile(null);
     setImageUrl("");
     setUploadMethod("upload");
+    setMediaType(null);
+    setTouchedFields({});
   };
 
   const handleClose = () => {
@@ -348,36 +392,29 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                 style={{ color: colors.textSecondary }}
               >
-                <Tag size={14} /> Event Title *
+                <Tag size={14} /> Event Title <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                onBlur={() => setTouchedFields((prev) => ({ ...prev, title: true }))}
+                className={`w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                  touchedFields.title && !formData.title.trim()
+                    ? "border-red-500 border-2"
+                    : ""
+                }`}
                 style={{
-                  borderColor: colors.border,
+                  borderColor:
+                    touchedFields.title && !formData.title.trim()
+                      ? "#EF4444"
+                      : colors.border,
                   backgroundColor: colors.mainBg,
                   color: colors.textPrimary,
                 }}
                 placeholder="e.g., Summer Wine Festival"
                 maxLength={200}
               />
-
-              {/* Slug Preview */}
-              <div
-                className="mt-2 flex items-center gap-2 text-[10px] font-mono p-2 rounded bg-gray-50 border border-dashed"
-                style={{
-                  color: colors.textSecondary,
-                  borderColor: colors.border,
-                }}
-              >
-                <Globe size={12} />
-                <span className="truncate">
-                  {window.location.origin}/events/
-                  {formData.slug || "slug-preview"}
-                </span>
-              </div>
             </div>
 
             {/* Property Type & Location */}
@@ -387,16 +424,26 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
-                  <Building2 size={14} /> Property Type *
+                  <Building2 size={14} /> Property Type <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.propertyTypeId}
                   onChange={(e) =>
                     handleInputChange("propertyTypeId", e.target.value)
                   }
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  onBlur={() =>
+                    setTouchedFields((prev) => ({ ...prev, propertyTypeId: true }))
+                  }
+                  className={`w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                    touchedFields.propertyTypeId && !formData.propertyTypeId
+                      ? "border-red-500 border-2"
+                      : ""
+                  }`}
                   style={{
-                    borderColor: colors.border,
+                    borderColor:
+                      touchedFields.propertyTypeId && !formData.propertyTypeId
+                        ? "#EF4444"
+                        : colors.border,
                     backgroundColor: colors.mainBg,
                     color: formData.propertyTypeId
                       ? colors.textPrimary
@@ -417,16 +464,26 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
-                  <MapPin size={14} /> Location *
+                  <MapPin size={14} /> Location <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.locationId}
                   onChange={(e) =>
                     handleInputChange("locationId", e.target.value)
                   }
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  onBlur={() =>
+                    setTouchedFields((prev) => ({ ...prev, locationId: true }))
+                  }
+                  className={`w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                    touchedFields.locationId && !formData.locationId
+                      ? "border-red-500 border-2"
+                      : ""
+                  }`}
                   style={{
-                    borderColor: colors.border,
+                    borderColor:
+                      touchedFields.locationId && !formData.locationId
+                        ? "#EF4444"
+                        : colors.border,
                     backgroundColor: colors.mainBg,
                     color: formData.locationId ? colors.textPrimary : "#9CA3AF",
                   }}
@@ -448,7 +505,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
-                  <CalendarIcon size={14} /> Event Date *
+                  <CalendarIcon size={14} /> Event Date <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -456,9 +513,19 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   onChange={(e) =>
                     handleInputChange("eventDate", e.target.value)
                   }
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  onBlur={() =>
+                    setTouchedFields((prev) => ({ ...prev, eventDate: true }))
+                  }
+                  className={`w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                    touchedFields.eventDate && !formData.eventDate
+                      ? "border-red-500 border-2"
+                      : ""
+                  }`}
                   style={{
-                    borderColor: colors.border,
+                    borderColor:
+                      touchedFields.eventDate && !formData.eventDate
+                        ? "#EF4444"
+                        : colors.border,
                     backgroundColor: colors.mainBg,
                     color: colors.textPrimary,
                   }}
@@ -471,7 +538,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
-                  Status *
+                  Status <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.status}
@@ -498,7 +565,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 style={{ color: colors.textSecondary }}
               >
                 <span className="flex items-center gap-2">
-                  <FileText size={14} /> Short Description *
+                  <FileText size={14} /> Short Description <span className="text-red-500">*</span>
                 </span>
                 <span
                   className={`text-[10px] font-mono ${formData.description.length > 50 ? "text-red-500 font-bold" : "text-gray-400"}`}
@@ -512,10 +579,19 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 onChange={(e) =>
                   handleInputChange("description", e.target.value)
                 }
+                onBlur={() =>
+                  setTouchedFields((prev) => ({ ...prev, description: true }))
+                }
                 placeholder="Brief event tagline (max 50 characters)"
-                className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                className={`w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                  (touchedFields.description && !formData.description.trim()) ||
+                  formData.description.length > 50
+                    ? "border-red-500 border-2"
+                    : ""
+                }`}
                 style={{
                   borderColor:
+                    (touchedFields.description && !formData.description.trim()) ||
                     formData.description.length > 50
                       ? "#EF4444"
                       : colors.border,
@@ -569,16 +645,26 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
-                  CTA Button Text *
+                  CTA Button Text <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="e.g., Book Now"
                   value={formData.ctaText}
                   onChange={(e) => handleInputChange("ctaText", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  onBlur={() =>
+                    setTouchedFields((prev) => ({ ...prev, ctaText: true }))
+                  }
+                  className={`w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                    touchedFields.ctaText && !formData.ctaText.trim()
+                      ? "border-red-500 border-2"
+                      : ""
+                  }`}
                   style={{
-                    borderColor: colors.border,
+                    borderColor:
+                      touchedFields.ctaText && !formData.ctaText.trim()
+                        ? "#EF4444"
+                        : colors.border,
                     backgroundColor: colors.mainBg,
                     color: colors.textPrimary,
                   }}
@@ -622,7 +708,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 className="flex items-center gap-2 text-xs font-semibold uppercase mb-4"
                 style={{ color: colors.textSecondary }}
               >
-                <ImageIcon size={14} /> Event Image *
+                <ImageIcon size={14} /> Event Image <span className="text-red-500">*</span>
               </label>
 
               {/* Upload Method Tabs */}
@@ -654,23 +740,35 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
               {/* Upload Method Content */}
               {uploadMethod === "upload" ? (
                 <div
-                  className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary hover:bg-gray-50 transition-all"
-                  onClick={() => document.getElementById("file-upload")?.click()}
-                  style={{ borderColor: colors.border }}
+                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary hover:bg-gray-50 transition-all ${
+                    touchedFields.image && !selectedFile && !imageUrl
+                      ? "border-red-500"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    document.getElementById("file-upload")?.click()
+                  }
+                  style={{
+                    borderColor:
+                      touchedFields.image && !selectedFile && !imageUrl
+                        ? "#EF4444"
+                        : colors.border,
+                  }}
                 >
                   <input
                     id="file-upload"
                     type="file"
                     className="hidden"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     onChange={handleFileSelect}
                   />
+
                   <Upload size={30} className="mx-auto mb-2 opacity-20" />
                   <p className="text-xs font-medium text-gray-600">
                     {selectedFile ? selectedFile.name : "Click to upload image"}
                   </p>
                   <p className="text-[10px] text-gray-400 mt-1">
-                    PNG, JPG, WEBP up to 5MB
+                    PNG, JPG, WEBP up to 5MB | Video up to 50MB
                   </p>
                 </div>
               ) : (
@@ -680,48 +778,87 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                     placeholder="https://example.com/image.jpg"
                     value={imageUrl}
                     onChange={(e) => handleUrlChange(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    className={`w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                      touchedFields.image && !selectedFile && !imageUrl
+                        ? "border-red-500 border-2"
+                        : ""
+                    }`}
                     style={{
-                      borderColor: colors.border,
+                      borderColor:
+                        touchedFields.image && !selectedFile && !imageUrl
+                          ? "#EF4444"
+                          : colors.border,
                       backgroundColor: "white",
                     }}
                   />
                   <p className="text-[10px] text-gray-400 mt-2">
-                    Enter a direct image URL (must start with http:// or https://)
+                    Enter a direct image URL (must start with http:// or
+                    https://)
                   </p>
                 </div>
               )}
 
-              {/* Image Preview */}
+              {/* Image / Video Preview */}
               {imagePreview && (
                 <div className="mt-6 relative">
-                  <img
-                    src={imagePreview}
-                    className="w-full h-56 object-cover rounded-xl shadow-lg border"
-                    style={{ borderColor: colors.border }}
-                    alt="Event preview"
-                    onError={() => {
-                      toast.error("Failed to load image preview");
-                      setImagePreview(null);
-                    }}
-                  />
+                  {mediaType === "VIDEO" ? (
+                    <video
+                      src={imagePreview}
+                      className="w-full h-56 object-cover rounded-xl shadow-lg border"
+                      style={{ borderColor: colors.border }}
+                      controls
+                      muted
+                      playsInline
+                      onError={() => {
+                        showError("Failed to load video preview");
+                        setImagePreview(null);
+                        setMediaType(null);
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src={imagePreview}
+                      className="w-full h-56 object-cover rounded-xl shadow-lg border"
+                      style={{ borderColor: colors.border }}
+                      alt="Event preview"
+                      onError={() => {
+                        showError("Failed to load image preview");
+                        setImagePreview(null);
+                        setMediaType(null);
+                      }}
+                    />
+                  )}
+
+                  {/* Upload source badge */}
                   {selectedFile && (
-                    <div className="absolute top-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded-full flex items-center gap-1">
+                    <div className="absolute top-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded-full flex items-center gap-1 shadow">
                       <Upload size={12} />
                       <span>File Ready</span>
                     </div>
                   )}
+
                   {imageUrl && !selectedFile && (
-                    <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs rounded-full flex items-center gap-1">
+                    <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs rounded-full flex items-center gap-1 shadow">
                       <LinkIcon size={12} />
                       <span>URL</span>
                     </div>
                   )}
+
+                  {/* Media type badge */}
+                  <div
+                    className={`absolute bottom-2 left-2 px-2 py-1 text-white text-[10px] font-bold rounded-full shadow ${
+                      mediaType === "VIDEO" ? "bg-purple-600" : "bg-black/70"
+                    }`}
+                  >
+                    {mediaType === "VIDEO" ? "VIDEO" : "IMAGE"}
+                  </div>
+
+                  {/* Remove button */}
                   <button
                     type="button"
                     onClick={clearImage}
                     className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
-                    aria-label="Remove image"
+                    aria-label="Remove media"
                   >
                     <X size={16} />
                   </button>
@@ -745,34 +882,31 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
           >
             Cancel
           </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={
-              loading ||
-              !formData.title?.trim() ||
-              !formData.locationId ||
-              !formData.propertyTypeId ||
-              !formData.eventDate ||
-              !formData.description?.trim() ||
-              !formData.ctaText?.trim() ||
-              formData.description.length > 50 ||
-              (!selectedFile && !imageUrl?.trim())
-            }
-            className="flex-[2] py-3 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: colors.primary }}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="animate-spin" size={18} />
-                {editingEvent ? "Updating..." : "Creating..."}
-              </>
-            ) : editingEvent ? (
-              "Update Event"
-            ) : (
-              "Publish Event"
-            )}
-          </button>
+
+          {/* Wrapper div to capture clicks even when button is disabled */}
+          <div onClick={handleButtonClick} className="flex-[2]">
+            <button
+              type="button"
+              disabled={loading}
+              className={`w-full py-3 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 transition-all ${
+                loading || !isFormValid()
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:opacity-90 cursor-pointer"
+              }`}
+              style={{ backgroundColor: colors.primary }}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin" size={18} />
+                  {editingEvent ? "Updating..." : "Creating..."}
+                </>
+              ) : editingEvent ? (
+                "Update Event"
+              ) : (
+                "Publish Event"
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

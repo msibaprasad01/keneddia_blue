@@ -27,7 +27,7 @@ import {
   getMediaById,
   getAllProperties,
 } from "@/Api/Api";
-import { toast } from "react-hot-toast";
+import { showSuccess, showInfo, showError, showWarning } from "@/lib/toasters/toastUtils";
 
 const inputStyles = `
   input::placeholder, textarea::placeholder {
@@ -35,8 +35,8 @@ const inputStyles = `
     opacity: 1;
   }
   .custom-modal-container {
-    width: 70% !important;
-    max-width: 70% !important;
+    width: 80% !important;
+    max-width: 80% !important;
   }
 `;
 
@@ -49,7 +49,7 @@ const MEDIA_DETECTION_RULES = {
       { width: 1080, height: 1920 },
       { width: 900, height: 1600 },
       { width: 720, height: 1280 },
-      { width: 450, height: 800 }
+      { width: 450, height: 800 },
     ],
     minHeight: 800,
     ratioTolerance: 0.01,
@@ -57,9 +57,9 @@ const MEDIA_DETECTION_RULES = {
     uiState: {
       badge: "Banner detected",
       color: "success",
-      icon: "instagram"
-    }
-  }
+      icon: "instagram",
+    },
+  },
 };
 
 function CreateOfferModal({ isOpen, onClose, editingOffer }) {
@@ -91,11 +91,15 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploadedMediaId, setUploadedMediaId] = useState(null);
-  
+  const [mediaType, setMediaType] = useState(null); // "IMAGE" | "VIDEO"
+
   // Enhanced state for banner detection
   const [imageDimensions, setImageDimensions] = useState(null);
   const [detectedBannerType, setDetectedBannerType] = useState(null);
   const [isBannerDetected, setIsBannerDetected] = useState(false);
+
+  // Validation state
+  const [touchedFields, setTouchedFields] = useState({});
 
   useEffect(() => {
     if (isOpen) fetchProperties();
@@ -116,9 +120,13 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
 
   useEffect(() => {
     if (editingOffer && isOpen) {
-      if (editingOffer.imageMediaId) fetchMediaDetails(editingOffer.imageMediaId);
+      if (editingOffer.imageMediaId)
+        fetchMediaDetails(editingOffer.imageMediaId);
 
-      if (editingOffer.availableHours && editingOffer.availableHours.includes(" - ")) {
+      if (
+        editingOffer.availableHours &&
+        editingOffer.availableHours.includes(" - ")
+      ) {
         const parts = editingOffer.availableHours.split(" - ");
         setStartTime(convert12to24(parts[0]));
         setEndTime(convert12to24(parts[1]));
@@ -134,13 +142,15 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         ctaLink: editingOffer.ctaLink || "",
       });
       setUploadedMediaId(editingOffer.imageMediaId || null);
-      setImagePreview(editingOffer.image?.url || editingOffer.image?.src || null);
-      
+      setImagePreview(
+        editingOffer.image?.url || editingOffer.image?.src || null,
+      );
+
       // Check if editing offer has banner dimensions
       if (editingOffer.image?.width && editingOffer.image?.height) {
         const dims = {
           width: editingOffer.image.width,
-          height: editingOffer.image.height
+          height: editingOffer.image.height,
         };
         setImageDimensions(dims);
         detectBannerType(dims);
@@ -158,7 +168,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       if (Array.isArray(propertiesData))
         setAvailableProperties(propertiesData.filter((p) => p.isActive));
     } catch (error) {
-      toast.error("Failed to load properties");
+      showError("Failed to load properties");
     } finally {
       setLoadingProperties(false);
     }
@@ -171,7 +181,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       if (mediaData) {
         setImagePreview(mediaData.url);
         setUploadedMediaId(mediaId);
-        
+
         // Check if media has dimensions
         if (mediaData.width && mediaData.height) {
           const dims = { width: mediaData.width, height: mediaData.height };
@@ -209,8 +219,10 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     setImageDimensions(null);
     setDetectedBannerType(null);
     setIsBannerDetected(false);
+    setMediaType(null);
     setStartTime("10:00");
     setEndTime("22:00");
+    setTouchedFields({});
   };
 
   /**
@@ -226,11 +238,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
    * Check if aspect ratio matches with tolerance
    */
   const aspectRatioMatches = (width, height, targetRatio, tolerance = 0.01) => {
-    const [targetW, targetH] = targetRatio.split(':').map(Number);
+    const [targetW, targetH] = targetRatio.split(":").map(Number);
     const actualRatio = width / height;
     const expectedRatio = targetW / targetH;
     const difference = Math.abs(actualRatio - expectedRatio);
-    
+
     return difference <= tolerance;
   };
 
@@ -246,26 +258,26 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
 
     const { width, height } = dimensions;
 
-    console.log('🔍 Detecting Banner Type:', {
+    console.log("🔍 Detecting Banner Type:", {
       width,
       height,
-      aspectRatio: calculateAspectRatio(width, height)
+      aspectRatio: calculateAspectRatio(width, height),
     });
 
     // Check Instagram Banner/Reel
     const igRule = MEDIA_DETECTION_RULES.instagramBannerReel;
-    
+
     // Method 1: Exact Dimension Match
     const exactMatch = igRule.allowedDimensions.some(
-      dim => dim.width === width && dim.height === height
+      (dim) => dim.width === width && dim.height === height,
     );
 
     // Method 2: Aspect Ratio Match
     const ratioMatch = aspectRatioMatches(
-      width, 
-      height, 
-      igRule.aspectRatio, 
-      igRule.ratioTolerance
+      width,
+      height,
+      igRule.aspectRatio,
+      igRule.ratioTolerance,
     );
 
     // Method 3: Minimum Height Check
@@ -273,27 +285,27 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
 
     const isInstagramBanner = exactMatch || (ratioMatch && meetsMinHeight);
 
-    console.log('📊 Banner Detection Results:', {
+    console.log("📊 Banner Detection Results:", {
       exactMatch,
       ratioMatch,
       meetsMinHeight,
       isInstagramBanner,
       calculatedRatio: calculateAspectRatio(width, height),
-      targetRatio: igRule.aspectRatio
+      targetRatio: igRule.aspectRatio,
     });
 
     if (isInstagramBanner) {
       setIsBannerDetected(true);
       setDetectedBannerType({
-        type: 'instagramBannerReel',
+        type: "instagramBannerReel",
         label: igRule.label,
         badge: igRule.uiState.badge,
         color: igRule.uiState.color,
         icon: igRule.uiState.icon,
         dimensions: { width, height },
-        aspectRatio: calculateAspectRatio(width, height)
+        aspectRatio: calculateAspectRatio(width, height),
       });
-      return 'instagramBannerReel';
+      return "instagramBannerReel";
     }
 
     setIsBannerDetected(false);
@@ -308,29 +320,29 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
         img.onload = () => {
           const dimensions = {
             width: img.naturalWidth,
-            height: img.naturalHeight
+            height: img.naturalHeight,
           };
-          
-          console.log('🖼️ Image Dimensions Loaded:', dimensions);
+
+          console.log("🖼️ Image Dimensions Loaded:", dimensions);
           resolve(dimensions);
         };
-        
+
         img.onerror = () => {
-          reject(new Error('Failed to load image'));
+          reject(new Error("Failed to load image"));
         };
-        
+
         img.src = e.target.result;
       };
-      
+
       reader.onerror = () => {
-        reject(new Error('Failed to read file'));
+        reject(new Error("Failed to read file"));
       };
-      
+
       reader.readAsDataURL(file);
     });
   };
@@ -343,11 +355,17 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       setFormData((prev) => ({
         ...prev,
         propertyId: selectedProperty.id,
-        propertyTypeId: selectedProperty.propertyTypeId || selectedProperty.typeId || 1,
+        propertyTypeId:
+          selectedProperty.propertyTypeId || selectedProperty.typeId || 1,
         propertyName: selectedProperty.propertyName,
         propertyType: selectedProperty.propertyTypes?.join(", ") || "",
-        location: `${selectedProperty.area || ""}, ${selectedProperty.locationName || ""}`.replace(/^, |, $/g, ""),
+        location:
+          `${selectedProperty.area || ""}, ${selectedProperty.locationName || ""}`.replace(
+            /^, |, $/g,
+            "",
+          ),
       }));
+      setTouchedFields((prev) => ({ ...prev, propertyId: true }));
     }
   };
 
@@ -362,86 +380,133 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    try {
-      // Load image dimensions first
-      const dimensions = await loadImageDimensions(file);
-      setImageDimensions(dimensions);
-      const bannerType = detectBannerType(dimensions);
-      
-      // Set preview
-      setImagePreview(URL.createObjectURL(file));
-      
-      // Upload with dimensions
-      uploadImageFile(file, dimensions, bannerType);
-    } catch (error) {
-      console.error('Error loading image dimensions:', error);
-      toast.error('Failed to load image');
+
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+
+    if (!isImage && !isVideo) {
+      showError("Unsupported file type");
+      return;
     }
+
+    setMediaType(isVideo ? "VIDEO" : "IMAGE");
+    setImagePreview(URL.createObjectURL(file));
+    setTouchedFields((prev) => ({ ...prev, image: true }));
+
+    // 👉 IMAGE FLOW (existing logic stays)
+    if (isImage) {
+      try {
+        const dimensions = await loadImageDimensions(file);
+        setImageDimensions(dimensions);
+        const bannerType = detectBannerType(dimensions);
+        uploadMediaFile(file, "IMAGE", dimensions, bannerType);
+      } catch (err) {
+        showError("Failed to process image");
+      }
+      return;
+    }
+
+    // 👉 VIDEO FLOW (new)
+    uploadMediaFile(file, "VIDEO");
   };
 
-  const uploadImageFile = async (file, dimensions, bannerType) => {
+  const uploadMediaFile = async (
+    file,
+    type,
+    dimensions = null,
+    bannerType = null,
+  ) => {
     try {
       setUploadingImage(true);
       const fd = new FormData();
+
       fd.append("file", file);
-      fd.append("type", "IMAGE");
-      
-      // Add dimensions to form data
-      if (dimensions) {
+      fd.append("type", type); // IMAGE | VIDEO
+
+      // Only attach dimensions for images
+      if (type === "IMAGE" && dimensions) {
         fd.append("width", dimensions.width.toString());
         fd.append("height", dimensions.height.toString());
-        
-        console.log('📤 Uploading image with dimensions:', {
-          width: dimensions.width,
-          height: dimensions.height,
-          bannerType: bannerType || 'none'
-        });
       }
-      
+
       const response = await uploadMedia(fd);
       const mediaId = response?.data;
 
-      if (!mediaId) throw new Error("Invalid media upload response");
+      if (!mediaId) throw new Error("Invalid upload response");
 
       setUploadedMediaId(mediaId);
-      
-      // Show appropriate toast based on banner type
-      if (isBannerDetected && detectedBannerType) {
-        toast.success(`${detectedBannerType.label} Detected! Other fields are optional.`, {
-          duration: 4000,
-          icon: '📱'
-        });
+
+      if (type === "VIDEO") {
+        showSuccess("Video uploaded successfully 🎥");
+      } else if (isBannerDetected && detectedBannerType) {
+        showSuccess(`${detectedBannerType.label} Detected! Title and Description are now optional.`);
       } else {
-        toast.success("Image uploaded successfully");
+        showSuccess("Image uploaded successfully");
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      toast.error("Upload failed");
-      setImageDimensions(null);
-      setDetectedBannerType(null);
-      setIsBannerDetected(false);
+      showError("Upload failed");
     } finally {
       setUploadingImage(false);
     }
   };
 
-  const handleSubmit = async () => {
-    // Validation based on banner detection
-    if (isBannerDetected) {
-      // For detected banners, only image is required
-      if (!uploadedMediaId && !formData.imageMediaId) {
-        toast.error("Please upload an image");
-        return;
-      }
-    } else {
-      // For regular offers, title and property are required
-      if (!formData.title?.trim() || !formData.propertyId) {
-        toast.error("Please fill required fields: Title and Property");
-        return;
-      }
+  /**
+   * Check if property is required based on display location
+   */
+  const isPropertyRequired = () => {
+    const location = formData.displayLocation;
+    return location === "PROPERTY_PAGE" || location === "BOTH";
+  };
+
+  // Validation function
+  const validateForm = () => {
+    const errors = [];
+
+    // Image/Video is always required
+    if (!uploadedMediaId && !formData.imageMediaId) {
+      errors.push("Offer Visual");
     }
 
+    // Property is required if displayLocation is PROPERTY_PAGE or BOTH
+    if (isPropertyRequired() && !formData.propertyId) {
+      errors.push("Property");
+    }
+
+    // Title is required if NOT a banner
+    if (!isBannerDetected && !formData.title?.trim()) {
+      errors.push("Offer Title");
+    }
+
+    return errors;
+  };
+
+  // Check if form is valid
+  const isFormValid = () => {
+    const errors = validateForm();
+    return errors.length === 0;
+  };
+
+  // Handle button click - shows validation errors or submits
+  const handleButtonClick = () => {
+    // Mark all fields as touched
+    setTouchedFields({
+      title: true,
+      propertyId: true,
+      image: true,
+    });
+
+    const errors = validateForm();
+    
+    if (errors.length > 0) {
+      showError(`Please fill required fields: ${errors.join(", ")}`);
+      return;
+    }
+
+    // If valid, proceed with submit
+    handleSubmit();
+  };
+
+  const handleSubmit = async () => {
     try {
       setLoading(true);
       const timeString = `${formatTimeTo12h(startTime)} - ${formatTimeTo12h(endTime)}`;
@@ -462,20 +527,20 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         isActive: formData.isActive,
       };
 
-      console.log('📦 Submitting payload:', payload);
+      console.log("📦 Submitting payload:", payload);
 
       if (editingOffer) {
         await updateDailyOfferById(editingOffer.id, payload);
-        toast.success("Offer updated successfully");
+        showSuccess("Offer updated successfully");
       } else {
         await createDailyOffer(payload);
-        toast.success("Offer created successfully");
+        showSuccess("Offer created successfully");
       }
       onClose(true);
       resetForm();
     } catch (error) {
-      console.error('Submit error:', error);
-      toast.error(error.response?.data?.message || "Failed to save offer");
+      console.error("Submit error:", error);
+      showError(error.response?.data?.message || "Failed to save offer");
     } finally {
       setLoading(false);
     }
@@ -493,7 +558,10 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b bg-inherit">
           <div className="flex items-center gap-3">
-            <h3 className="text-xl font-bold" style={{ color: colors.textPrimary }}>
+            <h3
+              className="text-xl font-bold"
+              style={{ color: colors.textPrimary }}
+            >
               {editingOffer ? "Update Daily Offer" : "Assign Offer to Property"}
             </h3>
             {/* Banner Detection Badge */}
@@ -520,9 +588,6 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
               <div className="p-4 rounded-lg bg-blue-50/50 border border-blue-100 space-y-3">
                 <label className="flex items-center gap-2 text-xs font-bold uppercase text-blue-600">
                   <Home size={14} /> Display Location
-                  {isBannerDetected && (
-                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">(Optional for banners)</span>
-                  )}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -533,7 +598,9 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                     <button
                       key={loc.id}
                       type="button"
-                      onClick={() => setFormData((p) => ({ ...p, displayLocation: loc.id }))}
+                      onClick={() =>
+                        setFormData((p) => ({ ...p, displayLocation: loc.id }))
+                      }
                       className={`py-2 text-[11px] font-bold rounded-md border transition-all cursor-pointer ${
                         formData.displayLocation === loc.id
                           ? "bg-blue-600 text-white border-blue-600 shadow-md"
@@ -550,21 +617,28 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2">
                   <Building2 size={12} /> Select Property
-                  {!isBannerDetected && <span className="text-red-500">*</span>}
-                  {isBannerDetected && (
-                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">(Optional)</span>
+                  {isPropertyRequired() && <span className="text-red-500">*</span>}
+                  {!isPropertyRequired() && (
+                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">
+                      (Optional for Home Page only)
+                    </span>
                   )}
                 </label>
                 <select
                   value={formData.propertyId || ""}
                   onChange={(e) => handlePropertySelect(e.target.value)}
+                  onBlur={() => setTouchedFields((prev) => ({ ...prev, propertyId: true }))}
                   className={`w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm focus:ring-1 focus:ring-primary/20 outline-none ${
-                    !isBannerDetected && !formData.propertyId ? 'border-red-300' : ''
+                    isPropertyRequired() && touchedFields.propertyId && !formData.propertyId
+                      ? "border-red-500 border-2"
+                      : ""
                   }`}
                 >
                   <option value="">Choose a property...</option>
                   {availableProperties.map((p) => (
-                    <option key={p.id} value={p.id}>{p.propertyName}</option>
+                    <option key={p.id} value={p.id}>
+                      {p.propertyName}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -574,17 +648,26 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
                     Offer Title
-                    {!isBannerDetected && <span className="text-red-500">*</span>}
+                    {!isBannerDetected && (
+                      <span className="text-red-500">*</span>
+                    )}
                     {isBannerDetected && (
-                      <span className="ml-auto text-[10px] text-gray-500 font-normal italic">(Optional)</span>
+                      <span className="ml-auto text-[10px] text-gray-500 font-normal italic">
+                        (Optional for banners)
+                      </span>
                     )}
                   </label>
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((p) => ({ ...p, title: e.target.value }))
+                    }
+                    onBlur={() => setTouchedFields((prev) => ({ ...prev, title: true }))}
                     className={`w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm ${
-                      !isBannerDetected && !formData.title ? 'border-red-300' : ''
+                      !isBannerDetected && touchedFields.title && !formData.title
+                        ? "border-red-500 border-2"
+                        : ""
                     }`}
                     placeholder="Weekend Special"
                   />
@@ -593,13 +676,20 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
                     Coupon Code
                     {isBannerDetected && (
-                      <span className="ml-auto text-[10px] text-gray-500 font-normal italic">(Optional)</span>
+                      <span className="ml-auto text-[10px] text-gray-500 font-normal italic">
+                        (Optional)
+                      </span>
                     )}
                   </label>
                   <input
                     type="text"
                     value={formData.couponCode}
-                    onChange={(e) => setFormData((p) => ({ ...p, couponCode: e.target.value.toUpperCase() }))}
+                    onChange={(e) =>
+                      setFormData((p) => ({
+                        ...p,
+                        couponCode: e.target.value.toUpperCase(),
+                      }))
+                    }
                     className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm font-mono"
                     placeholder="WKND20"
                   />
@@ -611,7 +701,9 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2">
                   <Clock size={12} /> Validity Hours
                   {isBannerDetected && (
-                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">(Optional)</span>
+                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">
+                      (Optional)
+                    </span>
                   )}
                 </label>
                 <div className="flex items-center gap-3 p-2 bg-[#F3F4F6] border rounded-lg">
@@ -636,13 +728,17 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
                   Short Tagline
                   {isBannerDetected && (
-                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">(Optional)</span>
+                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">
+                      (Optional)
+                    </span>
                   )}
                 </label>
                 <input
                   type="text"
                   value={formData.description}
-                  onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, description: e.target.value }))
+                  }
                   className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm"
                   maxLength={50}
                 />
@@ -653,13 +749,17 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2">
                   <LinkIcon size={12} /> CTA Link
                   {isBannerDetected && (
-                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">(Optional)</span>
+                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">
+                      (Optional)
+                    </span>
                   )}
                 </label>
                 <input
                   type="text"
                   value={formData.ctaLink}
-                  onChange={(e) => setFormData((p) => ({ ...p, ctaLink: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, ctaLink: e.target.value }))
+                  }
                   className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm"
                   placeholder="https://example.com/offer"
                 />
@@ -675,12 +775,28 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   <span className="text-red-500">*</span>
                 </label>
                 <div
-                  onClick={() => document.getElementById("offer-img-upload")?.click()}
-                  className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-primary transition-all bg-[#F3F4F6]"
+                  onClick={() =>
+                    document.getElementById("offer-img-upload")?.click()
+                  }
+                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary transition-all bg-[#F3F4F6] ${
+                    touchedFields.image && !uploadedMediaId && !formData.imageMediaId
+                      ? "border-red-500"
+                      : "border-gray-200"
+                  }`}
                 >
-                  <input id="offer-img-upload" type="file" className="hidden" accept="image/*" onChange={handleFileSelect} />
+                  <input
+                    id="offer-img-upload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*,video/*"
+                    onChange={handleFileSelect}
+                  />
+
                   {uploadingImage ? (
-                    <Loader2 className="animate-spin mx-auto text-primary" size={32} />
+                    <Loader2
+                      className="animate-spin mx-auto text-primary"
+                      size={32}
+                    />
                   ) : (
                     <Upload className="mx-auto text-gray-300" size={32} />
                   )}
@@ -703,13 +819,23 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 </div>
                 {imagePreview && (
                   <div className="mt-4 relative group rounded-xl overflow-hidden border shadow-lg">
-                    <img src={imagePreview} className="w-full h-48 object-cover" alt="Preview" />
-                    {isBannerDetected && detectedBannerType && (
-                      <div className="absolute top-2 left-2 px-3 py-1.5 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5">
-                        <Instagram size={12} />
-                        <span>{detectedBannerType.label}</span>
-                      </div>
+                    {mediaType === "VIDEO" ? (
+                      <video
+                        src={imagePreview}
+                        className="w-full h-48 object-cover"
+                        controls
+                        muted
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        src={imagePreview}
+                        className="w-full h-48 object-cover"
+                        alt="Preview"
+                      />
                     )}
+
+                    {/* Remove button */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -718,6 +844,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                         setImageDimensions(null);
                         setDetectedBannerType(null);
                         setIsBannerDetected(false);
+                        setMediaType(null);
                       }}
                       className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                     >
@@ -739,10 +866,15 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                         {detectedBannerType.label} Detected!
                       </p>
                       <p className="text-xs text-purple-700 leading-relaxed">
-                        Dimensions: <span className="font-mono font-semibold">{detectedBannerType.dimensions.width}×{detectedBannerType.dimensions.height}</span> ({detectedBannerType.aspectRatio})
+                        Dimensions:{" "}
+                        <span className="font-mono font-semibold">
+                          {detectedBannerType.dimensions.width}×
+                          {detectedBannerType.dimensions.height}
+                        </span>{" "}
+                        ({detectedBannerType.aspectRatio})
                       </p>
                       <p className="text-xs text-purple-600 leading-relaxed">
-                        All other fields are now optional. The banner contains the offer information.
+                        Title and Description are now optional. {isPropertyRequired() && "Property is still required based on display location."}
                       </p>
                     </div>
                   </div>
@@ -751,13 +883,19 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
 
               {/* Active Status */}
               <div className="p-4 border rounded-lg bg-[#F3F4F6] flex items-center justify-between">
-                <p className="text-xs font-bold uppercase text-gray-600">Active Status</p>
+                <p className="text-xs font-bold uppercase text-gray-600">
+                  Active Status
+                </p>
                 <button
                   type="button"
-                  onClick={() => setFormData((p) => ({ ...p, isActive: !p.isActive }))}
+                  onClick={() =>
+                    setFormData((p) => ({ ...p, isActive: !p.isActive }))
+                  }
                   className={`h-6 w-11 rounded-full transition-colors relative cursor-pointer shadow-inner ${formData.isActive ? "bg-green-500" : "bg-gray-300"}`}
                 >
-                  <span className={`absolute top-1 h-4 w-4 bg-white rounded-full transition-all shadow-md ${formData.isActive ? "left-6" : "left-1"}`} />
+                  <span
+                    className={`absolute top-1 h-4 w-4 bg-white rounded-full transition-all shadow-md ${formData.isActive ? "left-6" : "left-1"}`}
+                  />
                 </button>
               </div>
 
@@ -766,13 +904,17 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
                   Expires On
                   {isBannerDetected && (
-                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">(Optional)</span>
+                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">
+                      (Optional)
+                    </span>
                   )}
                 </label>
                 <input
                   type="date"
                   value={formData.expiresAt}
-                  onChange={(e) => setFormData((p) => ({ ...p, expiresAt: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, expiresAt: e.target.value }))
+                  }
                   className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm"
                 />
               </div>
@@ -782,12 +924,16 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
                   Detailed Description
                   {isBannerDetected && (
-                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">(Optional)</span>
+                    <span className="ml-auto text-[10px] text-gray-500 font-normal italic">
+                      (Optional)
+                    </span>
                   )}
                 </label>
                 <textarea
                   value={formData.longDesc}
-                  onChange={(e) => setFormData((p) => ({ ...p, longDesc: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, longDesc: e.target.value }))
+                  }
                   rows={4}
                   className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm resize-none"
                   placeholder="Enter full offer details..."
@@ -805,20 +951,27 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
           >
             Cancel
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading || uploadingImage}
-            className="px-10 py-2.5 rounded-lg font-bold text-white shadow-lg shadow-primary/20 flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer"
-            style={{ backgroundColor: colors.primary }}
-          >
-            {loading ? (
-              <Loader2 className="animate-spin" size={18} />
-            ) : editingOffer ? (
-              "Update Offer"
-            ) : (
-              "Create Offer"
-            )}
-          </button>
+          
+          {/* Wrapper div to capture clicks even when button is disabled */}
+          <div onClick={handleButtonClick}>
+            <button
+              disabled={loading || uploadingImage}
+              className={`px-10 py-2.5 rounded-lg font-bold text-white shadow-lg shadow-primary/20 flex items-center gap-2 transition-all ${
+                loading || uploadingImage || !isFormValid()
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:opacity-90 cursor-pointer"
+              }`}
+              style={{ backgroundColor: colors.primary }}
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : editingOffer ? (
+                "Update Offer"
+              ) : (
+                "Create Offer"
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

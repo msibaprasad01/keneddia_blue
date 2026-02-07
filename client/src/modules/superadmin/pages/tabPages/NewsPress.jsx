@@ -12,9 +12,16 @@ import {
   Tag,
   User,
   Clock,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
-import { getAllNews } from "@/Api/Api";
-import { toast } from "react-hot-toast";
+import { getAllNews, updateNewsStatus } from "@/Api/Api";
+import {
+  showSuccess,
+  showInfo,
+  showError,
+  showWarning,
+} from "@/lib/toasters/toastUtils";
 import CreateNewsModal from "../../modals/CreateNewsModal";
 
 function NewsPress() {
@@ -22,6 +29,7 @@ function NewsPress() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingNews, setEditingNews] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,16 +41,16 @@ function NewsPress() {
       console.log("--- API Call Start ---");
 
       // Fetch all categories (PRESS, NEWS, ANNOUNCEMENT)
-      const categories = ['PRESS', 'NEWS', 'ANNOUNCEMENT'];
-      const allNewsPromises = categories.map(category => 
-        getAllNews({ category, page: 0, size: 50 })
+      const categories = ["PRESS", "NEWS", "ANNOUNCEMENT"];
+      const allNewsPromises = categories.map((category) =>
+        getAllNews({ category, page: 0, size: 50 }),
       );
 
       const responses = await Promise.all(allNewsPromises);
       console.log("1. Raw API Responses:", responses);
 
       let newsData = [];
-      
+
       // Combine all responses
       responses.forEach((response, index) => {
         console.log(`Processing category: ${categories[index]}`);
@@ -50,12 +58,19 @@ function NewsPress() {
 
         if (source?.content && Array.isArray(source.content)) {
           newsData = [...newsData, ...source.content];
-          console.log(`2. Success: Extracted ${source.content.length} items from ${categories[index]}`);
+          console.log(
+            `2. Success: Extracted ${source.content.length} items from ${categories[index]}`,
+          );
         } else if (Array.isArray(source)) {
           newsData = [...newsData, ...source];
-          console.log(`2. Success: Extracted ${source.length} items from ${categories[index]}`);
+          console.log(
+            `2. Success: Extracted ${source.length} items from ${categories[index]}`,
+          );
         } else {
-          console.error(`2. Failure: Could not find array in ${categories[index]} response. Structure:`, source);
+          console.error(
+            `2. Failure: Could not find array in ${categories[index]} response. Structure:`,
+            source,
+          );
         }
       });
 
@@ -63,47 +78,42 @@ function NewsPress() {
       console.log(`Total items fetched: ${newsData.length}`);
 
       if (newsData.length > 0) {
-  const normalizedNews = newsData.map((item) => {
-    return {
-      ...item,
+        const normalizedNews = newsData.map((item) => {
+          return {
+            ...item,
 
-      // ✅ NORMALIZE BADGE FIELD
-      badgeTypeName:
-        item.badgeTypeName ||
-        item.badgeType ||
-        item.badge?.name ||
-        item.badgeName ||
-        null,
+            // ✅ NORMALIZE BADGE FIELD
+            badgeTypeName:
+              item.badgeTypeName ||
+              item.badgeType ||
+              item.badge?.name ||
+              item.badgeName ||
+              null,
 
-      // ✅ NORMALIZE CATEGORY (safety)
-      category: item.category || item.newsCategory || "NEWS",
+            // ✅ NORMALIZE CATEGORY (safety)
+            category: item.category || item.newsCategory || "NEWS",
 
-      // ✅ NORMALIZE IMAGE
-      imageUrl:
-        item.imageUrl ||
-        item.image ||
-        item.media?.[0]?.url ||
-        null,
-    };
-  });
+            // ✅ NORMALIZE IMAGE
+            imageUrl:
+              item.imageUrl || item.image || item.media?.[0]?.url || null,
+          };
+        });
 
-  const activeNews = normalizedNews
-    .filter((news) => news.active !== false)
-    .sort((a, b) => {
-      const dateA = new Date(a.newsDate || a.dateBadge || a.createdAt);
-      const dateB = new Date(b.newsDate || b.dateBadge || b.createdAt);
-      return dateB - dateA;
-    });
+        // Don't filter by active status - show all news items
+        const sortedNews = normalizedNews.sort((a, b) => {
+          const dateA = new Date(a.newsDate || a.dateBadge || a.createdAt);
+          const dateB = new Date(b.newsDate || b.dateBadge || b.createdAt);
+          return dateB - dateA;
+        });
 
-  console.log("✅ FINAL NORMALIZED NEWS:", activeNews);
-  setNewsItems(activeNews);
-}
- else {
+        console.log("✅ FINAL NORMALIZED NEWS:", sortedNews);
+        setNewsItems(sortedNews);
+      } else {
         setNewsItems([]);
       }
     } catch (error) {
       console.error("API Error details:", error);
-      toast.error("Failed to load news");
+      showError("Failed to load news");
       setNewsItems([]);
     } finally {
       setLoading(false);
@@ -121,6 +131,25 @@ function NewsPress() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentItems = newsItems.slice(startIndex, endIndex);
+
+  const handleStatusToggle = async (id, currentStatus) => {
+    try {
+      setStatusLoading(id);
+      const nextStatus = !currentStatus;
+
+      await updateNewsStatus(id, nextStatus);
+
+      showSuccess(`News ${nextStatus ? "Activated" : "Deactivated"}`);
+
+      // ✅ Re-fetch from backend to refresh list
+      await fetchNews();
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      showError("Failed to update status");
+    } finally {
+      setStatusLoading(null);
+    }
+  };
 
   const handleEdit = (news) => {
     setEditingNews(news);
@@ -298,12 +327,15 @@ function NewsPress() {
                     <tr
                       key={news.id}
                       className="border-b hover:bg-gray-50 transition-colors"
-                      style={{ borderColor: colors.border }}
+                      style={{
+                        borderColor: colors.border,
+                        opacity: news.active === false ? 0.6 : 1,
+                      }}
                     >
                       {/* Image */}
                       <td className="px-4 py-3">
                         <div
-                          className="w-16 h-16 rounded-lg overflow-hidden border"
+                          className="w-16 h-16 rounded-lg overflow-hidden border relative"
                           style={{ borderColor: colors.border }}
                         >
                           {news.imageUrl || news.image ? (
@@ -321,6 +353,13 @@ function NewsPress() {
                                 size={20}
                                 style={{ color: colors.textSecondary }}
                               />
+                            </div>
+                          )}
+                          {news.active === false && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                              <span className="text-[8px] font-bold text-white bg-red-500 px-1 py-0.5 rounded">
+                                INACTIVE
+                              </span>
                             </div>
                           )}
                         </div>
@@ -425,16 +464,45 @@ function NewsPress() {
                       {/* Actions */}
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-2">
+                          {/* Toggle Active/Inactive */}
+                          <button
+                            onClick={() =>
+                              handleStatusToggle(news.id, news.active)
+                            }
+                            disabled={statusLoading === news.id}
+                            className="p-2 rounded-lg border transition-all hover:shadow-sm bg-white"
+                            style={{
+                              borderColor: colors.border,
+                              color: news.active
+                                ? colors.success
+                                : colors.textSecondary,
+                            }}
+                            title={
+                              news.active
+                                ? "Click to remove"
+                                : "Click to Activate"
+                            }
+                          >
+                            {statusLoading === news.id ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : news.active ? (
+                              <CheckCircle2 size={16} />
+                            ) : (
+                              <XCircle size={16} />
+                            )}
+                          </button>
+
+                          {/* Edit Button */}
                           <button
                             onClick={() => handleEdit(news)}
                             className="p-2 rounded border transition-colors hover:bg-gray-100"
                             style={{
                               borderColor: colors.border,
-                              color: colors.textPrimary,
+                              color: colors.primary,
                             }}
                             title="Edit News"
                           >
-                            <Edit size={14} />
+                            <Edit size={16} />
                           </button>
                         </div>
                       </td>
@@ -453,11 +521,12 @@ function NewsPress() {
                   style={{
                     backgroundColor: colors.mainBg,
                     borderColor: colors.border,
+                    opacity: news.active === false ? 0.6 : 1,
                   }}
                 >
                   <div className="flex gap-3 mb-3">
                     <div
-                      className="w-20 h-20 rounded-lg overflow-hidden border flex-shrink-0"
+                      className="w-20 h-20 rounded-lg overflow-hidden border flex-shrink-0 relative"
                       style={{ borderColor: colors.border }}
                     >
                       {news.imageUrl || news.image ? (
@@ -477,9 +546,18 @@ function NewsPress() {
                           />
                         </div>
                       )}
+                      {news.active === false && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <span className="text-[8px] font-bold text-white bg-red-500 px-1 py-0.5 rounded">
+                            INACTIVE
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex-grow">
-                      <div className="mb-2">{getCategoryBadge(news.category)}</div>
+                      <div className="mb-2">
+                        {getCategoryBadge(news.category)}
+                      </div>
                       <h3
                         className="text-sm font-bold mb-1"
                         style={{ color: colors.textPrimary }}
@@ -498,7 +576,10 @@ function NewsPress() {
                   <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
                     {news.authorName && (
                       <div className="flex items-center gap-1">
-                        <User size={12} style={{ color: colors.textSecondary }} />
+                        <User
+                          size={12}
+                          style={{ color: colors.textSecondary }}
+                        />
                         <span style={{ color: colors.textSecondary }}>
                           {news.authorName}
                         </span>
@@ -516,25 +597,52 @@ function NewsPress() {
                     className="flex items-center justify-between pt-2 border-t"
                     style={{ borderColor: colors.border }}
                   >
-                    {news.badgeTypeName && (
-                      <div
-                        className="inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-[10px] font-bold"
-                        style={{ color: colors.textSecondary }}
+                    <div className="flex items-center gap-2">
+                      {news.badgeTypeName && (
+                        <div
+                          className="inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-[10px] font-bold"
+                          style={{ color: colors.textSecondary }}
+                        >
+                          <Tag size={10} />
+                          {news.badgeTypeName}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/* Toggle Button */}
+                      <button
+                        onClick={() => handleStatusToggle(news.id, news.active)}
+                        disabled={statusLoading === news.id}
+                        className="p-2 rounded-lg border transition-all bg-white"
+                        style={{
+                          borderColor: colors.border,
+                          color: news.active
+                            ? colors.success
+                            : colors.textSecondary,
+                        }}
+                        title={news.active ? "Deactivate" : "Activate"}
                       >
-                        <Tag size={10} />
-                        {news.badgeTypeName}
-                      </div>
-                    )}
-                    <button
-                      onClick={() => handleEdit(news)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded border text-xs font-medium transition-colors hover:bg-gray-50"
-                      style={{
-                        borderColor: colors.border,
-                        color: colors.textPrimary,
-                      }}
-                    >
-                      <Edit size={12} /> Edit
-                    </button>
+                        {statusLoading === news.id ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : news.active ? (
+                          <CheckCircle2 size={14} />
+                        ) : (
+                          <XCircle size={14} />
+                        )}
+                      </button>
+
+                      {/* Edit Button */}
+                      <button
+                        onClick={() => handleEdit(news)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded border text-xs font-medium transition-colors hover:bg-gray-50"
+                        style={{
+                          borderColor: colors.border,
+                          color: colors.textPrimary,
+                        }}
+                      >
+                        <Edit size={12} /> Edit
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -546,13 +654,19 @@ function NewsPress() {
                 className="flex items-center justify-between px-4 sm:px-6 py-4 border-t"
                 style={{ borderColor: colors.border }}
               >
-                <div className="text-xs" style={{ color: colors.textSecondary }}>
-                  Showing {startIndex + 1} to {Math.min(endIndex, newsItems.length)} of{" "}
-                  {newsItems.length} articles
+                <div
+                  className="text-xs"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(endIndex, newsItems.length)} of {newsItems.length}{" "}
+                  articles
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
                     disabled={currentPage === 1}
                     className="p-2 rounded-full border transition-all disabled:opacity-30 hover:bg-gray-50 disabled:cursor-not-allowed"
                     style={{
@@ -562,7 +676,7 @@ function NewsPress() {
                   >
                     <ChevronLeft size={18} />
                   </button>
-                  
+
                   {/* Page Numbers */}
                   <div className="flex gap-1">
                     {[...Array(Math.min(totalPages, 5))].map((_, index) => {
