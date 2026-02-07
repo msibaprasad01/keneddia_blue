@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
@@ -14,6 +15,7 @@ import WhatsAppButton from "@/modules/website/components/WhatsAppButton";
 // Assets
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { getHotelHomepageHeroSection, getPropertyTypes } from "@/Api/Api";
 
 // Hotel Navigation Items
 const HOTEL_NAV_ITEMS = [
@@ -24,22 +26,259 @@ const HOTEL_NAV_ITEMS = [
   { type: "link", label: "CONTACT", key: "contact", href: "#contact" },
 ] as any[];
 
-// Hero Slider Images
-const HERO_IMAGES = [
+// Fallback Hero Images
+const FALLBACK_HERO_IMAGES = [
   siteContent.images.hotels.mumbai,
   siteContent.images.hotels.delhi,
   siteContent.images.hotels.hyderabad,
 ];
 
+interface MediaItem {
+  mediaId: number;
+  type: "IMAGE" | "VIDEO";
+  url: string;
+  fileName: string;
+  alt: string | null;
+  width: number | null;
+  height: number | null;
+}
+
+interface ApiHeroItem {
+  id: number;
+  mainTitle: string;
+  subTitle: string | null;
+  ctaText: string | null;
+  ctaLink: string | null;
+  backgroundAll: MediaItem[];
+  backgroundLight: MediaItem[];
+  backgroundDark: MediaItem[];
+  subAll: MediaItem[];
+  subLight: MediaItem[];
+  subDark: MediaItem[];
+  propertyId: number | null;
+  propertyTypeId: number | null;
+  showOnPropertyPage: boolean;
+  showOnHomepage: boolean;
+  active: boolean;
+}
+
+interface HeroSlide {
+  id: number;
+  type: "video" | "image";
+  media: string;
+  title: string;
+  subtitle: string;
+  backgroundAll: MediaItem[];
+  backgroundLight: MediaItem[];
+  backgroundDark: MediaItem[];
+}
+
+const getCurrentTheme = (): "light" | "dark" => {
+  if (typeof window === "undefined") return "light";
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+};
+
+const selectMediaByTheme = (
+  theme: "light" | "dark",
+  all: MediaItem[],
+  light: MediaItem[],
+  dark: MediaItem[],
+): MediaItem | null => {
+  // Priority: theme-specific -> all -> opposite theme
+  if (theme === "dark") {
+    if (dark && dark.length > 0) return dark[0];
+    if (all && all.length > 0) return all[0];
+    if (light && light.length > 0) return light[0];
+  } else {
+    if (light && light.length > 0) return light[0];
+    if (all && all.length > 0) return all[0];
+    if (dark && dark.length > 0) return dark[0];
+  }
+  return null;
+};
+
+const transformApiDataToSlides = (content: ApiHeroItem[]): HeroSlide[] => {
+  // Filter: active AND showOnPropertyPage (for hotel pages)
+  const filteredContent = content.filter(
+    (item) => item.active === true && item.showOnPropertyPage === true
+  );
+
+  // Get latest 3 by ID
+  const latestThree = filteredContent
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 3);
+
+  return latestThree.map((item) => {
+    // Store all media arrays for dynamic theme switching
+    return {
+      id: item.id,
+      type: "image" as const, // Will be determined dynamically
+      media: "", // Will be set dynamically
+      title: item.mainTitle || "Welcome to Our Hotels",
+      subtitle: item.subTitle || "Experience Luxury",
+      backgroundAll: item.backgroundAll || [],
+      backgroundLight: item.backgroundLight || [],
+      backgroundDark: item.backgroundDark || [],
+    };
+  });
+};
+
 export default function Hotels() {
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [currentTheme, setCurrentTheme] = useState<"light" | "dark">(getCurrentTheme());
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hotelTypeId, setHotelTypeId] = useState<number | null>(null);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+
+  // Fetch Property Types and get Hotel ID
+  useEffect(() => {
+    const fetchPropertyTypes = async () => {
+      try {
+        const response = await getPropertyTypes();
+        const data = response?.data || response;
+        
+        if (Array.isArray(data)) {
+          const hotelType = data.find(
+            (type) => type.isActive && type.typeName?.toLowerCase() === "hotel"
+          );
+          
+          if (hotelType) {
+            setHotelTypeId(hotelType.id);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching property types:", error);
+      }
+    };
+
+    fetchPropertyTypes();
+  }, []);
+
+  // Fetch Hero Sections when hotelTypeId is available
+  useEffect(() => {
+    const fetchHeroSections = async () => {
+      if (!hotelTypeId) return;
+
+      setLoading(true);
+      try {
+        const response = await getHotelHomepageHeroSection(hotelTypeId);
+        const data = response?.data || response;
+
+        if (Array.isArray(data) && data.length > 0) {
+          const slides = transformApiDataToSlides(data);
+          
+          if (slides.length > 0) {
+            setHeroSlides(slides);
+          } else {
+            // No valid slides, use fallback
+            setHeroSlides([]);
+          }
+        } else {
+          setHeroSlides([]);
+        }
+      } catch (error) {
+        console.error("Error fetching hero sections:", error);
+        setHeroSlides([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHeroSections();
+  }, [hotelTypeId]);
+
+  // Monitor theme changes
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const newTheme = getCurrentTheme();
+      if (newTheme !== currentTheme) {
+        setCurrentTheme(newTheme);
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, [currentTheme]);
+
   // Hero Auto-play
   useEffect(() => {
+    const slidesCount = heroSlides.length > 0 ? heroSlides.length : FALLBACK_HERO_IMAGES.length;
+    
     const timer = setInterval(() => {
-      setCurrentHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+      setCurrentHeroIndex((prev) => (prev + 1) % slidesCount);
     }, 5000);
+    
     return () => clearInterval(timer);
+  }, [heroSlides.length]);
+
+  // Get current media based on theme
+  const getCurrentMedia = useCallback((slide: HeroSlide) => {
+    const media = selectMediaByTheme(
+      currentTheme,
+      slide.backgroundAll,
+      slide.backgroundLight,
+      slide.backgroundDark
+    );
+
+    return {
+      type: media?.type === "VIDEO" ? "video" : "image",
+      url: media?.url || "",
+    };
+  }, [currentTheme]);
+
+  const handleImageError = useCallback((url: string) => {
+    setImageErrors((prev) => new Set(prev).add(url));
   }, []);
+
+  const renderMedia = useCallback((slide: HeroSlide) => {
+    const { type, url } = getCurrentMedia(slide);
+    
+    if (!url || imageErrors.has(url)) {
+      // Fallback to static images
+      const fallbackIndex = currentHeroIndex % FALLBACK_HERO_IMAGES.length;
+      return (
+        <OptimizedImage
+          {...FALLBACK_HERO_IMAGES[fallbackIndex]}
+          className="w-full h-full object-cover"
+        />
+      );
+    }
+
+    if (type === "video") {
+      return (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          className="w-full h-full object-cover"
+          key={url}
+          onError={() => handleImageError(url)}
+        >
+          <source src={url} type="video/mp4" />
+        </video>
+      );
+    }
+
+    return (
+      <img
+        src={url}
+        alt={slide.title}
+        className="w-full h-full object-cover"
+        onError={() => handleImageError(url)}
+      />
+    );
+  }, [getCurrentMedia, currentHeroIndex, imageErrors, handleImageError]);
+
+  // Determine which slides to show
+  const displaySlides = heroSlides.length > 0 ? heroSlides : [];
+  const useFallback = displaySlides.length === 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -47,56 +286,95 @@ export default function Hotels() {
 
       {/* 1. HERO SECTION */}
       <section className="relative h-[85vh] w-full overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentHeroIndex}
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
-            className="absolute inset-0"
-          >
-            <OptimizedImage
-              {...HERO_IMAGES[currentHeroIndex]}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/30" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent" />
-          </motion.div>
-        </AnimatePresence>
+        {loading && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 size={48} className="animate-spin text-white" />
+              <p className="text-white text-sm font-medium">Loading hero section...</p>
+            </div>
+          </div>
+        )}
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 uppercase tracking-wider drop-shadow-2xl"
-          >
-            Timeless Luxury
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-            className="text-xl md:text-2xl text-white/90 font-light max-w-2xl drop-shadow-lg"
-          >
-            Where every moment is crafted with elegance.
-          </motion.p>
-        </div>
+        {!loading && (
+          <>
+            {useFallback ? (
+              // Fallback static hero
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentHeroIndex}
+                  initial={{ opacity: 0, scale: 1.1 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.5 }}
+                  className="absolute inset-0"
+                >
+                  <OptimizedImage
+                    {...FALLBACK_HERO_IMAGES[currentHeroIndex]}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/30" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent" />
+                </motion.div>
+              </AnimatePresence>
+            ) : (
+              // Dynamic API-based hero
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${displaySlides[currentHeroIndex].id}-${currentTheme}`}
+                  initial={{ opacity: 0, scale: 1.1 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.5 }}
+                  className="absolute inset-0"
+                >
+                  {renderMedia(displaySlides[currentHeroIndex])}
+                  <div className="absolute inset-0 bg-black/30" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent" />
+                </motion.div>
+              </AnimatePresence>
+            )}
 
-        {/* Hero Indicators */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-          {HERO_IMAGES.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentHeroIndex(idx)}
-              className={`w-12 h-1 rounded-full transition-all duration-300 ${idx === currentHeroIndex
-                ? "bg-white"
-                : "bg-white/30 hover:bg-white/50"
-                }`}
-            />
-          ))}
-        </div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
+              <motion.h1
+                key={`title-${currentHeroIndex}`}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+                className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 uppercase tracking-wider drop-shadow-2xl"
+              >
+                {useFallback
+                  ? "Timeless Luxury"
+                  : displaySlides[currentHeroIndex].title}
+              </motion.h1>
+              <motion.p
+                key={`subtitle-${currentHeroIndex}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.8 }}
+                className="text-xl md:text-2xl text-white/90 font-light max-w-2xl drop-shadow-lg"
+              >
+                {useFallback
+                  ? "Where every moment is crafted with elegance."
+                  : displaySlides[currentHeroIndex].subtitle}
+              </motion.p>
+            </div>
+
+            {/* Hero Indicators */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+              {(useFallback ? FALLBACK_HERO_IMAGES : displaySlides).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentHeroIndex(idx)}
+                  className={`w-12 h-1 rounded-full transition-all duration-300 ${
+                    idx === currentHeroIndex
+                      ? "bg-white"
+                      : "bg-white/30 hover:bg-white/50"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </section>
 
       {/* QUICK BOOKING */}
@@ -198,10 +476,11 @@ export default function Hotels() {
                   <button
                     key={idx}
                     onClick={() => setCurrentHeroIndex(idx)}
-                    className={`h-1 rounded-full transition-all duration-300 ${idx === currentHeroIndex
-                      ? "bg-primary w-8"
-                      : "bg-border w-4 hover:bg-primary/50"
-                      }`}
+                    className={`h-1 rounded-full transition-all duration-300 ${
+                      idx === currentHeroIndex
+                        ? "bg-primary w-8"
+                        : "bg-border w-4 hover:bg-primary/50"
+                    }`}
                   />
                 ))}
               </div>
