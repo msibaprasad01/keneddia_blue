@@ -72,6 +72,8 @@ export default function HotelOffersCarousel() {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const normalize = (v?: string) =>
+    (v || "").trim().toLowerCase().replace(/\s+/g, " "); // handles "Wine   &   Dine"
 
   useEffect(() => {
     const fetchOffers = async () => {
@@ -86,13 +88,17 @@ export default function HotelOffersCarousel() {
         const rawData = res.data?.data || res.data || [];
         const list = Array.isArray(rawData) ? rawData : rawData.content || [];
 
-        // STRICT FILTERS: isActive, PROPERTY_PAGE, and Hotel type
-        const filtered = list.filter(
-          (o: any) =>
-            o.isActive &&
-            ["PROPERTY_PAGE", "BOTH"].includes(o.displayLocation) &&
-            o.propertyTypeName === "Hotel",
-        );
+        const filtered = list.filter((o: any) => {
+          if (!o.isActive) return false;
+
+          if (!["PROPERTY_PAGE", "BOTH"].includes(o.displayLocation))
+            return false;
+
+          const type = normalize(o.propertyTypeName);
+
+          // ✅ Hotel + BOTH (ALL case formats supported)
+          return type === "hotel" || type === "both";
+        });
 
         setOffers(
           filtered.map((o: any) => ({
@@ -174,11 +180,23 @@ export default function HotelOffersCarousel() {
                     className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[280px]"}`}
                   >
                     {offer.image?.url ? (
-                      <img
-                        src={offer.image.url}
-                        alt={offer.title}
-                        className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                      />
+                      offer.image.type === "VIDEO" ? (
+                        <video
+                          src={offer.image.url}
+                          className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          preload="metadata"
+                        />
+                      ) : (
+                        <img
+                          src={offer.image.url}
+                          alt={offer.title}
+                          className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                        />
+                      )
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-muted">
                         <Tag className="w-10 h-10 text-muted-foreground/20" />

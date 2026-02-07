@@ -18,7 +18,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     ctaLink: "", 
     active: false,
     showOnHomepage: false,
-    propertyTypeId: null, // null = homepage, number = specific property type
+    propertyTypeId: null,
   });
 
   const [propertyTypes, setPropertyTypes] = useState([]);

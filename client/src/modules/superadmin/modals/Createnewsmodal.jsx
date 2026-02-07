@@ -25,7 +25,7 @@ import {
 import { toast } from "react-hot-toast";
 
 function CreateNewsModal({ isOpen, onClose, editingNews }) {
-  console.log(editingNews)
+  console.log(editingNews);
   const [formData, setFormData] = useState({
     category: "PRESS",
     title: "",
@@ -71,7 +71,7 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
     if (editingNews && isOpen) {
       const matchedBadge = badgeTypes.find(
         (b) =>
-          b.typeName?.toLowerCase() === editingNews.badgeType?.toLowerCase()
+          b.typeName?.toLowerCase() === editingNews.badgeType?.toLowerCase(),
       );
 
       setFormData({
@@ -80,7 +80,7 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
         slug: editingNews.slug || "",
         description: editingNews.description || "",
         longDesc: editingNews.longDesc || "",
-        dateBadge: editingNews.dateBadge || "",
+        dateBadge: getTodayDate(),
         badgeTypeId: matchedBadge
           ? matchedBadge.id
           : editingNews.badgeTypeId || "",
@@ -164,6 +164,10 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0]; // YYYY-MM-DD
   };
 
   const handleFileSelect = async (e) => {
@@ -277,7 +281,7 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
         slug: formData.slug,
         description: formData.description.trim(),
         longDesc: formData.longDesc?.trim() || "",
-        dateBadge: formData.dateBadge || formData.newsDate,
+        dateBadge: getTodayDate(),
         badgeTypeId: parseInt(formData.badgeTypeId),
         ctaText: formData.ctaText?.trim() || "Read Story",
         authorName: formData.authorName?.trim() || "",
@@ -432,7 +436,7 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
                 placeholder="e.g., Expansion Plans for 2026"
                 maxLength={200}
               />
-              <div
+              {/* <div
                 className="mt-2 flex items-center gap-2 text-[10px] font-mono p-2 rounded bg-gray-50 border border-dashed"
                 style={{
                   color: colors.textSecondary,
@@ -444,7 +448,7 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
                   {window.location.origin}/news/
                   {formData.slug || "slug-preview"}
                 </span>
-              </div>
+              </div> */}
             </div>
 
             <div>
@@ -695,7 +699,9 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
                     <p className="text-xs font-bold text-amber-800 uppercase mb-1">
                       Cannot {editingNews ? "Update" : "Publish"} Yet
                     </p>
-                    <p className="text-xs text-amber-700">{validationMessage}</p>
+                    <p className="text-xs text-amber-700">
+                      {validationMessage}
+                    </p>
                   </div>
                 </div>
               </div>
