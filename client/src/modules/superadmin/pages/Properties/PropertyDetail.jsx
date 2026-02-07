@@ -37,14 +37,16 @@ import AddMenuItemModal from "./modals/AddMenuItemModal";
 import AddTableModal from "./modals/AddTableModal";
 
 const PropertyDetail = ({ property, onBack }) => {
-  const propId = property?.id;
+  // Normalize the base property data immediately
+  const baseProperty = property?.propertyResponseDTO ?? property;
+  const propId = baseProperty?.id;
 
   const [data, setData] = useState({
     overview: {
-      ...property,
-      propertyName: property.propertyName || "Unnamed Property",
-      city: property.locationName || "N/A",
-      propertyType: property.propertyTypes?.[0] || "Hotel",
+      ...baseProperty,
+      propertyName: baseProperty?.propertyName || "Unnamed Property",
+      city: baseProperty?.locationName || "N/A",
+      propertyType: baseProperty?.propertyTypes?.[0] || "Hotel",
     },
     rooms: [],
     amenities: [],
@@ -99,8 +101,18 @@ const PropertyDetail = ({ property, onBack }) => {
   useEffect(() => {
     if (propId) {
       fetchAllData();
+      // Sync local overview whenever baseProperty prop changes
+      setData((prev) => ({
+        ...prev,
+        overview: {
+          ...baseProperty,
+          propertyName: baseProperty?.propertyName || "Unnamed Property",
+          city: baseProperty?.locationName || "N/A",
+          propertyType: baseProperty?.propertyTypes?.[0] || "Hotel",
+        },
+      }));
     }
-  }, [propId, fetchAllData]);
+  }, [propId, fetchAllData, baseProperty]);
 
   useEffect(() => {
     setActiveTab("overview");
@@ -113,9 +125,7 @@ const PropertyDetail = ({ property, onBack }) => {
 
   const propertyType = data.overview.propertyType;
   const tabsByPropertyType = {
-    // Hotel: ["overview", "rooms", "amenities", "gallery", "pricing", "policies", "events"],
     Hotel: ["overview", "rooms", "amenities", "gallery", "policies", "events"],
-    
     Cafe: ["overview", "menu", "tables", "gallery"],
     Restaurant: ["overview", "menu", "gallery", "events"],
   };
@@ -135,8 +145,11 @@ const PropertyDetail = ({ property, onBack }) => {
   };
 
   const renderTabContent = () => {
+    // Current property state for all tabs to use
+    const currentPropertyInfo = data.overview;
+
     const commonProps = {
-      propertyData: property,
+      propertyData: currentPropertyInfo, 
       data: data[activeTab],
       onEdit: (item) => toggleModal(getModalNameForTab(activeTab), true, item),
       onAdd: () => toggleModal(getModalNameForTab(activeTab), true),
@@ -148,9 +161,9 @@ const PropertyDetail = ({ property, onBack }) => {
       case "overview":
         return (
           <OverviewTab
-            data={data.overview}
-            propertyData={property}
-            onEdit={() => toggleModal("overview", true, data.overview)}
+            data={currentPropertyInfo}
+            propertyData={currentPropertyInfo}
+            onEdit={() => toggleModal("overview", true, currentPropertyInfo)}
           />
         );
       case "rooms":
@@ -160,14 +173,16 @@ const PropertyDetail = ({ property, onBack }) => {
       case "gallery":
         return <GalleryTab {...commonProps} />;
       case "events":
-        return <EventsTab propertyData={property} refreshData={fetchAllData} />;
+        return (
+          <EventsTab propertyData={currentPropertyInfo} refreshData={fetchAllData} />
+        );
       case "pricing":
         return <PricingTab {...commonProps} />;
       case "policies":
         return (
           <PoliciesTab
             data={data.policies}
-            propertyData={property}
+            propertyData={currentPropertyInfo}
             onEdit={() => toggleModal("policy", true, data.policies)}
           />
         );
@@ -182,6 +197,7 @@ const PropertyDetail = ({ property, onBack }) => {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      {/* Navbar Section */}
       <div className="flex-shrink-0 bg-white border-b shadow-sm px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <button
@@ -199,12 +215,19 @@ const PropertyDetail = ({ property, onBack }) => {
             )}
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{data.overview.propertyName}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {data.overview.propertyName}
+            </h1>
             <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-              <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium uppercase">{propertyType}</span>
-              <span className="flex items-center gap-1"><MapPinIcon className="w-4 h-4" /> {data.overview.city}</span>
-              <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${data.overview.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                {data.overview.isActive ? <CheckCircleIcon className="w-4 h-4" /> : <XCircleIcon className="w-4 h-4" />}
+              <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium uppercase">
+                {propertyType}
+              </span>
+              <span className="flex items-center gap-1">
+                <MapPinIcon className="w-4 h-4" /> {data.overview.city}
+              </span>
+              <span
+                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${data.overview.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+              >
                 {data.overview.isActive ? "Active" : "Inactive"}
               </span>
             </div>
@@ -213,6 +236,7 @@ const PropertyDetail = ({ property, onBack }) => {
       </div>
 
       <div className="flex-1 overflow-hidden flex flex-col">
+        {/* Tab Switcher */}
         <div className="max-w-7xl w-full mx-auto px-6 pt-6 flex-shrink-0">
           <div className="flex gap-2 overflow-x-auto border-b pb-1 flex-nowrap scrollbar-hide">
             {currentTabs.map((tab) => (
@@ -220,7 +244,9 @@ const PropertyDetail = ({ property, onBack }) => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-6 py-2 text-sm font-medium capitalize rounded-t-lg transition-colors whitespace-nowrap flex-shrink-0 ${
-                  activeTab === tab ? "bg-white border-x border-t text-blue-600 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  activeTab === tab
+                    ? "bg-white border-x border-t text-blue-600 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                 }`}
                 style={activeTab === tab ? { color: colors.primary, borderColor: "#e5e7eb" } : {}}
               >
@@ -230,22 +256,74 @@ const PropertyDetail = ({ property, onBack }) => {
           </div>
         </div>
 
+        {/* Tab Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-7xl w-full mx-auto px-6 py-6">
-            <div className="bg-white rounded-lg shadow-sm border p-6">{renderTabContent()}</div>
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              {renderTabContent()}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Active Modals */}
-      <AddEditOverviewModal isOpen={modals.overview} onClose={() => toggleModal("overview", false)} propertyData={property} initialData={selectedItem} onSave={fetchAllData} />
-      <AddRoomModal isOpen={modals.room} onClose={() => toggleModal("room", false)} propertyData={property} initialData={selectedItem} onSave={fetchAllData} />
-      <AddAmenityModal isOpen={modals.amenity} onClose={() => toggleModal("amenity", false)} propertyData={property} initialData={selectedItem} onSave={fetchAllData} />
-      <AddMediaModal isOpen={modals.media} onClose={() => toggleModal("media", false)} propertyData={property} initialData={selectedItem} onSave={fetchAllData} />
-      <AddPricingModal isOpen={modals.pricing} onClose={() => toggleModal("pricing", false)} propertyData={property} initialData={selectedItem} onSave={fetchAllData} />
-      <EditPoliciesModal isOpen={modals.policy} onClose={() => toggleModal("policy", false)} propertyData={property} initialData={selectedItem} onSave={fetchAllData} />
-      <AddMenuItemModal isOpen={modals.menu} onClose={() => toggleModal("menu", false)} propertyData={property} initialData={selectedItem} onSave={fetchAllData} />
-      <AddTableModal isOpen={modals.table} onClose={() => toggleModal("table", false)} propertyData={property} initialData={selectedItem} onSave={fetchAllData} />
+      {/* Modals - All receiving the latest data.overview */}
+      <AddEditOverviewModal
+        isOpen={modals.overview}
+        onClose={() => toggleModal("overview", false)}
+        propertyData={data.overview}
+        initialData={selectedItem}
+        onSave={fetchAllData}
+      />
+      <AddRoomModal
+        isOpen={modals.room}
+        onClose={() => toggleModal("room", false)}
+        propertyData={data.overview}
+        initialData={selectedItem}
+        onSave={fetchAllData}
+      />
+      {/* ... (Repeat for all other modals ensuring they use data.overview) */}
+      <AddAmenityModal
+        isOpen={modals.amenity}
+        onClose={() => toggleModal("amenity", false)}
+        propertyData={data.overview}
+        initialData={selectedItem}
+        onSave={fetchAllData}
+      />
+      <AddMediaModal
+        isOpen={modals.media}
+        onClose={() => toggleModal("media", false)}
+        propertyData={data.overview}
+        initialData={selectedItem}
+        onSave={fetchAllData}
+      />
+      <AddPricingModal
+        isOpen={modals.pricing}
+        onClose={() => toggleModal("pricing", false)}
+        propertyData={data.overview}
+        initialData={selectedItem}
+        onSave={fetchAllData}
+      />
+      <EditPoliciesModal
+        isOpen={modals.policy}
+        onClose={() => toggleModal("policy", false)}
+        propertyData={data.overview}
+        initialData={selectedItem}
+        onSave={fetchAllData}
+      />
+      <AddMenuItemModal
+        isOpen={modals.menu}
+        onClose={() => toggleModal("menu", false)}
+        propertyData={data.overview}
+        initialData={selectedItem}
+        onSave={fetchAllData}
+      />
+      <AddTableModal
+        isOpen={modals.table}
+        onClose={() => toggleModal("table", false)}
+        propertyData={data.overview}
+        initialData={selectedItem}
+        onSave={fetchAllData}
+      />
     </div>
   );
 };

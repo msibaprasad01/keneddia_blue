@@ -1,11 +1,23 @@
 import React from 'react';
-import { PencilSquareIcon, MapPinIcon, UserIcon, HomeIcon } from '@heroicons/react/24/outline';
+import { 
+  PencilSquareIcon, 
+  MapPinIcon, 
+  UserIcon, 
+  HomeIcon, 
+  CurrencyRupeeIcon, 
+  StarIcon, 
+  UsersIcon,
+  InformationCircleIcon,
+  PhotoIcon 
+} from '@heroicons/react/24/outline';
 import { colors } from '@/lib/colors/colors';
 import AddEditOverviewModal from '../modals/AddEditOverviewModal';
 const OverviewTab = ({ data, onEdit }) => {
-  // Combine address and area for a cleaner display
-  console.log(data,"wendlq")
+  console.log(data, "Property Data");
+  
   const combinedAddress = [data.address, data.area].filter(Boolean).join(', ');
+  // Extracting the primary listing for the "Extra Info" section
+  const primaryListing = data.listings?.[0] || {};
 
   return (
     <div className="space-y-8">
@@ -64,25 +76,97 @@ const OverviewTab = ({ data, onEdit }) => {
               <MapPinIcon className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-base leading-tight">{combinedAddress || 'N/A'}</p>
-                <p className="text-sm text-gray-500 mt-0.5">{data.locationName} {data.pincode && `- ${data.pincode}`}</p>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {data.locationName} {data.pincode && `- ${data.pincode}`}
+                </p>
               </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Coordinates</label>
-            <p className="mt-1 text-sm font-mono text-gray-600 bg-gray-50 p-2 rounded-md border border-gray-100 inline-block">
-              Lat: {data.latitude ?? 'N/A'}, Lng: {data.longitude ?? 'N/A'}
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Status</label>
-            <div className="mt-1 flex items-center gap-2">
-              <div className={`w-2.5 h-2.5 rounded-full ${data.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className="text-sm font-medium text-gray-900">{data.isActive ? 'Active' : 'Inactive'}</span>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Coordinates</label>
+              <p className="mt-1 text-sm font-mono text-gray-600 bg-gray-50 p-2 rounded-md border border-gray-100">
+                {data.latitude}, {data.longitude}
+              </p>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Status</label>
+              <div className="mt-2 flex items-center gap-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${data.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
+                <span className="text-sm font-medium text-gray-900">{data.isActive ? 'Active' : 'Inactive'}</span>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Extra Property Info Section */}
+      <div className="pt-8 border-t border-gray-100">
+        <div className="flex items-center gap-2 mb-4 text-gray-900">
+            <InformationCircleIcon className="w-5 h-5 text-gray-400" />
+            <h3 className="text-sm font-bold uppercase tracking-wider">Additional Property Details</h3>
+        </div>
+        
+        <div className="bg-gray-50/50 border border-gray-200 rounded-xl p-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Visual Preview */}
+                <div className="space-y-3">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase">Primary Media</label>
+                    <div className="aspect-video rounded-lg overflow-hidden bg-gray-200 border border-gray-300">
+                        {primaryListing.media?.[0]?.url ? (
+                            <img 
+                                src={primaryListing.media[0].url} 
+                                alt="Property" 
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                <PhotoIcon className="w-8 h-8" />
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Commercial Details */}
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Commercials</label>
+                        <div className="flex items-center gap-2">
+                            <span className="text-2xl font-bold text-gray-900">₹{primaryListing.price?.toLocaleString()}</span>
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold">
+                                - ₹{primaryListing.discountAmount}
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Includes {primaryListing.gstPercentage}% GST</p>
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tagline</label>
+                        <p className="text-sm italic text-gray-600">"{primaryListing.tagline || 'No tagline provided'}"</p>
+                    </div>
+                </div>
+
+                {/* Technical/Capacity Details */}
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-2">Metrics</label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200">
+                                <StarIcon className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                                <span className="text-sm font-semibold">{primaryListing.rating || 'N/A'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200">
+                                <UsersIcon className="w-4 h-4 text-blue-500" />
+                                <span className="text-sm font-semibold">{primaryListing.capacity || '0'} Pax</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Internal Reference</label>
+                        <p className="text-xs font-mono text-gray-500">Listing ID: {primaryListing.id || 'N/A'}</p>
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
 

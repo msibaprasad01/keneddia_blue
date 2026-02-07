@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PlusIcon, ClockIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { colors } from '@/lib/colors/colors';
 import { 
   createPolicyOption, 
@@ -9,36 +9,57 @@ import {
 import { showError, showSuccess } from '@/lib/toasters/toastUtils';
 
 const EditPoliciesModal = ({ isOpen, onClose, propertyData, initialData, onSave }) => {
+  // --- State Declarations ---
   const [formData, setFormData] = useState({
-    selectedPolicyIds: []
+    selectedPolicyIds: [],
+    checkInTime: '',
+    checkOutTime: '',
+    cancellationPolicy: ''
   });
 
   const [availablePolicies, setAvailablePolicies] = useState([]);
   const [newPolicyName, setNewPolicyName] = useState('');
   const [isCreatingPolicy, setIsCreatingPolicy] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // Fixed: Added missing loading state
   const [showNewPolicyInput, setShowNewPolicyInput] = useState(false);
   const [loadingPolicies, setLoadingPolicies] = useState(false);
 
+  // --- Helpers for Time Formatting ---
+  
+  // Converts "14:00 PM" (API format) to "14:00" (Input format)
+  const formatToInputTime = (timeStr) => {
+    if (!timeStr) return '';
+    // Removes any AM/PM suffixes to satisfy <input type="time" />
+    return timeStr.replace(/\s?[APM]{2}$/i, '').trim();
+  };
+
+  // Converts "14:00" (Input format) to "14:00 PM" (API payload format)
+  const formatToPayloadTime = (timeStr) => {
+    if (!timeStr) return '';
+    const [hours] = timeStr.split(':');
+    const suffix = parseInt(hours) >= 12 ? 'PM' : 'AM';
+    return `${timeStr} ${suffix}`;
+  };
+
+  // --- Effects ---
   useEffect(() => {
     if (isOpen) {
       fetchAvailablePolicies();
       
-      if (initialData?.policies) {
-        setFormData({
-          selectedPolicyIds: initialData.policies.map(p => p.id)
-        });
-      } else {
-        setFormData({ selectedPolicyIds: [] });
-      }
+      setFormData({
+        selectedPolicyIds: initialData?.policies?.map(p => p.id) || [],
+        checkInTime: formatToInputTime(initialData?.checkInTime),
+        checkOutTime: formatToInputTime(initialData?.checkOutTime),
+        cancellationPolicy: initialData?.cancellationPolicy || ''
+      });
     }
   }, [isOpen, initialData]);
 
+  // --- API Actions ---
   const fetchAvailablePolicies = async () => {
     setLoadingPolicies(true);
     try {
       const response = await getAllPolicyOptions();
-      // Accessing response.data based on the structure you shared
       const policyList = response?.data || [];
       setAvailablePolicies(policyList);
     } catch (error) {
@@ -55,10 +76,7 @@ const EditPoliciesModal = ({ isOpen, onClose, propertyData, initialData, onSave 
 
     setIsCreatingPolicy(true);
     try {
-      // Payload structure: { "name": "USB Charging" }
       const response = await createPolicyOption({ name: trimmedName });
-      
-      // If your create API also returns { data: { id: ... } }
       const newPolicy = response?.data || response;
 
       if (newPolicy?.id) {
@@ -69,7 +87,6 @@ const EditPoliciesModal = ({ isOpen, onClose, propertyData, initialData, onSave 
         }));
         setNewPolicyName('');
         setShowNewPolicyInput(false);
-        showSuccess(`Policy "${newPolicy.name}" created`);
       }
     } catch (error) {
       showError("Failed to create policy");
@@ -87,17 +104,26 @@ const EditPoliciesModal = ({ isOpen, onClose, propertyData, initialData, onSave 
     }));
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!propertyData?.id) return;
 
     setLoading(true);
     try {
-      await attachPoliciesToProperty({
+      const payload = {
         propertyId: propertyData.id,
-        policyOptionIds: formData.selectedPolicyIds
-      });
-      showSuccess("Policies updated successfully");
+        policyOptionIds: formData.selectedPolicyIds,
+        checkInTime: formatToPayloadTime(formData.checkInTime),
+        checkOutTime: formatToPayloadTime(formData.checkOutTime),
+        cancellationPolicy: formData.cancellationPolicy
+      };
+
+      await attachPoliciesToProperty(payload);
       onSave();
       onClose();
     } catch (error) {
@@ -126,7 +152,50 @@ const EditPoliciesModal = ({ isOpen, onClose, propertyData, initialData, onSave 
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
-          {/* Section 1: Add New */}
+          {/* Section 1: Time Pickers & Cancellation */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 flex items-center gap-1">
+                <ClockIcon className="w-4 h-4" /> CHECK-IN TIME
+              </label>
+              <input 
+                type="time" 
+                name="checkInTime"
+                value={formData.checkInTime}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm cursor-pointer"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 flex items-center gap-1">
+                <ClockIcon className="w-4 h-4" /> CHECK-OUT TIME
+              </label>
+              <input 
+                type="time" 
+                name="checkOutTime"
+                value={formData.checkOutTime}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm cursor-pointer"
+              />
+            </div>
+            <div className="col-span-full space-y-1">
+              <label className="text-xs font-bold text-gray-500 flex items-center gap-1">
+                <DocumentTextIcon className="w-4 h-4" /> CANCELLATION POLICY
+              </label>
+              <textarea 
+                name="cancellationPolicy"
+                value={formData.cancellationPolicy}
+                onChange={handleInputChange}
+                rows="2"
+                placeholder="e.g. Free cancellation up to 48 hours..."
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+              />
+            </div>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* Section 2: Create Custom Policy */}
           <div>
             <button
               type="button"
@@ -134,7 +203,7 @@ const EditPoliciesModal = ({ isOpen, onClose, propertyData, initialData, onSave 
               className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
             >
               <PlusIcon className="w-5 h-5" />
-              {showNewPolicyInput ? "Close Input" : "Create a Custom Policy"}
+              {showNewPolicyInput ? "Close Input" : "Create a Custom Policy Tag"}
             </button>
 
             {showNewPolicyInput && (
@@ -143,8 +212,8 @@ const EditPoliciesModal = ({ isOpen, onClose, propertyData, initialData, onSave 
                   type="text"
                   value={newPolicyName}
                   onChange={(e) => setNewPolicyName(e.target.value)}
-                  placeholder="e.g. USB Charging"
-                  className="flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="e.g. No Smoking"
+                  className="flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                 />
                 <button
                   type="button"
@@ -159,49 +228,41 @@ const EditPoliciesModal = ({ isOpen, onClose, propertyData, initialData, onSave 
             )}
           </div>
 
-          <hr className="border-gray-100" />
-
-          {/* Section 2: Available Policies List */}
+          {/* Section 3: Policy List */}
           <div>
             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
               Available Policies ({availablePolicies.length})
             </h4>
 
             {loadingPolicies ? (
-              <div className="flex flex-col items-center py-10 text-gray-400">
+              <div className="flex flex-col items-center py-10">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-                <p className="text-sm">Fetching policy list...</p>
+                <p className="text-sm text-gray-400">Loading...</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {availablePolicies.length > 0 ? (
-                  availablePolicies.map((policy) => (
-                    <label
-                      key={policy.id}
-                      className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                        formData.selectedPolicyIds.includes(policy.id)
-                          ? "border-blue-600 bg-blue-50"
-                          : "border-gray-100 bg-white hover:border-gray-200"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.selectedPolicyIds.includes(policy.id)}
-                        onChange={() => handlePolicyToggle(policy.id)}
-                        className="w-4 h-4 text-blue-600 rounded border-gray-300"
-                      />
-                      <span className={`text-sm font-medium ${
-                        formData.selectedPolicyIds.includes(policy.id) ? "text-blue-900" : "text-gray-700"
-                      }`}>
-                        {policy.name}
-                      </span>
-                    </label>
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-10 bg-gray-50 rounded-xl border border-dashed">
-                    <p className="text-sm text-gray-500">No policies found in database.</p>
-                  </div>
-                )}
+                {availablePolicies.map((policy) => (
+                  <label
+                    key={policy.id}
+                    className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                      formData.selectedPolicyIds.includes(policy.id)
+                        ? "border-blue-600 bg-blue-50"
+                        : "border-gray-100 bg-white hover:border-gray-200"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.selectedPolicyIds.includes(policy.id)}
+                      onChange={() => handlePolicyToggle(policy.id)}
+                      className="w-4 h-4 text-blue-600 rounded border-gray-300"
+                    />
+                    <span className={`text-sm font-medium ${
+                      formData.selectedPolicyIds.includes(policy.id) ? "text-blue-900" : "text-gray-700"
+                    }`}>
+                      {policy.name}
+                    </span>
+                  </label>
+                ))}
               </div>
             )}
           </div>
@@ -209,7 +270,7 @@ const EditPoliciesModal = ({ isOpen, onClose, propertyData, initialData, onSave 
 
         {/* Footer */}
         <div className="p-6 border-t bg-gray-50 flex justify-between items-center rounded-b-xl">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-500 font-medium">
             {formData.selectedPolicyIds.length} policies selected
           </span>
           <div className="flex gap-3">

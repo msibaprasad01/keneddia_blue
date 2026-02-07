@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { PencilSquareIcon, ClockIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import { 
+  PencilSquareIcon, 
+  ClockIcon, 
+  DocumentTextIcon, 
+  ShieldCheckIcon,
+  InformationCircleIcon 
+} from "@heroicons/react/24/outline";
 import { colors } from "@/lib/colors/colors";
 import { getAllPropertyPolicies } from "@/Api/Api";
 import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 import EditPoliciesModal from "../modals/EditPoliciesModal";
 
 const PoliciesTab = ({ propertyData }) => {
+  console.log(propertyData);
   const [policyData, setPolicyData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,14 +23,15 @@ const PoliciesTab = ({ propertyData }) => {
     setLoading(true);
     try {
       const response = await getAllPropertyPolicies(propertyData.id);
-      
-      // FIX: Handle Axios structure. If response.data exists, use it.
       const actualData = response?.data || response;
 
+      // Handle both array and object responses from API
       if (Array.isArray(actualData) && actualData.length > 0) {
         setPolicyData(actualData[0]);
+      } else if (actualData && !Array.isArray(actualData)) {
+        setPolicyData(actualData);
       } else {
-        setPolicyData(actualData && !Array.isArray(actualData) ? actualData : null);
+        setPolicyData(null);
       }
     } catch (error) {
       console.error("Error fetching policies:", error);
@@ -39,113 +47,155 @@ const PoliciesTab = ({ propertyData }) => {
 
   const handleSave = () => {
     fetchPolicies();
-    showSuccess("Policies updated successfully");
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex flex-col items-center justify-center py-20 space-y-4">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <p className="text-sm text-gray-500 animate-pulse">Loading property policies...</p>
       </div>
     );
   }
 
   const attachedPolicies = policyData?.policies || [];
   const hasPolicies = attachedPolicies.length > 0;
-  
-  // Logic check for non-null values
-  const hasCheckInOut = policyData?.checkInTime && policyData?.checkOutTime;
-  const hasCancellationPolicy = policyData?.cancellationPolicy && policyData.cancellationPolicy !== "null";
+  const hasCheckInOut = policyData?.checkInTime || policyData?.checkOutTime;
+  const hasCancellation = policyData?.cancellationPolicy && policyData.cancellationPolicy !== "null";
+
+  // Check if there is absolutely no data to show
+  const isEmpty = !hasPolicies && !hasCheckInOut && !hasCancellation;
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Property Policies</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Manage your property rules and guest guidelines
+          <h2 className="text-xl font-bold text-gray-900">Property Policies</h2>
+          <p className="text-sm text-gray-500">
+            Rules, timing, and cancellation terms for {propertyData?.propertyName || "this property"}
           </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg hover:opacity-90 transition-colors shadow-sm"
+          className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white rounded-lg hover:opacity-90 transition-all shadow-md active:scale-95"
           style={{ backgroundColor: colors.primary }}
         >
           <PencilSquareIcon className="w-4 h-4" /> 
-          {policyData ? "Edit Policies" : "Add Policies"}
+          {isEmpty ? "Add Policies" : "Edit Policies"}
         </button>
       </div>
 
-      {/* Main Content Area */}
-      {!policyData || (!hasPolicies && !hasCheckInOut && !hasCancellationPolicy) ? (
-        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-          <DocumentTextIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Policies Found</h3>
-          <p className="text-sm text-gray-500 mb-6">Select from available rules or create new ones for your property.</p>
+      {isEmpty ? (
+        /* Empty State */
+        <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-16 text-center">
+          <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <DocumentTextIcon className="w-8 h-8 text-gray-300" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-2">No policies configured yet</h3>
+          <p className="text-sm text-gray-500 max-w-sm mx-auto mb-8">
+            Set your check-in times, cancellation rules, and property requirements to help guests prepare for their stay.
+          </p>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold"
+            className="px-8 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors"
           >
-            Manage Policies
+            Configure Policies Now
           </button>
         </div>
       ) : (
-        <div className="space-y-6">
-          {/* Rules & Amenities Section - Primary Focus */}
-          <div className="bg-white border rounded-xl p-6 shadow-sm">
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">
-              Property Rules & Amenities
-            </h3>
-
-            {hasPolicies ? (
-              <div className="flex flex-wrap gap-3">
-                {attachedPolicies.map((policy) => (
-                  <div
-                    key={policy.id}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-blue-50 text-blue-700 border border-blue-100"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-blue-500" />
-                    {policy.name}
-                  </div>
-                ))}
+        /* Data Display State */
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Column 1 & 2: Main Rules & Cancellation */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Rules Section */}
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+              <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50 flex items-center gap-2">
+                <ShieldCheckIcon className="w-5 h-5 text-blue-600" />
+                <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wider">Property Rules & Guidelines</h3>
               </div>
-            ) : (
-              <p className="text-sm text-gray-400 italic">No specific rules selected.</p>
-            )}
+              <div className="p-6">
+                {hasPolicies ? (
+                  <div className="flex flex-wrap gap-3">
+                    {attachedPolicies.map((policy) => (
+                      <span
+                        key={policy.id}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl text-sm font-semibold"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                        {policy.name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-gray-400 italic text-sm">
+                    <InformationCircleIcon className="w-4 h-4" />
+                    No custom policy tags selected.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Cancellation Policy */}
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+              <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50 flex items-center gap-2">
+                <DocumentTextIcon className="w-5 h-5 text-orange-600" />
+                <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wider">Cancellation Terms</h3>
+              </div>
+              <div className="p-6">
+                {hasCancellation ? (
+                  <div className="p-4 bg-orange-50 border border-orange-100 rounded-xl">
+                    <p className="text-gray-700 leading-relaxed text-sm">
+                      {policyData.cancellationPolicy}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">No cancellation policy description provided.</p>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Conditional Rendering for Check-in/out if they exist */}
-          {hasCheckInOut && (
-             <div className="bg-white border rounded-xl p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <ClockIcon className="w-5 h-5 text-gray-400" />
-                  <h3 className="text-base font-semibold text-gray-900">Timing</h3>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <span className="text-xs text-gray-500 block uppercase">Check-in</span>
-                    <span className="text-lg font-bold">{policyData.checkInTime}</span>
+          {/* Column 3: Timing Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm sticky top-6">
+              <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50 flex items-center gap-2">
+                <ClockIcon className="w-5 h-5 text-indigo-600" />
+                <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wider">Timing</h3>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase block tracking-tighter">Check-in After</span>
+                    <span className="text-lg font-black text-gray-900">{policyData.checkInTime || "--:--"}</span>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <span className="text-xs text-gray-500 block uppercase">Check-out</span>
-                    <span className="text-lg font-bold">{policyData.checkOutTime}</span>
+                  <div className="p-2 bg-white rounded-lg shadow-sm">
+                    <ClockIcon className="w-5 h-5 text-gray-400" />
                   </div>
                 </div>
-             </div>
-          )}
 
-          {/* Cancellation Section */}
-          {hasCancellationPolicy && (
-            <div className="bg-white border rounded-xl p-6 shadow-sm">
-              <h3 className="text-base font-semibold text-gray-900 mb-3">Cancellation Policy</h3>
-              <p className="text-sm text-gray-600 bg-orange-50 p-4 rounded-lg border border-orange-100">
-                {policyData.cancellationPolicy}
-              </p>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase block tracking-tighter">Check-out Before</span>
+                    <span className="text-lg font-black text-gray-900">{policyData.checkOutTime || "--:--"}</span>
+                  </div>
+                  <div className="p-2 bg-white rounded-lg shadow-sm">
+                    <ClockIcon className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-gray-400 text-center px-2 italic">
+                  * Times are shown based on local property time.
+                </p>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       )}
 
+      {/* Modal Integration */}
       <EditPoliciesModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
