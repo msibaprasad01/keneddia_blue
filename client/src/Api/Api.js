@@ -1,10 +1,10 @@
 import axios from "axios";
 
 // DEV
-// const apiUrl = "http://192.168.0.135:6090/";
+const apiUrl = "http://192.168.0.135:6090/";
 
 // QA (commented as requested)
-const apiUrl = "http://103.152.79.63:6090/";
+// const apiUrl = "http://103.152.79.63:6090/";
 
 const API = axios.create({ baseURL: apiUrl });
 
@@ -43,13 +43,10 @@ export const createUser = (data) => API.post("api/v1/users/create", data);
 export const getUsersPaginated = () => API.get("api/v1/users/auth/paginated");
 export const addLocation = (data) => API.post("api/v1/locations/create", data);
 export const getAllLocations = () => API.get("api/v1/locations/all");
-export const updateLocationById = (id, data) =>API.put(`api/v1/locations/${id}/edit`, data);
-export const updateLocationStatus = (id, isActive) =>API.patch(
-    `api/v1/locations/${id}/status`,
-    null,
-    { params: { isActive } }
-  );
-
+export const updateLocationById = (id, data) =>
+  API.put(`api/v1/locations/${id}/edit`, data);
+export const updateLocationStatus = (id, isActive) =>
+  API.patch(`api/v1/locations/${id}/status`, null, { params: { isActive } });
 
 export const addPropertyType = (data) =>
   API.post("api/v1/property-types/create", data);
@@ -238,7 +235,7 @@ export const updateDailyOfferActiveStatus = (id, isActive) =>
   API.patch(`api/v1/daily-offer/${id}/status`, null, { params: { isActive } });
 
 //events section
-export const createEvent = (formData) => 
+export const createEvent = (formData) =>
   API.post("api/v1/events-updated/events", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -266,7 +263,8 @@ export const createNews = (data) => API.post("api/v1/news/create", data);
 export const getAllNews = ({ category = "", page = 0, size = 10 }) =>
   API.get("api/v1/news/showAll", { params: { category, page, size } });
 export const updateNewsById = (id, data) => API.put(`api/v1/news/${id}`, data);
-export const updateNewsStatus = (id, isActive) =>API.patch(`api/v1/news/${id}/status`, null, {params: { isActive },});
+export const updateNewsStatus = (id, isActive) =>
+  API.patch(`api/v1/news/${id}/status`, null, { params: { isActive } });
 
 // properties
 export const createPropertyByType = (typeName, data) =>
@@ -292,6 +290,12 @@ export const createAmenityFeature = (data) =>
   API.post("api/v1/admin/amenities-features", data);
 export const getAllAmenityFeatures = () =>
   API.get("api/v1/admin/amenities-features");
+export const insertAmenitiesByPropertyId = (propertyId, amenityIds) => {
+  return API.put(
+    `api/v1/property-listings/insertAmenitiesByPropertyId/${propertyId}`,
+    amenityIds,
+  );
+};
 
 // ===============================
 // HERO SECTION (V2)
@@ -383,7 +387,69 @@ export const HotelAddAboutUs = (payload) => {
 
   return API.post("api/v1/admin/about-us", formData);
 };
-export const searchRooms = (payload) =>API.post("api/v1/rooms/search", payload);
-export const getHotelHomepageHeroSection = (id) => API.get(`api/v1/hero-sections/property/${id}`);
+export const searchRooms = (payload) =>
+  API.post("api/v1/rooms/search", payload);
+export const getHotelHomepageHeroSection = (id) =>
+  API.get(`api/v1/hero-sections/property/${id}`);
+//hotel about
+export const addAboutUsByPropertyType = (propertyTypeId, payload) => {
+  const formData = new FormData();
+
+  // JSON payload
+  formData.append(
+    "data",
+    JSON.stringify({
+      sectionTitle: payload.sectionTitle,
+      subTitle: payload.subTitle,
+      description: payload.description,
+      videoUrl: payload.videoUrl,
+      videoTitle: payload.videoTitle,
+      mediaUrls: payload.mediaUrls || [],
+      ctaButtonText: payload.ctaButtonText,
+      ctaButtonUrl: payload.ctaButtonUrl,
+    }),
+  );
+
+  // Files (multiple)
+  if (payload.files && payload.files.length > 0) {
+    payload.files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
+  // 🔑 propertyTypeId goes in URL
+  return API.post(`api/v1/admin/about-us/property/${propertyTypeId}`, formData);
+};
+export const getAboutUsByPropertyType = (propertyTypeId) => {
+  return API.get(`api/v1/admin/about-us/property/${propertyTypeId}`);
+};
+export const updateAboutUsByPropertyTypeId = (aboutUsId, payload) => {
+  const formData = new FormData();
+
+  // JSON payload
+  formData.append(
+    "data",
+    JSON.stringify({
+      sectionTitle: payload.sectionTitle,
+      subTitle: payload.subTitle,
+      description: payload.description,
+      videoUrl: payload.videoUrl,
+      videoTitle: payload.videoTitle,
+      mediaUrls: payload.mediaUrls || [],
+      ctaButtonText: payload.ctaButtonText,
+      ctaButtonUrl: payload.ctaButtonUrl,
+    }),
+  );
+
+  // Files (multiple)
+  if (payload.files && payload.files.length > 0) {
+    payload.files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
+  // 🔁 Update by AboutUs ID
+  return API.put(`api/v1/admin/about-us/property/${aboutUsId}`, formData);
+};
 
 export default API;

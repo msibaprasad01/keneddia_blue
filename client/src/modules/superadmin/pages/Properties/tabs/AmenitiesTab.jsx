@@ -7,7 +7,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { colors } from "@/lib/colors/colors";
 import AddAmenityModal from "../modals/AddAmenityModal";
-const AmenitiesTab = ({ data = [], onEdit, onAdd, onDelete }) => {
+import { createAmenityFeature,getAllAmenityFeatures } from "@/Api/Api";
+const AmenitiesTab = ({ data,propertyData, onEdit, onAdd, onDelete }) => {
+  console.log(propertyData, "Property Data");
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
