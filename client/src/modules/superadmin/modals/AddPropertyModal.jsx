@@ -20,7 +20,7 @@ function AddPropertyModal({ onClose, onSuccess }) {
   const [parentData, setParentData] = useState({
     propertyName: "",
     propertyTypeIds: "",
-    propertyCategoryIds: [1],
+    propertyCategoryIds: [],
     address: "",
     area: "",
     pincode: "",
