@@ -126,11 +126,18 @@ export default function DailyOffers() {
             ? rawData.content
             : [];
 
-        const active = list.filter(
-          (o: any) =>
+        const now = Date.now();
+
+        const active = list.filter((o: any) => {
+          const notExpired =
+            !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+
+          return (
             o.isActive &&
-            ["HOME_PAGE", "BOTH", "PROPERTY_PAGE"].includes(o.displayLocation),
-        );
+            notExpired &&
+            ["HOME_PAGE", "BOTH", "PROPERTY_PAGE"].includes(o.displayLocation)
+          );
+        });
 
         setOffers(
           active.map((o: any) => ({
@@ -145,6 +152,7 @@ export default function DailyOffers() {
             image: o.image?.url
               ? {
                   src: o.image.url,
+                  type: o.image.type, // "IMAGE" | "VIDEO"
                   width: o.image.width,
                   height: o.image.height,
                   alt: o.title,
@@ -221,11 +229,22 @@ export default function DailyOffers() {
                     }`}
                   >
                     {offer.image ? (
-                      <img
-                        src={offer.image.src}
-                        alt={offer.image.alt}
-                        className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                      />
+                      offer.image.type === "VIDEO" ? (
+                        <video
+                          src={offer.image.src}
+                          className="w-full h-full object-cover object-top"
+                          muted
+                          playsInline
+                          autoPlay
+                          loop
+                        />
+                      ) : (
+                        <img
+                          src={offer.image.src}
+                          alt={offer.image.alt}
+                          className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                        />
+                      )
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-muted">
                         <Tag className="w-10 h-10 text-muted-foreground/30" />
