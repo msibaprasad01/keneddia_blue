@@ -205,7 +205,7 @@ export default function HotelDetail() {
         setHotel({
           id: listing?.id || parent.id,
           propertyId: parent.id,
-          locationId: parent.locationId,// Add this - or use the actual locationId field from your API
+          locationId: parent.locationId, // Add this - or use the actual locationId field from your API
           name: displayName,
           location: listing?.fullAddress || parent.address,
           city: parent.locationName,
@@ -245,31 +245,39 @@ export default function HotelDetail() {
       const res = await getRoomsByPropertyId(propId);
       const data = Array.isArray(res?.data) ? res.data : [];
 
-      const mappedRooms = data.map((r: any) => {
-        const isAvailable =
-          r.status === "AVAILABLE" && r.bookable === true && r.active === true;
+    const mappedRooms = data.map((r: any) => {
+  const isAvailable =
+    r.status === "AVAILABLE" && r.bookable === true && r.active === true;
 
-        return {
-          id: r.roomId.toString(),
-          name: r.roomName || r.roomNumber,
-          type: r.roomType,
-          description: r.description || "",
-          basePrice: r.basePrice || 0,
-          maxOccupancy: r.maxOccupancy || 1,
-          isAvailable,
-          amenities:
-            r.amenitiesAndFeatures
-              ?.filter((a: any) => a.isActive)
-              ?.map((a: any) => a.name) || [],
-          image: {
-            src:
-              roomImageMap.get(propId) ||
-              hotel?.image?.src ||
-              "/images/room-placeholder.jpg",
-            alt: r.roomName || r.roomNumber,
-          },
-        };
-      });
+  const roomGallery = roomGalleryMap.get(r.roomId) || [];
+
+  return {
+    id: r.roomId.toString(),
+    name: r.roomName || r.roomNumber,
+    type: r.roomType,
+    description: r.description || "",
+    basePrice: r.basePrice || 0,
+    maxOccupancy: r.maxOccupancy || 1,
+    isAvailable,
+    amenities:
+      r.amenitiesAndFeatures
+        ?.filter((a: any) => a.isActive)
+        ?.map((a: any) => a.name) || [],
+
+    // ✅ MAIN IMAGE (for card)
+    image: {
+      src:
+        roomGallery[0]?.url ||
+        hotel?.image?.src ||
+        "/images/room-placeholder.jpg",
+      alt: r.roomName || r.roomNumber,
+    },
+
+    // ✅ FULL GALLERY (for modal / view photos)
+    gallery: roomGallery,
+  };
+});
+
       setRooms(mappedRooms);
     } finally {
       setRoomsLoading(false);
@@ -289,6 +297,7 @@ export default function HotelDetail() {
       setGalleryData([]);
     }
   };
+  const map = new Map<number, PropertyMedia[]>();
 
   const fetchPolicies = async (propId: number) => {
     try {

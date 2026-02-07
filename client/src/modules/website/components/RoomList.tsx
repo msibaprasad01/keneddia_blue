@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { Room } from "@/data/hotelData";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import {
-  Users,
-  Check,
-  Maximize2,
-  ChevronDown,
-  ChevronUp
-} from "lucide-react";
+import { Users, Check, Maximize2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface RoomListProps {
@@ -28,7 +22,7 @@ export default function RoomList({
   const totalPages = Math.ceil(rooms.length / itemsPerPage);
   const currentRooms = rooms.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const toggleExpand = (id: string) => {
@@ -71,10 +65,10 @@ export default function RoomList({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      onViewGallery(room.gallery);
                     }}
-                    className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1 hover:bg-black/80 transition-colors z-10"
                   >
-                    <Maximize2 className="w-3 h-3" /> View Photos
+                    <Maximize2 /> View Photos
                   </button>
 
                   {isSelected && (
@@ -151,9 +145,11 @@ export default function RoomList({
                 </div>
 
                 {/* Price & Action Section */}
-                <div className={`p-4 md:p-6 border-t md:border-t-0 md:border-l border-border md:w-60 flex flex-col justify-center items-center md:items-end text-center md:text-right ${
-                  isSelected ? "bg-primary/5" : "bg-secondary/5"
-                }`}>
+                <div
+                  className={`p-4 md:p-6 border-t md:border-t-0 md:border-l border-border md:w-60 flex flex-col justify-center items-center md:items-end text-center md:text-right ${
+                    isSelected ? "bg-primary/5" : "bg-secondary/5"
+                  }`}
+                >
                   <div className="hidden md:block mb-4">
                     <p className="text-xs text-muted-foreground line-through">
                       ₹{(room.basePrice * 1.2).toLocaleString()}
@@ -200,9 +196,7 @@ export default function RoomList({
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              setCurrentPage((p) => Math.max(1, p - 1))
-            }
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             Previous
@@ -215,9 +209,7 @@ export default function RoomList({
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              setCurrentPage((p) => Math.min(totalPages, p + 1))
-            }
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
           >
             Next
