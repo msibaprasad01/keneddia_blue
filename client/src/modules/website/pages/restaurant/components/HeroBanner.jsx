@@ -1,501 +1,198 @@
-import { motion } from "framer-motion";
-import { Calendar, Menu } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { Calendar, Menu, Wine, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function HeroBanner() {
-  const handleReservation = () => {
-    const reservationSection = document.getElementById('reservation');
-    if (reservationSection) {
-      const elementPosition = reservationSection.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - 80;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-    }
-  };
+const SLIDES = [
+  {
+    id: 1,
+    tag: "The Experience",
+    title: "Culinary Artistry Across Asia",
+    desc: "A curated journey through Chinese, Italian, and Indian Tandoor traditions.",
+    img: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1600",
+    isBYOB: false,
+    bgTitle: "AUTHENTIC"
+  },
+  {
+    id: 2,
+    tag: "BYOB Friendly",
+    title: "Your Choice, Our Expertise",
+    desc: "Pair your favorite vintage with our signature Asian Fusion menu.",
+    img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1600",
+    isBYOB: true,
+    bgTitle: "PREMIUM"
+  },
+  {
+    id: 3,
+    tag: "The Ambience",
+    title: "Modern Spirit, Timeless Flavor",
+    desc: "An elegant setting designed for intimate dinners and grand celebrations.",
+    img: "https://images.unsplash.com/photo-1550966841-3ee7adac1661?q=80&w=1600",
+    isBYOB: false,
+    bgTitle: "ELEGANCE"
+  }
+];
 
-  const handleViewMenu = () => {
-    const menuSection = document.getElementById('menu');
-    if (menuSection) {
-      const elementPosition = menuSection.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - 80;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-    }
-  };
+export default function HeroBanner() {
+  const [current, setCurrent] = useState(0);
+  const containerRef = useRef(null);
+
+  // Scroll logic for Parallax
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  });
+
+  // TRANSFORMATIONS (The "Reverse" and Storytelling effects)
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]); // Slow descent
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0px", "-150px"]); // Reverse Lift
+  const textX = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]); // Horizontal Slide
+  const cardOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]); // Fade out on scroll
+
+  const nextSlide = () => setCurrent((prev) => (prev + 1) % SLIDES.length);
+  const prevSlide = () => setCurrent((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+
+  useEffect(() => {
+    const timer = setInterval(nextSlide, 8000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-background pt-24 pb-8">
-      {/* Decorative Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Organic Shape - Top Right - Continuous Animation */}
-        <motion.div
-          animate={{ 
-            scale: [1, 1.1, 1],
-            opacity: [0.08, 0.12, 0.08],
-            x: [0, 20, 0],
-            y: [0, -20, 0]
-          }}
-          transition={{ 
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute -top-40 right-[10%] w-[500px] h-[500px] bg-primary rounded-full blur-3xl"
-        />
-        
-        {/* Organic Shape - Bottom Center Right - Continuous Animation */}
-        <motion.div
-          animate={{ 
-            scale: [1, 1.15, 1],
-            opacity: [0.05, 0.08, 0.05],
-            x: [0, -15, 0],
-            y: [0, 15, 0]
-          }}
-          transition={{ 
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-          className="absolute top-[30%] right-[5%] w-[400px] h-[400px] bg-primary/60 rounded-full blur-2xl"
-        />
+    <section 
+      ref={containerRef}
+      className="relative h-screen min-h-[700px] w-full overflow-hidden bg-black"
+    >
+      {/* 1. LAYER: Large Background Parallax Text (Reverse Horizontal) */}
+      <motion.div 
+        style={{ x: textX }}
+        className="absolute top-1/4 left-0 whitespace-nowrap text-[20rem] font-black text-white/[0.03] select-none z-0 pointer-events-none italic"
+      >
+        {SLIDES[current].bgTitle}
+      </motion.div>
 
-        {/* Small Organic Shape - Left - Continuous Animation */}
+      {/* 2. LAYER: Background Images (Slow Vertical Parallax) */}
+      <AnimatePresence mode="wait">
         <motion.div
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.04, 0.07, 0.04],
-            rotate: [0, 15, 0]
-          }}
-          transition={{ 
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
-          className="absolute bottom-[20%] left-[5%] w-[250px] h-[250px] bg-primary/40 rounded-[40%_60%_70%_30%/40%_50%_60%_50%] blur-2xl"
-        />
+          key={current}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5 }}
+          className="absolute inset-0"
+        >
+          <motion.div style={{ y: bgY }} className="absolute inset-0">
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
+            <img
+              src={SLIDES[current].img}
+              alt="Background"
+              className="h-full w-full object-cover scale-110"
+            />
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
 
-        {/* Subtle dotted pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.02]" 
-          style={{
-            backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
-            backgroundSize: '32px 32px'
-          }} 
-        />
+      {/* 3. LAYER: Main Content (Reverse Vertical Lift) */}
+      <div className="container mx-auto px-6 h-full flex flex-col justify-center relative z-20 pt-16">
+        <motion.div 
+          style={{ y: contentY, opacity: cardOpacity }}
+          className="max-w-2xl"
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`card-${current}`}
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              {/* Ultra-Compact Glass Card */}
+              <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                
+                {/* Meta Row */}
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="text-[10px] uppercase tracking-[0.5em] text-primary font-bold">
+                    {SLIDES[current].tag}
+                  </span>
+                  {SLIDES[current].isBYOB && (
+                    <span className="flex items-center gap-1.5 bg-primary/20 text-primary border border-primary/30 px-3 py-1 text-[9px] font-black uppercase tracking-tighter">
+                      <Wine className="w-3.5 h-3.5" /> Premium BYOB
+                    </span>
+                  )}
+                </div>
+
+                {/* Headline */}
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white mb-4 leading-[1.1] tracking-tight">
+                  {SLIDES[current].title}
+                </h1>
+
+                {/* Description */}
+                <p className="text-base md:text-lg text-white/60 mb-8 max-w-md leading-relaxed font-light">
+                  {SLIDES[current].desc}
+                </p>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-4 mb-8">
+                  <Button 
+                    size="lg"
+                    className="rounded-none px-8 h-14 bg-primary hover:bg-primary/90 text-white transition-all shadow-xl shadow-primary/20 group"
+                  >
+                    <Calendar className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" /> 
+                    Reserve a Table
+                  </Button>
+                  
+                  <Button 
+                    size="lg"
+                    variant="outline" 
+                    className="rounded-none px-8 h-14 border-white/20 text-white hover:bg-white hover:text-black transition-colors"
+                  >
+                    <Menu className="w-4 h-4 mr-2" /> Explore Menu
+                  </Button>
+                </div>
+
+                {/* Cuisine Row */}
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-6 border-t border-white/10">
+                  {["Chinese", "Tandoor", "Asian Fusion", "Italian"].map((cuisine) => (
+                    <span key={cuisine} className="text-[10px] uppercase tracking-widest text-white/40 font-bold hover:text-primary transition-colors cursor-default">
+                      • {cuisine}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </motion.div>
       </div>
 
-      <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* LEFT COLUMN - Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-left"
-          >
-            {/* Main Heading - SHORTENED */}
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-tight"
-            >
-              Recipes & Shopping in One Place
-            </motion.h1>
-
-            {/* Description */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="text-base md:text-lg text-muted-foreground mb-6 max-w-xl leading-relaxed"
-            >
-              Experience the finest flavors from across Asia in an elegant setting. 
-              Bring your own beverages and let us take care of the rest.
-            </motion.p>
-
-            {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-              className="flex flex-wrap gap-3"
-            >
-              <Button
-                onClick={handleReservation}
-                size="default"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-5 text-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Reserve a Table
-              </Button>
-              
-              <Button
-                onClick={handleViewMenu}
-                size="default"
-                variant="outline"
-                className="border-2 border-border text-foreground hover:bg-accent hover:text-accent-foreground px-6 py-5 text-sm rounded-full transition-all duration-300"
-              >
-                <Menu className="w-4 h-4 mr-2" />
-                View Menu
-              </Button>
-            </motion.div>
-
-            {/* Cuisines Tags */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1.0 }}
-              className="mt-6 flex flex-wrap items-center gap-2"
-            >
-              <span className="px-3 py-1.5 bg-card border border-border rounded-full text-card-foreground text-xs font-medium shadow-sm">
-                Chinese
-              </span>
-              <span className="px-3 py-1.5 bg-card border border-border rounded-full text-card-foreground text-xs font-medium shadow-sm">
-                Japanese
-              </span>
-              <span className="px-3 py-1.5 bg-card border border-border rounded-full text-card-foreground text-xs font-medium shadow-sm">
-                Indian Tandoor
-              </span>
-            </motion.div>
-          </motion.div>
-
-          {/* RIGHT COLUMN - Circular Food Images with Decorative Lines */}
-          {/* Desktop View */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative hidden lg:flex items-center justify-center min-h-[500px]"
-          >
-            {/* Main Large Circular Image - Center - Continuous Float Animation */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-                y: [0, -10, 0]
-              }}
-              transition={{ 
-                opacity: { duration: 0.8, delay: 0.6 },
-                scale: { duration: 0.8, delay: 0.6 },
-                y: {
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }
-              }}
-              className="relative z-20 w-[340px] h-[340px] rounded-full overflow-hidden shadow-2xl border-[6px] border-card"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800"
-                alt="Signature Dish"
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
-
-            {/* Top Right Small Circular Image - Continuous Float Animation */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-                y: [20, 10, 20],
-                x: [0, 5, 0]
-              }}
-              transition={{ 
-                opacity: { duration: 0.8, delay: 0.8 },
-                scale: { duration: 0.8, delay: 0.8 },
-                y: {
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                },
-                x: {
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }
-              }}
-              className="absolute top-0 right-0 z-30 w-[180px] h-[180px] rounded-full overflow-hidden shadow-xl border-[6px] border-card"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=400"
-                alt="Tandoori"
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
-
-            {/* Decorative Dashed Curved Lines - Continuous Drawing Animation */}
-            <svg 
-              className="absolute inset-0 w-full h-full pointer-events-none" 
-              viewBox="0 0 600 600"
-              style={{ transform: 'scale(1.1)' }}
-            >
-              {/* Top curve - Continuous animation */}
-              <motion.path
-                d="M 100 50 Q 300 -50, 500 100"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                fill="none"
-                strokeDasharray="10,10"
-                strokeLinecap="round"
-                className="text-primary opacity-40"
-                animate={{ 
-                  pathLength: [0, 1, 0],
-                  opacity: [0.2, 0.4, 0.2]
-                }}
-                transition={{ 
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              />
-
-              {/* Bottom-left curve - Continuous animation */}
-              <motion.path
-                d="M 50 450 Q 150 350, 250 380"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                fill="none"
-                strokeDasharray="10,10"
-                strokeLinecap="round"
-                className="text-primary opacity-40"
-                animate={{ 
-                  pathLength: [0, 1, 0],
-                  opacity: [0.2, 0.4, 0.2]
-                }}
-                transition={{ 
-                  duration: 7,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1
-                }}
-              />
-
-              {/* Right side connecting curve - Continuous animation */}
-              <motion.path
-                d="M 500 250 Q 580 350, 520 450"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                fill="none"
-                strokeDasharray="10,10"
-                strokeLinecap="round"
-                className="text-primary opacity-40"
-                animate={{ 
-                  pathLength: [0, 1, 0],
-                  opacity: [0.2, 0.4, 0.2]
-                }}
-                transition={{ 
-                  duration: 8,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 2
-                }}
-              />
-
-              {/* Small decorative loop - Continuous animation */}
-              <motion.path
-                d="M 120 520 Q 80 480, 120 440 Q 160 480, 120 520"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                fill="none"
-                strokeDasharray="10,10"
-                strokeLinecap="round"
-                className="text-primary opacity-30"
-                animate={{ 
-                  pathLength: [0, 1, 0],
-                  opacity: [0.15, 0.3, 0.15]
-                }}
-                transition={{ 
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1.5
-                }}
-              />
-            </svg>
-
-            {/* Floating decorative circles - Continuous pulse animation */}
-            <motion.div
-              animate={{ 
-                scale: [1, 1.2, 1],
-                opacity: [0.08, 0.12, 0.08]
-              }}
-              transition={{ 
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="absolute bottom-[15%] left-[10%] w-28 h-28 bg-primary rounded-full blur-xl"
+      {/* 4. LAYER: Navigation & Controls */}
+      <div className="absolute bottom-10 right-6 md:right-16 z-30 flex items-center gap-8">
+        <div className="hidden md:flex flex-col items-end">
+          <div className="flex items-baseline gap-2">
+            <span className="text-white text-5xl font-serif italic tracking-tighter">0{current + 1}</span>
+            <span className="text-white/20 text-xl font-serif">/03</span>
+          </div>
+          <div className="w-32 h-[2px] bg-white/10 relative mt-2 overflow-hidden">
+            <motion.div 
+              className="absolute h-full bg-primary top-0 left-0"
+              initial={{ width: 0 }}
+              animate={{ width: `${((current + 1) / SLIDES.length) * 100}%` }}
+              transition={{ duration: 0.5 }}
             />
-            
-            <motion.div
-              animate={{ 
-                scale: [1, 1.3, 1],
-                opacity: [0.06, 0.1, 0.06]
-              }}
-              transition={{ 
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1
-              }}
-              className="absolute top-[15%] left-[5%] w-20 h-20 bg-primary rounded-full blur-xl"
-            />
-          </motion.div>
+          </div>
+        </div>
 
-          {/* Mobile/Tablet View - Compact Layout */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="relative flex lg:hidden items-center justify-center py-8"
+        <div className="flex gap-2">
+          <button 
+            onClick={prevSlide} 
+            className="p-4 border border-white/10 text-white hover:bg-white hover:text-black transition-all group active:scale-95"
           >
-            <div className="relative w-full max-w-md mx-auto h-[280px] sm:h-[320px]">
-              {/* Main Large Circular Image - Center - Mobile */}
-              <motion.div
-                animate={{ 
-                  y: [0, -8, 0]
-                }}
-                transition={{ 
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[200px] h-[200px] sm:w-[240px] sm:h-[240px] rounded-full overflow-hidden shadow-2xl border-4 border-card"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800"
-                  alt="Signature Dish"
-                  className="w-full h-full object-cover"
-                />
-              </motion.div>
-
-              {/* Top Right Small Circular Image - Mobile */}
-              <motion.div
-                animate={{ 
-                  y: [0, -5, 0],
-                  x: [0, 3, 0]
-                }}
-                transition={{ 
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.5
-                }}
-                className="absolute top-0 right-8 sm:right-12 z-30 w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] rounded-full overflow-hidden shadow-xl border-4 border-card"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=400"
-                  alt="Tandoori"
-                  className="w-full h-full object-cover"
-                />
-              </motion.div>
-
-              {/* Bottom Left Small Circular Image - Mobile */}
-              <motion.div
-                animate={{ 
-                  y: [0, 5, 0],
-                  x: [0, -3, 0]
-                }}
-                transition={{ 
-                  duration: 5.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1
-                }}
-                className="absolute bottom-0 left-8 sm:left-12 z-10 w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] rounded-full overflow-hidden shadow-xl border-4 border-card"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1585032226651-759b368d7246?q=80&w=400"
-                  alt="Chinese Cuisine"
-                  className="w-full h-full object-cover"
-                />
-              </motion.div>
-
-              {/* Mobile Decorative Dashed Lines */}
-              <svg 
-                className="absolute inset-0 w-full h-full pointer-events-none" 
-                viewBox="0 0 400 320"
-              >
-                {/* Top curve */}
-                <motion.path
-                  d="M 60 40 Q 200 -20, 320 80"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  fill="none"
-                  strokeDasharray="8,8"
-                  strokeLinecap="round"
-                  className="text-primary opacity-30"
-                  animate={{ 
-                    pathLength: [0, 1, 0],
-                    opacity: [0.2, 0.35, 0.2]
-                  }}
-                  transition={{ 
-                    duration: 6,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-
-                {/* Bottom curve */}
-                <motion.path
-                  d="M 80 280 Q 150 220, 200 240"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  fill="none"
-                  strokeDasharray="8,8"
-                  strokeLinecap="round"
-                  className="text-primary opacity-30"
-                  animate={{ 
-                    pathLength: [0, 1, 0],
-                    opacity: [0.2, 0.35, 0.2]
-                  }}
-                  transition={{ 
-                    duration: 7,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 1
-                  }}
-                />
-              </svg>
-
-              {/* Mobile Floating decorative circles */}
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.06, 0.1, 0.06]
-                }}
-                transition={{ 
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="absolute bottom-[20%] right-[10%] w-16 h-16 bg-primary rounded-full blur-xl"
-              />
-              
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.3, 1],
-                  opacity: [0.05, 0.08, 0.05]
-                }}
-                transition={{ 
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1
-                }}
-                className="absolute top-[20%] left-[5%] w-12 h-12 bg-primary rounded-full blur-xl"
-              />
-            </div>
-          </motion.div>
+            <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
+          </button>
+          <button 
+            onClick={nextSlide} 
+            className="p-4 bg-white text-black hover:bg-primary hover:text-white transition-all group active:scale-95"
+          >
+            <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+          </button>
         </div>
       </div>
     </section>

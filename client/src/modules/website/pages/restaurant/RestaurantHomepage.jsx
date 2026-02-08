@@ -44,10 +44,7 @@ export default function RestaurantHomepage() {
 
         {/* About Section */}
         <AboutRestaurant />
-
-        {/* Statistics */}
-        <PerformanceMetrics />
-
+        
         {/* Banquets & Catering */}
         <BanquetsAndCatering />
 

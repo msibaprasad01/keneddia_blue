@@ -1,251 +1,115 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
 import { testimonials } from "@/data/restaurantData";
-import { Quote, Star, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+import { Quote, Star, ChevronLeft, ChevronRight, MessageCircle, Sparkles } from "lucide-react";
 
 export default function Testimonials() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const containerRef = useRef(null);
 
-  useEffect(() => {
-    if (!isAutoPlaying) return;
+  // Scroll animations for Parallax
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
+  const bgTextX = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
+  const cardY = useTransform(scrollYProgress, [0, 1], ["50px", "-50px"]);
+  const smoothCardY = useSpring(cardY, { stiffness: 100, damping: 30 });
 
-    return () => clearInterval(interval);
-  }, [isAutoPlaying]);
-
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-    setIsAutoPlaying(false);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-    setIsAutoPlaying(false);
-  };
-
-  const handleDotClick = (index) => {
-    setCurrentIndex(index);
-    setIsAutoPlaying(false);
-  };
+  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+  const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
 
   return (
-    <section className="relative py-8 md:py-12 bg-background overflow-hidden">
-      {/* Compact Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{ 
-            scale: [1, 1.15, 1],
-            opacity: [0.02, 0.04, 0.02],
-            rotate: [0, 90, 0]
-          }}
-          transition={{ 
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-[10%] left-[10%] w-[300px] h-[300px] bg-primary rounded-full blur-3xl"
-        />
-        
-        <div 
-          className="absolute inset-0 opacity-[0.015]" 
-          style={{
-            backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
-            backgroundSize: '32px 32px'
-          }} 
-        />
-      </div>
+    <section 
+      ref={containerRef}
+      className="relative py-24 bg-[#050505] overflow-hidden min-h-[600px] flex items-center"
+    >
+      {/* 1. BACKGROUND STORYTELLING LAYER */}
+      <motion.div 
+        style={{ x: bgTextX }}
+        className="absolute top-1/2 left-0 -translate-y-1/2 whitespace-nowrap text-[15rem] font-black text-white/[0.01] pointer-events-none select-none italic uppercase z-0"
+      >
+        Guest Experience Excellence Reviews
+      </motion.div>
 
-      <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        {/* Compact Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-8"
-        >
-          <motion.span 
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-primary text-xs font-medium mb-2"
-          >
-            <MessageCircle className="w-3 h-3" />
-            <span>Guest Reviews</span>
-          </motion.span>
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-12 items-center">
           
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
-            What Our Guests Say
-          </h2>
-          
-          <p className="text-muted-foreground text-sm">
-            Real experiences from valued customers
-          </p>
-        </motion.div>
+          {/* LEFT: STATIC STORY HEADER */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <span className="text-primary text-[10px] font-bold uppercase tracking-[0.5em]">The Feedback</span>
+            </div>
+            <h2 className="text-5xl md:text-7xl font-serif text-white leading-none">
+              Voices of <br />
+              <span className="italic text-white/30 italic decoration-primary/20 underline decoration-1 underline-offset-[12px]">Delight.</span>
+            </h2>
+            <p className="text-white/40 text-lg font-light leading-relaxed max-w-xs">
+              Direct insights from those who have journeyed through our culinary offerings.
+            </p>
+          </div>
 
-        {/* Compact Testimonials Slider */}
-        <div className="max-w-4xl mx-auto">
-          <div className="relative">
-            {/* Main Testimonial Card - Compact */}
-            <div className="relative">
+          {/* RIGHT: PARALLAX REVERSE TESTIMONIAL CARD */}
+          <div className="lg:col-span-8 relative">
+            <motion.div style={{ y: smoothCardY }} className="relative">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentIndex}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-full"
+                  initial={{ opacity: 0, x: 20, filter: "blur(10px)" }}
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, x: -20, filter: "blur(10px)" }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="bg-zinc-900/40 backdrop-blur-3xl border border-white/10 p-8 md:p-16 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative overflow-hidden"
                 >
-                  <div className="bg-card/60 backdrop-blur-sm border border-border rounded-2xl p-6 md:p-8 shadow-xl relative">
-                    {/* Compact Quote Icon */}
-                    <div className="absolute top-4 right-4 opacity-5">
-                      <Quote className="w-16 h-16 text-primary" />
+                  {/* Decorative Elements */}
+                  <Quote className="absolute -top-6 -right-6 w-32 h-32 text-primary/5 -rotate-12" />
+                  
+                  {/* Rating */}
+                  <div className="flex gap-1 mb-8">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+                    ))}
+                  </div>
+
+                  {/* Content */}
+                  <blockquote className="text-xl md:text-3xl font-serif text-white leading-snug mb-10 italic">
+                    "{testimonials[currentIndex].text}"
+                  </blockquote>
+
+                  {/* Author Meta */}
+                  <div className="flex items-center justify-between pt-8 border-t border-white/5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                        <span className="text-primary font-black text-lg">{testimonials[currentIndex].name.charAt(0)}</span>
+                      </div>
+                      <div>
+                        <h4 className="text-white font-bold text-sm tracking-widest uppercase">{testimonials[currentIndex].name}</h4>
+                        <p className="text-white/30 text-[10px] uppercase font-medium">{testimonials[currentIndex].location || "Verified Guest"}</p>
+                      </div>
                     </div>
 
-                    {/* Compact Content Layout */}
-                    <div className="grid md:grid-cols-[1fr_auto] gap-4 md:gap-6 items-start">
-                      {/* Testimonial Text */}
-                      <div className="relative z-10">
-                        {/* Rating Stars - Compact */}
-                        {testimonials[currentIndex].rating && (
-                          <div className="flex items-center gap-0.5 mb-3">
-                            {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
-                              <Star key={i} className="w-3.5 h-3.5 fill-primary text-primary" />
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Text - Compact */}
-                        <p className="text-sm md:text-base text-foreground leading-relaxed mb-4 line-clamp-3 md:line-clamp-none">
-                          "{testimonials[currentIndex].text}"
-                        </p>
-
-                        {/* Author Info - Inline */}
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-                            <span className="text-primary font-bold text-sm">
-                              {testimonials[currentIndex].name.charAt(0)}
-                            </span>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-foreground text-sm">
-                              {testimonials[currentIndex].name}
-                            </h4>
-                            {testimonials[currentIndex].location && (
-                              <p className="text-xs text-muted-foreground">
-                                {testimonials[currentIndex].location}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Navigation - Vertical on Desktop */}
-                      <div className="hidden md:flex flex-col gap-2">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={handlePrevious}
-                          className="w-10 h-10 rounded-full bg-background border border-border hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-md flex items-center justify-center"
-                          aria-label="Previous testimonial"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={handleNext}
-                          className="w-10 h-10 rounded-full bg-background border border-border hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-md flex items-center justify-center"
-                          aria-label="Next testimonial"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </motion.button>
-                      </div>
+                    {/* Manual Navigation Inside Card */}
+                    <div className="flex gap-1">
+                      <button onClick={handlePrev} className="p-4 border border-white/5 text-white hover:bg-white hover:text-black transition-all">
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button onClick={handleNext} className="p-4 bg-white text-black hover:bg-primary hover:text-white transition-all">
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
                     </div>
                   </div>
                 </motion.div>
               </AnimatePresence>
-            </div>
 
-            {/* Mobile Navigation - Horizontal */}
-            <div className="flex md:hidden items-center justify-center gap-4 mt-4">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handlePrevious}
-                className="w-10 h-10 rounded-full bg-card border border-border hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-md flex items-center justify-center"
-                aria-label="Previous testimonial"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </motion.button>
-
-              {/* Dots - Mobile Center */}
-              <div className="flex items-center gap-1.5">
-                {testimonials.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleDotClick(index)}
-                    className={`transition-all duration-300 rounded-full ${
-                      index === currentIndex
-                        ? "w-6 h-1.5 bg-primary"
-                        : "w-1.5 h-1.5 bg-border hover:bg-primary/50"
-                    }`}
-                    aria-label={`Go to testimonial ${index + 1}`}
-                  />
-                ))}
+              {/* Counter Indicator Overlay */}
+              <div className="absolute -bottom-6 -right-6 text-white/5 text-9xl font-black italic select-none">
+                0{currentIndex + 1}
               </div>
-
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handleNext}
-                className="w-10 h-10 rounded-full bg-card border border-border hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-md flex items-center justify-center"
-                aria-label="Next testimonial"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </motion.button>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Desktop Indicator Dots */}
-          <div className="hidden md:flex items-center justify-center gap-2 mt-6">
-            {testimonials.map((_, index) => (
-              <motion.button
-                key={index}
-                onClick={() => handleDotClick(index)}
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.9 }}
-                className={`transition-all duration-300 rounded-full ${
-                  index === currentIndex
-                    ? "w-8 h-2 bg-primary shadow-lg shadow-primary/30"
-                    : "w-2 h-2 bg-border hover:bg-primary/50"
-                }`}
-                aria-label={`Go to testimonial ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* Auto-play indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-center mt-4"
-          >
-            <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-              <motion.div
-                animate={{ scale: isAutoPlaying ? [1, 1.2, 1] : 1 }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className={`w-1.5 h-1.5 rounded-full ${isAutoPlaying ? 'bg-primary' : 'bg-border'}`}
-              />
-              <span>{isAutoPlaying ? 'Auto-playing' : 'Paused'}</span>
-            </div>
-          </motion.div>
         </div>
       </div>
     </section>
