@@ -67,7 +67,10 @@ const getYouTubeEmbedUrl = (url: string) => {
   if (!videoId) return url;
 
   // Added mute=1 (required for autoplay) and enablejsapi=1
-  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&enablejsapi=1`.replace(/\s+/g, "");
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&enablejsapi=1`.replace(
+    /\s+/g,
+    "",
+  );
 };
 
 export default function AboutUsSection() {
@@ -80,12 +83,23 @@ export default function AboutUsSection() {
   const fetchAboutUs = async () => {
     try {
       setIsLoading(true);
+
       const response = await getAboutUsAdmin();
       const data = response?.data || response;
 
-      if (Array.isArray(data) && data.length > 0) {
-        const latestData = [...data].sort((a, b) => b.id - a.id)[0];
-        setAboutUsData(latestData);
+      if (Array.isArray(data)) {
+        // 🔑 Homepage rule: exclude property-specific About Us
+        const homepageOnly = data.filter(
+          (item) => item.propertyTypeId == null && item.isActive,
+        );
+
+        if (homepageOnly.length > 0) {
+          const latestData = [...homepageOnly].sort((a, b) => b.id - a.id)[0];
+
+          setAboutUsData(latestData);
+        } else {
+          setAboutUsData(null);
+        }
       }
     } catch (error) {
       console.error("Error fetching About Us:", error);

@@ -30,8 +30,12 @@ function AddUserModal({ onClose, onSuccess }) {
         // Ensure we are working with an array even if API wraps it in an object
         const rolesArray = Array.isArray(response) ? response : response?.data || [];
         
-        // Filter out empty or "null" roles to keep UI clean
-        const validRoles = rolesArray.filter(r => r.roleName && r.roleName !== "" && r.roleName !== "null");
+        // Filter out empty or "null" roles AND exclude MANAGER role
+        const validRoles = rolesArray.filter(r => {
+          const hasValidName = r.roleName && r.roleName !== "" && r.roleName !== "null";
+          const isNotManager = !r.roleName?.toUpperCase().includes('MANAGER');
+          return hasValidName && isNotManager;
+        });
         
         setAvailableRoles(validRoles);
         

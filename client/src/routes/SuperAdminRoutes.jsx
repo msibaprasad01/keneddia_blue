@@ -47,7 +47,7 @@ const SuperAdminRoutes = [
     key="super-admin-dashboard"
     path="/Dashboard"
     element={
-      <ProtectedRoute requiredRole="ROLE_SUPERADMIN">
+      <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN", "ROLE_ADMIN"]}>
         <SuperAdminDashboard />
       </ProtectedRoute>
     }
@@ -76,7 +76,7 @@ const SuperAdminRoutes = [
     key="super-admin-manage-users"
     path="/ManageUsers"
     element={
-      <ProtectedRoute requiredRole="ROLE_SUPERADMIN">
+      <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN", "ROLE_ADMIN"]}>
         <ManageUsers />
       </ProtectedRoute>
     }
@@ -85,7 +85,7 @@ const SuperAdminRoutes = [
     key="super-admin-manage-properties"
     path="/Properties"
     element={
-      <ProtectedRoute requiredRole="ROLE_SUPERADMIN">
+      <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN", "ROLE_ADMIN"]}>
         <ManageProperties />
       </ProtectedRoute>
     }
@@ -94,7 +94,7 @@ const SuperAdminRoutes = [
     key="super-admin-analytics"
     path="/Analytics"
     element={
-      <ProtectedRoute requiredRole="ROLE_SUPERADMIN">
+      <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN", "ROLE_ADMIN"]}>
         <Analytics />
       </ProtectedRoute>
     }
@@ -103,7 +103,7 @@ const SuperAdminRoutes = [
     key="super-admin-reports"
     path="/Reports"
     element={
-      <ProtectedRoute requiredRole="ROLE_SUPERADMIN">
+      <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN", "ROLE_ADMIN"]}>
         <Reports />
       </ProtectedRoute>
     }
@@ -159,7 +159,7 @@ const SuperAdminRoutes = [
     key="super-admin-hotel-pricing"
     path="/Hotel/Pricing"
     element={
-      <ProtectedRoute requiredRole="ROLE_SUPERADMIN">
+      <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN", "ROLE_ADMIN"]}>
         <Pricing />
       </ProtectedRoute>
     }

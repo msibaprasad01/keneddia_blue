@@ -1,25 +1,29 @@
 // components/ProtectedRoute.jsx
-import { Navigate } from 'react-router-dom';
-import AuthService from '@/modules/auth/authService';
+import { Navigate } from "react-router-dom";
+import AuthService from "@/modules/auth/authService";
 
-const ProtectedRoute = ({ children, requiredRole = null }) => {
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const isAuthenticated = AuthService.isAuthenticated();
   const currentUser = AuthService.getCurrentUser();
 
-  // If not authenticated, redirect to login
+  // Not logged in
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // If user is not active, redirect to login
-  if (currentUser && !currentUser.isActive) {
+  // Inactive user
+  if (currentUser && currentUser.isActive === false) {
     AuthService.logout();
     return <Navigate to="/login" replace />;
   }
 
-  // If a specific role is required, check if user has it
-  if (requiredRole && currentUser?.roleName !== requiredRole) {
-    return <Navigate to="/" replace />;
+  // Role mismatch
+  if (
+    allowedRoles.length > 0 &&
+    !allowedRoles.includes(currentUser?.roleName)
+  ) {
+    // IMPORTANT: redirect inside admin panel, not "/"
+    return <Navigate to="/Homepage-Dashboard" replace />;
   }
 
   return children;

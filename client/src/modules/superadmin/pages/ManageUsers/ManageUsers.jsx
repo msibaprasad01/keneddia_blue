@@ -28,11 +28,11 @@ function ManageUsers() {
   const itemsPerPage = 5;
 
   const roleOptions = [
-    "All Roles",
+    // "All Roles",
     "ROLE_SUPERADMIN",
     "ROLE_ADMIN",
-    "ROLE_MANAGER",
-    "ROLE_HotelManager",
+    // "ROLE_MANAGER",
+    // "ROLE_HotelManager",
   ];
   const statusOptions = ["All Status", "Active", "Inactive"];
 
