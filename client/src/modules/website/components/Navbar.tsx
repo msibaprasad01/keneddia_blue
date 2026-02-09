@@ -9,7 +9,7 @@ import { ThemeToggle } from "./ThemeToggle";
 // Business Dropdown Items
 const BUSINESS_ITEMS = [
   { label: "Hotels & Resorts", href: "/hotels" },
-  { label: "Restaurants", href: "/restaurant-homepage" },
+  // { label: "Restaurants", href: "/restaurant-homepage" },
   // { label: "Cafes & Dining", href: "/cafes" },
   // { label: "Bars & Lounges", href: "/bars" },
   // { label: "Events & Conf.", href: "/events" },
