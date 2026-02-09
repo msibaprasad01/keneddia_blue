@@ -245,38 +245,32 @@ export default function HotelDetail() {
       const res = await getRoomsByPropertyId(propId);
       const data = Array.isArray(res?.data) ? res.data : [];
 
-    const mappedRooms = data.map((r: any) => {
-  const isAvailable =
-    r.status === "AVAILABLE" && r.bookable === true && r.active === true;
+      const mappedRooms = data.map((r: any) => {
+        const isAvailable =
+          r.status === "AVAILABLE" && r.bookable === true && r.active === true;
 
-  const roomGallery = roomGalleryMap.get(r.roomId) || [];
+        return {
+          id: r.roomId.toString(),
+          name: r.roomName || r.roomNumber,
+          type: r.roomType,
+          description: r.description || "",
+          basePrice: r.basePrice || 0,
+          maxOccupancy: r.maxOccupancy || 1,
+          isAvailable,
 
-  return {
-    id: r.roomId.toString(),
-    name: r.roomName || r.roomNumber,
-    type: r.roomType,
-    description: r.description || "",
-    basePrice: r.basePrice || 0,
-    maxOccupancy: r.maxOccupancy || 1,
-    isAvailable,
-    amenities:
-      r.amenitiesAndFeatures
-        ?.filter((a: any) => a.isActive)
-        ?.map((a: any) => a.name) || [],
+          amenities:
+            r.amenitiesAndFeatures
+              ?.filter((a: any) => a.isActive)
+              ?.map((a: any) => a.name) || [],
 
-    // ✅ MAIN IMAGE (for card)
-    image: {
-      src:
-        roomGallery[0]?.url ||
-        hotel?.image?.src ||
-        "/images/room-placeholder.jpg",
-      alt: r.roomName || r.roomNumber,
-    },
+          image: {
+            src: hotel?.image?.src || "/images/room-placeholder.jpg",
+            alt: r.roomName || r.roomNumber,
+          },
 
-    // ✅ FULL GALLERY (for modal / view photos)
-    gallery: roomGallery,
-  };
-});
+          gallery: [],
+        };
+      });
 
       setRooms(mappedRooms);
     } finally {

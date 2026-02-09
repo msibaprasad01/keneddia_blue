@@ -12,12 +12,11 @@ import {
 } from '@heroicons/react/24/outline';
 import { colors } from '@/lib/colors/colors';
 import AddEditOverviewModal from '../modals/AddEditOverviewModal';
+
 const OverviewTab = ({ data, onEdit }) => {
   console.log(data, "Property Data");
   
   const combinedAddress = [data.address, data.area].filter(Boolean).join(', ');
-  // Extracting the primary listing for the "Extra Info" section
-  const primaryListing = data.listings?.[0] || {};
 
   return (
     <div className="space-y-8">
@@ -75,9 +74,9 @@ const OverviewTab = ({ data, onEdit }) => {
             <div className="mt-1 flex items-start gap-2 text-gray-900">
               <MapPinIcon className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-base leading-tight">{combinedAddress || 'N/A'}</p>
+                <p className="text-base leading-tight">{data.fullAddress || combinedAddress || 'N/A'}</p>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  {data.locationName} {data.pincode && `- ${data.pincode}`}
+                  {data.locationName || data.city} {data.pincode && `- ${data.pincode}`}
                 </p>
               </div>
             </div>
@@ -101,23 +100,23 @@ const OverviewTab = ({ data, onEdit }) => {
         </div>
       </div>
 
-      {/* Extra Property Info Section */}
+      {/* More Details Section */}
       <div className="pt-8 border-t border-gray-100">
         <div className="flex items-center gap-2 mb-4 text-gray-900">
             <InformationCircleIcon className="w-5 h-5 text-gray-400" />
-            <h3 className="text-sm font-bold uppercase tracking-wider">Additional Property Details</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider">More Details</h3>
         </div>
         
         <div className="bg-gray-50/50 border border-gray-200 rounded-xl p-5">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Visual Preview */}
+                {/* Thumbnail Preview */}
                 <div className="space-y-3">
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase">Primary Media</label>
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase">Thumbnail</label>
                     <div className="aspect-video rounded-lg overflow-hidden bg-gray-200 border border-gray-300">
-                        {primaryListing.media?.[0]?.url ? (
+                        {data.media?.[0]?.url ? (
                             <img 
-                                src={primaryListing.media[0].url} 
-                                alt="Property" 
+                                src={data.media[0].url} 
+                                alt={data.media[0].alt || "Property thumbnail"} 
                                 className="w-full h-full object-cover"
                             />
                         ) : (
@@ -131,18 +130,24 @@ const OverviewTab = ({ data, onEdit }) => {
                 {/* Commercial Details */}
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Commercials</label>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Starting Price</label>
                         <div className="flex items-center gap-2">
-                            <span className="text-2xl font-bold text-gray-900">₹{primaryListing.price?.toLocaleString()}</span>
-                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold">
-                                - ₹{primaryListing.discountAmount}
-                            </span>
+                            <span className="text-2xl font-bold text-gray-900">₹{data.price?.toLocaleString()}</span>
+                            {data.discountAmount > 0 && (
+                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold">
+                                    - ₹{data.discountAmount}
+                                </span>
+                            )}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Includes {primaryListing.gstPercentage}% GST</p>
+                        <p className="text-xs text-gray-500 mt-1">Includes {data.gstPercentage}% GST</p>
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Main Heading</label>
+                        <p className="text-sm font-medium text-gray-700">{data.mainHeading || 'N/A'}</p>
                     </div>
                     <div>
                         <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tagline</label>
-                        <p className="text-sm italic text-gray-600">"{primaryListing.tagline || 'No tagline provided'}"</p>
+                        <p className="text-sm italic text-gray-600">"{data.tagline || 'No tagline provided'}"</p>
                     </div>
                 </div>
 
@@ -153,17 +158,21 @@ const OverviewTab = ({ data, onEdit }) => {
                         <div className="grid grid-cols-2 gap-3">
                             <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200">
                                 <StarIcon className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                                <span className="text-sm font-semibold">{primaryListing.rating || 'N/A'}</span>
+                                <span className="text-sm font-semibold">{data.rating || 'N/A'}</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200">
                                 <UsersIcon className="w-4 h-4 text-blue-500" />
-                                <span className="text-sm font-semibold">{primaryListing.capacity || '0'} Pax</span>
+                                <span className="text-sm font-semibold">{data.capacity || '0'} Pax</span>
                             </div>
                         </div>
                     </div>
                     <div>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Subtitle</label>
+                        <p className="text-xs text-gray-600">{data.subTitle || 'N/A'}</p>
+                    </div>
+                    <div>
                         <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Internal Reference</label>
-                        <p className="text-xs font-mono text-gray-500">Listing ID: {primaryListing.id || 'N/A'}</p>
+                        <p className="text-xs font-mono text-gray-500">Listing ID: {data.listingId || 'N/A'}</p>
                     </div>
                 </div>
             </div>

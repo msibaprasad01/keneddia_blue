@@ -37,9 +37,54 @@ import AddMenuItemModal from "./modals/AddMenuItemModal";
 import AddTableModal from "./modals/AddTableModal";
 
 const PropertyDetail = ({ property, onBack }) => {
+  console.log("property->", property);
+  const normalizeProperty = (property) => {
+    const base = property?.propertyResponseDTO ?? property;
+    const listing = property?.propertyListingResponseDTOS?.[0] ?? {};
+
+    return {
+      // ---- Base Property ----
+      id: base?.id,
+      propertyName: base?.propertyName,
+      propertyTypes: base?.propertyTypes ?? [],
+      propertyCategories: base?.propertyCategories ?? [],
+      address: base?.address,
+      area: base?.area,
+      pincode: base?.pincode,
+      locationId: base?.locationId,
+      locationName: base?.locationName,
+      latitude: base?.latitude,
+      longitude: base?.longitude,
+      assignedAdminId: base?.assignedAdminId,
+      assignedAdminName: base?.assignedAdminName,
+      parentPropertyId: base?.parentPropertyId,
+      parentPropertyName: base?.parentPropertyName,
+      childProperties: base?.childProperties ?? [],
+      isActive: base?.isActive,
+
+      // ---- Listing (flattened) ----
+      propertyType:
+        listing?.propertyType || base?.propertyTypes?.[0] || "Hotel",
+      city: listing?.city || base?.locationName,
+      mainHeading: listing?.mainHeading,
+      subTitle: listing?.subTitle,
+      fullAddress: listing?.fullAddress || base?.address,
+      tagline: listing?.tagline,
+      rating: listing?.rating,
+      capacity: listing?.capacity,
+      price: listing?.price,
+      gstPercentage: listing?.gstPercentage,
+      discountAmount: listing?.discountAmount,
+      amenities: listing?.amenities ?? [],
+      media: listing?.media ?? [],
+      listingId: listing?.id,
+    };
+  };
+
   // Normalize the base property data immediately
-  const baseProperty = property?.propertyResponseDTO ?? property;
-  const propId = baseProperty?.id;
+  const normalizedProperty = normalizeProperty(property);
+  const propId = normalizedProperty?.id;
+
   const extractAmenitiesFromProperty = (property) => {
     const listings = property?.propertyListingResponseDTOS || [];
 
@@ -51,14 +96,14 @@ const PropertyDetail = ({ property, onBack }) => {
 
   const [data, setData] = useState({
     overview: {
-      ...baseProperty,
-      propertyName: baseProperty?.propertyName || "Unnamed Property",
-      city: baseProperty?.locationName || "N/A",
-      propertyType: baseProperty?.propertyTypes?.[0] || "Hotel",
+      ...normalizedProperty,
+      propertyName: normalizedProperty.propertyName || "Unnamed Property",
+      city: normalizedProperty.city || "N/A",
+      propertyType: normalizedProperty.propertyType,
     },
     rooms: [],
-     amenities: extractAmenitiesFromProperty(property),
-    gallery: [],
+    amenities: normalizedProperty.amenities,
+    gallery: normalizedProperty.media,
     events: [],
     pricing: [],
     policies: {},
@@ -109,20 +154,19 @@ const PropertyDetail = ({ property, onBack }) => {
   }, [propId]);
 
   useEffect(() => {
-    if (propId) {
-      fetchAllData();
-      // Sync local overview whenever baseProperty prop changes
-      setData((prev) => ({
-        ...prev,
-        overview: {
-          ...baseProperty,
-          propertyName: baseProperty?.propertyName || "Unnamed Property",
-          city: baseProperty?.locationName || "N/A",
-          propertyType: baseProperty?.propertyTypes?.[0] || "Hotel",
-        },
-      }));
-    }
-  }, [propId, fetchAllData, baseProperty]);
+    if (!propId) return;
+
+    fetchAllData();
+
+    const normalized = normalizeProperty(property);
+
+    setData((prev) => ({
+      ...prev,
+      overview: normalized,
+      amenities: normalized.amenities,
+      gallery: normalized.media,
+    }));
+  }, [propId, fetchAllData, property]);
 
   useEffect(() => {
     setActiveTab("overview");
