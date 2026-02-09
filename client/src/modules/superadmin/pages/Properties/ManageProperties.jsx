@@ -13,7 +13,6 @@ import {
   Layers,
   Power,
   User,
-  AlertCircle,
 } from "lucide-react";
 import AddPropertyModal from "../../modals/AddPropertyModal";
 import AddPropertyTypeModal from "../../modals/AddPropertyTypeModal";
@@ -23,7 +22,7 @@ import {
   getAllPropertyCategories,
   enableProperty,
   disableProperty,
-  GetAllPropertyDetails, // Updated API Import
+  GetAllPropertyDetails,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import PropertyDetail from "./PropertyDetail";
@@ -48,18 +47,16 @@ function ManageProperties() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // --- Data Fetching ---
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [propRes, typeRes, catRes] = await Promise.all([
-        GetAllPropertyDetails(), // Using the latest API for details
+        GetAllPropertyDetails(),
         getPropertyTypes(),
         getAllPropertyCategories(),
       ]);
 
-      const propData = propRes?.data || propRes || [];
-      setProperties(Array.isArray(propData) ? propData : []);
+      setProperties(propRes?.data || propRes || []);
       setPropertyTypes(typeRes?.data || typeRes || []);
       setPropertyCategories(catRes?.data || catRes || []);
     } catch (error) {
@@ -69,148 +66,59 @@ function ManageProperties() {
       setLoading(false);
     }
   }, []);
-  
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, typeFilter, statusFilter]);
-
-  // --- Logic Helpers ---
-  const flattenProperty = (item) => {
-    if (!item) return null;
-
-    const p = item.propertyResponseDTO || {};
-    const listings = item.propertyListingResponseDTOS || [];
-
-    return {
-      // --- Core Property ---
-      id: p.id,
-      propertyName: p.propertyName,
-      propertyTypes: p.propertyTypes || [],
-      propertyCategories: p.propertyCategories || [],
-      address: p.address,
-      area: p.area,
-      pincode: p.pincode,
-      locationId: p.locationId,
-      locationName: p.locationName,
-      latitude: p.latitude,
-      longitude: p.longitude,
-      assignedAdminId: p.assignedAdminId,
-      assignedAdminName: p.assignedAdminName,
-      parentPropertyId: p.parentPropertyId,
-      parentPropertyName: p.parentPropertyName,
-      childProperties: p.childProperties || [],
-      isActive: p.isActive,
-
-      // --- Listings ---
-      listings: listings.map((l) => ({
-        id: l.id,
-        propertyId: l.propertyId,
-        mainHeading: l.mainHeading,
-        subTitle: l.subTitle,
-        fullAddress: l.fullAddress,
-        tagline: l.tagline,
-        rating: l.rating,
-        capacity: l.capacity,
-        price: l.price,
-        gstPercentage: l.gstPercentage,
-        discountAmount: l.discountAmount,
-        amenities: l.amenities || [],
-        isActive: l.isActive,
-        media: l.media || [],
-      })),
-    };
-  };
-
-  // Normalizes access to the core property data from the new DTO structure
   const getPropertyData = (item) => {
-    console.log('item',item);
-    // flattened object
-    if (item?.listings) return item;
-
-    // API DTO object
     if (item?.propertyResponseDTO) return item.propertyResponseDTO;
-
     return item;
   };
 
   const handleToggleStatus = async (item) => {
     const p = getPropertyData(item);
-    const pId = p?.id;
+    if (!p?.id) return;
 
-    if (!pId) {
-      toast.error("Invalid property ID");
+    // Added a native confirmation to prevent accidental toggles
+    if (
+      !window.confirm(
+        `Are you sure you want to ${p.isActive ? "disable" : "enable"} this property?`,
+      )
+    )
       return;
-    }
 
-    setActionLoading(pId);
+    setActionLoading(p.id);
     try {
       if (p.isActive) {
-        await disableProperty(pId);
+        await disableProperty(p.id);
         toast.success("Property deactivated");
       } else {
-        await enableProperty(pId);
+        await enableProperty(p.id);
         toast.success("Property activated");
       }
       fetchData();
     } catch (error) {
-      console.error("Status toggle error:", error);
       toast.error("Status update failed");
     } finally {
       setActionLoading(null);
     }
   };
 
-  const getFilteredProperties = () => {
-    if (!Array.isArray(properties)) return [];
-
-    return properties.filter((item) => {
-      const p = getPropertyData(item);
-      if (!p || !p.id) return false;
-
-      const matchesSearch =
-        !searchTerm ||
-        [
-          p?.propertyName,
-          p?.locationName,
-          p?.assignedAdminName,
-          p?.address,
-        ].some((val) => val?.toLowerCase().includes(searchTerm.toLowerCase()));
-
-      const propertyTypesArray = Array.isArray(p?.propertyTypes)
-        ? p.propertyTypes
-        : [];
-      const matchesType =
-        typeFilter === "All Types" ||
-        propertyTypesArray.some(
-          (t) => t?.toLowerCase() === typeFilter.toLowerCase(),
-        );
-
-      const matchesStatus =
-        statusFilter === "All Status" ||
-        (statusFilter === "Active"
-          ? p?.isActive === true
-          : p?.isActive === false);
-
-      return matchesSearch && matchesType && matchesStatus;
-    });
-  };
-
-  const filteredData = getFilteredProperties();
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedProperties = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+  // --- Render Helpers ---
+  const renderTableHead = (headers) => (
+    <thead className="sticky top-0 bg-white text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b z-10">
+      <tr>
+        {headers.map((h, i) => (
+          <th key={i} className={`px-6 py-5 ${h.center ? "text-center" : ""}`}>
+            {h.label}
+          </th>
+        ))}
+      </tr>
+    </thead>
   );
 
-  // --- Detail View Render ---
   if (selectedProperty) {
-    const pData = getPropertyData(selectedProperty);
-    // Pass the full item if PropertyDetail needs listing data, otherwise pData
     return (
       <Layout role="superadmin" showActions={false}>
         <PropertyDetail
@@ -232,11 +140,11 @@ function ManageProperties() {
 
   return (
     <Layout role="superadmin" showActions={false}>
-      <div className="h-full overflow-hidden flex flex-col space-y-4 p-4">
+      <div className="h-full flex flex-col space-y-4 p-6 bg-gray-50/30">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+            <h2 className="text-2xl font-bold text-gray-900">
               Portfolio Manager
             </h2>
             <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
@@ -246,13 +154,13 @@ function ManageProperties() {
           <button
             onClick={() => {
               if (activeMainTab === "properties") setShowAddPropertyModal(true);
-              if (activeMainTab === "types") setShowAddTypeModal(true);
-              if (activeMainTab === "categories") setShowAddCategoryModal(true);
+              else if (activeMainTab === "types") setShowAddTypeModal(true);
+              else setShowAddCategoryModal(true);
             }}
-            className="px-5 py-2.5 rounded-xl text-white text-sm font-bold flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-200"
+            className="px-5 py-2.5 rounded-xl text-white text-sm font-bold flex items-center gap-2 hover:opacity-90 transition-all shadow-md"
             style={{ backgroundColor: colors.primary }}
           >
-            <Plus size={18} strokeWidth={3} /> Create{" "}
+            <Plus size={18} /> Create{" "}
             {activeMainTab === "properties"
               ? "Property"
               : activeMainTab === "types"
@@ -262,14 +170,14 @@ function ManageProperties() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-4 border-b">
+        <div className="flex gap-8 border-b border-gray-200">
           {mainTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveMainTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-black transition-all border-b-2 uppercase tracking-widest ${
+              className={`flex items-center gap-2 px-1 py-4 text-sm font-bold transition-all border-b-2 uppercase tracking-widest ${
                 activeMainTab === tab.id
-                  ? "border-blue-600 text-blue-600 bg-blue-50/30"
+                  ? "border-blue-600 text-blue-600"
                   : "border-transparent text-gray-400 hover:text-gray-600"
               }`}
             >
@@ -278,12 +186,12 @@ function ManageProperties() {
           ))}
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+        {/* Main Content Card */}
+        <div className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+          {/* PROPERTIES TAB */}
           {activeMainTab === "properties" && (
             <>
-              {/* Filter Bar */}
-              <div className="p-4 border-b bg-gray-50/50 flex flex-wrap items-center justify-between gap-4">
+              <div className="p-4 border-b bg-white flex flex-wrap items-center justify-between gap-4">
                 <div className="relative">
                   <Search
                     size={18}
@@ -291,18 +199,17 @@ function ManageProperties() {
                   />
                   <input
                     type="text"
-                    placeholder="Search name, location, or admin..."
+                    placeholder="Search properties..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2.5 rounded-xl border-none ring-1 ring-gray-200 text-sm w-80 outline-none focus:ring-2 focus:ring-blue-500/30 shadow-sm transition-all"
+                    className="pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm w-80 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all shadow-sm"
                   />
                 </div>
-
-                <div className="flex items-center gap-3">
+                <div className="flex gap-3">
                   <select
+                    className="text-sm border border-gray-200 rounded-xl px-4 py-2 outline-none font-bold text-gray-600"
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
-                    className="text-sm border-none ring-1 ring-gray-200 rounded-xl px-4 py-2.5 outline-none bg-white font-bold text-gray-600 shadow-sm cursor-pointer"
                   >
                     <option value="All Types">All Types</option>
                     {propertyTypes.map((t) => (
@@ -311,206 +218,172 @@ function ManageProperties() {
                       </option>
                     ))}
                   </select>
-
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="text-sm border-none ring-1 ring-gray-200 rounded-xl px-4 py-2.5 outline-none bg-white font-bold text-gray-600 shadow-sm cursor-pointer"
-                  >
-                    <option value="All Status">All Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
                 </div>
               </div>
-
-              {/* Portfolio Table */}
               <div className="flex-1 overflow-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead className="sticky top-0 bg-white text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b z-10">
-                    <tr>
-                      <th className="px-6 py-5">Property & Admin</th>
-                      <th className="px-6 py-5">Location</th>
-                      <th className="px-6 py-5">Metadata</th>
-                      <th className="px-6 py-5">Status</th>
-                      <th className="px-6 py-5 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
+                <table className="w-full text-left">
+                  {renderTableHead([
+                    { label: "Property & Admin" },
+                    { label: "Location" },
+                    { label: "Metadata" },
+                    { label: "Status" },
+                    { label: "Actions", center: true },
+                  ])}
+                  <tbody className="divide-y divide-gray-100">
                     {loading ? (
                       <tr>
-                        <td colSpan="5" className="py-24 text-center">
-                          <Loader2 className="animate-spin mx-auto text-blue-500 w-8 h-8" />
+                        <td colSpan="5" className="py-20 text-center">
+                          <Loader2 className="animate-spin mx-auto text-blue-500" />
                         </td>
                       </tr>
-                    ) : paginatedProperties.length > 0 ? (
-                      paginatedProperties.map((item, index) => {
+                    ) : (
+                      properties.map((item) => {
                         const p = getPropertyData(item);
-
-                        if (!p || !p.id) return null;
-
-                        const propertyTypesArray = Array.isArray(
-                          p.propertyTypes,
-                        )
-                          ? p.propertyTypes
-                          : [];
-                        const propertyCategoriesArray = Array.isArray(
-                          p.propertyCategories,
-                        )
-                          ? p.propertyCategories
-                          : [];
-
                         return (
                           <tr
                             key={p.id}
-                            className="hover:bg-blue-50/10 transition-colors group"
+                            className="hover:bg-gray-50/50 transition-colors group"
                           >
-                            <td className="px-6 py-5">
-                              <div className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                                {p.propertyName || "N/A"}
+                            <td className="px-6 py-4">
+                              <div className="font-bold text-gray-900">
+                                {p.propertyName}
                               </div>
-                              <div className="flex items-center gap-1.5 text-[10px] text-blue-500 font-black mt-1.5 uppercase">
-                                <User size={12} strokeWidth={3} />
+                              <div className="flex items-center gap-1 text-[10px] text-blue-500 font-black uppercase mt-1">
+                                <User size={12} />{" "}
                                 {p.assignedAdminName || "Unassigned"}
                               </div>
                             </td>
-
-                            <td className="px-6 py-5">
+                            <td className="px-6 py-4">
                               <div className="text-sm font-bold text-gray-700">
-                                {p.locationName || "N/A"}
+                                {p.locationName}
                               </div>
-                              <div className="text-[11px] text-gray-400 font-medium truncate max-w-[180px] mt-0.5">
-                                {p.address || "N/A"}
-                              </div>
-                            </td>
-
-                            <td className="px-6 py-5">
-                              <div className="flex flex-wrap gap-1.5">
-                                {propertyTypesArray.map((t, idx) => (
-                                  <span
-                                    key={`t-${idx}`}
-                                    className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-[9px] font-black uppercase"
-                                  >
-                                    {t}
-                                  </span>
-                                ))}
-                                {propertyCategoriesArray.map((c, idx) => (
-                                  <span
-                                    key={`c-${idx}`}
-                                    className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[9px] font-black uppercase"
-                                  >
-                                    {c}
-                                  </span>
-                                ))}
-                                {!propertyTypesArray.length &&
-                                  !propertyCategoriesArray.length && (
-                                    <span className="text-gray-300 text-[10px]">
-                                      ---
-                                    </span>
-                                  )}
+                              <div className="text-xs text-gray-400 truncate max-w-[150px]">
+                                {p.address}
                               </div>
                             </td>
-
-                            <td className="px-6 py-5">
+                            <td className="px-6 py-4">
+                              <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-black uppercase">
+                                {p.propertyTypes?.[0] || "Standard"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
                               <span
-                                className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                                  p.isActive
-                                    ? "bg-green-100 text-green-600"
-                                    : "bg-red-100 text-red-600"
-                                }`}
+                                className={`px-2 py-1 rounded-full text-[9px] font-black uppercase ${p.isActive ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}
                               >
                                 {p.isActive ? "Active" : "Inactive"}
                               </span>
                             </td>
-
-                            <td className="px-6 py-5 text-center">
-                              <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <td className="px-6 py-4 text-center">
+                              <div className="flex justify-center gap-2">
                                 <button
-                                  onClick={() =>
-                                    setSelectedProperty(flattenProperty(item))
-                                  }
-                                  className="p-2 text-blue-600 bg-white border border-gray-100 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                  onClick={() => setSelectedProperty(item)}
+                                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                                 >
                                   <Edit2 size={15} />
                                 </button>
                                 <button
                                   onClick={() => handleToggleStatus(item)}
-                                  disabled={actionLoading === p.id}
-                                  className={`p-2 rounded-xl border border-gray-100 transition-all shadow-sm bg-white ${
-                                    p.isActive
-                                      ? "text-orange-500 hover:bg-orange-500 hover:text-white"
-                                      : "text-green-600 hover:bg-green-600 hover:text-white"
-                                  } disabled:opacity-50`}
+                                  className={`p-2 rounded-lg ${p.isActive ? "text-orange-500 hover:bg-orange-50" : "text-green-600 hover:bg-green-50"}`}
                                 >
-                                  {actionLoading === p.id ? (
-                                    <Loader2
-                                      size={15}
-                                      className="animate-spin"
-                                    />
-                                  ) : (
-                                    <Power size={15} />
-                                  )}
+                                  <Power size={15} />
                                 </button>
                               </div>
                             </td>
                           </tr>
                         );
                       })
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="5"
-                          className="py-24 text-center text-gray-400 font-bold uppercase tracking-widest text-xs"
-                        >
-                          No Results Found
-                        </td>
-                      </tr>
                     )}
                   </tbody>
                 </table>
               </div>
-
-              {/* Pagination */}
-              {filteredData.length > 0 && (
-                <div className="p-4 border-t bg-gray-50/50 flex items-center justify-between">
-                  <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">
-                    Showing{" "}
-                    {Math.min(
-                      filteredData.length,
-                      (currentPage - 1) * itemsPerPage + 1,
-                    )}
-                    -{Math.min(filteredData.length, currentPage * itemsPerPage)}{" "}
-                    of {filteredData.length}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      disabled={currentPage === 1}
-                      onClick={() => setCurrentPage((prev) => prev - 1)}
-                      className="p-2.5 rounded-xl border border-gray-200 bg-white disabled:opacity-20 shadow-sm transition-all hover:border-blue-300"
-                    >
-                      <ChevronLeft size={18} />
-                    </button>
-                    <div className="text-sm font-black w-10 h-10 flex items-center justify-center bg-white border border-blue-100 rounded-xl shadow-sm text-blue-600">
-                      {currentPage}
-                    </div>
-                    <button
-                      disabled={currentPage >= totalPages}
-                      onClick={() => setCurrentPage((prev) => prev + 1)}
-                      className="p-2.5 rounded-xl border border-gray-200 bg-white disabled:opacity-20 shadow-sm transition-all hover:border-blue-300"
-                    >
-                      <ChevronRight size={18} />
-                    </button>
-                  </div>
-                </div>
-              )}
             </>
           )}
 
-          {/* Render logic for activeMainTab === "types" and "categories" remains the same... */}
+          {/* TYPES TAB */}
+          {activeMainTab === "types" && (
+            <div className="flex-1 overflow-auto">
+              <table className="w-full text-left">
+                {renderTableHead([
+                  { label: "Type ID" },
+                  { label: "Type Name" },
+                  { label: "Status" },
+                  { label: "Actions", center: true },
+                ])}
+                <tbody className="divide-y divide-gray-100">
+                  {propertyTypes.map((type) => (
+                    <tr
+                      key={type.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        #{type.id}
+                      </td>
+                      <td className="px-6 py-4 font-bold text-gray-900">
+                        {type.typeName}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-1 rounded-full text-[9px] font-black uppercase ${type.isActive ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}
+                        >
+                          {type.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <button className="p-2 text-gray-400 hover:text-blue-600">
+                          <Edit2 size={15} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* CATEGORIES TAB */}
+          {activeMainTab === "categories" && (
+            <div className="flex-1 overflow-auto">
+              <table className="w-full text-left">
+                {renderTableHead([
+                  { label: "Category Name" },
+                  { label: "Description" },
+                  { label: "Status" },
+                  { label: "Actions", center: true },
+                ])}
+                <tbody className="divide-y divide-gray-100">
+                  {propertyCategories.map((cat) => (
+                    <tr
+                      key={cat.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-bold text-gray-900">
+                        {cat.categoryName}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 italic max-w-xs truncate">
+                        {cat.description || "No description"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-1 rounded-full text-[9px] font-black uppercase ${cat.isActive ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}
+                        >
+                          {cat.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <button className="p-2 text-gray-400 hover:text-blue-600">
+                          <Edit2 size={15} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Modals remain the same */}
       {showAddPropertyModal && (
         <AddPropertyModal
           onClose={() => setShowAddPropertyModal(false)}

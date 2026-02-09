@@ -43,47 +43,26 @@
 ============================================================================ */
 
 :root {
-  /* Background */
   --background: 0 0% 100%;
-  /* #F9F7F5 */
   --foreground: 220 13% 10%;
-  /* #16181D */
-
-  /* Surfaces */
   --card: 0 0% 100%;
   --card-foreground: 220 13% 10%;
   --popover: 0 0% 100%;
   --popover-foreground: 220 13% 10%;
-
-  /* Dividers */
   --section-divider: transparent;
-
-  /* 🔴 PRIMARY — KENNEDIA BRAND RED */
   --primary: 0 78% 55%;
-  /* #E53935 */
   --primary-foreground: 0 0% 100%;
-
-  /* Soft red accent */
   --accent: 0 78% 92%;
   --accent-foreground: 220 13% 10%;
-
-  /* Secondary / Muted */
   --secondary: 40 10% 90%;
   --secondary-foreground: 220 13% 10%;
   --muted: 40 10% 94%;
   --muted-foreground: 220 8% 40%;
-
-  /* Borders & Inputs */
   --border: 220 13% 90%;
   --input: 220 13% 90%;
-
-  /* Focus Ring */
   --ring: 0 78% 55%;
-
-  /* Destructive */
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
-
   --radius: 4px;
 }
 
@@ -92,47 +71,27 @@
 ============================================================================ */
 
 .dark {
-  /* Background */
   --background: 0 0% 4%;
-  /* #0A0A0A */
   --foreground: 0 0% 98%;
-  /* #FAFAFA */
-
-  /* Surfaces */
   --card: 0 0% 7%;
-  /* #121212 */
   --card-foreground: 0 0% 98%;
   --popover: 0 0% 7%;
   --popover-foreground: 0 0% 98%;
-
-  /* Dividers */
   --section-divider: rgba(255, 255, 255, 0.08);
-
-  /* Primary — Gold */
   --primary: 35 85% 55%;
   --primary-foreground: 0 0% 4%;
-
   --accent: 35 85% 55%;
   --accent-foreground: 0 0% 4%;
-
-  /* Secondary / Muted */
   --secondary: 0 0% 10%;
   --secondary-foreground: 0 0% 98%;
   --muted: 0 0% 10%;
   --muted-foreground: 0 0% 70%;
-
-  /* Borders & Inputs */
   --border: 0 0% 14%;
   --input: 0 0% 14%;
-
-  /* Focus Ring */
   --ring: 35 85% 55%;
-
-  /* Destructive */
   --destructive: 0 62% 30%;
   --destructive-foreground: 0 0% 98%;
 }
-
 
 /* ============================================================================
    BASE STYLES
@@ -147,12 +106,7 @@
     @apply bg-background text-foreground font-sans antialiased selection:bg-primary/20 selection:text-primary;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1, h2, h3, h4, h5, h6 {
     @apply font-serif tracking-tight;
   }
 }
@@ -160,9 +114,6 @@
 /* ============================================================================
    GLOBAL UX
 ============================================================================ */
-
-/* Smooth scrolling */
-
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
@@ -181,19 +132,9 @@
   background: hsl(var(--primary));
 }
 
-/* Add to your global CSS file (index.css or globals.css) - if not already added */
-
-/* Smooth transitions for layout shifts */
-* {
-  transition-property: margin, width;
-  transition-duration: 300ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Prevent transition on page load */
-.no-transition {
-  transition: none !important;
-}
+/* ============================================================================
+   TARGETED FIXES - SAFE APPROACH
+============================================================================ */
 
 /* Slim elegant scrollbar for tabs */
 .scrollbar-thin::-webkit-scrollbar {
@@ -213,18 +154,17 @@
   background: rgba(0, 0, 0, 0.2);
 }
 
-/* For Firefox */
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 }
 
-/* Mobile - even slimmer */
 @media (max-width: 640px) {
   .scrollbar-thin::-webkit-scrollbar {
     height: 2px;
   }
 }
+
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
@@ -233,4 +173,10 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+}
+
+/* Remove default focus styles */
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }

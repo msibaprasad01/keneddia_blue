@@ -95,6 +95,7 @@ function Sidebar({ isOpen, onToggle }) {
 
     const adminMenus = [
       { icon: Home, label: "Homepage", path: "/Homepage-Dashboard" },
+      { icon: Building2, label: "Properties", path: "/Properties" },
       { icon: MapPin, label: "Location", path: "/Location" },
       {
         icon: Building2,

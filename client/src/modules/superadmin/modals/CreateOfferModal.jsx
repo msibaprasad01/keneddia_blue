@@ -547,7 +547,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 />
               </div>
 
-              {bothTypeAvailable && (
+              {/* {bothTypeAvailable && (
                 <div
                   className="flex items-center gap-3 p-4 bg-blue-50/50 border border-blue-100 rounded-lg cursor-pointer group mt-auto"
                   onClick={() =>
@@ -574,7 +574,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                     </p>
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
 
             {/* Right Column */}

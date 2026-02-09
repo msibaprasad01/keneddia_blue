@@ -86,22 +86,27 @@ function AboutUs() {
     try {
       setFetching(true);
 
-      let data;
+      let data = [];
+
       if (selectedPropertyTypeId !== null) {
-        // Fetch by property type
+        // Property-specific About Us
         const res = await getAboutUsByPropertyType(selectedPropertyTypeId);
         data = res?.data || res;
       } else {
-        // Fetch all (default behavior)
+        // Homepage About Us (exclude property-specific entries)
         const res = await getAboutUsAdmin();
-        data = res?.data || res;
+        const allData = res?.data || res;
+
+        data = Array.isArray(allData)
+          ? allData.filter((item) => item.propertyTypeId == null)
+          : [];
       }
 
       if (Array.isArray(data)) {
         const sorted = [...data].sort((a, b) => b.id - a.id);
         setAboutUsList(sorted);
 
-        // Auto-select first item if available
+        // Auto-select first item
         if (sorted.length > 0 && !selectedAboutUsId) {
           setSelectedAboutUsId(sorted[0].id);
         } else if (sorted.length === 0) {
@@ -115,6 +120,7 @@ function AboutUs() {
       console.error("Failed to load About Us list:", error);
       showError("Failed to load About Us list");
       setAboutUsList([]);
+      setSelectedAboutUsId(null);
     } finally {
       setFetching(false);
     }
