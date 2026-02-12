@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Calendar, ArrowRight, MapPin, Loader2 } from "lucide-react";
+import { Calendar, ArrowRight, MapPin, Loader2, Image as ImageIcon } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getEventsUpdated } from "@/Api/Api";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -10,7 +10,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 
 // ============================================================================
-// CONFIGURATION
+// CONFIGURATION & FALLBACKS
 // ============================================================================
 
 const ROUTES = {
@@ -19,9 +19,54 @@ const ROUTES = {
 } as const;
 
 const STYLE_CONFIG = {
-  cardHeight: "h-[280px]", // Compact card height matching your image
+  cardHeight: "h-[280px]",
   cardRadius: "rounded-2xl",
 } as const;
+
+const FALLBACK_EVENTS: ApiEvent[] = [
+  {
+    id: "f1",
+    title: "Weekend Jazz Night",
+    locationName: "Main Lounge",
+    eventDate: new Date(Date.now() + 86400000 * 2).toISOString(), // 2 days from now
+    description: "Experience soul-stirring jazz performances by international artists.",
+    status: "ACTIVE",
+    active: true,
+    ctaText: "Book Table",
+    image: {
+      url: "https://images.unsplash.com/photo-1510812431400-41d2bd2722f3?q=80&w=800",
+      type: "IMAGE"
+    }
+  },
+  {
+    id: "f2",
+    title: "Gourmet Wine Tasting",
+    locationName: "The Vineyard Room",
+    eventDate: new Date(Date.now() + 86400000 * 5).toISOString(),
+    description: "An evening of fine wines paired with artisanal cheeses.",
+    status: "ACTIVE",
+    active: true,
+    ctaText: "Get Tickets",
+    image: {
+      url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800",
+      type: "IMAGE"
+    }
+  },
+  {
+    id: "f3",
+    title: "Salsa Fusion Workshop",
+    locationName: "Grand Ballroom",
+    eventDate: new Date(Date.now() + 86400000 * 7).toISOString(),
+    description: "Learn the rhythm of Salsa with a modern fusion twist.",
+    status: "ACTIVE",
+    active: true,
+    ctaText: "Join Now",
+    image: {
+      url: "https://images.unsplash.com/photo-1504609770332-e29ca208a69e?q=80&w=800",
+      type: "IMAGE"
+    }
+  }
+];
 
 // ============================================================================
 // INTERFACES
@@ -43,7 +88,7 @@ interface ApiEvent {
     alt?: string | null;
     width?: number | null;
     height?: number | null;
-  };
+  } | null;
   ctaText: string;
 }
 
@@ -65,22 +110,20 @@ export default function ResturantpageEvents() {
       setLoading(true);
       const response = await getEventsUpdated();
 
-      // Extract array regardless of wrapper
       const rawEvents = Array.isArray(response?.data)
         ? response.data
         : Array.isArray(response)
           ? response
           : [];
 
-      // Filter: Only show events with status="ACTIVE" AND active=true
       const activeEvents = rawEvents
-        .filter((event) => event.status === "ACTIVE" && event.active === true)
-        .map((event) => ({
+        .filter((event: any) => event.status === "ACTIVE" && event.active === true)
+        .map((event: any) => ({
           ...event,
           image: event.image
             ? {
                 mediaId: event.image.mediaId,
-                type: event.image.type, // 🔥 REQUIRED
+                type: event.image.type,
                 url: event.image.url,
                 fileName: event.image.fileName,
                 alt: event.image.alt,
@@ -90,16 +133,18 @@ export default function ResturantpageEvents() {
             : null,
         }));
 
+      // Use API events if available, otherwise use FALLBACK_EVENTS
       if (activeEvents.length > 0) {
-        // Sort: Latest events first
         const sortedEvents = [...activeEvents].sort(
-          (a, b) =>
-            new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
+          (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
         );
         setApiEvents(sortedEvents);
+      } else {
+        setApiEvents(FALLBACK_EVENTS);
       }
     } catch (error) {
-      console.error("Failed to fetch events:", error);
+      console.error("Failed to fetch events, using fallbacks:", error);
+      setApiEvents(FALLBACK_EVENTS);
     } finally {
       setLoading(false);
     }
@@ -107,9 +152,7 @@ export default function ResturantpageEvents() {
 
   const uniqueLocations = [
     "All Locations",
-    ...Array.from(
-      new Set(apiEvents.map((event) => event.locationName).filter(Boolean)),
-    ),
+    ...Array.from(new Set(apiEvents.map((event) => event.locationName).filter(Boolean))),
   ];
 
   const filteredEvents =
@@ -117,7 +160,6 @@ export default function ResturantpageEvents() {
       ? apiEvents
       : apiEvents.filter((event) => event.locationName === selectedLocation);
 
-  // Loading state
   if (loading) {
     return (
       <section id="events" className="py-12 bg-background">
@@ -128,11 +170,6 @@ export default function ResturantpageEvents() {
         </div>
       </section>
     );
-  }
-
-  // No events state
-  if (apiEvents.length === 0) {
-    return null; // Don't render section if no active events
   }
 
   return (
@@ -149,21 +186,12 @@ export default function ResturantpageEvents() {
             modules={[Autoplay, Pagination]}
             spaceBetween={20}
             slidesPerView={1}
-            autoplay={
-              filteredEvents.length > 3
-                ? { delay: 3000, disableOnInteraction: false }
-                : false
-            }
-            pagination={
-              filteredEvents.length > 3
-                ? { clickable: true, dynamicBullets: true }
-                : false
-            }
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            pagination={{ clickable: true, dynamicBullets: true }}
             breakpoints={{
               768: { slidesPerView: 2 },
               1024: { slidesPerView: 3 },
             }}
-            allowTouchMove={filteredEvents.length > 1}
             className="pb-12"
           >
             {filteredEvents.map((event, index) => (
@@ -196,21 +224,19 @@ function SectionHeader({
   uniqueLocations: string[];
 }) {
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center gap-4">
-        <div>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Upcoming Events
-          </h2>
-          <div className="h-0.5 w-16 bg-primary" />
-        </div>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+      <div>
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+          Upcoming Events
+        </h2>
+        <div className="h-0.5 w-16 bg-primary" />
       </div>
-      <div className="flex items-center gap-4">
-        <div className="relative hidden sm:block">
+      <div className="flex items-center gap-4 w-full sm:w-auto">
+        <div className="relative flex-1 sm:flex-none">
           <select
             value={selectedLocation}
             onChange={(e) => setSelectedLocation(e.target.value)}
-            className="appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+            className="w-full appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary outline-none cursor-pointer"
           >
             {uniqueLocations.map((loc: string) => (
               <option key={loc} value={loc}>
@@ -222,8 +248,7 @@ function SectionHeader({
         </div>
         <Link
           to={ROUTES.allEvents}
-          // to="#"
-          className="group flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all"
+          className="group flex items-center shrink-0 gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all"
         >
           All Events <ArrowRight className="w-4 h-4" />
         </Link>
@@ -233,17 +258,12 @@ function SectionHeader({
 }
 
 function EventCard({ event, index }: { event: ApiEvent; index: number }) {
-  // Format date to match your image style (e.g., "13 FEB")
   const formatDate = (dateString: string) => {
     try {
       const dateObj = new Date(dateString);
       if (isNaN(dateObj.getTime())) return dateString;
-
       const day = dateObj.getDate();
-      const month = dateObj
-        .toLocaleDateString("en-US", { month: "short" })
-        .toUpperCase();
-
+      const month = dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
       return `${day} ${month}`;
     } catch {
       return dateString;
@@ -258,54 +278,32 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       transition={{ delay: index * 0.08, duration: 0.4 }}
       className="group relative"
     >
-      <Link
-        // to={ROUTES.eventDetail(event.id)}
-        to="#"
-        className="block"
-      >
-        <div
-          className={`relative ${STYLE_CONFIG.cardHeight} ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-500`}
-        >
-          {/* Image with fixed height */}
+      <Link to="#" className="block">
+        <div className={`relative ${STYLE_CONFIG.cardHeight} ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-md hover:shadow-xl transition-all duration-500`}>
           <div className="absolute inset-0 w-full h-full overflow-hidden">
-            {/* Image / Video with fixed height */}
-            <div className="absolute inset-0 w-full h-full overflow-hidden">
-              {event.image?.url ? (
-                event.image.type === "VIDEO" ? (
-                  <video
-                    src={event.image.url}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    muted
-                    playsInline
-                    autoPlay
-                    loop
-                  />
-                ) : (
-                  <OptimizedImage
-                    src={event.image.url}
-                    alt={event.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                )
+            {event.image?.url ? (
+              event.image.type === "VIDEO" ? (
+                <video
+                  src={event.image.url}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  muted playsInline autoPlay loop
+                />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-muted">
-                  <ImageIcon className="w-8 h-8 text-muted-foreground/40" />
-                </div>
-              )}
-
-              {/* VIDEO badge */}
-              {event.image?.type === "VIDEO" && (
-                <div className="absolute bottom-3 left-3 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">
-                  VIDEO
-                </div>
-              )}
-            </div>
+                <OptimizedImage
+                  src={event.image.url}
+                  alt={event.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+              )
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-muted">
+                <ImageIcon className="w-8 h-8 text-muted-foreground/40" />
+              </div>
+            )}
           </div>
 
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
 
-          {/* Date Badge - Top Right */}
           <div className="absolute top-3 right-3 bg-primary shadow-lg rounded-md">
             <div className="flex items-center gap-1.5 px-2.5 py-1.5">
               <Calendar className="w-3.5 h-3.5 text-white" />
@@ -315,27 +313,22 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             </div>
           </div>
 
-          {/* Content overlay - Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-            {/* Location */}
+          <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
             <div className="flex items-center gap-1 text-[11px] font-medium text-white/90 mb-2">
-              <MapPin className="w-3 h-3" />
+              <MapPin className="w-3 h-3 text-primary" />
               <span>{event.locationName}</span>
             </div>
 
-            {/* Title */}
-            <h3 className="text-base font-bold mb-1 line-clamp-2 group-hover:text-primary transition-colors drop-shadow-lg">
+            <h3 className="text-lg font-bold mb-1 line-clamp-1 group-hover:text-primary transition-colors drop-shadow-lg">
               {event.title}
             </h3>
 
-            {/* Description */}
-            <p className="text-[11px] text-white/80 mb-3 line-clamp-1 leading-relaxed drop-shadow-md">
+            <p className="text-[11px] text-white/80 mb-4 line-clamp-1 leading-relaxed drop-shadow-md">
               {event.description}
             </p>
 
-            {/* CTA Button */}
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-primary bg-white px-3 py-1.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all shadow-lg">
-              {event.ctaText || "Details"} <ArrowRight className="w-3 h-3" />
+            <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-primary bg-white px-4 py-2 rounded-full group-hover:bg-primary group-hover:text-white transition-all shadow-lg uppercase tracking-wider">
+              {event.ctaText || "View Details"} <ArrowRight className="w-3 h-3" />
             </div>
           </div>
         </div>
