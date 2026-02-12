@@ -23,13 +23,12 @@ import "swiper/css/navigation";
 const MEDIA_DETECTION_RULES = {
   instagramBannerReel: {
     aspectRatio: "9:16",
-    allowedDimensions: [
-      { width: 1080, height: 1920 },
-      { width: 900, height: 1600 },
-      { width: 720, height: 1280 },
-      { width: 450, height: 800 },
-    ],
     minHeight: 800,
+    ratioTolerance: 0.01,
+  },
+  instagramBannerPortrait: {
+    aspectRatio: "4:5",
+    minHeight: 1000,
     ratioTolerance: 0.01,
   },
 };
@@ -46,17 +45,25 @@ const aspectRatioMatches = (
 
 const detectBanner = (image: any) => {
   if (!image?.width || !image?.height) return false;
-  const rule = MEDIA_DETECTION_RULES.instagramBannerReel;
 
-  const exactMatch = rule.allowedDimensions.some(
-    (d) => d.width === image.width && d.height === image.height,
-  );
+  const isReel =
+    aspectRatioMatches(
+      image.width,
+      image.height,
+      MEDIA_DETECTION_RULES.instagramBannerReel.aspectRatio,
+      MEDIA_DETECTION_RULES.instagramBannerReel.ratioTolerance,
+    ) && image.height >= MEDIA_DETECTION_RULES.instagramBannerReel.minHeight;
 
-  const ratioMatch =
-    aspectRatioMatches(image.width, image.height, rule.aspectRatio) &&
-    image.height >= rule.minHeight;
+  const isPortrait =
+    aspectRatioMatches(
+      image.width,
+      image.height,
+      MEDIA_DETECTION_RULES.instagramBannerPortrait.aspectRatio,
+      MEDIA_DETECTION_RULES.instagramBannerPortrait.ratioTolerance,
+    ) &&
+    image.height >= MEDIA_DETECTION_RULES.instagramBannerPortrait.minHeight;
 
-  return exactMatch || ratioMatch;
+  return isReel || isPortrait;
 };
 
 /* =======================
