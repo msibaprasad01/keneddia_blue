@@ -10,20 +10,56 @@ import {
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
-import { getDailyOffers } from "@/Api/Api";
+import { getDailyOffers, getPropertyTypeById } from "@/Api/Api";
 
 // Swiper Styles
 import "swiper/css";
 import "swiper/css/navigation";
-
+const MEDIA_DETECTION_RULES = {
+  instagramBannerReel: {
+    aspectRatio: "9:16",
+    minHeight: 800,
+    ratioTolerance: 0.01,
+  },
+  instagramBannerPortrait: {
+    aspectRatio: "4:5",
+    minHeight: 1000,
+    ratioTolerance: 0.01,
+  },
+};
+const aspectRatioMatches = (
+  width: number,
+  height: number,
+  targetRatio: string,
+  tolerance = 0.01,
+) => {
+  const [tw, th] = targetRatio.split(":").map(Number);
+  return Math.abs(width / height - tw / th) <= tolerance;
+};
 /* =======================
     REEL DETECTION (9:16)
 ======================= */
 const detectBanner = (image: any) => {
   if (!image?.width || !image?.height) return false;
-  const ratio = image.width / image.height;
-  // Aspect ratio < 0.7 covers 9:16 and 3:4 portrait formats
-  return ratio < 0.7;
+
+  const isReel =
+    aspectRatioMatches(
+      image.width,
+      image.height,
+      MEDIA_DETECTION_RULES.instagramBannerReel.aspectRatio,
+      MEDIA_DETECTION_RULES.instagramBannerReel.ratioTolerance,
+    ) && image.height >= MEDIA_DETECTION_RULES.instagramBannerReel.minHeight;
+
+  const isPortrait =
+    aspectRatioMatches(
+      image.width,
+      image.height,
+      MEDIA_DETECTION_RULES.instagramBannerPortrait.aspectRatio,
+      MEDIA_DETECTION_RULES.instagramBannerPortrait.ratioTolerance,
+    ) &&
+    image.height >= MEDIA_DETECTION_RULES.instagramBannerPortrait.minHeight;
+
+  return isReel || isPortrait;
 };
 
 /* =======================
@@ -79,6 +115,8 @@ export default function HotelOffersCarousel() {
     const fetchOffers = async () => {
       try {
         setLoading(true);
+
+        // Fetch offers
         const res = await getDailyOffers({
           targetType: "GLOBAL",
           page: 0,
@@ -88,31 +126,58 @@ export default function HotelOffersCarousel() {
         const rawData = res.data?.data || res.data || [];
         const list = Array.isArray(rawData) ? rawData : rawData.content || [];
 
-        const filtered = list.filter((o: any) => {
-          if (!o.isActive) return false;
+        // Filter and validate with property type ID
+        const filtered = await Promise.all(
+          list.map(async (o: any) => {
+            if (!o.isActive) return null;
 
-          if (!["PROPERTY_PAGE", "BOTH"].includes(o.displayLocation))
-            return false;
+            if (!["PROPERTY_PAGE", "BOTH"].includes(o.displayLocation))
+              return null;
 
-          const type = normalize(o.propertyTypeName);
+            // Fetch property type details by ID
+            if (o.propertyTypeId) {
+              try {
+                const propertyTypeRes = await getPropertyTypeById(
+                  o.propertyTypeId,
+                );
+                const propertyType = propertyTypeRes.data;
 
-          // ✅ Hotel + BOTH (ALL case formats supported)
-          return type === "hotel" || type === "both";
-        });
+                // Check if it's active and matches "Hotel" or "Both"
+                if (propertyType?.isActive) {
+                  const typeName = normalize(propertyType.typeName);
+                  if (typeName === "hotel" || typeName === "both") {
+                    return {
+                      ...o,
+                      propertyTypeName: propertyType.typeName, // Use validated name
+                    };
+                  }
+                }
+              } catch (err) {
+                console.error(
+                  `Failed to fetch property type ${o.propertyTypeId}`,
+                  err,
+                );
+              }
+            }
 
-        setOffers(
-          filtered.map((o: any) => ({
-            id: o.id,
-            title: o.title,
-            description: o.description,
-            couponCode: o.couponCode || "N/A",
-            ctaText: o.ctaText || "Claim Offer",
-            ctaLink: o.ctaLink || "#",
-            expiresAt: o.expiresAt,
-            propertyType: o.propertyTypeName || "Hotel",
-            image: o.image,
-          })),
+            return null;
+          }),
         );
+
+        // Remove nulls and map to offer objects
+        const validOffers = filtered.filter(Boolean).map((o: any) => ({
+          id: o.id,
+          title: o.title,
+          description: o.description,
+          couponCode: o.couponCode || "N/A",
+          ctaText: o.ctaText || "Claim Offer",
+          ctaLink: o.ctaLink || "#",
+          expiresAt: o.expiresAt,
+          propertyType: o.propertyTypeName || "Hotel",
+          image: o.image,
+        }));
+
+        setOffers(validOffers);
       } catch (err) {
         console.error("Offer fetch failed", err);
         setOffers([]);

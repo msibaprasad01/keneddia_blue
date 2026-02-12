@@ -257,20 +257,22 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     const selectedProperty = availableProperties.find(
       (p) => p.id === parseInt(propertyId),
     );
+
     if (selectedProperty) {
+      // Extract the first property type name from the array
+      const propertyTypeName = selectedProperty.propertyTypes?.[0] || "";
+
+      // Find matching type from propertyTypes list by name
       const matchedType = propertyTypes.find(
-        (t) =>
-          t.id === (selectedProperty.propertyTypeId || selectedProperty.typeId),
+        (t) => t.typeName?.toLowerCase() === propertyTypeName.toLowerCase(),
       );
+
       setFormData((prev) => ({
         ...prev,
         propertyId: selectedProperty.id,
-        propertyTypeId: matchedType?.id || selectedProperty.propertyTypeId || 1,
+        propertyTypeId: matchedType?.id || null,
         propertyName: selectedProperty.propertyName,
-        propertyType:
-          matchedType?.typeName ||
-          selectedProperty.propertyTypes?.join(", ") ||
-          "",
+        propertyType: matchedType?.typeName || propertyTypeName || "",
         location:
           `${selectedProperty.area || ""}, ${selectedProperty.locationName || ""}`.replace(
             /^, |, $/g,
