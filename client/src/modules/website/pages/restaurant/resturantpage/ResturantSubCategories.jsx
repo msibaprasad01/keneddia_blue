@@ -43,14 +43,14 @@ const EXPERIENCES = [
     image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800", 
     link: "/restaurant/takeaway"
   },
-  // {
-  //   id: "bakery",
-  //   title: "The Bakehouse",
-  //   category: "Desserts",
-  //   description: "Handcrafted pastries and artisanal breads baked daily.",
-  //   image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800",
-  //   link: "/restaurant/bakery"
-  // }
+  {
+    id: "bakery",
+    title: "The Bakehouse",
+    category: "Desserts",
+    description: "Handcrafted pastries and artisanal breads baked daily.",
+    image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800",
+    link: "/restaurant/bakery"
+  }
 ];
 
 export default function ResturantSubCategories() {

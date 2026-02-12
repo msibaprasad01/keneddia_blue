@@ -12,6 +12,7 @@ import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
 import SignatureDishesAndBuffet from "./resturantpage/SignatureDishesAndBuffet";
 import ReservationForm from "./components/ReservationForm";
 import Testimonials from "./components/Testimonials";
+import ResturantGallerypage from "./resturantpage/ResturantGallerypage";
 import { siteContent } from "@/data/siteContent";
 import { useParams } from "react-router-dom";
 
@@ -55,24 +56,28 @@ export default function RestaurantHomepage() {
 
         {/* Signature Dishes / Menu */}
         <SignatureDishesAndBuffet />
-        
+
         {/* ResturantpageOffers */}
         <ResturantpageOffers />
 
         {/* About Section */}
         <AboutResturantPage />
 
-        {/* Banquets & Catering */}
-        {/* <BanquetsAndCatering /> */}
-
-         {/* Testimonials */}
-        <Testimonials />
-
         {/* Events Schedule */}
         <ResturantpageEvents />
 
+        {/* Banquets & Catering */}
+        {/* <BanquetsAndCatering /> */}
+
+        {/* Testimonials */}
+        <Testimonials />
+        {/* ResturantGallerypage */}
+
+        {/* ResturantGallerypage */}
+        <ResturantGallerypage />
+
         {/* Reservation Form */}
-        <ReservationForm />
+        {/* <ReservationForm /> */}
       </main>
 
       {/* Footer */}

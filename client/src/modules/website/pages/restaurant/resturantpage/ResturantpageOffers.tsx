@@ -15,30 +15,114 @@ import { getDailyOffers, getPropertyTypeById } from "@/Api/Api";
 // Swiper Styles
 import "swiper/css";
 import "swiper/css/navigation";
+
+// ─── Static Fallback Data ──────────────────────────────────────────────────
+const FALLBACK_OFFERS = [
+  {
+    id: "fallback-1",
+    title: "Weekend Gourmet Buffet",
+    description: "Enjoy a lavish spread of over 50+ delicacies with live music.",
+    couponCode: "BUFFET20",
+    ctaText: "Book Table",
+    ctaLink: "#",
+    expiresAt: new Date(Date.now() + 86400000).toISOString(), // 24h from now
+    propertyType: "Restaurant",
+    image: {
+      url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800",
+      type: "IMAGE",
+      width: 800,
+      height: 600
+    }
+  },
+  {
+    id: "fallback-2",
+    title: "Happy Hours: Buy 1 Get 1",
+    description: "Premium cocktails and appetizers at half the price.",
+    couponCode: "HAPPYH",
+    ctaText: "View Menu",
+    ctaLink: "#",
+    expiresAt: new Date(Date.now() + 172800000).toISOString(),
+    propertyType: "Bar & Lounge",
+    image: {
+      url: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?q=80&w=800",
+      type: "IMAGE",
+      width: 800,
+      height: 1200 // To trigger portrait mode logic
+    }
+  },
+  {
+    id: "fallback-3",
+    title: "Candlelight Dinner Special",
+    description: "A private 5-course meal for couples with complimentary wine.",
+    couponCode: "ROMANCE",
+    ctaText: "Inquire Now",
+    ctaLink: "#",
+    expiresAt: null,
+    propertyType: "Fine Dining",
+    image: {
+      url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
+      type: "IMAGE",
+      width: 1080,
+      height: 1920 // To trigger reel mode logic
+    }
+  },
+  {
+    id: "fallback-4",
+    title: "Candlelight Dinner Special",
+    description: "A private 5-course meal for couples with complimentary wine.",
+    couponCode: "ROMANCE",
+    ctaText: "Inquire Now",
+    ctaLink: "#",
+    expiresAt: null,
+    propertyType: "Fine Dining",
+    image: {
+      url: "https://images.unsplash.com/photo-1504674900248-0877df9cc836?q=80&w=800",
+      type: "IMAGE",
+      width: 1080,
+      height: 1920 // To trigger reel mode logic
+    }
+  },
+  {
+    id: "fallback-5",
+    title: "Candlelight Dinner Special",
+    description: "A private 5-course meal for couples with complimentary wine.",
+    couponCode: "ROMANCE",
+    ctaText: "Inquire Now",
+    ctaLink: "#",
+    expiresAt: null,
+    propertyType: "Fine Dining",
+    image: {
+      url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
+      type: "IMAGE",
+      width: 1080,
+      height: 1920 // To trigger reel mode logic
+    }
+  }
+];
+
 const MEDIA_DETECTION_RULES = {
   instagramBannerReel: {
     aspectRatio: "9:16",
     minHeight: 800,
-    ratioTolerance: 0.01,
+    ratioTolerance: 0.1, // Increased tolerance for better detection
   },
   instagramBannerPortrait: {
     aspectRatio: "4:5",
     minHeight: 1000,
-    ratioTolerance: 0.01,
+    ratioTolerance: 0.1,
   },
 };
+
 const aspectRatioMatches = (
   width: number,
   height: number,
   targetRatio: string,
-  tolerance = 0.01,
+  tolerance = 0.05,
 ) => {
   const [tw, th] = targetRatio.split(":").map(Number);
   return Math.abs(width / height - tw / th) <= tolerance;
 };
-/* =======================
-    REEL DETECTION (9:16)
-======================= */
+
 const detectBanner = (image: any) => {
   if (!image?.width || !image?.height) return false;
 
@@ -109,14 +193,13 @@ export default function ResturantpageOffers() {
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const normalize = (v?: string) =>
-    (v || "").trim().toLowerCase().replace(/\s+/g, " "); // handles "Wine   &   Dine"
+    (v || "").trim().toLowerCase().replace(/\s+/g, " ");
 
   useEffect(() => {
     const fetchOffers = async () => {
       try {
         setLoading(true);
 
-        // Fetch offers
         const res = await getDailyOffers({
           targetType: "GLOBAL",
           page: 0,
@@ -126,45 +209,34 @@ export default function ResturantpageOffers() {
         const rawData = res.data?.data || res.data || [];
         const list = Array.isArray(rawData) ? rawData : rawData.content || [];
 
-        // Filter and validate with property type ID
         const filtered = await Promise.all(
           list.map(async (o: any) => {
             if (!o.isActive) return null;
-
             if (!["PROPERTY_PAGE", "BOTH"].includes(o.displayLocation))
               return null;
 
-            // Fetch property type details by ID
             if (o.propertyTypeId) {
               try {
-                const propertyTypeRes = await getPropertyTypeById(
-                  o.propertyTypeId,
-                );
+                const propertyTypeRes = await getPropertyTypeById(o.propertyTypeId);
                 const propertyType = propertyTypeRes.data;
 
-                // Check if it's active and matches "Hotel" or "Both"
                 if (propertyType?.isActive) {
                   const typeName = normalize(propertyType.typeName);
-                  if (typeName === "hotel" || typeName === "both") {
+                  if (typeName === "hotel" || typeName === "both" || typeName === "restaurant") {
                     return {
                       ...o,
-                      propertyTypeName: propertyType.typeName, // Use validated name
+                      propertyTypeName: propertyType.typeName,
                     };
                   }
                 }
               } catch (err) {
-                console.error(
-                  `Failed to fetch property type ${o.propertyTypeId}`,
-                  err,
-                );
+                console.error(`Failed to fetch property type ${o.propertyTypeId}`, err);
               }
             }
-
             return null;
           }),
         );
 
-        // Remove nulls and map to offer objects
         const validOffers = filtered.filter(Boolean).map((o: any) => ({
           id: o.id,
           title: o.title,
@@ -177,10 +249,11 @@ export default function ResturantpageOffers() {
           image: o.image,
         }));
 
-        setOffers(validOffers);
+        // Combine API offers with fallbacks
+        setOffers(validOffers.length > 0 ? validOffers : FALLBACK_OFFERS);
       } catch (err) {
-        console.error("Offer fetch failed", err);
-        setOffers([]);
+        console.error("Offer fetch failed, showing fallbacks", err);
+        setOffers(FALLBACK_OFFERS);
       } finally {
         setLoading(false);
       }
@@ -199,7 +272,6 @@ export default function ResturantpageOffers() {
   return (
     <section className="bg-muted/30 py-10">
       <div className="container mx-auto px-6 lg:px-12">
-        {/* Header matched to design */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-serif text-foreground">
             Exclusive Offers
@@ -234,13 +306,10 @@ export default function ResturantpageOffers() {
         >
           {offers.map((offer, i) => {
             const isBanner = detectBanner(offer.image);
-            const isClickable = !!offer.ctaLink && offer.ctaLink !== "#";
 
             return (
               <SwiperSlide key={offer.id || i}>
-                {/* Frame strict height 520px as per dailyOffer */}
                 <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl">
-                  {/* IMAGE/REEL SECTION */}
                   <div
                     className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[280px]"}`}
                   >
@@ -278,7 +347,6 @@ export default function ResturantpageOffers() {
                       </div>
                     )}
 
-                    {/* BANNER OVERLAY CTA (Only for Reels) */}
                     {isBanner && (
                       <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out bg-gradient-to-t from-black/90 via-black/40 to-transparent pt-10 z-20">
                         <h3 className="text-white font-serif font-bold text-sm mb-2 line-clamp-2">
@@ -296,7 +364,6 @@ export default function ResturantpageOffers() {
                     )}
                   </div>
 
-                  {/* CONTENT SECTION (Only for Standard) */}
                   {!isBanner && (
                     <div className="p-4 flex flex-col flex-1">
                       <h3 className="text-sm font-serif font-bold line-clamp-2 leading-tight transition-colors duration-300 group-hover:text-red-600">
