@@ -180,7 +180,7 @@ function ResturantBanner() {
         <motion.nav variants={fadeIn} className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
           <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <ChevronRight className="w-4 h-4" />
-          <Link to="/restaurants" className="hover:text-primary transition-colors">Restaurants</Link>
+          <Link to="/resturants" className="hover:text-primary transition-colors">resturants</Link>
           <ChevronRight className="w-4 h-4" />
           <span className="text-foreground font-semibold truncate">{restaurant.name}</span>
         </motion.nav>
