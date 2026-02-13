@@ -1,10 +1,49 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, ChevronLeft, ChevronRight, Utensils, CalendarCheck } from "lucide-react";
+import {
+  Flame,
+  ChevronLeft,
+  ChevronRight,
+  Utensils,
+  ShoppingBag,
+  X,
+  User,
+  Phone,
+  Mail,
+  Send,
+  Loader2
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "react-hot-toast";
 
 export default function CategoryMenu({ menu, themeColor }) {
   const [activeTab, setActiveTab] = useState(0);
   const scrollContainerRef = useRef(null);
+  
+  // Modal & Form States
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+
+  const handleOrderClick = (item) => {
+    setSelectedItem(item);
+    setShowOrderModal(true);
+  };
+
+  const handleFinalSubmit = async () => {
+    setIsSubmitting(true);
+    // Simulate API Call
+    await new Promise((r) => setTimeout(r, 2000));
+    setIsSubmitting(false);
+    setShowOrderModal(false);
+    toast.success(`Request sent for ${selectedItem.name}! Our team will contact you.`);
+    // Reset Form
+    setStep(1);
+    setFormData({ name: "", email: "", phone: "" });
+  };
 
   // Navigation logic
   const handleNext = () => {
@@ -35,7 +74,6 @@ export default function CategoryMenu({ menu, themeColor }) {
   return (
     <section id="menu" className="py-16 bg-white dark:bg-[#050505] transition-colors duration-500">
       <div className="container mx-auto px-6 max-w-[1200px]">
-        
         {/* --- HEADER --- */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
           <div className="flex items-center gap-3">
@@ -47,9 +85,9 @@ export default function CategoryMenu({ menu, themeColor }) {
             </h2>
           </div>
 
-          {/* CONTROLS */}
+          {/* NEXT/PREV CONTROLS */}
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={handlePrev}
               disabled={activeTab === 0}
               className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
@@ -59,7 +97,7 @@ export default function CategoryMenu({ menu, themeColor }) {
             <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
               {activeTab + 1} / {menu.length}
             </div>
-            <button 
+            <button
               onClick={handleNext}
               disabled={activeTab === menu.length - 1}
               className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
@@ -69,11 +107,8 @@ export default function CategoryMenu({ menu, themeColor }) {
           </div>
         </div>
 
-        {/* --- TAB SCROLLER --- */}
-        <div 
-          ref={scrollContainerRef}
-          className="flex gap-4 overflow-x-auto no-scrollbar pb-8 snap-x"
-        >
+        {/* --- COMPACT TAB SCROLLER --- */}
+        <div ref={scrollContainerRef} className="flex gap-4 overflow-x-auto no-scrollbar pb-8 snap-x">
           {menu.map((section, idx) => (
             <motion.button
               key={idx}
@@ -93,59 +128,52 @@ export default function CategoryMenu({ menu, themeColor }) {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col gap-10"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            className="grid lg:grid-cols-12 gap-8 items-start"
           >
-            {/* 1. DECREASED MAIN CATEGORY IMAGE */}
-            <div className="relative w-full h-48 md:h-64 rounded-3xl overflow-hidden border border-zinc-100 dark:border-white/5">
-              <img 
-                src={menu[activeTab].categoryImage} 
-                className="w-full h-full object-cover" 
-                alt="Category Banner" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute bottom-6 left-8 text-white">
-                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">Explore</p>
-                 <h3 className="text-3xl font-serif uppercase tracking-tight">{menu[activeTab].category}</h3>
+            {/* COMPACT STICKY IMAGE */}
+            <div className="lg:col-span-5 hidden lg:block">
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5">
+                <img src={menu[activeTab].categoryImage} className="w-full h-full object-cover" alt="Featured" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-6 left-6 text-white">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">Featured</p>
+                  <h3 className="text-2xl font-serif uppercase tracking-tight">{menu[activeTab].category}</h3>
+                </div>
               </div>
             </div>
 
-            {/* 2. SUB-ITEMS IN CARD FORMAT */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* MINIMALIST ITEM LIST */}
+            <div className="lg:col-span-7 space-y-6">
               {menu[activeTab].items.map((item, i) => (
-                <motion.div 
+                <motion.div
                   key={i}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-100 dark:border-white/5 rounded-[2rem] p-5 hover:shadow-xl transition-all group"
+                  className="group flex items-start gap-5 p-4 rounded-2xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
                 >
-                  {/* Item Image */}
-                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4">
-                    <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />
-                    {item.isSpicy && (
-                      <div className="absolute top-3 right-3 bg-white/90 dark:bg-black/90 p-2 rounded-full backdrop-blur-sm">
-                        <Flame size={14} className="text-red-500 fill-red-500" />
-                      </div>
-                    )}
+                  <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                    <img src={item.image} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500" alt={item.name} />
                   </div>
-                  
-                  {/* Item Info */}
-                  <div className="space-y-3">
-                    <h4 className="text-lg font-bold text-zinc-900 dark:text-white group-hover:text-primary transition-colors line-clamp-1">
-                      {item.name}
-                    </h4>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 min-h-[32px]">
-                      {item.description}
-                    </p>
-                    
-                    {/* Action Button instead of Price */}
-                    <button className="w-full mt-2 flex items-center justify-center gap-2 py-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300 hover:bg-primary hover:text-white hover:border-primary transition-all">
-                      <CalendarCheck size={14} />
-                      Book Now
-                    </button>
+
+                  <div className="flex-1 border-b border-zinc-100 dark:border-white/5 pb-4 group-last:border-none">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-lg font-extrabold tracking-tight text-zinc-900 dark:text-white">{item.name}</h4>
+                        {item.isSpicy && <Flame size={16} className="text-red-500 fill-red-500" />}
+                      </div>
+                      {/* ORDER BUTTON */}
+                      <button 
+                        onClick={() => handleOrderClick(item)}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+                      >
+                        <ShoppingBag size={12} /> Order
+                      </button>
+                    </div>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{item.description}</p>
                   </div>
                 </motion.div>
               ))}
@@ -153,6 +181,100 @@ export default function CategoryMenu({ menu, themeColor }) {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* --- ORDER POPUP FORM --- */}
+      <AnimatePresence>
+        {showOrderModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[2rem] overflow-hidden shadow-2xl relative border border-zinc-100 dark:border-white/5"
+            >
+              <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-800/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary"><ShoppingBag size={18} /></div>
+                  <div>
+                    <h3 className="font-serif text-xl dark:text-white">Order {selectedItem?.name}</h3>
+                    <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest">Step {step} of 2</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowOrderModal(false)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400"><X size={20} /></button>
+              </div>
+
+              <div className="p-8">
+                {step === 1 ? (
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">Full Name</label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+                        <Input 
+                          value={formData.name} 
+                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          placeholder="Your Name" 
+                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl" 
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">Phone Number</label>
+                      <div className="relative">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+                        <Input 
+                          value={formData.phone} 
+                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                          placeholder="+91" 
+                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl" 
+                        />
+                      </div>
+                    </div>
+                    <Button 
+                      disabled={!formData.name || !formData.phone}
+                      onClick={() => setStep(2)} 
+                      className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-primary transition-all"
+                    >
+                      Next Step <ChevronRight size={14} className="ml-2" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">Email Address</label>
+                      <div className="relative">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+                        <Input 
+                          value={formData.email} 
+                          onChange={(e) => setFormData({...formData, email: e.target.value})}
+                          placeholder="email@example.com" 
+                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl" 
+                        />
+                      </div>
+                    </div>
+                    <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
+                      <p className="text-[11px] text-zinc-500 italic leading-relaxed">
+                        By clicking submit, you are requesting an order for <b>{selectedItem?.name}</b>. 
+                        Our staff will call you shortly to confirm your table or delivery details.
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button variant="outline" onClick={() => setStep(1)} className="h-14 rounded-xl px-8 dark:text-white">Back</Button>
+                      <Button 
+                        disabled={isSubmitting || !formData.email}
+                        onClick={handleFinalSubmit}
+                        className="flex-1 h-14 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <>Submit Request <Send size={14} className="ml-2" /></>}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <style jsx>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }

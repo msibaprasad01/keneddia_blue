@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { 
-  Calendar, 
-  ArrowRight, 
-  MapPin, 
-  Loader2, 
-  Image as ImageIcon, 
+import {
+  Calendar,
+  ArrowRight,
+  MapPin,
+  Loader2,
+  Image as ImageIcon,
   Clock,
-  ExternalLink 
+  ExternalLink,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -33,10 +33,10 @@ const MEDIA_RULES = {
 const detectBanner = (image: any) => {
   if (!image?.width || !image?.height) return false;
   const ratio = image.width / image.height;
-  
-  const isReel = Math.abs(ratio - (9/16)) <= MEDIA_RULES.reel.tolerance;
-  const isPortrait = Math.abs(ratio - (4/5)) <= MEDIA_RULES.portrait.tolerance;
-  
+
+  const isReel = Math.abs(ratio - 9 / 16) <= MEDIA_RULES.reel.tolerance;
+  const isPortrait = Math.abs(ratio - 4 / 5) <= MEDIA_RULES.portrait.tolerance;
+
   return isReel || isPortrait;
 };
 
@@ -50,7 +50,8 @@ const FALLBACK_EVENTS: ApiEvent[] = [
     title: "Weekend Jazz Night",
     locationName: "Main Lounge",
     eventDate: new Date(Date.now() + 86400000 * 2).toISOString(),
-    description: "Experience soul-stirring jazz performances by international artists.",
+    description:
+      "Experience soul-stirring jazz performances by international artists.",
     status: "ACTIVE",
     active: true,
     ctaText: "Book Table",
@@ -58,8 +59,8 @@ const FALLBACK_EVENTS: ApiEvent[] = [
       url: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=800",
       type: "IMAGE",
       width: 1080,
-      height: 1920 // Reel format
-    }
+      height: 1920, // Reel format
+    },
   },
   {
     id: "f2",
@@ -74,8 +75,8 @@ const FALLBACK_EVENTS: ApiEvent[] = [
       url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800",
       type: "IMAGE",
       width: 800,
-      height: 600 // Landscape format
-    }
+      height: 600, // Landscape format
+    },
   },
   {
     id: "f3",
@@ -90,9 +91,9 @@ const FALLBACK_EVENTS: ApiEvent[] = [
       url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800",
       type: "IMAGE",
       width: 1080,
-      height: 1350 // Portrait format
-    }
-  }
+      height: 1350, // Portrait format
+    },
+  },
 ];
 
 // ============================================================================
@@ -104,23 +105,34 @@ export default function ResturantpageEvents() {
   const [apiEvents] = useState<ApiEvent[]>(FALLBACK_EVENTS);
   const [loading] = useState(false);
 
-  if (loading) return (
-    <div className="h-96 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>
-  );
+  if (loading)
+    return (
+      <div className="h-96 flex items-center justify-center">
+        <Loader2 className="animate-spin text-primary" />
+      </div>
+    );
 
   return (
     <section id="events" className="py-16 bg-muted/30 overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground">Upcoming Events</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground">
+              Upcoming Events
+            </h2>
             <div className="h-1 w-12 bg-primary mt-2 rounded-full" />
           </div>
           <div className="flex gap-2">
-            <button onClick={() => swiper?.slidePrev()} className="p-2 rounded-full border border-border bg-background hover:bg-muted transition-colors shadow-sm">
+            <button
+              onClick={() => swiper?.slidePrev()}
+              className="p-2 rounded-full border border-border bg-background hover:bg-muted transition-colors shadow-sm"
+            >
               <ChevronLeft size={20} />
             </button>
-            <button onClick={() => swiper?.slideNext()} className="p-2 rounded-full border border-border bg-background hover:bg-muted transition-colors shadow-sm">
+            <button
+              onClick={() => swiper?.slideNext()}
+              className="p-2 rounded-full border border-border bg-background hover:bg-muted transition-colors shadow-sm"
+            >
               <ChevronRight size={20} />
             </button>
           </div>
@@ -157,7 +169,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
     const date = new Date(dateString);
     return {
       day: date.getDate(),
-      month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase()
+      month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
     };
   };
 
@@ -172,13 +184,18 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       className="group h-[520px] bg-card border rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1"
     >
       {/* Media Container */}
-      <div className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[280px]"}`}>
+      <div
+        className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[280px]"}`}
+      >
         {event.image?.url ? (
           event.image.type === "VIDEO" ? (
             <video
               src={event.image.url}
               className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
-              autoPlay loop muted playsInline
+              autoPlay
+              loop
+              muted
+              playsInline
             />
           ) : (
             <OptimizedImage
@@ -197,13 +214,15 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
         <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
           <div className="bg-black/70 backdrop-blur-md text-white px-3 py-1 rounded-lg flex flex-col items-center border border-white/10 shadow-xl">
             <span className="text-lg font-black leading-none">{day}</span>
-            <span className="text-[9px] font-bold tracking-tighter">{month}</span>
+            <span className="text-[9px] font-bold tracking-tighter">
+              {month}
+            </span>
           </div>
         </div>
 
         <div className="absolute top-4 right-4 z-20">
           <div className="bg-primary text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1">
-             <MapPin size={10} /> {event.locationName}
+            <MapPin size={10} /> {event.locationName}
           </div>
         </div>
 
@@ -216,12 +235,21 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             <p className="text-white/80 text-xs mb-6 line-clamp-2 italic">
               {event.description}
             </p>
-            <Link
-              to="#"
-              className="w-full bg-primary text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-lg active:scale-95"
-            >
-              {event.ctaText} <ArrowRight size={14} />
-            </Link>
+            {/* TWO BUTTON ROW - BANNER MODE */}
+            <div className="flex items-center gap-3 w-full">
+              <Link
+                to="#"
+                className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-lg active:scale-95"
+              >
+                {event.ctaText} <ArrowRight size={14} />
+              </Link>
+              <Link
+                to="#"
+                className="flex-1 bg-white/20 backdrop-blur-md border border-white/30 text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 hover:bg-white/30 transition-all active:scale-95"
+              >
+                View Details
+              </Link>
+            </div>
           </div>
         )}
       </div>
@@ -233,24 +261,42 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             {event.title}
           </h3>
           <div className="flex items-center gap-1.5 text-muted-foreground mt-2 mb-3">
-             <Clock size={12} className="text-primary" />
-             <span className="text-[11px] font-medium italic uppercase tracking-tighter">Starts 8:00 PM onwards</span>
+            <Clock size={12} className="text-primary" />
+            <span className="text-[11px] font-medium italic uppercase tracking-tighter">
+              Starts 8:00 PM onwards
+            </span>
           </div>
           <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
             {event.description}
           </p>
 
-          <div className="mt-auto pt-4 border-t border-dashed border-border flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Entry Detail</span>
-              <span className="text-xs font-black text-foreground">Free for Guests</span>
+          <div className="mt-auto pt-4 border-t border-dashed border-border">
+            <div className="flex items-center justify-between mb-4">
+              {/* <div className="flex flex-col">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+                  Entry Detail
+                </span>
+                <span className="text-xs font-black text-foreground">
+                  Free for Guests
+                </span>
+              </div> */}
             </div>
-            <Link
-              to="#"
-              className="bg-primary/10 text-primary p-2.5 rounded-xl hover:bg-primary hover:text-white transition-all duration-300 shadow-sm active:scale-90"
-            >
-              <ArrowRight size={18} />
-            </Link>
+
+            {/* TWO BUTTON ROW - STANDARD MODE */}
+            <div className="flex items-center gap-2">
+              <Link
+                to="#"
+                className="flex-[2] bg-primary text-white py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-md active:scale-95 uppercase tracking-wider"
+              >
+                {event.ctaText}
+              </Link>
+              <Link
+                to="#"
+                className="flex-1 bg-muted text-foreground py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-muted/80 transition-all active:scale-95 uppercase tracking-wider"
+              >
+                Details
+              </Link>
+            </div>
           </div>
         </div>
       )}

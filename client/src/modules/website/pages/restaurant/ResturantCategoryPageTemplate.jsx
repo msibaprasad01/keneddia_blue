@@ -6,6 +6,7 @@ import { siteContent } from "@/data/siteContent";
 import CategoryHero from "./components/shared/CategoryHero";
 import CategoryMenu from "./components/shared/CategoryMenu";
 import Testimonials from "./components/Testimonials";
+import ResturantSubCategories from "./resturantpage/ResturantSubCategories";
 /* Navigation for Category Page */
 const resturant_NAV_ITEMS = [
   { type: "link", label: "HOME", href: "/" },
@@ -262,6 +263,12 @@ function ResturantCategoryPageTemplate() {
             themeColor={currentCategory.themeColor}
           />
         </div>
+        <div id="categories">
+          <ResturantSubCategories
+            propertyId={propertyId}
+          />
+        </div>
+        {/* ResturantSubCategories */}
         <div id="testimonials">
           <Testimonials/>
         </div>

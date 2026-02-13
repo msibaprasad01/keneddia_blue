@@ -47,7 +47,7 @@ const WebsiteRoutes = [
   <Route key="resturant-detail" path="/resturant/:propertyId" element={<ResturantPage />} />,
 
   // Restaurant Sub-Verticals
-  <Route path="/restaurant/:propertyId/:categoryType" element={<ResturantCategoryPageTemplate />}/>,
+  <Route path="/resturant/:propertyId/:categoryType" element={<ResturantCategoryPageTemplate />}/>,
 
   <Route key="restaurant-italian" path="/restaurant/italian" element={<Italian />} />,
   <Route key="restaurant-lounge" path="/restaurant/luxury-lounge" element={<LuxuryLounge />} />,

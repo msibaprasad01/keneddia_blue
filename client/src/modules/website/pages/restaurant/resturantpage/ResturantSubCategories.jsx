@@ -10,7 +10,7 @@ const EXPERIENCES = [
     category: "Mediterranean",
     description: "Authentic Mediterranean soul in a sophisticated setting. Experience the rich heritage of Tuscany through our hand-picked ingredients.",
     image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
-    link: "/restaurant/italian"
+    link: "/resturant/italian"
   },
   {
     id: "luxury-lounge",
@@ -18,7 +18,7 @@ const EXPERIENCES = [
     category: "Premium",
     description: "Premium comfort tailored for memorable family gatherings. A refined space where elegance meets contemporary dining.",
     image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=800", 
-    link: "/restaurant/luxury-lounge"
+    link: "/resturant/luxury-lounge"
   },
   {
     id: "spicy-darbar",
@@ -26,24 +26,24 @@ const EXPERIENCES = [
     category: "Traditional",
     description: "Bold, traditional Indian flavors with a fiery spirit. Royal curries and tandoori masterpieces prepared with authentic spices.",
     image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=800",
-    link: "/restaurant/spicy-darbar"
+    link: "/resturant/spicy-darbar"
   },
   {
     id: "takeaway",
     title: "Takeaway Treats",
     category: "Gourmet",
-    description: "Gourmet quality on the go for your convenience. Perfectly packaged meals that bring the restaurant experience to your home.",
+    description: "Gourmet quality on the go for your convenience. Perfectly packaged meals that bring the resturant experience to your home.",
     image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=800", 
-    link: "/restaurant/takeaway"
+    link: "/resturant/takeaway"
   },
-  {
-    id: "bakery",
-    title: "The Bakehouse",
-    category: "Desserts",
-    description: "Handcrafted pastries and artisanal breads baked daily. Sweeten your moments with our collection of signature desserts.",
-    image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800",
-    link: "/restaurant/bakery"
-  }
+  // {
+  //   id: "bakery",
+  //   title: "The Bakehouse",
+  //   category: "Desserts",
+  //   description: "Handcrafted pastries and artisanal breads baked daily. Sweeten your moments with our collection of signature desserts.",
+  //   image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800",
+  //   link: "/resturant/bakery"
+  // }
 ];
 
 export default function ResturantSubCategories({ propertyId }) {
@@ -126,7 +126,7 @@ export default function ResturantSubCategories({ propertyId }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                onClick={() => navigate(`/restaurant/${propertyId}/${exp.id}`)}
+                onClick={() => navigate(`/resturant/${propertyId}/${exp.id}`)}
                 className={`group cursor-pointer relative flex flex-col bg-zinc-50 dark:bg-zinc-900/40 rounded-[2.5rem] border border-zinc-100 dark:border-white/5 p-6 lg:p-10 transition-all duration-500 hover:shadow-2xl hover:bg-white dark:hover:bg-zinc-900 hover:border-primary/20 min-h-[420px] ${cardWidth}`}
               >
                 {/* Corner Circular Image */}

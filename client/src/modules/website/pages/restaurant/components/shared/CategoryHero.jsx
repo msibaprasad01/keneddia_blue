@@ -33,7 +33,7 @@ export default function CategoryHero({ content, propertyId }) {
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
 
   // Fallback to propertyId 27 if none provided, for the specific path requirement
-  const restaurantPath = `/restaurant/${propertyId || 27}`;
+  const restaurantPath = `/resturant/${propertyId || 27}`;
 
   const gridImages = content.carouselImages || [
     content.heroImage,
