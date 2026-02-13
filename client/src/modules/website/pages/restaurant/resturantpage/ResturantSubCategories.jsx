@@ -65,7 +65,7 @@ export default function ResturantSubCategories({ propertyId }) {
   return (
     <section 
       ref={containerRef}
-      className="relative py-24 transition-colors duration-500 bg-white dark:bg-[#080808] overflow-hidden"
+      className="relative py-14 transition-colors duration-500 bg-white dark:bg-[#080808] overflow-hidden"
     >
       {/* ── Background Parallax Text ── */}
       <div className="absolute inset-0 pointer-events-none z-0">

@@ -77,7 +77,7 @@ const FALLBACK_OFFERS = [
     expiresAt: null,
     propertyType: "Fine Dining",
     image: {
-      url: "https://images.unsplash.com/photo-1504674900248-0877df9cc836?q=80&w=800",
+      url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
       type: "IMAGE",
       width: 1080,
       height: 1920, // To trigger reel mode logic
