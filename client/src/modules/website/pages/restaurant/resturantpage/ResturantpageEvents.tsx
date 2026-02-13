@@ -1,41 +1,64 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Calendar, ArrowRight, MapPin, Loader2, Image as ImageIcon } from "lucide-react";
+import { 
+  Calendar, 
+  ArrowRight, 
+  MapPin, 
+  Loader2, 
+  Image as ImageIcon, 
+  Clock,
+  ExternalLink 
+} from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { getEventsUpdated } from "@/Api/Api";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination } from "swiper/modules";
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+// Swiper Styles
 import "swiper/css";
 import "swiper/css/pagination";
+import "swiper/css/navigation";
 
 // ============================================================================
-// CONFIGURATION & FALLBACKS
+// MEDIA DETECTION LOGIC
 // ============================================================================
 
-const ROUTES = {
-  allEvents: "/events",
-  eventDetail: (id: number | string) => `/#`,
-} as const;
+const MEDIA_RULES = {
+  reel: { aspectRatio: "9:16", minHeight: 800, tolerance: 0.15 },
+  portrait: { aspectRatio: "4:5", minHeight: 1000, tolerance: 0.1 },
+};
 
-const STYLE_CONFIG = {
-  cardHeight: "h-[280px]",
-  cardRadius: "rounded-2xl",
-} as const;
+const detectBanner = (image: any) => {
+  if (!image?.width || !image?.height) return false;
+  const ratio = image.width / image.height;
+  
+  const isReel = Math.abs(ratio - (9/16)) <= MEDIA_RULES.reel.tolerance;
+  const isPortrait = Math.abs(ratio - (4/5)) <= MEDIA_RULES.portrait.tolerance;
+  
+  return isReel || isPortrait;
+};
+
+// ============================================================================
+// FALLBACK DATA
+// ============================================================================
 
 const FALLBACK_EVENTS: ApiEvent[] = [
   {
     id: "f1",
     title: "Weekend Jazz Night",
     locationName: "Main Lounge",
-    eventDate: new Date(Date.now() + 86400000 * 2).toISOString(), // 2 days from now
+    eventDate: new Date(Date.now() + 86400000 * 2).toISOString(),
     description: "Experience soul-stirring jazz performances by international artists.",
     status: "ACTIVE",
     active: true,
     ctaText: "Book Table",
     image: {
-      url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800",
-      type: "IMAGE"
+      url: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=800",
+      type: "IMAGE",
+      width: 1080,
+      height: 1920 // Reel format
     }
   },
   {
@@ -49,7 +72,9 @@ const FALLBACK_EVENTS: ApiEvent[] = [
     ctaText: "Get Tickets",
     image: {
       url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800",
-      type: "IMAGE"
+      type: "IMAGE",
+      width: 800,
+      height: 600 // Landscape format
     }
   },
   {
@@ -62,11 +87,176 @@ const FALLBACK_EVENTS: ApiEvent[] = [
     active: true,
     ctaText: "Join Now",
     image: {
-      url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800",
-      type: "IMAGE"
+      url: "https://images.unsplash.com/photo-1550966841-3ee5ad0110d3?q=80&w=800",
+      type: "IMAGE",
+      width: 1080,
+      height: 1350 // Portrait format
     }
   }
 ];
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
+export default function ResturantpageEvents() {
+  const [swiper, setSwiper] = useState<SwiperType | null>(null);
+  const [apiEvents] = useState<ApiEvent[]>(FALLBACK_EVENTS);
+  const [loading] = useState(false);
+
+  if (loading) return (
+    <div className="h-96 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>
+  );
+
+  return (
+    <section id="events" className="py-16 bg-muted/30 overflow-hidden">
+      <div className="container mx-auto px-6 lg:px-12">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground">Upcoming Events</h2>
+            <div className="h-1 w-12 bg-primary mt-2 rounded-full" />
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => swiper?.slidePrev()} className="p-2 rounded-full border border-border bg-background hover:bg-muted transition-colors shadow-sm">
+              <ChevronLeft size={20} />
+            </button>
+            <button onClick={() => swiper?.slideNext()} className="p-2 rounded-full border border-border bg-background hover:bg-muted transition-colors shadow-sm">
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        </div>
+
+        <Swiper
+          modules={[Autoplay, Pagination, Navigation]}
+          spaceBetween={20}
+          slidesPerView={1}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
+          onSwiper={setSwiper}
+          breakpoints={{
+            640: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+            1280: { slidesPerView: 4 },
+          }}
+          className="!pb-12"
+        >
+          {apiEvents.map((event, index) => (
+            <SwiperSlide key={event.id}>
+              <EventCard event={event} index={index} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
+    </section>
+  );
+}
+
+function EventCard({ event, index }: { event: ApiEvent; index: number }) {
+  const isBanner = detectBanner(event.image);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return {
+      day: date.getDate(),
+      month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase()
+    };
+  };
+
+  const { day, month } = formatDate(event.eventDate);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1 }}
+      className="group h-[520px] bg-card border rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1"
+    >
+      {/* Media Container */}
+      <div className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[280px]"}`}>
+        {event.image?.url ? (
+          event.image.type === "VIDEO" ? (
+            <video
+              src={event.image.url}
+              className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
+              autoPlay loop muted playsInline
+            />
+          ) : (
+            <OptimizedImage
+              src={event.image.url}
+              alt={event.title}
+              className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
+            />
+          )
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted">
+            <ImageIcon className="w-10 h-10 text-muted-foreground/20" />
+          </div>
+        )}
+
+        {/* Floating Badges */}
+        <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+          <div className="bg-black/70 backdrop-blur-md text-white px-3 py-1 rounded-lg flex flex-col items-center border border-white/10 shadow-xl">
+            <span className="text-lg font-black leading-none">{day}</span>
+            <span className="text-[9px] font-bold tracking-tighter">{month}</span>
+          </div>
+        </div>
+
+        <div className="absolute top-4 right-4 z-20">
+          <div className="bg-primary text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1">
+             <MapPin size={10} /> {event.locationName}
+          </div>
+        </div>
+
+        {/* Overlay for Banner Mode (Reel/Portrait) */}
+        {isBanner && (
+          <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out bg-gradient-to-t from-black via-black/60 to-transparent pt-20 z-20">
+            <h3 className="text-white font-serif font-bold text-xl mb-2 leading-tight">
+              {event.title}
+            </h3>
+            <p className="text-white/80 text-xs mb-6 line-clamp-2 italic">
+              {event.description}
+            </p>
+            <Link
+              to="#"
+              className="w-full bg-primary text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-lg active:scale-95"
+            >
+              {event.ctaText} <ArrowRight size={14} />
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Content for Landscape Mode (Standard Card) */}
+      {!isBanner && (
+        <div className="p-6 flex flex-col flex-1 bg-card">
+          <h3 className="text-lg font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors duration-300">
+            {event.title}
+          </h3>
+          <div className="flex items-center gap-1.5 text-muted-foreground mt-2 mb-3">
+             <Clock size={12} className="text-primary" />
+             <span className="text-[11px] font-medium italic uppercase tracking-tighter">Starts 8:00 PM onwards</span>
+          </div>
+          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+            {event.description}
+          </p>
+
+          <div className="mt-auto pt-4 border-t border-dashed border-border flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Entry Detail</span>
+              <span className="text-xs font-black text-foreground">Free for Guests</span>
+            </div>
+            <Link
+              to="#"
+              className="bg-primary/10 text-primary p-2.5 rounded-xl hover:bg-primary hover:text-white transition-all duration-300 shadow-sm active:scale-90"
+            >
+              <ArrowRight size={18} />
+            </Link>
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
 
 // ============================================================================
 // INTERFACES
@@ -84,255 +274,8 @@ interface ApiEvent {
     mediaId?: number;
     type?: "IMAGE" | "VIDEO";
     url: string;
-    fileName?: string | null;
-    alt?: string | null;
-    width?: number | null;
-    height?: number | null;
+    width?: number;
+    height?: number;
   } | null;
   ctaText: string;
-}
-
-// ============================================================================
-// MAIN COMPONENT
-// ============================================================================
-
-export default function ResturantpageEvents() {
-  const [apiEvents] = useState<ApiEvent[]>(FALLBACK_EVENTS);
-  const [loading, setLoading] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState("All Locations");
-
-  // useEffect(() => {
-  //   fetchEventData();
-  // }, []);
-
-  // const fetchEventData = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const response = await getEventsUpdated();
-
-  //     const rawEvents = Array.isArray(response?.data)
-  //       ? response.data
-  //       : Array.isArray(response)
-  //         ? response
-  //         : [];
-
-  //     const activeEvents = rawEvents
-  //       .filter((event: any) => event.status === "ACTIVE" && event.active === true)
-  //       .map((event: any) => ({
-  //         ...event,
-  //         image: event.image
-  //           ? {
-  //               mediaId: event.image.mediaId,
-  //               type: event.image.type,
-  //               url: event.image.url,
-  //               fileName: event.image.fileName,
-  //               alt: event.image.alt,
-  //               width: event.image.width,
-  //               height: event.image.height,
-  //             }
-  //           : null,
-  //       }));
-
-  //     // Use API events if available, otherwise use FALLBACK_EVENTS
-  //     if (activeEvents.length > 0) {
-  //       const sortedEvents = [...activeEvents].sort(
-  //         (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
-  //       );
-  //       setApiEvents(sortedEvents);
-  //     } else {
-  //       setApiEvents(FALLBACK_EVENTS);
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to fetch events, using fallbacks:", error);
-  //     setApiEvents(FALLBACK_EVENTS);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  const uniqueLocations = [
-    "All Locations",
-    ...Array.from(new Set(apiEvents.map((event) => event.locationName).filter(Boolean))),
-  ];
-
-  const filteredEvents =
-    selectedLocation === "All Locations"
-      ? apiEvents
-      : apiEvents.filter((event) => event.locationName === selectedLocation);
-
-  if (loading) {
-    return (
-      <section id="events" className="py-12 bg-background">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="h-64 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section id="events" className="py-12 bg-background overflow-hidden">
-      <div className="container mx-auto px-6 lg:px-12">
-        <SectionHeader
-          selectedLocation={selectedLocation}
-          setSelectedLocation={setSelectedLocation}
-          uniqueLocations={uniqueLocations}
-        />
-
-        {filteredEvents.length > 0 ? (
-          <Swiper
-            modules={[Autoplay, Pagination]}
-            spaceBetween={20}
-            slidesPerView={1}
-            autoplay={{ delay: 4000, disableOnInteraction: false }}
-            pagination={{ clickable: true, dynamicBullets: true }}
-            breakpoints={{
-              768: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-            }}
-            className="pb-12"
-          >
-            {filteredEvents.map((event, index) => (
-              <SwiperSlide key={event.id}>
-                <EventCard event={event} index={index} />
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        ) : (
-          <div className="text-center py-20 text-muted-foreground border border-dashed rounded-xl">
-            No events found for {selectedLocation}.
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-// ============================================================================
-// SUB-COMPONENTS
-// ============================================================================
-
-function SectionHeader({
-  selectedLocation,
-  setSelectedLocation,
-  uniqueLocations,
-}: {
-  selectedLocation: string;
-  setSelectedLocation: (location: string) => void;
-  uniqueLocations: string[];
-}) {
-  return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-      <div>
-        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-          Upcoming Events
-        </h2>
-        <div className="h-0.5 w-16 bg-primary" />
-      </div>
-      {/* <div className="flex items-center gap-4 w-full sm:w-auto">
-        <div className="relative flex-1 sm:flex-none">
-          <select
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
-            className="w-full appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary outline-none cursor-pointer"
-          >
-            {uniqueLocations.map((loc: string) => (
-              <option key={loc} value={loc}>
-                {loc}
-              </option>
-            ))}
-          </select>
-          <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-        </div>
-        <Link
-          to={ROUTES.allEvents}
-          className="group flex items-center shrink-0 gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all"
-        >
-          All Events <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div> */}
-    </div>
-  );
-}
-
-function EventCard({ event, index }: { event: ApiEvent; index: number }) {
-  const formatDate = (dateString: string) => {
-    try {
-      const dateObj = new Date(dateString);
-      if (isNaN(dateObj.getTime())) return dateString;
-      const day = dateObj.getDate();
-      const month = dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
-      return `${day} ${month}`;
-    } catch {
-      return dateString;
-    }
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.08, duration: 0.4 }}
-      className="group relative"
-    >
-      <Link to="#" className="block">
-        <div className={`relative ${STYLE_CONFIG.cardHeight} ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-md hover:shadow-xl transition-all duration-500`}>
-          <div className="absolute inset-0 w-full h-full overflow-hidden">
-            {event.image?.url ? (
-              event.image.type === "VIDEO" ? (
-                <video
-                  src={event.image.url}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  muted playsInline autoPlay loop
-                />
-              ) : (
-                <OptimizedImage
-                  src={event.image.url}
-                  alt={event.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              )
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-muted">
-                <ImageIcon className="w-8 h-8 text-muted-foreground/40" />
-              </div>
-            )}
-          </div>
-
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
-
-          <div className="absolute top-3 right-3 bg-primary shadow-lg rounded-md">
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5">
-              <Calendar className="w-3.5 h-3.5 text-white" />
-              <span className="text-[11px] font-bold text-white uppercase tracking-wider">
-                {formatDate(event.eventDate)}
-              </span>
-            </div>
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-            <div className="flex items-center gap-1 text-[11px] font-medium text-white/90 mb-2">
-              <MapPin className="w-3 h-3 text-primary" />
-              <span>{event.locationName}</span>
-            </div>
-
-            <h3 className="text-lg font-bold mb-1 line-clamp-1 group-hover:text-primary transition-colors drop-shadow-lg">
-              {event.title}
-            </h3>
-
-            <p className="text-[11px] text-white/80 mb-4 line-clamp-1 leading-relaxed drop-shadow-md">
-              {event.description}
-            </p>
-
-            <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-primary bg-white px-4 py-2 rounded-full group-hover:bg-primary group-hover:text-white transition-all shadow-lg uppercase tracking-wider">
-              {event.ctaText || "View Details"} <ArrowRight className="w-3 h-3" />
-            </div>
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
 }
