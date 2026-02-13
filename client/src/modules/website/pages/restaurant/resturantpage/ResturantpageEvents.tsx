@@ -87,7 +87,7 @@ const FALLBACK_EVENTS: ApiEvent[] = [
     active: true,
     ctaText: "Join Now",
     image: {
-      url: "https://images.unsplash.com/photo-1550966841-3ee5ad0110d3?q=80&w=800",
+      url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800",
       type: "IMAGE",
       width: 1080,
       height: 1350 // Portrait format

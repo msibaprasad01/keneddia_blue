@@ -18,11 +18,11 @@ import { useParams } from "react-router-dom";
 const RESTAURANT_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
   { type: "link", label: "MENU", key: "menu", href: "#menu" },
-  { type: "link", label: "OFFERS", key: "offers", href: "#offers" },
+  // { type: "link", label: "OFFERS", key: "offers", href: "#offers" },
   { type: "link", label: "ABOUT", key: "about", href: "#about" },
-  { type: "link", label: "EVENTS", key: "events", href: "#events" },
+  // { type: "link", label: "EVENTS", key: "events", href: "#events" },
   { type: "link", label: "GALLERY", key: "gallery", href: "#gallery" },
-  { type: "link", label: "CONTACT", key: "contact", href: "#contact" },
+  // { type: "link", label: "CONTACT", key: "contact", href: "#contact" },
 ];
 
 export default function RestaurantHomepage() {

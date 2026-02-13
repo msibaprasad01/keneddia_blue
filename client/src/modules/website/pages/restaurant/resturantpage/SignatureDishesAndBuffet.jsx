@@ -77,7 +77,7 @@ function BuffetCarousel({ onBook }) {
   return (
     <div className="relative w-full flex flex-col items-center py-10" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       {/* Background Glass Blur Effect */}
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[300px] bg-primary/5 dark:bg-white/[0.02] backdrop-blur-[120px] rounded-[100%] pointer-events-none" />
+      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[250px] bg-primary/5 dark:bg-white/[0.02] backdrop-blur-[120px] rounded-[100%] pointer-events-none" />
       
       <div className="relative w-full flex items-center justify-center h-[380px] lg:h-[420px]">
         {BUFFET_DATA.map((item, idx) => {
@@ -157,7 +157,7 @@ export default function EnhancedCulinaryCuration() {
       </section>
 
       {/* 2. SIGNATURE DISHES SECTION */}
-      <section className="pt-12 pb-24">
+      <section className="pt-12 pb-14">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
             <div>
