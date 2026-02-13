@@ -7,7 +7,7 @@ import CategoryHero from "./components/shared/CategoryHero";
 import CategoryMenu from "./components/shared/CategoryMenu";
 import Testimonials from "./components/Testimonials";
 /* Navigation for Category Page */
-const RESTAURANT_NAV_ITEMS = [
+const resturant_NAV_ITEMS = [
   { type: "link", label: "HOME", href: "/" },
   { type: "link", label: "MENU", href: "#menu" },
   { type: "link", label: "CONTACT", href: "#contact" },
@@ -212,6 +212,7 @@ export const CATEGORY_DATA = {
 
 function ResturantCategoryPageTemplate() {
   const { propertyId, categoryType } = useParams();
+  console.log(categoryType);
   const navigate = useNavigate();
 
   // Scroll to top on category change
@@ -225,7 +226,7 @@ function ResturantCategoryPageTemplate() {
   if (!currentCategory) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar navItems={RESTAURANT_NAV_ITEMS} logo={siteContent.brand.logo} />
+        <Navbar navItems={resturant_NAV_ITEMS} logo={siteContent.brand.logo} />
         <div className="py-40 text-center container mx-auto px-6">
           <h2 className="text-5xl font-serif mb-6 dark:text-white">
             Category Not Found
@@ -234,10 +235,10 @@ function ResturantCategoryPageTemplate() {
             The culinary vertical you are looking for is currently unavailable.
           </p>
           <button
-            onClick={() => navigate(`/restaurant/${propertyId}`)}
+            onClick={() => navigate(`/resturant/${propertyId}`)}
             className="px-8 py-3 bg-primary text-white rounded-full font-bold uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg"
           >
-            Return to Restaurant
+            Return to resturant
           </button>
         </div>
         <Footer />
@@ -248,7 +249,7 @@ function ResturantCategoryPageTemplate() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#080808] transition-colors duration-500">
       {/* Navbar */}
-      <Navbar navItems={RESTAURANT_NAV_ITEMS} logo={siteContent.brand.logo} />
+      <Navbar navItems={resturant_NAV_ITEMS} logo={siteContent.brand.logo} />
 
       <main>
         {/* Dynamic Hero Section with Parallax and SEO breadcrumbs */}
