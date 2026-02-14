@@ -5,8 +5,11 @@ import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
 import CategoryHero from "./components/shared/CategoryHero";
 import CategoryMenu from "./components/shared/CategoryMenu";
-import Testimonials from "./components/Testimonials";
 import ResturantSubCategories from "./resturantpage/ResturantSubCategories";
+import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
+import Testimonials from "./components/Testimonials";
+import ReservationForm from "./components/ReservationForm";
+
 import beverage from "@/assets/resturant_images/beverage.jpg";
 import drink1 from "@/assets/resturant_images/drink1.jpg";
 import drink2 from "@/assets/resturant_images/drink2.jpg";
@@ -250,11 +253,17 @@ function ResturantCategoryPageTemplate() {
         <div id="categories">
           <ResturantSubCategories propertyId={propertyId} />
         </div>
+        <div id="events">
+          <ResturantpageEvents/>
+        </div>
         {/* ResturantSubCategories */}
         <div id="testimonials">
           <Testimonials />
         </div>
-        {/* Testimonials */}
+        {/* ReservationForm */}
+        <div id="ReservationForm">
+          <ReservationForm />
+        </div>
       </main>
 
       {/* Footer */}

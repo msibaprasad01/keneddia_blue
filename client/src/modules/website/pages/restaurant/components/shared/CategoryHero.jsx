@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
+import React, { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -15,6 +15,7 @@ import {
   Instagram,
   Linkedin,
   Sparkles,
+  Twitter,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
@@ -25,14 +26,12 @@ const fadeIn = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, 
 const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
 
 export default function CategoryHero({ content, propertyId }) {
-  const navigate = useNavigate(); // Initialize navigate hook
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(false);
-  
+  const [showShareReactions, setShowShareReactions] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
 
-  // Fallback to propertyId 27 if none provided, for the specific path requirement
   const restaurantPath = `/resturant/${propertyId || 27}`;
 
   const gridImages = content.carouselImages || [
@@ -55,16 +54,20 @@ export default function CategoryHero({ content, propertyId }) {
 
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);
-    toast.success(!isBookmarked ? "Added to bookmark" : "Removed from bookmark");
+    isBookmarked ? toast("Removed from bookmark") : toast.success("Added to bookmark");
   };
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  
   const socialPlatforms = [
     { name: 'WhatsApp', icon: <MessageCircle size={20} />, color: 'bg-[#25D366]', link: `https://wa.me/?text=${encodeURIComponent(shareUrl)}` },
     { name: 'Facebook', icon: <Facebook size={20} />, color: 'bg-[#1877F2]', link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}` },
-    { name: 'Instagram', icon: <Instagram size={20} />, color: 'bg-[#E4405F]', link: `https://instagram.com` },
+    { name: 'X', icon: <Twitter size={18} />, color: 'bg-black', link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}` },
     { name: 'LinkedIn', icon: <Linkedin size={20} />, color: 'bg-[#0A66C2]', link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}` },
   ];
+
+  // Restored Landmarks Logic
+  const nearbyPlaces = content.nearbyPlaces || ["0.2 km from Gateway of India", "2.5 km from Marine Drive"];
 
   return (
     <motion.div initial="initial" animate="animate" className="pt-24 pb-12 bg-gradient-to-b from-background to-muted/20">
@@ -82,31 +85,10 @@ export default function CategoryHero({ content, propertyId }) {
         galleryData={[]} 
       />
 
-      <AnimatePresence>
-        {isShareModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-background border rounded-3xl p-8 w-full max-w-sm relative shadow-2xl">
-              <button onClick={() => setIsShareModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"><X size={20}/></button>
-              <h3 className="text-xl font-bold mb-6">Share {content.title}</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {socialPlatforms.map((p) => (
-                  <a key={p.name} href={p.link} target="_blank" rel="noreferrer" className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-muted/50 hover:bg-muted transition-all group">
-                    <div className={`${p.color} text-white p-3 rounded-full group-hover:scale-110 transition-transform`}>{p.icon}</div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest">{p.name}</span>
-                  </a>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
       <div className="container mx-auto px-4 md:px-8 lg:px-12">
-        {/* ── Updated Breadcrumb Navigation ── */}
         <motion.nav variants={fadeIn} className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
           <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <ChevronRight className="w-4 h-4" />
-          {/* Navigate back to the specific restaurant page */}
           <Link to={restaurantPath} className="hover:text-primary transition-colors font-medium">
             Restaurant
           </Link>
@@ -133,25 +115,74 @@ export default function CategoryHero({ content, propertyId }) {
               </span>
             </motion.h1>
 
-            <motion.div variants={fadeIn} className="flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground">
-              <div className="flex items-center gap-1.5 cursor-default">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">Ghaziabad, India • ID: {propertyId}</span>
-              </div>
-              <a href="#" className="text-sm font-bold text-destructive hover:underline flex items-center gap-1">
-                <Navigation className="w-4 h-4" /> View Map
-              </a>
-            </motion.div>
+            <div className="space-y-2">
+              <motion.div variants={fadeIn} className="flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground">
+                <div className="flex items-center gap-1.5 cursor-default">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">Ghaziabad, India • ID: {propertyId}</span>
+                </div>
+                <a href="#" className="text-sm font-bold text-destructive hover:underline flex items-center gap-1">
+                  <Navigation className="w-4 h-4" /> View Map
+                </a>
+              </motion.div>
+
+              {/* 1. RESTORED NEARBY LANDMARKS */}
+              <motion.div variants={fadeIn} className="flex flex-wrap items-center gap-4 pt-1">
+                {nearbyPlaces.map((place, i) => (
+                  <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground/80">
+                    <div className="w-1 h-1 rounded-full bg-primary/40" />
+                    <span>{place}</span>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
             
-            <motion.p variants={fadeIn} className="text-zinc-500 dark:text-zinc-400 text-base max-w-2xl font-light italic">
+            {/* <motion.p variants={fadeIn} className="text-zinc-500 dark:text-zinc-400 text-base max-w-2xl font-light italic pt-2">
                {content.description}
-            </motion.p>
+            </motion.p> */}
           </motion.div>
 
-          <motion.div variants={fadeIn} className="flex gap-3">
-            <Button variant="outline" className="rounded-full active:scale-95" onClick={() => setIsShareModalOpen(true)}>
-              <Share2 className="w-4 h-4 mr-2" /> Share
-            </Button>
+          {/* --- ACTION BUTTONS --- */}
+          <div className="flex gap-3 relative">
+            {/* 2. OPTIMIZED SHARE BUTTON WITH HOVER REACTION */}
+            <div
+              className="relative"
+              onMouseEnter={() => setShowShareReactions(true)}
+              onMouseLeave={() => setShowShareReactions(false)}
+            >
+              <AnimatePresence>
+                {showShareReactions && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: -60, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                    className="absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-2.5 py-2 flex gap-2.5 z-50 backdrop-blur-md"
+                  >
+                    {socialPlatforms.map((platform, index) => (
+                      <motion.a
+                        key={platform.name}
+                        href={platform.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.04 }}
+                        whileHover={{ scale: 1.2, y: -3 }}
+                        className={`${platform.color} text-white p-2.5 rounded-full shadow-lg transition-transform flex items-center justify-center`}
+                      >
+                        {platform.icon}
+                        <span className="sr-only">{platform.name}</span>
+                      </motion.a>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <Button variant="outline" className="rounded-full active:scale-95">
+                <Share2 className="w-4 h-4 mr-2" /> Share
+              </Button>
+            </div>
+
             <Button 
               variant="outline" 
               className={`rounded-full active:scale-95 transition-all ${isBookmarked ? 'bg-destructive/10 border-destructive text-destructive' : ''}`} 
@@ -160,7 +191,7 @@ export default function CategoryHero({ content, propertyId }) {
               <Heart className={`w-4 h-4 mr-2 ${isBookmarked ? 'fill-current text-destructive' : ''}`} /> 
               {isBookmarked ? "Saved" : "Save"}
             </Button>
-          </motion.div>
+          </div>
         </div>
 
         <motion.div variants={fadeIn} className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[320px] md:h-[440px] rounded-3xl overflow-hidden shadow-xl relative">

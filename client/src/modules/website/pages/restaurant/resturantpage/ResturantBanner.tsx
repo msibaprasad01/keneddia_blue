@@ -15,14 +15,12 @@ import {
   Facebook,
   Instagram,
   Linkedin,
+  Twitter,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import { toast } from "react-hot-toast";
-
-// ... (Interfaces and Fallback Data stay the same as your original code)
-// ─── Interfaces ─────────────────────────────────────────────────────────────
 
 interface PropertyMedia {
   mediaId: number | null;
@@ -58,8 +56,6 @@ interface GalleryItem {
   media: PropertyMedia;
   isActive: boolean;
 }
-
-// ─── Fallback Data (Explicitly Typed) ───────────────────────────────────────
 
 const FALLBACK_RESTAURANT: RestaurantData = {
   id: 0,
@@ -125,15 +121,13 @@ const fadeIn = {
 const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
 
 function ResturantBanner() {
-  const [restaurant, setRestaurant] = useState(FALLBACK_RESTAURANT);
-  const [galleryData, setGalleryData] = useState([]);
+  const [restaurant, setRestaurant] =
+    useState<RestaurantData>(FALLBACK_RESTAURANT);
+  const [galleryData, setGalleryData] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(false);
-
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
-
-  // --- State for Share Hover ---
   const [showShareReactions, setShowShareReactions] = useState(false);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
@@ -143,9 +137,11 @@ function ResturantBanner() {
       ...(restaurant?.media || []),
       ...galleryData.map((g) => g.media),
     ];
-    if (combined.length === 0) return FALLBACK_RESTAURANT.media;
-    return combined.filter((m) => m && m.url);
+    return combined.length === 0
+      ? FALLBACK_RESTAURANT.media
+      : combined.filter((m) => m && m.url);
   }, [restaurant?.media, galleryData]);
+
   const socialPlatforms = [
     {
       name: "WhatsApp",
@@ -159,11 +155,12 @@ function ResturantBanner() {
       color: "bg-[#1877F2]",
       link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
     },
-    // {
-    //   name: "Instagram",
-    //   icon: <Instagram size={20} />,
-    //   color: "https://instagram.com",
-    // },
+    {
+      name: "X (Twitter)",
+      icon: <Twitter size={18} />,
+      color: "bg-black",
+      link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`,
+    },
     {
       name: "LinkedIn",
       icon: <Linkedin size={20} />,
@@ -174,14 +171,12 @@ function ResturantBanner() {
 
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);
-    if (!isBookmarked) {
-      toast.success("Added to bookmark");
-    } else {
-      toast("Removed from bookmark");
-    }
+    isBookmarked
+      ? toast("Removed from bookmark")
+      : toast.success("Added to bookmark");
   };
 
-  const openGalleryAt = (index) => {
+  const openGalleryAt = (index: number) => {
     setInitialGalleryIndex(index);
     setIsGalleryOpen(true);
   };
@@ -235,7 +230,10 @@ function ResturantBanner() {
         </motion.nav>
 
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
-          <motion.div variants={staggerContainer} className="space-y-3 w-full">
+          <motion.div
+            variants={staggerContainer}
+            className="space-y-3 w-full text-left"
+          >
             <motion.div variants={fadeIn} className="flex items-center gap-3">
               <span className="inline-flex bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
                 {restaurant.type}
@@ -253,22 +251,49 @@ function ResturantBanner() {
             >
               {restaurant.name}
             </motion.h1>
-            <motion.div
-              variants={fadeIn}
-              className="flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground"
-            >
-              <div className="flex items-center gap-1.5 cursor-default">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">
-                  {restaurant.location}, {restaurant.city}
-                </span>
-              </div>
-            </motion.div>
+
+            <div className="space-y-2">
+              <motion.div
+                variants={fadeIn}
+                className="flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground"
+              >
+                <div className="flex items-center gap-1.5 cursor-default">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">
+                    {restaurant.location}, {restaurant.city}
+                  </span>
+                </div>
+                {restaurant.coordinates && (
+                  <a
+                    href={`https://www.google.com/maps?q=${restaurant.coordinates.lat},${restaurant.coordinates.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-bold text-destructive hover:underline flex items-center gap-1"
+                  >
+                    <Navigation className="w-4 h-4" /> View Map
+                  </a>
+                )}
+              </motion.div>
+
+              <motion.div
+                variants={fadeIn}
+                className="flex flex-wrap items-center gap-4 pt-1"
+              >
+                {restaurant.nearbyPlaces?.map((place, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground/80"
+                  >
+                    <div className="w-1 h-1 rounded-full bg-primary/40" />
+                    <span>{place}</span>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
           </motion.div>
 
-          {/* --- ACTION BUTTONS --- */}
           <div className="flex gap-3 relative">
-            {/* ── SHARE BUTTON WITH HOVER REACTION ── */}
+            {/* SHARE BUTTON WITH REFINED POPUP SPACING */}
             <div
               className="relative"
               onMouseEnter={() => setShowShareReactions(true)}
@@ -277,10 +302,10 @@ function ResturantBanner() {
               <AnimatePresence>
                 {showShareReactions && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.8 }}
-                    animate={{ opacity: 1, y: -55, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.8 }}
-                    className="absolute left-1/2 -translate-x-1/2 bottom-12 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-2 py-1.5 flex gap-2 z-50 backdrop-blur-md"
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: -60, scale: 1 }} // Added gap as requested
+                    exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                    className="absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-2.5 py-2 flex gap-2.5 z-50 backdrop-blur-md"
                   >
                     {socialPlatforms.map((platform, index) => (
                       <motion.a
@@ -291,7 +316,7 @@ function ResturantBanner() {
                         initial={{ opacity: 0, scale: 0 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.04 }}
-                        whileHover={{ scale: 1.2, y: -5 }}
+                        whileHover={{ scale: 1.2, y: -3 }}
                         className={`${platform.color} text-white p-2.5 rounded-full shadow-lg transition-transform flex items-center justify-center`}
                       >
                         {platform.icon}
@@ -310,7 +335,6 @@ function ResturantBanner() {
               </Button>
             </div>
 
-            {/* ── SAVE BUTTON (Normal Click Logic) ── */}
             <Button
               variant="outline"
               className={`rounded-full active:scale-95 transition-all ${isBookmarked ? "bg-destructive/10 border-destructive text-destructive" : ""}`}
@@ -324,7 +348,6 @@ function ResturantBanner() {
           </div>
         </div>
 
-        {/* --- PHOTO GRID --- */}
         <motion.div
           variants={fadeIn}
           className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[320px] md:h-[440px] rounded-3xl overflow-hidden shadow-xl relative"
@@ -366,7 +389,6 @@ function ResturantBanner() {
               src={topGridImages[3]?.url || ""}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
-
             <div className="absolute inset-0 z-20 flex items-center justify-center">
               <button
                 onClick={(e) => {

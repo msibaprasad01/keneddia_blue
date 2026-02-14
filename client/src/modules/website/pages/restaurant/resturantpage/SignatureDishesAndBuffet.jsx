@@ -8,12 +8,12 @@ import {
   UtensilsCrossed,
   Heart,
   ChefHat,
-  Quote
+  Quote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ResturantpageOffers from "./ResturantpageOffers";
-
+import { useNavigate } from "react-router-dom";
 // --- Data ---
 const BUFFET_DATA = [
   {
@@ -54,6 +54,7 @@ const SIGNATURE_DATA = [
       "Our legendary cream-based curry with succulent clay-oven grilled chicken pieces.",
     img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?q=80&w=800",
     likes: 1240,
+    category:"italian",
   },
   {
     id: "s2",
@@ -63,6 +64,7 @@ const SIGNATURE_DATA = [
       "Jumbo prawns marinated in a secret coastal spice mix and charred to perfection.",
     img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?q=80&w=800",
     likes: 850,
+    category:"italian",
   },
   {
     id: "s3",
@@ -72,6 +74,7 @@ const SIGNATURE_DATA = [
       "Hand-rolled translucent dumplings infused with aromatic black truffle oil.",
     img: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?q=80&w=800",
     likes: 2100,
+    category:"italian",
   },
   {
     id: "s4",
@@ -81,10 +84,10 @@ const SIGNATURE_DATA = [
       "Fiery wok-tossed prawns glazed in a bold and spicy authentic Szechuan pepper sauce.",
     img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
     likes: 1800,
+    category:"italian",
   },
 ];
 
-// ─── BUFFET CAROUSEL (Reduced Image Size & Centered) ──────────────────────────
 function BuffetCarousel({ onBook }) {
   const [active, setActive] = useState(0);
   const total = BUFFET_DATA.length;
@@ -117,7 +120,6 @@ function BuffetCarousel({ onBook }) {
                 key={item.id}
                 animate={positionStyles[pos]}
                 transition={{ duration: 0.6 }}
-                // Decreased width to ~55% of container for centered compact look
                 className={`absolute inset-0 m-auto w-[55%] h-[85%] rounded-[32px] overflow-hidden shadow-xl border border-white/20 backdrop-blur-md ${pos === "center" ? "pointer-events-auto" : "pointer-events-none"}`}
               >
                 <img
@@ -135,7 +137,7 @@ function BuffetCarousel({ onBook }) {
                   <h3 className="text-white font-serif text-2xl mb-1">
                     {item.name}
                   </h3>
-                  <p className="text-white/70 text-sm italic mb-4 line-clamp-1">
+                  <p className="text-white/70 text-xs italic mb-4 line-clamp-1">
                     {item.remark}
                   </p>
                   <button
@@ -149,13 +151,12 @@ function BuffetCarousel({ onBook }) {
             );
           })}
         </div>
-        {/* Mobile: Row Cards on click popup */}
         <div className="md:hidden w-full space-y-3 px-2">
           {BUFFET_DATA.map((item) => (
             <div
               key={item.id}
               onClick={() => onBook(item)}
-              className="p-4 rounded-xl flex items-center justify-between shadow-sm border border-zinc-100"
+              className="p-4 rounded-xl flex items-center justify-between shadow-sm border border-zinc-100 backdrop-blur-sm"
               style={{ background: item.bg }}
             >
               <div className="text-left">
@@ -193,30 +194,52 @@ function AnimatedCounter({ target }) {
 }
 
 export default function EnhancedCulinaryCuration() {
+  const navigate = useNavigate();
   const [bookingModal, setBookingModal] = useState({
     isOpen: false,
     item: null,
+    type: "book",
   });
+  const [likedItems, setLikedItems] = useState({});
+
+  const handleLikeSubmit = () => {
+    if (bookingModal.item) {
+      setLikedItems((prev) => ({ ...prev, [bookingModal.item.id]: true }));
+      setBookingModal({ isOpen: false, item: null, type: "book" });
+    }
+  };
 
   return (
     <div className="bg-white dark:bg-[#050505] transition-colors duration-500 pb-10">
+      {/* 1. BUFFET & OFFERS */}
       <section className="pt-20 pb-12 border-b border-zinc-100 dark:border-white/5">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-left">
           <div className="flex flex-col lg:flex-row gap-10 items-stretch">
-            <div className="lg:w-[70%] flex flex-col pt-4">
-              <div className="mb-6">
+            <div className="lg:w-[70%] flex flex-col pt-8">
+              <div className="mb-6 h-[100px]">
                 <h2 className="text-3xl md:text-4xl font-serif dark:text-white mb-2">
                   Buffet <span className="italic text-primary">Selection</span>
                 </h2>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm font-light tracking-wide truncate">
+                <p className="text-zinc-500 dark:text-zinc-400 text-xs font-light truncate">
                   Explore international delicacies curated for every occasion.
                 </p>
               </div>
               <BuffetCarousel
-                onBook={(item) => setBookingModal({ isOpen: true, item })}
+                onBook={(item) =>
+                  setBookingModal({ isOpen: true, item, type: "book" })
+                }
               />
             </div>
-            <div className="lg:w-[30%] bg-zinc-50/50 dark:bg-white/[0.02] rounded-[40px] p-8 border border-zinc-100 dark:border-white/5">
+
+            <div className="lg:w-[30%] bg-zinc-50/50 dark:bg-white/[0.02] rounded-[40px] p-8 border border-zinc-100 dark:border-white/5 flex flex-col justify-end">
+              <div className="mb-6 h-[80px]">
+                <h3 className="text-2xl font-serif dark:text-white mb-1">
+                  Today's <span className="italic text-primary">Deals</span>
+                </h3>
+                <p className="text-zinc-500 dark:text-zinc-400 text-[10px] font-light truncate">
+                  Claim your rewards on your favorite culinary treats.
+                </p>
+              </div>
               <ResturantpageOffers />
             </div>
           </div>
@@ -270,55 +293,60 @@ export default function EnhancedCulinaryCuration() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8 pt-10">
             {SIGNATURE_DATA.map((item) => (
-              <React.Fragment key={item.id}>
-                {/* Desktop: Compact Square Card with no Book button */}
-                <div className="hidden md:flex group relative bg-zinc-50 dark:bg-zinc-900/40 rounded-[2.5rem] border border-zinc-100 dark:border-white/5 p-8 flex-col items-center text-center">
-                  <div className="relative w-full aspect-square rounded-[2rem] overflow-hidden border-4 border-white dark:border-zinc-800 shadow-xl -mt-24 mb-2 transition-transform duration-700 group-hover:scale-105">
-                    <img
-                      src={item.img}
-                      className="w-full h-full object-cover"
-                      alt=""
+              <div
+                key={item.id}
+                onClick={() => navigate(`/resturant/${item.category}`)}
+                className="group relative bg-zinc-50 dark:bg-zinc-900/40 rounded-[2.5rem] border border-zinc-100 dark:border-white/5 p-8 flex-col items-center text-center flex cursor-pointer"
+              >
+                {/* Image Section */}
+                <div className="relative w-full aspect-square rounded-[2rem] overflow-hidden border-4 border-white dark:border-zinc-800 shadow-xl -mt-24 mb-4 transition-transform duration-700 group-hover:scale-105">
+                  <img
+                    src={item.img}
+                    className="w-full h-full object-cover"
+                    alt={item.name}
+                  />
+
+                  {/* Heart Icon in "Cross" Section */}
+                  <button
+                    onClick={() =>
+                      setBookingModal({ isOpen: true, item, type: "like" })
+                    }
+                    className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-md rounded-full shadow-md text-primary hover:scale-110 transition-transform"
+                  >
+                    <Heart
+                      size={18}
+                      className={likedItems[item.id] ? "fill-primary" : ""}
                     />
-                  </div>
-                  <div className="flex flex-col w-full items-center">
-                    <h3 className="text-2xl font-serif text-zinc-900 dark:text-white mb-2 leading-tight">
-                      {item.name}
-                    </h3>
-                    <p className="text-zinc-500 text-[13px] leading-snug line-clamp-2 italic mb-3">
-                      "{item.description}"
-                    </p>
-                    {/* Like Counter */}
-                    <div className="flex items-center justify-center gap-1.5 text-primary">
-                      <Heart size={14} className="fill-primary" />
-                      <span className="text-sm font-black">
-                        <AnimatedCounter target={item.likes} />+
-                      </span>
-                    </div>
-                  </div>
+                  </button>
                 </div>
 
-                {/* Mobile: Row card (Logo | Name | Like) */}
-                <div className="md:hidden flex items-center gap-4 p-3 bg-zinc-50 rounded-2xl border border-zinc-100">
-                  <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border-2 border-white shadow-sm">
-                    <img
-                      src={item.img}
-                      className="w-full h-full object-cover"
-                      alt=""
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-serif text-lg font-bold text-zinc-900">
-                      {item.name}
-                    </h4>
-                    <div className="flex items-center gap-1 text-primary mt-1">
-                      <Heart size={12} className="fill-primary" />
-                      <span className="text-sm font-black">
-                        <AnimatedCounter target={item.likes} />+
-                      </span>
-                    </div>
+                {/* Arrow Section: Item Category Tag */}
+                <span className="text-[10px] font-bold text-primary uppercase tracking-widest mb-2">
+                  {item.cuisine}
+                </span>
+
+                <div className="flex flex-col w-full items-center">
+                  <h3 className="text-2xl font-serif text-zinc-900 dark:text-white mb-2 leading-tight">
+                    {item.name}
+                  </h3>
+                  <p className="text-zinc-500 text-[13px] leading-snug line-clamp-2 italic mb-3">
+                    "{item.description}"
+                  </p>
+
+                  {/* Like Counter */}
+                  <div className="flex items-center justify-center gap-1.5 text-primary">
+                    <Heart size={14} className="fill-primary" />
+                    <span className="text-sm font-black">
+                      <AnimatedCounter
+                        target={
+                          likedItems[item.id] ? item.likes + 1 : item.likes
+                        }
+                      />
+                      +
+                    </span>
                   </div>
                 </div>
-              </React.Fragment>
+              </div>
             ))}
           </div>
         </div>
@@ -333,14 +361,23 @@ export default function EnhancedCulinaryCuration() {
               className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl relative text-left"
             >
               <button
-                onClick={() => setBookingModal({ isOpen: false, item: null })}
+                onClick={() =>
+                  setBookingModal({ isOpen: false, item: null, type: "book" })
+                }
                 className="absolute top-6 right-6 p-2 text-zinc-400"
               >
                 <X />
               </button>
-              <h3 className="text-2xl font-serif mb-6 dark:text-white">
-                Reserve {bookingModal.item?.name}
+              <h3 className="text-2xl font-serif mb-2 dark:text-white">
+                {bookingModal.type === "like"
+                  ? "Show your love"
+                  : `Reserve ${bookingModal.item?.name}`}
               </h3>
+              <p className="text-xs text-zinc-500 mb-6 italic">
+                {bookingModal.type === "like"
+                  ? "Share your details to like this dish."
+                  : "Please provide your details below."}
+              </p>
               <div className="space-y-4">
                 <Input
                   placeholder="Your Name"
@@ -350,8 +387,22 @@ export default function EnhancedCulinaryCuration() {
                   placeholder="Phone Number"
                   className="h-14 rounded-2xl bg-zinc-50 border-none"
                 />
-                <Button className="w-full h-14 bg-primary rounded-2xl font-black uppercase shadow-lg">
-                  Confirm Request
+                <Button
+                  onClick={
+                    bookingModal.type === "like"
+                      ? handleLikeSubmit
+                      : () =>
+                          setBookingModal({
+                            isOpen: false,
+                            item: null,
+                            type: "book",
+                          })
+                  }
+                  className="w-full h-14 bg-primary rounded-2xl font-black uppercase shadow-lg"
+                >
+                  {bookingModal.type === "like"
+                    ? "Submit Like"
+                    : "Confirm Request"}
                 </Button>
               </div>
             </motion.div>
