@@ -66,7 +66,6 @@ const getYouTubeEmbedUrl = (url: string) => {
   const videoId = match?.[1];
   if (!videoId) return url;
 
-  // Added mute=1 (required for autoplay) and enablejsapi=1
   return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&enablejsapi=1`.replace(
     /\s+/g,
     "",
@@ -79,23 +78,22 @@ export default function AboutUsSection() {
   const [ventures, setVentures] = useState<Venture[]>([]);
   const [recognitions, setRecognitions] = useState<Recognition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // State to track hover for pausing
+  const [isPaused, setIsPaused] = useState(false);
 
   const fetchAboutUs = async () => {
     try {
       setIsLoading(true);
-
       const response = await getAboutUsAdmin();
       const data = response?.data || response;
 
       if (Array.isArray(data)) {
-        // 🔑 Homepage rule: exclude property-specific About Us
         const homepageOnly = data.filter(
           (item) => item.propertyTypeId == null && item.isActive,
         );
 
         if (homepageOnly.length > 0) {
           const latestData = [...homepageOnly].sort((a, b) => b.id - a.id)[0];
-
           setAboutUsData(latestData);
         } else {
           setAboutUsData(null);
@@ -139,7 +137,6 @@ export default function AboutUsSection() {
     }
   }, [aboutUsData]);
 
-  // Construct dynamic carousel items
   const mediaItems: { type: string; src: string }[] = [];
   if (aboutUsData?.videoUrl) {
     mediaItems.push({
@@ -159,16 +156,16 @@ export default function AboutUsSection() {
     mediaItems.push({ type: "image", src: siteContent.images.about.main.src });
   }
 
-  // --- NEW: Auto Carousel Scroll Logic ---
+  // --- Updated: Auto Carousel Scroll with Pause and Slower Speed ---
   useEffect(() => {
-    if (mediaItems.length <= 1) return;
+    if (mediaItems.length <= 1 || isPaused) return;
 
     const interval = setInterval(() => {
       setCurrentMediaIndex((prev) => (prev + 1) % mediaItems.length);
-    }, 5000); // Scrolls every 5 seconds
+    }, 8000); // Increased to 8 seconds for slower movement
 
     return () => clearInterval(interval);
-  }, [mediaItems.length]);
+  }, [mediaItems.length, isPaused]);
 
   if (isLoading)
     return (
@@ -184,8 +181,11 @@ export default function AboutUsSection() {
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-stretch">
           {/* Left Column: Media Showcase Carousel */}
-          <div className="relative group flex flex-col">
-            {/* FIX: Use aspect-video to maintain a fixed frame size */}
+          <div 
+            className="relative group flex flex-col"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
             <div className="relative flex-1 aspect-video md:aspect-auto md:min-h-[500px] rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -193,7 +193,7 @@ export default function AboutUsSection() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 0.8 }} // Slower transition animation
                   className="w-full h-full absolute inset-0"
                 >
                   {mediaItems[currentMediaIndex].type === "video" ? (
@@ -273,11 +273,11 @@ export default function AboutUsSection() {
                     key={venture.id}
                     className="flex flex-col items-center space-y-3 group cursor-pointer"
                   >
-                    <div className="w-16 h-16 rounded-full flex items-center justify-center bg-slate-900/90 border border-white/10 transition-transform group-hover:-translate-y-1 overflow-hidden">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center bg-slate-900/90 border border-white/10 transition-transform group-hover:-translate-y-1 overflow-hidden p-2">
                       <img
                         src={venture.logoUrl}
                         alt={venture.ventureName}
-                        className="w-10 h-10 object-contain rounded-full"
+                        className="w-full h-full object-scale-down"
                       />
                     </div>
                     <span className="text-[10px] uppercase tracking-widest font-medium opacity-60 group-hover:opacity-100 transition-opacity">

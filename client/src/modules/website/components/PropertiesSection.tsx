@@ -51,7 +51,7 @@ const CarouselItem = ({
 
   return (
     <div
-      className={`absolute inset-0 transition-all duration-1000 ${
+      className={`absolute inset-0 transition-all duration-1000 cursor-pointer ${
         isActive
           ? "opacity-100 z-10 pointer-events-auto"
           : "opacity-0 z-0 pointer-events-none"
@@ -72,8 +72,11 @@ const CarouselItem = ({
       <div className="absolute inset-0 flex items-center px-8 lg:px-12">
         <div className="max-w-xl text-white">
           <button
-            onClick={() => onShare(property)}
-            className="mb-4 p-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onShare(property);
+            }}
+            className="mb-4 p-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-colors cursor-pointer"
           >
             <Share2 className="w-4 h-4" />
           </button>
@@ -109,16 +112,16 @@ const CarouselItem = ({
           </div>
 
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               const type = property.propertyType?.toLowerCase();
-
               if (type === "resturant" || type === "restaurant") {
                 navigate(`/resturant/${property.propertyId}`);
               } else {
                 navigate(`/hotels/${property.propertyId}`);
               }
             }}
-            className="inline-flex items-center gap-3 uppercase text-sm font-bold tracking-widest group"
+            className="inline-flex items-center gap-3 uppercase text-sm font-bold tracking-widest group cursor-pointer"
           >
             Explore Now
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-primary transition-all">
@@ -137,9 +140,8 @@ export default function PropertiesSection() {
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [selectedType, setSelectedType] = useState("All Types");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // Mock searchData and selectedRoomId for the booking function
-  // In your real code, these likely come from a context or state
   const [searchData] = useState({
     checkIn: new Date(),
     checkOut: new Date(new Date().setDate(new Date().getDate() + 1)),
@@ -167,7 +169,7 @@ export default function PropertiesSection() {
               .filter((l: any) => l.isActive)
               .map((l: any) => ({
                 id: l.id,
-                propertyId: parent.id, // Fixed: correctly mapping parent propertyId
+                propertyId: parent.id,
                 listingId: l.id,
                 propertyName: parent.propertyName || "Unnamed Property",
                 propertyType:
@@ -206,10 +208,6 @@ export default function PropertiesSection() {
       toast.error("Please select check-in and check-out dates");
       return;
     }
-    if (!selectedRoomId) {
-      toast.error("Please select a room");
-      return;
-    }
     const token = "ODQ2Mg==";
     const params = new URLSearchParams({
       token,
@@ -236,10 +234,10 @@ export default function PropertiesSection() {
     setActiveIndex((prev) => (prev === 0 ? filtered.length - 1 : prev - 1));
 
   useEffect(() => {
-    if (filtered.length <= 1) return;
+    if (filtered.length <= 1 || isPaused) return;
     const timer = setInterval(nextSlide, 8000);
     return () => clearInterval(timer);
-  }, [filtered.length, activeIndex]);
+  }, [filtered.length, activeIndex, isPaused]);
 
   const active = filtered[activeIndex];
 
@@ -297,7 +295,11 @@ export default function PropertiesSection() {
 
         {filtered.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-[65%_32%] gap-8">
-            <div className="relative h-[400px] md:h-[550px] rounded-3xl overflow-hidden shadow-2xl group border border-white/10">
+            <div 
+              className="relative h-[400px] md:h-[550px] rounded-3xl overflow-hidden shadow-2xl group border border-white/10"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
               {filtered.map((p, i) => (
                 <CarouselItem
                   key={`${p.listingId}-${i}`}
@@ -310,14 +312,14 @@ export default function PropertiesSection() {
               {filtered.length > 1 && (
                 <>
                   <button
-                    onClick={prevSlide}
-                    className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"
+                    onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+                    className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                   >
                     <ChevronLeft size={28} />
                   </button>
                   <button
-                    onClick={nextSlide}
-                    className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"
+                    onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                   >
                     <ChevronRight size={28} />
                   </button>
@@ -399,18 +401,17 @@ export default function PropertiesSection() {
                 <div className="mt-8 space-y-4">
                   <button
                     onClick={handleBookNow}
-                    className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
+                    className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
                   >
                     Book Your Stay <ArrowRight size={20} />
                   </button>
 
-                  {/* Added Call and Email buttons as per image */}
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() =>
                         (window.location.href = `tel:+911234567890`)
                       }
-                      className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors"
+                      className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer"
                     >
                       <Phone size={18} /> Call
                     </button>
@@ -418,7 +419,7 @@ export default function PropertiesSection() {
                       onClick={() =>
                         (window.location.href = `mailto:info@kennediahotels.com`)
                       }
-                      className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors"
+                      className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer"
                     >
                       <Mail size={18} /> Email
                     </button>

@@ -176,6 +176,8 @@ export const getRecognitionsByAboutUsId = (aboutUsId) =>
 export const getPublicRecognitionsByAboutUsId = (aboutUsId) =>
   API.get(`api/v1/public/about-us/${aboutUsId}/recognitions`);
 
+export const addGuestExperienceSectionHeader = (data) =>API.post("api/v1/guest-experience/section", data);
+export const getGuestExperienceSectionHeader = () =>API.get("/api/v1/guest-experience/section");
 export const createGuestExperienceByGuest = (formData) =>
   API.post("api/v1/guest-experience/byGuests", formData);
 export const deleteGuestExperience = (id) =>

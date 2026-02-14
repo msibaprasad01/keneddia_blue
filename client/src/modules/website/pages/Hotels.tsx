@@ -131,28 +131,35 @@ const selectMediaByTheme = (
 };
 
 const transformApiDataToSlides = (content: ApiHeroItem[]): HeroSlide[] => {
-  const filteredContent = content.filter(
-    (item) => item.active === true && item.showOnPropertyPage === true
-  );
+  // Relaxed filter: Only requires the item to be active
+  const filteredContent = content.filter((item) => item.active === true);
 
+  // Sort by ID descending (latest first) and take the top 3
   const latestThree = filteredContent.sort((a, b) => b.id - a.id).slice(0, 3);
 
-  return latestThree.map((item) => ({
-    id: item.id,
-    type: "image" as const,
-    media: "",
-    title: item.mainTitle || "Welcome to Our Hotels",
-    subtitle: item.subTitle || "Experience Luxury",
-    backgroundAll: item.backgroundAll || [],
-    backgroundLight: item.backgroundLight || [],
-    backgroundDark: item.backgroundDark || [],
-  }));
-};
+  return latestThree.map((item) => {
+    // Correctly extract the media URL from the available arrays
+    const mediaObj =
+      item.backgroundAll?.[0] ||
+      item.backgroundLight?.[0] ||
+      item.backgroundDark?.[0];
 
+    return {
+      id: item.id,
+      type: (mediaObj?.type?.toLowerCase() as "video" | "image") || "image",
+      media: mediaObj?.url || "", // This was previously hardcoded to ""
+      title: item.mainTitle || "Welcome to Our Hotels",
+      subtitle: item.subTitle || "Experience Luxury",
+      backgroundAll: item.backgroundAll || [],
+      backgroundLight: item.backgroundLight || [],
+      backgroundDark: item.backgroundDark || [],
+    };
+  });
+};
 const transformAboutUsData = (content: AboutUsSection[]): AboutUsSection[] => {
   // Filter: active AND showOnPropertyPage
   const filteredContent = content.filter(
-    (item) => item.isActive === true && item.showOnPropertyPage === true
+    (item) => item.isActive === true && item.showOnPropertyPage === true,
   );
 
   // Get latest 3 by ID
@@ -185,7 +192,7 @@ export default function Hotels() {
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
   const [currentAboutIndex, setCurrentAboutIndex] = useState(0);
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark">(
-    getCurrentTheme()
+    getCurrentTheme(),
   );
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [aboutSections, setAboutSections] = useState<AboutUsSection[]>([]);
@@ -193,7 +200,9 @@ export default function Hotels() {
   const [loadingAbout, setLoadingAbout] = useState(true);
   const [hotelTypeId, setHotelTypeId] = useState<number | null>(null);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
-  const [aboutImageErrors, setAboutImageErrors] = useState<Set<string>>(new Set());
+  const [aboutImageErrors, setAboutImageErrors] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Fetch Property Types and get Hotel ID
   useEffect(() => {
@@ -204,7 +213,7 @@ export default function Hotels() {
 
         if (Array.isArray(data)) {
           const hotelType = data.find(
-            (type) => type.isActive && type.typeName?.toLowerCase() === "hotel"
+            (type) => type.isActive && type.typeName?.toLowerCase() === "hotel",
           );
 
           if (hotelType) {
@@ -315,7 +324,9 @@ export default function Hotels() {
   // About Us Auto-play (synced with hero)
   useEffect(() => {
     const aboutCount =
-      aboutSections.length > 0 ? aboutSections.length : FALLBACK_ABOUT_DATA.length;
+      aboutSections.length > 0
+        ? aboutSections.length
+        : FALLBACK_ABOUT_DATA.length;
 
     const timer = setInterval(() => {
       setCurrentAboutIndex((prev) => (prev + 1) % aboutCount);
@@ -331,7 +342,7 @@ export default function Hotels() {
         currentTheme,
         slide.backgroundAll,
         slide.backgroundLight,
-        slide.backgroundDark
+        slide.backgroundDark,
       );
 
       return {
@@ -339,7 +350,7 @@ export default function Hotels() {
         url: media?.url || "",
       };
     },
-    [currentTheme]
+    [currentTheme],
   );
 
   // Get About Us image from media array
@@ -350,7 +361,9 @@ export default function Hotels() {
     }
 
     // Get first image from media array
-    const firstMedia = section.media.find((m: AboutUsMedia) => m.type === "IMAGE");
+    const firstMedia = section.media.find(
+      (m: AboutUsMedia) => m.type === "IMAGE",
+    );
     return firstMedia?.url || siteContent.images.hotels.delhi;
   }, []);
 
@@ -402,7 +415,7 @@ export default function Hotels() {
         />
       );
     },
-    [getCurrentMedia, currentHeroIndex, imageErrors, handleImageError]
+    [getCurrentMedia, currentHeroIndex, imageErrors, handleImageError],
   );
 
   const displaySlides = heroSlides.length > 0 ? heroSlides : [];
@@ -503,7 +516,7 @@ export default function Hotels() {
                         : "bg-white/30 hover:bg-white/50"
                     }`}
                   />
-                )
+                ),
               )}
             </div>
           </>
@@ -538,7 +551,7 @@ export default function Hotels() {
                 <div className="aspect-[4/3] rounded-xl overflow-hidden relative z-10 border border-border/10 shadow-2xl">
                   {(() => {
                     const imageUrl = getAboutImage(
-                      displayAboutSections[currentAboutIndex]
+                      displayAboutSections[currentAboutIndex],
                     );
 
                     // Check if it's a string URL (from API) or OptimizedImage object (fallback)
@@ -560,7 +573,8 @@ export default function Hotels() {
                           alt={
                             useAboutFallback
                               ? displayAboutSections[currentAboutIndex].subtitle
-                              : displayAboutSections[currentAboutIndex].sectionTitle
+                              : displayAboutSections[currentAboutIndex]
+                                  .sectionTitle
                           }
                           className="w-full h-full object-cover"
                           onError={() => handleAboutImageError(imageUrl)}
@@ -601,7 +615,8 @@ export default function Hotels() {
                       <h2 className="text-3xl md:text-4xl font-serif text-foreground leading-tight mb-3">
                         {useAboutFallback
                           ? displayAboutSections[currentAboutIndex].subtitle
-                          : displayAboutSections[currentAboutIndex].sectionTitle}
+                          : displayAboutSections[currentAboutIndex]
+                              .sectionTitle}
                       </h2>
                     </div>
 

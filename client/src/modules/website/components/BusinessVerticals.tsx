@@ -1,31 +1,38 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Building2, Coffee, Wine, Music, Briefcase, ArrowRight } from "lucide-react";
+import { Building2, Coffee, Wine, Music, Briefcase, ArrowRight, UtensilsCrossed } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getKennediaGroup } from "@/Api/Api";
 
-// 1. Static Fallback Data (limited to 5)
 const STATIC_DATA = {
   mainTitle: "Kennedia Group",
   subTitle: "A diverse ecosystem of luxury hospitality brands.",
   logoText: "KB",
   logoSubText: "Group",
   divisions: [
-    { id: 1, title: "Hotels & Resorts", icon: "HOTEL", description: "Luxury stays globally", displayOrder: 1 },
-    { id: 2, title: "Cafes & Dining", icon: "CAFE", description: "Artisan culinary delights", displayOrder: 2 },
-    { id: 3, title: "Bars & Lounges", icon: "BAR", description: "Signature cocktails", displayOrder: 3 },
+    { id: 1, title: "Hotels & Resorts", icon: "HOTEL", description: "Luxury stays globally", displayOrder: 1, ctaLink: "" },
+    { id: 2, title: "Cafes & Dining", icon: "CAFE", description: "Artisan culinary delights", displayOrder: 2, ctaLink: "" },
+    { id: 3, title: "Bars & Lounges", icon: "BAR", description: "Signature cocktails", displayOrder: 3, ctaLink: "" },
   ],
 };
 
 const IconMap: Record<string, any> = {
+  // Uppercase keys
   HOTEL: Building2,
   CAFE: Coffee,
   BAR: Wine,
   EVENT: Briefcase,
   MUSIC: Music,
+  RESTAURANT: UtensilsCrossed,
+  // Lowercase / mixed keys from API
+  Hotel: Building2,
+  Restaurant: UtensilsCrossed,
+  Cafe: Coffee,
+  Bar: Wine,
+  Event: Briefcase,
+  Music: Music,
 };
 
-// Helper function to truncate description to max words for 2-line display
 const truncateDescription = (text: string, maxWords: number = 6): string => {
   if (!text) return "";
   const words = text.trim().split(/\s+/);
@@ -33,9 +40,13 @@ const truncateDescription = (text: string, maxWords: number = 6): string => {
   return words.slice(0, maxWords).join(" ") + "...";
 };
 
+// Filter out divisions with missing required fields
+const isValidDivision = (div: any): boolean => {
+  return !!(div.title?.trim() && div.icon?.trim());
+};
+
 export default function BusinessVerticals() {
   const [isMobile, setIsMobile] = useState(false);
-  // 2. Initialize with Static Data to prevent "undefined" errors
   const [groupData, setGroupData] = useState(STATIC_DATA);
 
   useEffect(() => {
@@ -46,13 +57,13 @@ export default function BusinessVerticals() {
     const fetchData = async () => {
       try {
         const res = await getKennediaGroup();
-        // Check if response has the expected structure
-        const validData = res?.divisions ? res : res?.data; 
+        const validData = res?.divisions ? res : res?.data;
         if (validData && Array.isArray(validData.divisions)) {
-          // Limit to first 5 divisions
           const limitedData = {
             ...validData,
-            divisions: validData.divisions.slice(0, 5)
+            divisions: validData.divisions
+              .filter(isValidDivision) // Skip empty/incomplete divisions
+              .slice(0, 5),
           };
           setGroupData(limitedData);
         }
@@ -80,10 +91,10 @@ export default function BusinessVerticals() {
         {isMobile ? (
           <MobileTimeline verticals={groupData.divisions} />
         ) : (
-          <DesktopTree 
-            divisions={groupData.divisions} 
-            logoText={groupData.logoText} 
-            logoSubText={groupData.logoSubText} 
+          <DesktopTree
+            divisions={groupData.divisions}
+            logoText={groupData.logoText}
+            logoSubText={groupData.logoSubText}
           />
         )}
       </div>
@@ -92,16 +103,14 @@ export default function BusinessVerticals() {
 }
 
 function DesktopTree({ divisions, logoText, logoSubText }: any) {
-  // 3. Safety Check: If API fails and returns null/obj, fallback to empty array
   const safeDivisions = Array.isArray(divisions) ? [...divisions] : [];
-  
-  // Sort by displayOrder and limit to first 5 divisions max
   const sortedDivisions = safeDivisions
     .sort((a, b) => a.displayOrder - b.displayOrder)
-    .slice(0, 5); // HARD LIMIT: Only show first 5 divisions
+    .slice(0, 5);
 
   return (
     <div className="relative w-full max-w-6xl mx-auto min-h-[500px] flex flex-col items-center justify-center py-10">
+      {/* Center Logo */}
       <div className="relative z-20 mb-16">
         <div className="w-32 h-32 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20">
           <div className="text-center">
@@ -125,6 +134,14 @@ function DesktopTree({ divisions, logoText, logoSubText }: any) {
 
 function BranchNode({ item, index }: any) {
   const Icon = IconMap[item.icon] || Building2;
+  const hasLink = !!item.ctaLink?.trim();
+
+  const cardContent = (
+    <div className="w-16 h-16 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 transition-all">
+      <Icon className="w-6 h-6 text-muted-foreground group-hover:text-primary" />
+    </div>
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -133,35 +150,63 @@ function BranchNode({ item, index }: any) {
       className="flex flex-col items-center text-center group relative flex-1"
     >
       <div className="h-8 w-[1px] bg-primary/20 mb-4" />
-      <Link to={`/#`}>
-        <div className="w-16 h-16 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 transition-all">
-          <Icon className="w-6 h-6 text-muted-foreground group-hover:text-primary" />
-        </div>
-      </Link>
-      <h3 className="text-sm font-bold">{item.title}</h3>
+
+      {hasLink ? (
+        <Link to={item.ctaLink}>{cardContent}</Link>
+      ) : (
+        <div className="cursor-default">{cardContent}</div>
+      )}
+
+      <h3 className={`text-sm font-bold ${hasLink ? "group-hover:text-primary transition-colors" : ""}`}>
+        {item.title}
+      </h3>
       <p className="text-xs text-muted-foreground/70 max-w-[120px] line-clamp-2">
         {truncateDescription(item.description, 6)}
       </p>
+
+      {hasLink && (
+        <span className="text-[10px] text-primary/60 mt-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          Visit <ArrowRight className="w-2.5 h-2.5" />
+        </span>
+      )}
     </motion.div>
   );
 }
 
 function MobileTimeline({ verticals }: any) {
-  // Limit to first 5 on mobile as well
   const safeVerticals = Array.isArray(verticals) ? verticals.slice(0, 5) : [];
-  
+
   return (
     <div className="relative pl-6 border-l border-dashed border-primary/20 space-y-8 py-4">
       {safeVerticals.map((v: any) => {
         const Icon = IconMap[v.icon] || Building2;
-        return (
-          <Link key={v.id} to={`/division/${v.id}`} className="block bg-card p-4 rounded-xl border border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-full text-primary"><Icon className="w-4 h-4" /></div>
-              <h3 className="text-base font-bold">{v.title}</h3>
-              <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
+        const hasLink = !!v.ctaLink?.trim();
+
+        const cardContent = (
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-full text-primary">
+              <Icon className="w-4 h-4" />
             </div>
+            <h3 className="text-base font-bold">{v.title}</h3>
+            {hasLink && <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />}
+          </div>
+        );
+
+        return hasLink ? (
+          <Link
+            key={v.id}
+            to={v.ctaLink}
+            className="block bg-card p-4 rounded-xl border border-border hover:border-primary/30 hover:shadow-md transition-all"
+          >
+            {cardContent}
           </Link>
+        ) : (
+          <div
+            key={v.id}
+            className="block bg-card p-4 rounded-xl border border-border"
+          >
+            {cardContent}
+          </div>
         );
       })}
     </div>

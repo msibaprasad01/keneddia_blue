@@ -1,5 +1,5 @@
 // components/HeroSection.jsx
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { colors } from "@/lib/colors/colors";
 import {
   Loader2,
@@ -22,7 +22,7 @@ import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 import AddHeroSectionModal from "../../modals/AddHeroSectionModal";
 
 function HeroSection() {
-  const [activeTab, setActiveTab] = useState("homepage"); // "homepage" or "hotel"
+  const [activeTab, setActiveTab] = useState("homepage");
   const [heroSections, setHeroSections] = useState([]);
   const [hotelHeroSections, setHotelHeroSections] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -32,13 +32,11 @@ function HeroSection() {
   const [togglingStatus, setTogglingStatus] = useState({});
   const [hotelTypeId, setHotelTypeId] = useState(null);
 
-  // Pagination for Homepage Tab
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const pageSize = 10;
 
-  // 1. Fetch Property Types to find "Hotel"
   const fetchMetadata = useCallback(async () => {
     try {
       const response = await getPropertyTypes();
@@ -54,7 +52,6 @@ function HeroSection() {
     }
   }, []);
 
-  // 2. Fetch Generic Paginated Sections (Homepage Tab)
   const fetchHomepageHero = useCallback(
     async (page = 0) => {
       try {
@@ -64,9 +61,7 @@ function HeroSection() {
           size: pageSize,
         });
         const responseData = response?.data || response;
-
         if (responseData?.content) {
-          // Sort to ensure latest (higher ID) comes first
           const sortedData = [...responseData.content].sort(
             (a, b) => b.id - a.id,
           );
@@ -84,7 +79,6 @@ function HeroSection() {
     [pageSize],
   );
 
-  // 3. Fetch Hotel Specific Sections (Hotel Tab)
   const fetchHotelHero = useCallback(async () => {
     if (!hotelTypeId) return;
     try {
@@ -92,7 +86,6 @@ function HeroSection() {
       const response = await getHotelHomepageHeroSection(hotelTypeId);
       const data = response?.data || response;
       if (Array.isArray(data)) {
-        // Sort latest first
         const sortedHotelData = [...data].sort((a, b) => b.id - a.id);
         setHotelHeroSections(sortedHotelData);
       }
@@ -108,19 +101,39 @@ function HeroSection() {
   }, [fetchMetadata]);
 
   useEffect(() => {
-    if (activeTab === "homepage") {
-      fetchHomepageHero(currentPage);
-    } else {
-      fetchHotelHero();
-    }
+    if (activeTab === "homepage") fetchHomepageHero(currentPage);
+    else fetchHotelHero();
   }, [activeTab, currentPage, fetchHomepageHero, fetchHotelHero]);
 
-  // Enhanced Status Toggle with confirmation
+  /** * Restored handleEdit function
+   * Sets the editData state with section details and opens the modal
+   */
+  const handleEdit = (section) => {
+    setEditData({
+      id: section.id,
+      mainTitle: section.mainTitle,
+      subTitle: section.subTitle,
+      ctaText: section.ctaText,
+      active: section.active,
+      showOnHomepage: section.showOnHomepage,
+      backgroundMediaAll: section.backgroundAll || [],
+      backgroundMediaLight: section.backgroundLight || [],
+      backgroundMediaDark: section.backgroundDark || [],
+      subMediaAll: section.subAll || [],
+      subMediaLight: section.subLight || [],
+      subMediaDark: section.subDark || [],
+    });
+    setIsModalOpen(true);
+  };
+
   const handleToggleActive = async (id, currentStatus) => {
     const actionName = currentStatus ? "Disable" : "Enable";
-    const confirmMessage = `Are you sure you want to ${actionName} this hero section?`;
-
-    if (!window.confirm(confirmMessage)) return;
+    if (
+      !window.confirm(
+        `Are you sure you want to ${actionName} this hero section?`,
+      )
+    )
+      return;
 
     const key = `active-${id}`;
     try {
@@ -155,31 +168,9 @@ function HeroSection() {
     }
   };
 
-  const handleEdit = (section) => {
-    const editPayload = {
-      id: section.id,
-      mainTitle: section.mainTitle,
-      subTitle: section.subTitle,
-      ctaText: section.ctaText,
-      active: section.active,
-      showOnHomepage: section.showOnHomepage,
-      backgroundMediaAll: section.backgroundAll || [],
-      backgroundMediaLight: section.backgroundLight || [],
-      backgroundMediaDark: section.backgroundDark || [],
-      subMediaAll: section.subAll || [],
-      subMediaLight: section.subLight || [],
-      subMediaDark: section.subDark || [],
-    };
-    setEditData(editPayload);
-    setIsModalOpen(true);
-  };
-
-  const getPreviewMedia = (section) => {
-    const media =
-      section.backgroundAll?.[0] ||
-      section.backgroundLight?.[0] ||
-      section.backgroundDark?.[0];
-    return media ? { url: media.url, type: media.type } : null;
+  const truncateText = (text, limit = 50) => {
+    if (!text) return "";
+    return text.length > limit ? text.substring(0, limit) + "..." : text;
   };
 
   const renderTable = (data) => (
@@ -188,26 +179,17 @@ function HeroSection() {
         <thead>
           <tr style={{ backgroundColor: colors.border }}>
             <th className="text-left px-4 py-3 text-xs font-semibold">ID</th>
-            <th className="text-left px-4 py-3 text-xs font-semibold">
-              Preview
-            </th>
-            <th className="text-left px-4 py-3 text-xs font-semibold">
-              Titles
-            </th>
-            <th className="text-center px-4 py-3 text-xs font-semibold">
-              Homepage
-            </th>
-            <th className="text-center px-4 py-3 text-xs font-semibold">
-              Status Action
-            </th>
-            <th className="text-center px-4 py-3 text-xs font-semibold">
-              Actions
-            </th>
+            <th className="text-left px-4 py-3 text-xs font-semibold">Preview</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold">Titles</th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">Homepage</th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">Status Action</th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">Actions</th>
           </tr>
         </thead>
         <tbody>
           {data.map((section) => {
-            const previewMedia = getPreviewMedia(section);
+            const previewMedia =
+              section.backgroundAll?.[0] || section.backgroundLight?.[0];
             const isTogglingActive = togglingStatus[`active-${section.id}`];
             const isTogglingHome = togglingStatus[`homepage-${section.id}`];
 
@@ -225,7 +207,6 @@ function HeroSection() {
                       <img
                         src={previewMedia.url}
                         className="w-16 h-10 object-cover rounded"
-                        alt=""
                       />
                     ) : (
                       <video
@@ -241,20 +222,24 @@ function HeroSection() {
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="text-xs font-bold">
-                    {section.mainTitle || "No Title"}
+                  <div className="text-xs font-bold" title={section.mainTitle}>
+                    {truncateText(section.mainTitle || "No Title", 50)}
                   </div>
-                  <div className="text-[10px] text-gray-400 truncate max-w-[150px]">
-                    {section.subTitle || "No Subtitle"}
+                  <div
+                    className="text-[10px] text-gray-400"
+                    title={section.subTitle}
+                  >
+                    {truncateText(section.subTitle || "No Subtitle", 50)}
                   </div>
                 </td>
+
                 <td className="px-4 py-3 text-center">
                   <button
                     onClick={() =>
                       handleToggleHomepage(section.id, section.showOnHomepage)
                     }
                     disabled={isTogglingHome}
-                    className="relative inline-flex items-center h-5 w-10 rounded-full transition-colors cursor-pointer"
+                    className="relative inline-flex items-center h-5 w-10 rounded-full transition-colors cursor-pointer outline-none"
                     style={{
                       backgroundColor: section.showOnHomepage
                         ? colors.primary
@@ -266,42 +251,55 @@ function HeroSection() {
                     />
                   </button>
                 </td>
+
                 <td className="px-4 py-3 text-center">
-                  <button
-                    onClick={() =>
-                      handleToggleActive(section.id, section.active)
-                    }
-                    disabled={isTogglingActive}
-                    className="px-3 py-1 rounded text-[10px] font-bold uppercase transition-all cursor-pointer border"
-                    style={{
-                      backgroundColor: section.active ? "#FEE2E2" : "#D1FAE5",
-                      color: section.active ? "#DC2626" : "#059669",
-                      borderColor: section.active ? "#FECACA" : "#A7F3D0",
-                    }}
-                  >
-                    {isTogglingActive ? (
-                      <Loader2 className="animate-spin mx-auto" size={12} />
-                    ) : section.active ? (
-                      "Disable"
-                    ) : (
-                      "Enable"
-                    )}
-                  </button>
+                  <div className="flex flex-col items-center gap-1">
+                    <button
+                      onClick={() =>
+                        handleToggleActive(section.id, section.active)
+                      }
+                      disabled={isTogglingActive}
+                      className="relative inline-flex items-center h-6 w-12 rounded-full transition-all cursor-pointer outline-none border-2"
+                      style={{
+                        backgroundColor: section.active ? "#059669" : "#9CA3AF",
+                        borderColor: section.active ? "#059669" : "#9CA3AF",
+                      }}
+                    >
+                      {isTogglingActive ? (
+                        <Loader2
+                          className="animate-spin text-white mx-auto"
+                          size={12}
+                        />
+                      ) : (
+                        <>
+                          <span
+                            className={`absolute text-[8px] font-bold text-white transition-opacity ${section.active ? "left-1.5 opacity-100" : "opacity-0"}`}
+                          >
+                            ON
+                          </span>
+                          <span
+                            className={`absolute text-[8px] font-bold text-white transition-opacity ${!section.active ? "right-1.5 opacity-100" : "opacity-0"}`}
+                          >
+                            OFF
+                          </span>
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${section.active ? "translate-x-6" : "translate-x-0.5"}`}
+                          />
+                        </>
+                      )}
+                    </button>
+                    <span
+                      className={`text-[9px] font-bold uppercase ${section.active ? "text-green-600" : "text-gray-400"}`}
+                    >
+                      {section.active ? "Active" : "Inactive"}
+                    </span>
+                  </div>
                 </td>
+
                 <td className="px-4 py-3 text-center">
                   <button
                     onClick={() => handleEdit(section)}
-                    className="p-1.5 rounded transition-colors cursor-pointer"
-                    style={{
-                      color: "#374151",
-                      backgroundColor: "transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "#F3F4F6";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }}
+                    className="p-1.5 rounded hover:bg-gray-100 cursor-pointer text-gray-600"
                   >
                     <Edit2 size={14} />
                   </button>
@@ -319,7 +317,6 @@ function HeroSection() {
       className="rounded-lg p-6 shadow-sm"
       style={{ backgroundColor: colors.contentBg }}
     >
-      {/* Header & Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h2
@@ -363,10 +360,7 @@ function HeroSection() {
             setIsModalOpen(true);
           }}
           className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-opacity hover:opacity-90 cursor-pointer"
-          style={{
-            backgroundColor: "#E53935",
-            color: "#FFFFFF",
-          }}
+          style={{ backgroundColor: "#E53935", color: "#FFFFFF" }}
         >
           <Plus size={16} /> Add Hero
         </button>
@@ -381,14 +375,11 @@ function HeroSection() {
         </div>
       ) : (
         <>
-          {activeTab === "homepage" ? (
-            heroSections.length > 0 ? (
-              renderTable(heroSections)
-            ) : (
-              <EmptyState />
+          {(activeTab === "homepage" ? heroSections : hotelHeroSections)
+            .length > 0 ? (
+            renderTable(
+              activeTab === "homepage" ? heroSections : hotelHeroSections,
             )
-          ) : hotelHeroSections.length > 0 ? (
-            renderTable(hotelHeroSections)
           ) : (
             <EmptyState />
           )}
@@ -433,7 +424,6 @@ function HeroSection() {
   );
 }
 
-// Simple Empty State Sub-component
 const EmptyState = () => (
   <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-100 rounded-xl">
     <AlertCircle size={32} className="text-gray-200 mb-2" />

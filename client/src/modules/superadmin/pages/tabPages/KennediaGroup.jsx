@@ -51,10 +51,11 @@ function KennediaGroup() {
                 icon: div.icon || "",
                 title: div.title || "",
                 description: div.description || "",
+                ctaLink: div.ctaLink || "",
                 displayOrder: div.displayOrder || 1,
-                isActive: div.active !== undefined ? div.active : true, // Map the active status from API
+                isActive: div.active !== undefined ? div.active : true,
                 isExisting: true,
-              })),
+              }))
             );
           }
         }
@@ -73,7 +74,6 @@ function KennediaGroup() {
     fetchKennediaGroup();
   }, [fetchKennediaGroup]);
 
-  // Handle Toggle Status
   const handleToggleStatus = async (division) => {
     if (!division.isExisting) {
       toast.error("Please save the group first before toggling status of new items");
@@ -89,7 +89,7 @@ function KennediaGroup() {
         await enableKennediaDivision(division.id);
         toast.success(`${division.title} enabled successfully`);
       }
-      await fetchKennediaGroup(); // Refresh to sync state
+      await fetchKennediaGroup();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to update status");
     } finally {
@@ -107,6 +107,7 @@ function KennediaGroup() {
       icon: "",
       title: "",
       description: "",
+      ctaLink: "",
       displayOrder: businessDivisions.length + 1,
       isActive: true,
       isExisting: false,
@@ -130,7 +131,12 @@ function KennediaGroup() {
   };
 
   const handleSubmit = async () => {
-    if (!headerSettings.mainTitle.trim() || !headerSettings.subTitle.trim() || !centerLogoSettings.logoText.trim() || !centerLogoSettings.logoSubText.trim()) {
+    if (
+      !headerSettings.mainTitle.trim() ||
+      !headerSettings.subTitle.trim() ||
+      !centerLogoSettings.logoText.trim() ||
+      !centerLogoSettings.logoSubText.trim()
+    ) {
       toast.error("All header and logo fields are required");
       return;
     }
@@ -146,6 +152,7 @@ function KennediaGroup() {
           icon: div.icon,
           title: div.title,
           description: div.description,
+          ctaLink: div.ctaLink,
           displayOrder: div.displayOrder,
         })),
       };
@@ -168,7 +175,7 @@ function KennediaGroup() {
 
   return (
     <div className="space-y-3">
-      {/* Settings Sections remain the same */}
+      {/* Header Settings */}
       <div className="rounded-lg p-4 sm:p-5 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
         <h3 className="text-sm font-semibold mb-4" style={{ color: colors.textPrimary }}>Header Settings</h3>
         <div className="space-y-3">
@@ -177,6 +184,7 @@ function KennediaGroup() {
         </div>
       </div>
 
+      {/* Center Logo Settings */}
       <div className="rounded-lg p-4 sm:p-5 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
         <h3 className="text-sm font-semibold mb-4" style={{ color: colors.textPrimary }}>Center Logo Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -188,35 +196,87 @@ function KennediaGroup() {
       {/* Business Divisions */}
       <div className="rounded-lg p-4 sm:p-5 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold m-0" style={{ color: colors.textPrimary }}>Business Divisions ({businessDivisions.length}/5)</h3>
-          <button onClick={handleAddDivision} disabled={businessDivisions.length >= 5} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-white disabled:opacity-50 transition-colors">
+          <h3 className="text-sm font-semibold m-0" style={{ color: colors.textPrimary }}>
+            Business Divisions ({businessDivisions.length}/5)
+          </h3>
+          <button
+            onClick={handleAddDivision}
+            disabled={businessDivisions.length >= 5}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-white disabled:opacity-50 transition-colors"
+          >
             <Plus size={16} /> Add Division
           </button>
         </div>
 
         <div className="space-y-3">
           {businessDivisions.map((division, index) => (
-            <div key={division.id} className="rounded-lg p-4 border transition-all" style={{ backgroundColor: colors.mainBg, borderColor: colors.border, opacity: division.isActive ? 1 : 0.6 }}>
+            <div
+              key={division.id}
+              className="rounded-lg p-4 border transition-all"
+              style={{ backgroundColor: colors.mainBg, borderColor: colors.border, opacity: division.isActive ? 1 : 0.6 }}
+            >
+              {/* Row 1: Icon | Title | Description | Order */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <input type="text" value={division.icon} onChange={(e) => handleDivisionChange(division.id, "icon", e.target.value)} className="w-full px-2.5 py-1.5 rounded border text-sm bg-contentBg" placeholder="Icon" />
-                <input type="text" value={division.title} onChange={(e) => handleDivisionChange(division.id, "title", e.target.value)} className="w-full px-2.5 py-1.5 rounded border text-sm bg-contentBg" placeholder="Title" />
-                <input type="text" value={division.description} onChange={(e) => handleDivisionChange(division.id, "description", e.target.value)} className="w-full px-2.5 py-1.5 rounded border text-sm bg-contentBg" placeholder="Description" />
-                <input type="number" value={division.displayOrder} readOnly className="w-full px-2.5 py-1.5 rounded border text-sm bg-muted opacity-50" />
+                <input
+                  type="text"
+                  value={division.icon}
+                  onChange={(e) => handleDivisionChange(division.id, "icon", e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded border text-sm bg-contentBg"
+                  placeholder="Icon"
+                />
+                <input
+                  type="text"
+                  value={division.title}
+                  onChange={(e) => handleDivisionChange(division.id, "title", e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded border text-sm bg-contentBg"
+                  placeholder="Title"
+                />
+                <input
+                  type="text"
+                  value={division.description}
+                  onChange={(e) => handleDivisionChange(division.id, "description", e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded border text-sm bg-contentBg"
+                  placeholder="Description"
+                />
+                <input
+                  type="number"
+                  value={division.displayOrder}
+                  readOnly
+                  className="w-full px-2.5 py-1.5 rounded border text-sm bg-muted opacity-50"
+                />
               </div>
 
+              {/* Row 2: CTA Link (full width) */}
+              <div className="mt-3">
+                <input
+                  type="text"
+                  value={division.ctaLink}
+                  onChange={(e) => handleDivisionChange(division.id, "ctaLink", e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded border text-sm bg-contentBg"
+                  placeholder="CTA Link (e.g. https://example.com)"
+                />
+              </div>
+
+              {/* Row 3: Move + Status */}
               <div className="flex items-center justify-between mt-3 pt-3 border-t" style={{ borderColor: colors.border }}>
                 <div className="flex gap-2">
-                  <button onClick={() => handleMoveDivision(index, "up")} disabled={index === 0} className="p-1.5 rounded border disabled:opacity-30"><ChevronLeft size={16} /></button>
-                  <button onClick={() => handleMoveDivision(index, "down")} disabled={index === businessDivisions.length - 1} className="p-1.5 rounded border disabled:opacity-30"><ChevronRight size={16} /></button>
+                  <button onClick={() => handleMoveDivision(index, "up")} disabled={index === 0} className="p-1.5 rounded border disabled:opacity-30">
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button onClick={() => handleMoveDivision(index, "down")} disabled={index === businessDivisions.length - 1} className="p-1.5 rounded border disabled:opacity-30">
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
 
-                {/* Status Toggle Button replacing Delete */}
                 <button
                   onClick={() => handleToggleStatus(division)}
                   disabled={loading || !division.isExisting}
                   className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold uppercase transition-all shadow-sm ${
-                    !division.isExisting ? "bg-gray-200 text-gray-500 cursor-not-allowed" : 
-                    division.isActive ? "bg-green-100 text-green-700 border border-green-200" : "bg-red-100 text-red-700 border border-red-200"
+                    !division.isExisting
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : division.isActive
+                      ? "bg-green-100 text-green-700 border border-green-200"
+                      : "bg-red-100 text-red-700 border border-red-200"
                   }`}
                 >
                   {division.isActive ? <Power size={14} /> : <PowerOff size={14} />}
@@ -230,8 +290,12 @@ function KennediaGroup() {
 
       {/* Submit */}
       <div className="rounded-lg p-4 sm:p-5 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
-        <button onClick={handleSubmit} disabled={loading} className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-md text-sm font-semibold bg-primary text-white disabled:opacity-50">
-          {loading ? <Loader2 size={16} className="animate-spin" /> : (existingData ? "Update Kennedia Group" : "Save Kennedia Group")}
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-md text-sm font-semibold bg-primary text-white disabled:opacity-50"
+        >
+          {loading ? <Loader2 size={16} className="animate-spin" /> : existingData ? "Update Kennedia Group" : "Save Kennedia Group"}
         </button>
       </div>
     </div>
