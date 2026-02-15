@@ -40,7 +40,7 @@ export default function RestaurantHomepage() {
       {/* ===============================
           NAVBAR
       =============================== */}
-      <Navbar navItems={RESTAURANT_NAV_ITEMS} logo={siteContent.brand.logo} />
+      <Navbar navItems={RESTAURANT_NAV_ITEMS} logo={siteContent.brand.logo_hotel} />
 
       {/* ===============================
           MAIN CONTENT
