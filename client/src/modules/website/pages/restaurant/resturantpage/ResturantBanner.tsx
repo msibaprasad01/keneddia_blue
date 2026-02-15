@@ -22,6 +22,18 @@ import { Button } from "@/components/ui/button";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import { toast } from "react-hot-toast";
 
+import gallery1 from "@/assets/resturant_images/beverage.jpg";
+import gallery2 from "@/assets/resturant_images/drink1.jpg";
+import gallery3 from "@/assets/resturant_images/drink2.jpg";
+import gallery4 from "@/assets/resturant_images/drink3.jpg";
+import gallery5 from "@/assets/resturant_images/food1.jpg";
+
+import gallery6 from "@/assets/resturant_images/099A9549.jpg";
+import gallery7 from "@/assets/resturant_images/099A9570.jpg";
+import gallery8 from "@/assets/resturant_images/099A9580.jpg";
+import gallery9 from "@/assets/resturant_images/099A9595.jpg";
+import gallery10 from "@/assets/resturant_images/099A9691.jpg";
+
 interface PropertyMedia {
   mediaId: number | null;
   type: string;
@@ -129,18 +141,59 @@ function ResturantBanner() {
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showShareReactions, setShowShareReactions] = useState(false);
+  const localGalleryMedia: PropertyMedia[] = useMemo(() => {
+    const images = [
+      // gallery1,
+      // gallery2,
+      // gallery3,
+      // gallery4,
+      gallery5,
+      gallery6,
+      gallery7,
+      gallery8,
+      gallery9,
+      gallery10,
+    ];
+
+    // Shuffle
+    const shuffled = [...images].sort(() => Math.random() - 0.5);
+
+    return shuffled.map((img, index) => ({
+      mediaId: index,
+      type: "IMAGE",
+      url: img,
+      fileName: null,
+      alt: `Restaurant Gallery ${index + 1}`,
+      width: null,
+      height: null,
+    }));
+  }, []);
+  const localGalleryItems: GalleryItem[] = useMemo(() => {
+    return localGalleryMedia.map((media, index) => ({
+      id: index,
+      category: "RESTAURANT",
+      propertyId: restaurant.propertyId,
+      propertyName: restaurant.name,
+      media,
+      isActive: true,
+    }));
+  }, [localGalleryMedia, restaurant.propertyId, restaurant.name]);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
-  const topGridImages = useMemo(() => {
-    const combined = [
-      ...(restaurant?.media || []),
-      ...galleryData.map((g) => g.media),
-    ];
-    return combined.length === 0
-      ? FALLBACK_RESTAURANT.media
-      : combined.filter((m) => m && m.url);
-  }, [restaurant?.media, galleryData]);
+  const topGridImages = localGalleryMedia.length
+    ? localGalleryMedia
+    : FALLBACK_RESTAURANT.media;
+
+  // const topGridImages = useMemo(() => {
+  //   const combined = [
+  //     ...(restaurant?.media || []),
+  //     ...galleryData.map((g) => g.media),
+  //   ];
+  //   return combined.length === 0
+  //     ? FALLBACK_RESTAURANT.media
+  //     : combined.filter((m) => m && m.url);
+  // }, [restaurant?.media, galleryData]);
 
   const socialPlatforms = [
     {
@@ -202,10 +255,10 @@ function ResturantBanner() {
           name: restaurant.name,
           location: restaurant.location,
           propertyId: restaurant.propertyId,
-          media: restaurant.media,
+          media: localGalleryMedia, // 🔥 SAME IMAGES
         }}
         initialImageIndex={initialGalleryIndex}
-        galleryData={galleryData}
+        galleryData={localGalleryItems} // 🔥 SAME SHUFFLED DATA
       />
 
       <div className="container mx-auto px-4 md:px-8 lg:px-12">

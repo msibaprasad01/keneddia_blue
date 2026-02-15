@@ -19,12 +19,22 @@ import italian1 from "@/assets/resturant_images/italian1.jpg";
 import item1 from "@/assets/resturant_images/item1.jpg";
 import item2 from "@/assets/resturant_images/item2.jpg";
 
+import luxury1 from "@/assets/resturant_images/luxuary/099A9508.JPG";
+import luxury2 from "@/assets/resturant_images/luxuary/099A9535.JPG";
+import luxury3 from "@/assets/resturant_images/luxuary/099A9684.JPG";
+import luxury4 from "@/assets/resturant_images/luxuary/luxury1.JPG";
+import luxury5 from "@/assets/resturant_images/luxuary/luxury2.JPG";
+
 /* Navigation for Category Page */
 const resturant_NAV_ITEMS = [
   { type: "link", label: "HOME", href: "/" },
   { type: "link", label: "MENU", href: "#menu" },
   { type: "link", label: "CONTACT", href: "#contact" },
 ];
+const LUXURY_IMAGES = [luxury1, luxury2, luxury3, luxury4, luxury5];
+
+// Shuffle once on load
+const SHUFFLED_LUXURY = [...LUXURY_IMAGES].sort(() => Math.random() - 0.5);
 
 export const CATEGORY_DATA = {
   italian: {
@@ -78,36 +88,36 @@ export const CATEGORY_DATA = {
     title: "Luxury Lounge",
     description:
       "An upscale lounge experience with signature cocktails and curated small plates.",
-    heroImage: drink3,
+    heroImage: SHUFFLED_LUXURY[0],
     themeColor: "#8b5cf6",
     menu: [
       {
         category: "Signature Cocktails",
-        categoryImage: beverage,
+        categoryImage: SHUFFLED_LUXURY[1],
         items: [
           {
             name: "Royal Old Fashioned",
             description: "Premium bourbon with smoked orange zest.",
             price: "₹850",
-            image: drink1,
+            image: SHUFFLED_LUXURY[2],
           },
           {
             name: "Velvet Martini",
             description: "Vodka infused with elderflower essence.",
             price: "₹900",
-            image: drink2,
+            image: SHUFFLED_LUXURY[3],
           },
         ],
       },
       {
         category: "Gourmet Bites",
-        categoryImage: food1,
+        categoryImage: SHUFFLED_LUXURY[4],
         items: [
           {
             name: "Truffle Fries",
             description: "Crispy fries with truffle oil & parmesan.",
             price: "₹420",
-            image: item1,
+            image: SHUFFLED_LUXURY[0],
           },
         ],
       },
@@ -254,7 +264,7 @@ function ResturantCategoryPageTemplate() {
           <ResturantSubCategories propertyId={propertyId} />
         </div>
         <div id="events">
-          <ResturantpageEvents/>
+          <ResturantpageEvents />
         </div>
         {/* ResturantSubCategories */}
         <div id="testimonials">
