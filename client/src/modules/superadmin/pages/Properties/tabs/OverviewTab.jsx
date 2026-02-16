@@ -26,13 +26,13 @@ const OverviewTab = ({ data, onEdit }) => {
           <h2 className="text-lg font-semibold text-gray-900">Property Information</h2>
           <p className="text-sm text-gray-500 font-medium">ID: {data.id || 'N/A'}</p>
         </div>
-        <button
+        {/* <button
           onClick={onEdit}
           className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white rounded-md hover:opacity-90 transition-all active:scale-95 shadow-sm"
           style={{ backgroundColor: colors.primary }}
         >
           <PencilSquareIcon className="w-4 h-4" /> Edit Details
-        </button>
+        </button> */}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">

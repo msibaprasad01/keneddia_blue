@@ -178,10 +178,22 @@ const PropertyDetail = ({ property, onBack }) => {
   };
 
   const propertyType = data.overview.propertyType;
+  // AFTER
   const tabsByPropertyType = {
     Hotel: ["overview", "rooms", "amenities", "gallery", "policies"],
     Cafe: ["overview", "menu", "tables", "gallery"],
-    Restaurant: ["overview", "menu", "gallery", "events"],
+    Restaurant: [
+      "overview",
+      "verticals",
+      "buffet section",
+      "offers section",
+      "menu",
+      "about",
+      "events",
+      "group bookings",
+      "3d gallery",
+      "enquiries",
+    ],
   };
 
   const currentTabs =
@@ -248,6 +260,19 @@ const PropertyDetail = ({ property, onBack }) => {
         return <MenuTab {...commonProps} />;
       case "tables":
         return <TablesTab {...commonProps} />;
+      case "verticals":
+      case "buffet section":
+      case "offers section":
+      case "about":
+      case "group bookings":
+      case "3d gallery":
+      case "enquiries":
+        return (
+          <div className="py-20 text-center text-gray-400 text-sm font-medium">
+            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} — Coming
+            Soon
+          </div>
+        );
       default:
         return null;
     }

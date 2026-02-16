@@ -36,7 +36,7 @@ function ManageProperties() {
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
 
-  const [editItem, setEditItem] = useState(null);       // item to edit
+  const [editItem, setEditItem] = useState(null); // item to edit
   const [selectedProperty, setSelectedProperty] = useState(null); // item to view detail
 
   const [properties, setProperties] = useState([]);
@@ -78,7 +78,7 @@ function ManageProperties() {
     if (!p?.id) return;
     if (
       !window.confirm(
-        `Are you sure you want to ${p.isActive ? "disable" : "enable"} this property?`
+        `Are you sure you want to ${p.isActive ? "disable" : "enable"} this property?`,
       )
     )
       return;
@@ -130,18 +130,19 @@ function ManageProperties() {
 
   const mainTabs = [
     { id: "properties", label: "Portfolio", icon: <Building2 size={18} /> },
-    { id: "types",      label: "Types",     icon: <Tags size={18} /> },
-    { id: "categories", label: "Categories",icon: <Layers size={18} /> },
+    { id: "types", label: "Types", icon: <Tags size={18} /> },
+    { id: "categories", label: "Categories", icon: <Layers size={18} /> },
   ];
 
   return (
     <Layout role="superadmin" showActions={false}>
       <div className="h-full flex flex-col space-y-4 p-6 bg-gray-50/30">
-
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Portfolio Manager</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Portfolio Manager
+            </h2>
             <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
               Property Listings & Infrastructure
             </p>
@@ -159,8 +160,8 @@ function ManageProperties() {
             {activeMainTab === "properties"
               ? "Property"
               : activeMainTab === "types"
-              ? "Type"
-              : "Category"}
+                ? "Type"
+                : "Category"}
           </button>
         </div>
 
@@ -183,7 +184,6 @@ function ManageProperties() {
 
         {/* ── Main Content Card ───────────────────────────────────────────── */}
         <div className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-
           {/* ════ PROPERTIES TAB ════ */}
           {activeMainTab === "properties" && (
             <>
@@ -315,7 +315,10 @@ function ManageProperties() {
                                   }`}
                                 >
                                   {actionLoading === p.id ? (
-                                    <Loader2 size={15} className="animate-spin" />
+                                    <Loader2
+                                      size={15}
+                                      className="animate-spin"
+                                    />
                                   ) : (
                                     <Power size={15} />
                                   )}
@@ -344,9 +347,16 @@ function ManageProperties() {
                 ])}
                 <tbody className="divide-y divide-gray-100">
                   {propertyTypes.map((type) => (
-                    <tr key={type.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-500">#{type.id}</td>
-                      <td className="px-6 py-4 font-bold text-gray-900">{type.typeName}</td>
+                    <tr
+                      key={type.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        #{type.id}
+                      </td>
+                      <td className="px-6 py-4 font-bold text-gray-900">
+                        {type.typeName}
+                      </td>
                       <td className="px-6 py-4">
                         <span
                           className={`px-2 py-1 rounded-full text-[9px] font-black uppercase ${
@@ -382,8 +392,13 @@ function ManageProperties() {
                 ])}
                 <tbody className="divide-y divide-gray-100">
                   {propertyCategories.map((cat) => (
-                    <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-gray-900">{cat.categoryName}</td>
+                    <tr
+                      key={cat.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-bold text-gray-900">
+                        {cat.categoryName}
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-500 italic max-w-xs truncate">
                         {cat.description || "No description"}
                       </td>
@@ -416,19 +431,28 @@ function ManageProperties() {
       {showAddPropertyModal && (
         <AddPropertyModal
           onClose={() => setShowAddPropertyModal(false)}
-          onSuccess={() => { fetchData(); setShowAddPropertyModal(false); }}
+          onSuccess={() => {
+            fetchData();
+            setShowAddPropertyModal(false);
+          }}
         />
       )}
       {showAddTypeModal && (
         <AddPropertyTypeModal
           onClose={() => setShowAddTypeModal(false)}
-          onSuccess={() => { fetchData(); setShowAddTypeModal(false); }}
+          onSuccess={() => {
+            fetchData();
+            setShowAddTypeModal(false);
+          }}
         />
       )}
       {showAddCategoryModal && (
         <AddPropertyCategoryModal
           onClose={() => setShowAddCategoryModal(false)}
-          onSuccess={() => { fetchData(); setShowAddCategoryModal(false); }}
+          onSuccess={() => {
+            fetchData();
+            setShowAddCategoryModal(false);
+          }}
         />
       )}
 
@@ -444,7 +468,10 @@ function ManageProperties() {
           // admins={admins}
           // locations={locations}
           onClose={() => setEditItem(null)}
-          onSuccess={() => { fetchData(); setEditItem(null); }}
+          onSuccess={() => {
+            fetchData();
+            setEditItem(null);
+          }}
         />
       )}
     </Layout>
