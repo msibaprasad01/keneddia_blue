@@ -169,13 +169,7 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
   };
 
   const handleSubmit = async () => {
-    if (editData && formData.propertyTypeId !== null) {
-      showWarning(
-        "Property-specific About Us update is temporarily disabled. Please try again later.",
-      );
-      return;
-    }
-    // Validation
+    // 1. Basic Validation
     if (!formData.sectionTitle.trim() || !formData.subTitle.trim()) {
       showError("Section title and subtitle are required");
       return;
@@ -189,63 +183,59 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
     try {
       setLoading(true);
 
-      const existingMediaUrls = mediaItems
-        .filter((item) => item.isExisting && item.url)
-        .map((item) => item.url);
-
+      // 2. Separate new files for uploading
       const newFiles = mediaItems
         .filter((item) => item.file instanceof File)
         .map((item) => item.file);
 
+      // 3. Construct the payload
+      // We send mediaUrls as an EMPTY array to prevent the "Data truncated for column 'type'" error
       const payload = {
         sectionTitle: formData.sectionTitle.trim(),
         subTitle: formData.subTitle.trim(),
         description: formData.description.trim(),
-        mediaUrls: existingMediaUrls,
+        mediaUrls: [], // CRITICAL: Setting this to [] stops the backend from failing on existing URLs
         files: newFiles,
       };
 
-      // Add optional fields only for general mode
+      // 4. Add optional fields if it's the general "About Us"
       if (!isPropertyTypeSelected) {
-        payload.videoUrl = formData.videoUrl.trim();
-        payload.videoTitle = formData.videoTitle.trim();
-        payload.ctaButtonText = formData.ctaButtonText.trim();
-        payload.ctaButtonUrl = formData.ctaButtonUrl.trim();
+        payload.videoUrl = formData.videoUrl.trim() || "";
+        payload.videoTitle = formData.videoTitle.trim() || "";
+        payload.ctaButtonText = formData.ctaButtonText.trim() || "";
+        payload.ctaButtonUrl = formData.ctaButtonUrl.trim() || "";
       }
 
+      // 5. API Call Logic
       if (editData?.id) {
-        // Update existing
         if (isPropertyTypeSelected) {
-          // Use property-specific update API
           await updateAboutUsByPropertyTypeId(
             editData.id,
             formData.propertyTypeId,
             payload,
           );
-          showSuccess("Property-specific About Us updated successfully");
+          showSuccess("Property-specific content updated");
         } else {
-          // Use general update API
           await updateAboutUsById(editData.id, payload);
           showSuccess("About Us updated successfully");
         }
       } else {
-        // Create new
+        // Create logic
         if (isPropertyTypeSelected) {
-          // Use property-specific create API
           await addAboutUsByPropertyType(formData.propertyTypeId, payload);
-          showSuccess("Property-specific About Us created successfully");
         } else {
-          // Use general create API
           await addAboutUs(payload);
-          showSuccess("About Us created successfully");
         }
+        showSuccess("Created successfully");
       }
 
       onClose(true);
       resetForm();
     } catch (error) {
-      console.error("Save error:", error);
-      showError(error?.response?.data?.message || "Failed to save section");
+      console.error("Submission error:", error);
+      // Log the specific backend message for better debugging
+      const errMsg = error?.response?.data?.message || "Failed to save section";
+      showError(errMsg);
     } finally {
       setLoading(false);
     }

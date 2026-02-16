@@ -17,6 +17,7 @@ import {
   Hash,
   ToggleLeft,
   Sparkles,
+  Navigation,
 } from "lucide-react";
 import { updatePropertyById } from "@/Api/Api";
 import { toast } from "react-hot-toast";
@@ -34,7 +35,7 @@ const Field = ({ label, icon: Icon, children, span = 1 }) => (
 );
 
 const Section = ({ label, icon: Icon }) => (
-  <div className="col-span-2 flex items-center gap-3 pt-2">
+  <div className="col-span-2 flex items-center gap-3 pt-3">
     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
       {Icon && <Icon size={11} className="text-blue-500" />}
       {label}
@@ -54,6 +55,7 @@ function EditPropertyModal({
   onClose,
   onSuccess,
 }) {
+  console.log(item)
   const p       = item?.propertyResponseDTO || {};
   const listing = item?.propertyListingResponseDTOS?.[0] || {};
 
@@ -82,6 +84,8 @@ function EditPropertyModal({
     locationId:              p.locationId || "",
     assignedAdminId:         p.assignedAdminId || "",
     parentPropertyId:        p.parentPropertyId || "",
+    latitude:                p.latitude ?? "",
+    longitude:               p.longitude ?? "",
     isActive:                p.isActive ?? true,
     mainHeading:             listing.mainHeading || "",
     subTitle:                listing.subTitle || "",
@@ -122,6 +126,8 @@ function EditPropertyModal({
         assignedAdminId:         form.assignedAdminId  ? Number(form.assignedAdminId)  : null,
         parentPropertyId:        form.parentPropertyId ? Number(form.parentPropertyId) : null,
         childPropertyIds:        null,
+        latitude:                form.latitude  !== "" ? Number(form.latitude)  : null,
+        longitude:               form.longitude !== "" ? Number(form.longitude) : null,
         isActive:                form.isActive,
         mainHeading:             form.mainHeading,
         subTitle:                form.subTitle,
@@ -150,22 +156,22 @@ function EditPropertyModal({
   };
 
   const ChipSelect = ({ items, labelKey, idKey, stateKey, color }) => (
-    <div className="flex flex-wrap gap-1.5 p-2 border border-gray-200 rounded-lg min-h-[40px]">
+    <div className="flex flex-wrap gap-1.5 p-2.5 border border-gray-200 rounded-lg min-h-[44px]">
       {items?.length ? (
-        items.map((item) => {
-          const selected = form[stateKey].includes(item[idKey]);
+        items.map((it) => {
+          const selected = form[stateKey].includes(it[idKey]);
           return (
             <button
-              key={item[idKey]}
+              key={it[idKey]}
               type="button"
-              onClick={() => toggleId(stateKey, item[idKey])}
+              onClick={() => toggleId(stateKey, it[idKey])}
               className={`px-3 py-1 rounded-md text-[11px] font-black uppercase tracking-wide transition-all ${
                 selected
                   ? `${color} text-white shadow-sm`
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200"
               }`}
             >
-              {item[labelKey]}
+              {it[labelKey]}
             </button>
           );
         })
@@ -177,19 +183,19 @@ function EditPropertyModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[92vh]">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[95vh]">
 
-        {/* Header */}
+        {/* ── Header ──────────────────────────────────────────────── */}
         <div
-          className="flex items-center justify-between px-6 py-4 rounded-t-2xl shrink-0"
+          className="flex items-center justify-between px-7 py-5 rounded-t-2xl shrink-0"
           style={{ backgroundColor: colors.primary }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-              <Building2 size={18} className="text-white" />
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <Building2 size={20} className="text-white" />
             </div>
             <div>
-              <h3 className="text-white font-bold text-base leading-tight">
+              <h3 className="text-white font-bold text-lg leading-tight">
                 Edit Property
               </h3>
               <p className="text-white/60 text-[11px] font-medium mt-0.5">
@@ -202,16 +208,16 @@ function EditPropertyModal({
             onClick={onClose}
             className="text-white/70 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all"
           >
-            <X size={17} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Form */}
+        {/* ── Form ────────────────────────────────────────────────── */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-6 py-5">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3.5">
+          <div className="flex-1 overflow-y-auto px-7 py-6">
+            <div className="grid grid-cols-2 gap-x-5 gap-y-4">
 
-              {/* ─── IDENTITY ───────────────────────────────────────── */}
+              {/* ─── IDENTITY ─────────────────────────────────────── */}
               <Section label="Identity" icon={Building2} />
 
               <Field label="Property Name" icon={Building2} span={2}>
@@ -225,7 +231,7 @@ function EditPropertyModal({
                 />
               </Field>
 
-              {/* <Field label="Property Types" icon={Tag}>
+              <Field label="Property Types" icon={Tag}>
                 <ChipSelect
                   items={propertyTypes}
                   labelKey="typeName"
@@ -233,7 +239,7 @@ function EditPropertyModal({
                   stateKey="propertyTypeIds"
                   color="bg-blue-600"
                 />
-              </Field> */}
+              </Field>
 
               <Field label="Categories" icon={Layers}>
                 <ChipSelect
@@ -276,7 +282,7 @@ function EditPropertyModal({
                 </button>
               </Field>
 
-              {/* ─── LOCATION ───────────────────────────────────────── */}
+              {/* ─── LOCATION ─────────────────────────────────────── */}
               <Section label="Location" icon={MapPin} />
 
               <Field label="Address" icon={MapPin} span={2}>
@@ -355,40 +361,32 @@ function EditPropertyModal({
                 )}
               </Field>
 
-              {/* <Field label="Parent Property" span={2}>
-                {allProperties ? (
-                  <select
-                    value={form.parentPropertyId}
-                    onChange={(e) => set("parentPropertyId", e.target.value)}
-                    className={inputCls}
-                  >
-                    <option value="">-- No Parent --</option>
-                    {allProperties
-                      .filter((ap) => {
-                        const apId = ap?.propertyResponseDTO?.id ?? ap?.id;
-                        return apId !== p.id;
-                      })
-                      .map((ap) => {
-                        const apDTO = ap?.propertyResponseDTO || ap;
-                        return (
-                          <option key={apDTO.id} value={apDTO.id}>
-                            {apDTO.propertyName}
-                          </option>
-                        );
-                      })}
-                  </select>
-                ) : (
-                  <input
-                    type="number"
-                    value={form.parentPropertyId}
-                    onChange={(e) => set("parentPropertyId", e.target.value)}
-                    placeholder="Parent Property ID (optional)"
-                    className={inputCls}
-                  />
-                )}
-              </Field> */}
+              {/* ─── COORDINATES ──────────────────────────────────── */}
+              <Section label="Coordinates" icon={Navigation} />
 
-              {/* ─── LISTING ────────────────────────────────────────── */}
+              <Field label="Latitude" icon={Navigation}>
+                <input
+                  type="number"
+                  value={form.latitude}
+                  onChange={(e) => set("latitude", e.target.value)}
+                  placeholder="e.g. 12.9716"
+                  step="any"
+                  className={inputCls}
+                />
+              </Field>
+
+              <Field label="Longitude" icon={Navigation}>
+                <input
+                  type="number"
+                  value={form.longitude}
+                  onChange={(e) => set("longitude", e.target.value)}
+                  placeholder="e.g. 77.5946"
+                  step="any"
+                  className={inputCls}
+                />
+              </Field>
+
+              {/* ─── LISTING ──────────────────────────────────────── */}
               <Section label="Listing Details" icon={FileText} />
 
               <Field label="Main Heading" span={2}>
@@ -431,7 +429,7 @@ function EditPropertyModal({
                 />
               </Field>
 
-              {/* ─── PRICING ────────────────────────────────────────── */}
+              {/* ─── PRICING & CAPACITY ───────────────────────────── */}
               <Section label="Pricing & Capacity" icon={DollarSign} />
 
               <Field label="Price (₹)" icon={DollarSign}>
@@ -480,7 +478,7 @@ function EditPropertyModal({
                 />
               </Field>
 
-              <Field label="Rating" icon={Star} span={2}>
+              <Field label="Rating" icon={Star}>
                 <input
                   type="number"
                   value={form.rating}
@@ -489,11 +487,11 @@ function EditPropertyModal({
                   min="0"
                   max="5"
                   step="0.1"
-                  className={`${inputCls} w-40`}
+                  className={inputCls}
                 />
               </Field>
 
-              {/* ─── AMENITIES ──────────────────────────────────────── */}
+              {/* ─── AMENITIES ────────────────────────────────────── */}
               {amenities && amenities.length > 0 && (
                 <>
                   <Section label="Amenities & Features" icon={Sparkles} />
@@ -508,30 +506,11 @@ function EditPropertyModal({
                   </Field>
                 </>
               )}
-
-              {(!amenities || !amenities.length) && listing.amenities?.length > 0 && (
-                <>
-                  <Section label="Current Amenities" icon={Sparkles} />
-                  <Field label="Amenities (pass amenities prop to enable editing)" span={2}>
-                    <div className="flex flex-wrap gap-1.5">
-                      {listing.amenities.map((a, i) => (
-                        <span
-                          key={i}
-                          className="px-3 py-1 bg-gray-100 text-gray-500 rounded-md text-[11px] font-black uppercase"
-                        >
-                          {a}
-                        </span>
-                      ))}
-                    </div>
-                  </Field>
-                </>
-              )}
-
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="shrink-0 flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/60 rounded-b-2xl">
+          {/* ── Footer ──────────────────────────────────────────────── */}
+          <div className="shrink-0 flex items-center justify-between px-7 py-4 border-t border-gray-100 bg-gray-50/60 rounded-b-2xl">
             <span className="text-[10px] text-gray-400 font-semibold">
               Property ID #{p.id}
             </span>

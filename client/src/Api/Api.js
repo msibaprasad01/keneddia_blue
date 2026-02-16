@@ -103,27 +103,51 @@ export const enableAboutUs = (id) =>
   API.patch(`api/v1/admin/about-us/${id}/enable`);
 export const disableAboutUs = (id) =>
   API.patch(`api/v1/admin/about-us/${id}/disable`);
+// export const updateAboutUsById = (id, payload) => {
+//   const formData = new FormData();
+
+//   // data → stringified JSON (MANDATORY, same as add)
+//   formData.append(
+//     "data",
+//     JSON.stringify({
+//       sectionTitle: payload.sectionTitle,
+//       subTitle: payload.subTitle,
+//       description: payload.description,
+//       videoUrl: payload.videoUrl,
+//       videoTitle: payload.videoTitle,
+//       mediaUrls: payload.mediaUrls || [],
+//       ctaButtonText: payload.ctaButtonText,
+//       ctaButtonUrl: payload.ctaButtonUrl,
+//     }),
+//   );
+
+//   // files → multipart (optional)
+//   if (payload.files && payload.files.length > 0) {
+//     payload.files.forEach((file) => {
+//       formData.append("files", file);
+//     });
+//   }
+
+//   return API.put(`api/v1/admin/about-us/${id}`, formData, {
+//     headers: {
+//       "Content-Type": "multipart/form-data",
+//     },
+//   });
+// };
+
+// api.js
 export const updateAboutUsById = (id, payload) => {
   const formData = new FormData();
 
-  // data → stringified JSON (MANDATORY, same as add)
-  formData.append(
-    "data",
-    JSON.stringify({
-      sectionTitle: payload.sectionTitle,
-      subTitle: payload.subTitle,
-      description: payload.description,
-      videoUrl: payload.videoUrl,
-      videoTitle: payload.videoTitle,
-      mediaUrls: payload.mediaUrls || [],
-      ctaButtonText: payload.ctaButtonText,
-      ctaButtonUrl: payload.ctaButtonUrl,
-    }),
-  );
+  // 1. Separate files from the JSON data
+  const { files, ...jsonData } = payload;
 
-  // files → multipart (optional)
-  if (payload.files && payload.files.length > 0) {
-    payload.files.forEach((file) => {
+  // 2. Append the JSON part as "data" (Matches your Postman screenshot)
+  formData.append("data", JSON.stringify(jsonData));
+
+  // 3. Append actual files as "files"
+  if (files && files.length > 0) {
+    files.forEach((file) => {
       formData.append("files", file);
     });
   }
@@ -134,7 +158,6 @@ export const updateAboutUsById = (id, payload) => {
     },
   });
 };
-
 export const getAboutUsAdmin = () => API.get("api/v1/admin/about-us");
 export const getAboutUsPublicById = (id) =>
   API.get(`api/v1/public/about-us/${id}`);
@@ -176,8 +199,10 @@ export const getRecognitionsByAboutUsId = (aboutUsId) =>
 export const getPublicRecognitionsByAboutUsId = (aboutUsId) =>
   API.get(`api/v1/public/about-us/${aboutUsId}/recognitions`);
 
-export const addGuestExperienceSectionHeader = (data) =>API.post("api/v1/guest-experience/section", data);
-export const getGuestExperienceSectionHeader = () =>API.get("/api/v1/guest-experience/section");
+export const addGuestExperienceSectionHeader = (data) =>
+  API.post("api/v1/guest-experience/section", data);
+export const getGuestExperienceSectionHeader = () =>
+  API.get("/api/v1/guest-experience/section");
 export const createGuestExperienceByGuest = (formData) =>
   API.post("api/v1/guest-experience/byGuests", formData);
 export const deleteGuestExperience = (id) =>
