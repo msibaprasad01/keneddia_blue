@@ -251,7 +251,6 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
           </p>
 
           <div className="mt-auto pt-4 border-t border-dashed border-border">
-            {/* TWO BUTTON ROW - STANDARD */}
             <div className="flex items-center gap-2">
               <Link
                 to="#"

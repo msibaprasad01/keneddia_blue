@@ -14,35 +14,41 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ResturantpageOffers from "./ResturantpageOffers";
 import { useNavigate } from "react-router-dom";
+import resturant_buffet1 from "@/assets/resturant_images/resturant_buffet1.jpeg";
 // --- Data ---
+// const BUFFET_DATA = [
+//   {
+//     id: "b1",
+//     name: "Royal Lunch",
+//     tag: "STUDENT SPECIAL",
+//     tagColor: "#e67e22",
+//     img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200",
+//     remark: "Show your Student ID and enjoy the unlimited buffet.",
+//     bg: "#fdf2f2",
+//   },
+//   {
+//     id: "b2",
+//     name: "Grand Dinner",
+//     tag: "WEEKEND SPECIAL",
+//     tagColor: "#2ecc71",
+//     img: "https://images.unsplash.com/photo-1544148103-0773bf10d330?q=80&w=1200",
+//     remark: "Applewood smoked grills and coastal curries.",
+//     bg: "#f0fdf4",
+//   },
+//   {
+//     id: "b3",
+//     name: "Sunday Brunch",
+//     tag: "BOTTOMLESS BRUNCH",
+//     tagColor: "#8e44ad",
+//     img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=1200",
+//     remark: "Live pasta stations and bottomless prosecco.",
+//     bg: "#f5f3ff",
+//   },
+// ];
 const BUFFET_DATA = [
-  {
-    id: "b1",
-    name: "Royal Lunch",
-    tag: "STUDENT SPECIAL",
-    tagColor: "#e67e22",
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200",
-    remark: "Show your Student ID and enjoy the unlimited buffet.",
-    bg: "#fdf2f2",
-  },
-  {
-    id: "b2",
-    name: "Grand Dinner",
-    tag: "WEEKEND SPECIAL",
-    tagColor: "#2ecc71",
-    img: "https://images.unsplash.com/photo-1544148103-0773bf10d330?q=80&w=1200",
-    remark: "Applewood smoked grills and coastal curries.",
-    bg: "#f0fdf4",
-  },
-  {
-    id: "b3",
-    name: "Sunday Brunch",
-    tag: "BOTTOMLESS BRUNCH",
-    tagColor: "#8e44ad",
-    img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=1200",
-    remark: "Live pasta stations and bottomless prosecco.",
-    bg: "#f5f3ff",
-  },
+  { id: "b1", img: resturant_buffet1 },
+  { id: "b2", img: resturant_buffet1 },
+  { id: "b3", img: resturant_buffet1 },
 ];
 
 const SIGNATURE_DATA = [
@@ -54,7 +60,7 @@ const SIGNATURE_DATA = [
       "Our legendary cream-based curry with succulent clay-oven grilled chicken pieces.",
     img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?q=80&w=800",
     likes: 1240,
-    category:"italian",
+    category: "italian",
   },
   {
     id: "s2",
@@ -64,7 +70,7 @@ const SIGNATURE_DATA = [
       "Jumbo prawns marinated in a secret coastal spice mix and charred to perfection.",
     img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?q=80&w=800",
     likes: 850,
-    category:"italian",
+    category: "italian",
   },
   {
     id: "s3",
@@ -74,7 +80,7 @@ const SIGNATURE_DATA = [
       "Hand-rolled translucent dumplings infused with aromatic black truffle oil.",
     img: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?q=80&w=800",
     likes: 2100,
-    category:"italian",
+    category: "italian",
   },
   {
     id: "s4",
@@ -84,7 +90,7 @@ const SIGNATURE_DATA = [
       "Fiery wok-tossed prawns glazed in a bold and spicy authentic Szechuan pepper sauce.",
     img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
     likes: 1800,
-    category:"italian",
+    category: "italian",
   },
 ];
 
@@ -140,34 +146,28 @@ function BuffetCarousel({ onBook }) {
                   <p className="text-white/70 text-xs italic mb-4 line-clamp-1">
                     {item.remark}
                   </p>
-                  <button
+                  {/* <button
                     onClick={() => onBook(item)}
                     className="w-fit py-2 px-6 rounded-full text-white text-[10px] font-black uppercase bg-primary"
                   >
                     Book Unlimited
-                  </button>
+                  </button> */}
                 </div>
               </motion.div>
             );
           })}
         </div>
-        <div className="md:hidden w-full space-y-3 px-2">
+        <div className="md:hidden w-full space-y-4 px-2">
           {BUFFET_DATA.map((item) => (
             <div
               key={item.id}
-              onClick={() => onBook(item)}
-              className="p-4 rounded-xl flex items-center justify-between shadow-sm border border-zinc-100 backdrop-blur-sm"
-              style={{ background: item.bg }}
+              className="h-60 rounded-2xl overflow-hidden shadow-md"
             >
-              <div className="text-left">
-                <p className="text-[8px] text-zinc-400 uppercase font-black mb-0.5">
-                  {item.tag}
-                </p>
-                <h4 className="font-serif text-base font-bold text-zinc-900">
-                  {item.name}
-                </h4>
-              </div>
-              <ChevronRight className="text-zinc-400" size={18} />
+              <img
+                src={item.img}
+                className="w-full h-full object-cover"
+                alt="Buffet"
+              />
             </div>
           ))}
         </div>

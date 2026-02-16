@@ -24,6 +24,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
 
+// Video Imports
+import eventvid1 from "@/assets/video/event&celeb.mp4";
+import eventvid2 from "@/assets/video/resturant_event_video.mp4";
+import eventvid3 from "@/assets/video/eventVid2.mp4";
+
 // ============================================================================
 // DATA & MEDIA LOGIC
 // ============================================================================
@@ -45,31 +50,38 @@ const detectBanner = (image) => {
 const FALLBACK_EVENTS = [
   {
     id: "f1",
-    title: "Weekend Jazz Night",
-    locationName: "Main Lounge",
+    title: "Events & Celebrations",
+    locationName: "Kennedia Blu",
     eventDate: new Date(Date.now() + 86400000 * 2).toISOString(),
-    description:
-      "Experience soul-stirring jazz performances by international artists.",
-    ctaText: "Book Table",
+    description: "Curated experiences for your special moments.",
+    ctaText: "Book Now",
     image: {
-      url: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=800",
-      type: "IMAGE",
-      width: 1080,
-      height: 1920,
+      url: eventvid1,
+      type: "VIDEO",
     },
   },
   {
     id: "f2",
-    title: "Gourmet Wine Tasting",
-    locationName: "Vineyard Room",
+    title: "Live Entertainment",
+    locationName: "Kennedia Blu",
     eventDate: new Date(Date.now() + 86400000 * 5).toISOString(),
-    description: "An evening of fine wines paired with artisanal cheeses.",
-    ctaText: "Get Tickets",
+    description: "Vibrant nights with live musical performances.",
+    ctaText: "Reserve",
     image: {
-      url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800",
-      type: "IMAGE",
-      width: 800,
-      height: 600,
+      url: eventvid2,
+      type: "VIDEO",
+    },
+  },
+  {
+    id: "f3",
+    title: "Restaurant Event",
+    locationName: "Kennedia Blu",
+    eventDate: new Date(Date.now() + 86400000 * 8).toISOString(),
+    description: "Exclusive culinary journeys and tasting events.",
+    ctaText: "Join Us",
+    image: {
+      url: eventvid3,
+      type: "VIDEO",
     },
   },
 ];
@@ -98,15 +110,10 @@ const GROUP_BOOKING_TYPES = [
   },
 ];
 
-// ============================================================================
-// MAIN COMPONENT
-// ============================================================================
-
 export default function ResturantpageEvents() {
   const [apiEvents] = useState(FALLBACK_EVENTS);
   const [loading] = useState(false);
 
-  // Modal & Form States
   const [showModal, setShowModal] = useState(false);
   const [bookingType, setBookingType] = useState("");
   const [step, setStep] = useState(1);
@@ -138,18 +145,12 @@ export default function ResturantpageEvents() {
   return (
     <section id="events" className="py-8 bg-muted/30 overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
-        {/* <div className="flex justify-between items-center mb-10">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground">Events & Celebrations</h2>
-            <div className="h-1 w-12 bg-primary mt-2 rounded-full" />
-          </div>
-        </div> */}
         <div className="lg:w-[70%] flex flex-col pt-2">
           <div className="mb-6">
             <h2 className="text-3xl md:text-4xl font-serif dark:text-white mb-2">
               Events <span className="italic text-primary">& Celebrations</span>
             </h2>
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm font-light tracking-wide truncate">
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm font-light tracking-wide">
               Explore international delicacies curated for every event.
             </p>
           </div>
@@ -309,7 +310,7 @@ export default function ResturantpageEvents() {
                     <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
                       <p className="text-[11px] text-zinc-500 italic leading-relaxed">
                         Requesting information for a <b>{bookingType}</b>. Our
-                        events team will contact you shortly via call or email.
+                        events team will contact you shortly.
                       </p>
                     </div>
                     <div className="flex gap-3">
@@ -346,7 +347,9 @@ export default function ResturantpageEvents() {
 }
 
 function EventCard({ event, index }) {
-  const isBanner = detectBanner(event.image);
+  const isVideo = event.image.type === "VIDEO";
+  const isBanner = isVideo || detectBanner(event.image);
+
   const dateObj = new Date(event.eventDate);
   const day = dateObj.getDate();
   const month = dateObj
@@ -359,37 +362,70 @@ function EventCard({ event, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
-      className="group h-[520px] bg-card border rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1"
+      className="group h-[520px] bg-card border rounded-[2.5rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
     >
+      {/* MEDIA CONTAINER */}
       <div
         className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[280px]"}`}
       >
-        <OptimizedImage
-          src={event.image.url}
-          alt={event.title}
-          className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
-        />
-        <div className="absolute top-4 left-4 z-20 flex flex-col items-center bg-black/70 backdrop-blur-md text-white px-3 py-1 rounded-lg border border-white/10">
-          <span className="text-lg font-black leading-none">{day}</span>
-          <span className="text-[9px] font-bold tracking-tighter">{month}</span>
+        {isVideo ? (
+          <video
+            src={event.image.url}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+          />
+        ) : (
+          <OptimizedImage
+            src={event.image.url}
+            alt={event.title}
+            className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-110"
+          />
+        )}
+
+        {/* Floating Badges - Always Visible */}
+        <div className="absolute top-5 left-5 z-30 flex flex-col items-center bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-2xl border border-white/10">
+          <span className="text-xl font-black leading-none">{day}</span>
+          <span className="text-[10px] font-bold tracking-tighter opacity-80">
+            {month}
+          </span>
         </div>
-        <div className="absolute top-4 right-4 z-20 bg-primary text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1">
+
+        <div className="absolute top-5 right-5 z-30 bg-primary text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1.5">
           <MapPin size={10} /> {event.locationName}
         </div>
+
+        {/* FULL CARD OVERLAY (Info only on Hover) */}
         {isBanner && (
-          <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out bg-gradient-to-t from-black via-black/60 to-transparent pt-20 z-20 text-left">
-            <h3 className="text-white font-serif font-bold text-xl mb-2">
-              {event.title}
-            </h3>
-            <p className="text-white/80 text-xs mb-6 line-clamp-2 italic">
-              {event.description}
-            </p>
-            <button className="w-full bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 shadow-lg uppercase tracking-wider">
-              {event.ctaText} <ArrowRight size={14} />
-            </button>
+          <div className="absolute inset-0 z-20 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <div className="translate-y-8 group-hover:translate-y-0 transition-transform duration-500 ease-out space-y-4">
+              <div>
+                <h3 className="text-white font-serif font-bold text-2xl">
+                  {event.title}
+                </h3>
+                <p className="text-white/70 text-xs italic font-light line-clamp-2 mt-1">
+                  {event.description ||
+                    "Join us for an exclusive experience curated just for you."}
+                </p>
+              </div>
+
+              {/* Two Button Format for Banner */}
+              <div className="flex gap-2 pb-2">
+                <button className="flex-[2] bg-primary text-white py-3 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg">
+                  {event.ctaText || "Book Now"}
+                </button>
+                <button className="flex-1 bg-white/20 backdrop-blur-md text-white py-3 rounded-xl text-[10px] font-bold flex items-center justify-center uppercase tracking-wider border border-white/20 hover:bg-white hover:text-black transition-colors">
+                  Details
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
+
+      {/* STANDARD CARD BOTTOM (Only for horizontal images) */}
       {!isBanner && (
         <div className="p-6 flex flex-col flex-1 bg-card text-left">
           <h3 className="text-lg font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
@@ -406,9 +442,9 @@ function EventCard({ event, index }) {
           </p>
           <div className="mt-auto pt-4 border-t border-dashed border-border flex items-center gap-2">
             <button className="flex-[2] bg-primary text-white py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider">
-              {event.ctaText}
+              {event.ctaText || "Reserve"}
             </button>
-            <button className="flex-1 bg-muted text-foreground py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider">
+            <button className="flex-1 bg-muted text-foreground py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center uppercase tracking-wider">
               Details
             </button>
           </div>

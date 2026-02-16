@@ -70,59 +70,32 @@ interface GalleryItem {
 }
 
 const FALLBACK_RESTAURANT: RestaurantData = {
-  id: 0,
-  propertyId: 0,
-  name: "The Grand Dining Restaurant",
-  location: "123 Heritage Lane, Near Gateway Arch",
-  city: "Mumbai",
+  id: 1,
+  propertyId: 1,
+  name: "Kennedia Blu Restaurant Ghaziabad",
+  location: "Noor Nagar, Raj Nagar Extension, Ghaziabad, Uttar Pradesh 201003",
+  city: "Ghaziabad",
   type: "FINE DINING",
-  tagline: "Experience culinary excellence in every bite.",
-  rating: 4.8,
-  price: "₹2,500",
+  tagline: "Experience elegance, taste, and unforgettable dining.",
+  rating: null,
+  price: "₹₹₹",
   media: [
     {
-      url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200",
+      url: gallery5,
       type: "IMAGE",
-      alt: "Restaurant Ambience",
-      mediaId: null,
-      fileName: null,
-      width: null,
-      height: null,
-    },
-    {
-      url: "https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=800",
-      type: "IMAGE",
-      alt: "Interior",
-      mediaId: null,
-      fileName: null,
-      width: null,
-      height: null,
-    },
-    {
-      url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=800",
-      type: "IMAGE",
-      alt: "Dish",
-      mediaId: null,
-      fileName: null,
-      width: null,
-      height: null,
-    },
-    {
-      url: "https://images.unsplash.com/photo-1550966841-3ee5ad0110d3?q=80&w=800",
-      type: "IMAGE",
-      alt: "Service",
+      alt: "Kennedia Blu Restaurant",
       mediaId: null,
       fileName: null,
       width: null,
       height: null,
     },
   ],
-  coordinates: { lat: 18.922, lng: 72.8347 },
+  coordinates: null, // Not using lat/lng now since we have direct map link
   image: {
-    src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200",
-    alt: "The Grand Dining",
+    src: gallery5,
+    alt: "Kennedia Blu Restaurant Ghaziabad",
   },
-  nearbyPlaces: ["0.2 km from Gateway of India", "2.5 km from Marine Drive"],
+  nearbyPlaces: ["300 meters from T&T Fragrance"],
 };
 
 const fadeIn = {
@@ -269,13 +242,13 @@ function ResturantBanner() {
           <Link to="/" className="hover:text-primary transition-colors">
             Home
           </Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link
+          {/* <ChevronRight className="w-4 h-4" /> */}
+          {/* <Link
             to="/resturants"
             className="hover:text-primary transition-colors"
           >
             Restaurants
-          </Link>
+          </Link> */}
           <ChevronRight className="w-4 h-4" />
           <span className="text-foreground font-semibold truncate">
             {restaurant.name}
@@ -316,16 +289,14 @@ function ResturantBanner() {
                     {restaurant.location}, {restaurant.city}
                   </span>
                 </div>
-                {restaurant.coordinates && (
-                  <a
-                    href={`https://www.google.com/maps?q=${restaurant.coordinates.lat},${restaurant.coordinates.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-bold text-destructive hover:underline flex items-center gap-1"
-                  >
-                    <Navigation className="w-4 h-4" /> View Map
-                  </a>
-                )}
+                <a
+                  href="https://google.com/maps/place/kennedia+blu+restaurant+ghaziabad/data=!4m2!3m1!1s0x390cf1005bab4c6f:0xb455a48e012d76e7?sa=X&ved=1t:242&ictx=111"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-bold text-destructive hover:underline flex items-center gap-1"
+                >
+                  <Navigation className="w-4 h-4" /> View Map
+                </a>
               </motion.div>
 
               <motion.div
