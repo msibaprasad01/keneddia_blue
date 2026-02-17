@@ -209,11 +209,8 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
       // 5. API Call Logic
       if (editData?.id) {
         if (isPropertyTypeSelected) {
-          await updateAboutUsByPropertyTypeId(
-            editData.id,
-            formData.propertyTypeId,
-            payload,
-          );
+          await updateAboutUsByPropertyTypeId(editData.id, payload);
+
           showSuccess("Property-specific content updated");
         } else {
           await updateAboutUsById(editData.id, payload);

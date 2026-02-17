@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate} from "react-router-dom";
 import { ArrowUpRight, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -175,14 +175,20 @@ function NewsCarousel({ items, swiperRef }: { items: NewsItem[]; swiperRef: any 
 }
 
 function NewsCard({ item }: { item: NewsItem }) {
+  const navigate=useNavigate();
   const date = new Date(item.dateBadge).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric'
   });
+  const handleCardClick = () => {
+    navigate(`/news/${item.id}`);
+  };
 
   return (
-    <div className="group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300">
+    <div
+     onClick={handleCardClick}
+    className="cursor-pointer group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300 ">
       <div className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] overflow-hidden`}>
         <OptimizedImage
           src={item.imageUrl}

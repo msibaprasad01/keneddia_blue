@@ -203,6 +203,12 @@ export default function Hotels() {
   const [aboutImageErrors, setAboutImageErrors] = useState<Set<string>>(
     new Set(),
   );
+  const [currentRecognitionIndex, setCurrentRecognitionIndex] = useState(0);
+
+  // Reset recognition index when about section changes
+  useEffect(() => {
+    setCurrentRecognitionIndex(0);
+  }, [currentAboutIndex]);
 
   // Fetch Property Types and get Hotel ID
   useEffect(() => {
@@ -424,6 +430,20 @@ export default function Hotels() {
   const displayAboutSections =
     aboutSections.length > 0 ? aboutSections : FALLBACK_ABOUT_DATA;
   const useAboutFallback = aboutSections.length === 0;
+  useEffect(() => {
+    const currentSection = displayAboutSections[currentAboutIndex];
+    const recognitions = !useAboutFallback
+      ? currentSection?.recognitions?.filter((r: any) => r.isActive) || []
+      : [];
+
+    if (recognitions.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setCurrentRecognitionIndex((prev) => (prev + 1) % recognitions.length);
+    }, 2000);
+
+    return () => clearInterval(timer);
+  }, [currentAboutIndex, aboutSections, useAboutFallback]);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -554,11 +574,8 @@ export default function Hotels() {
                       displayAboutSections[currentAboutIndex],
                     );
 
-                    // Check if it's a string URL (from API) or OptimizedImage object (fallback)
                     if (typeof imageUrl === "string") {
-                      // API image - check for errors
                       if (aboutImageErrors.has(imageUrl)) {
-                        // Fallback to default image on error
                         return (
                           <OptimizedImage
                             {...siteContent.images.hotels.delhi}
@@ -566,7 +583,6 @@ export default function Hotels() {
                           />
                         );
                       }
-
                       return (
                         <img
                           src={imageUrl}
@@ -582,7 +598,6 @@ export default function Hotels() {
                       );
                     }
 
-                    // Fallback OptimizedImage object
                     return (
                       <OptimizedImage
                         {...imageUrl}
@@ -623,11 +638,111 @@ export default function Hotels() {
                     <p className="text-muted-foreground leading-relaxed text-base font-light">
                       {displayAboutSections[currentAboutIndex].description}
                     </p>
+
+                    {/* Recognitions — all shown, one animates at a time */}
+                    {!useAboutFallback &&
+                      (() => {
+                        const recognitions =
+                          displayAboutSections[
+                            currentAboutIndex
+                          ]?.recognitions?.filter((r: any) => r.isActive) || [];
+
+                        if (recognitions.length === 0) return null;
+
+                        return (
+                          <div className="pt-4 border-t border-border/40 space-y-4">
+                            {/* All stats in a row */}
+                            <div className="flex flex-wrap gap-x-10 gap-y-3">
+                              {recognitions.map((r: any, idx: number) => (
+                                <button
+                                  key={r.id}
+                                  onClick={() =>
+                                    setCurrentRecognitionIndex(idx)
+                                  }
+                                  className="flex flex-col gap-0.5 text-left group"
+                                >
+                                  <AnimatePresence mode="wait">
+                                    {idx === currentRecognitionIndex ? (
+                                      <motion.span
+                                        key="active"
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -6 }}
+                                        transition={{ duration: 0.35 }}
+                                        className="text-2xl md:text-3xl font-serif text-primary font-bold leading-none"
+                                      >
+                                        {r.value}
+                                      </motion.span>
+                                    ) : (
+                                      <motion.span
+                                        key="inactive"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="text-2xl md:text-3xl font-serif text-foreground/40 font-bold leading-none group-hover:text-foreground/60 transition-colors"
+                                      >
+                                        {r.value}
+                                      </motion.span>
+                                    )}
+                                  </AnimatePresence>
+                                  <span
+                                    className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                                      idx === currentRecognitionIndex
+                                        ? "text-muted-foreground"
+                                        : "text-muted-foreground/40 group-hover:text-muted-foreground/60"
+                                    }`}
+                                  >
+                                    {r.title}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+
+                            {/* Active recognition subTitle */}
+                            <AnimatePresence mode="wait">
+                              {recognitions[currentRecognitionIndex]
+                                ?.subTitle && (
+                                <motion.p
+                                  key={`subtitle-${currentRecognitionIndex}`}
+                                  initial={{ opacity: 0, y: 6 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -6 }}
+                                  transition={{ duration: 0.35 }}
+                                  className="text-xs text-muted-foreground/70 italic"
+                                >
+                                  {
+                                    recognitions[currentRecognitionIndex]
+                                      .subTitle
+                                  }
+                                </motion.p>
+                              )}
+                            </AnimatePresence>
+
+                            {/* Dot indicators */}
+                            {recognitions.length > 1 && (
+                              <div className="flex gap-2">
+                                {recognitions.map((_: any, idx: number) => (
+                                  <button
+                                    key={idx}
+                                    onClick={() =>
+                                      setCurrentRecognitionIndex(idx)
+                                    }
+                                    className={`h-1 rounded-full transition-all duration-300 ${
+                                      idx === currentRecognitionIndex
+                                        ? "bg-primary w-6"
+                                        : "bg-border w-3 hover:bg-primary/50"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Carousel Indicators */}
-                <div className="flex gap-2 mt-4">
+                {/* About section carousel indicators */}
+                {/* <div className="flex gap-2 mt-6">
                   {displayAboutSections.map((_, idx) => (
                     <button
                       key={idx}
@@ -639,7 +754,7 @@ export default function Hotels() {
                       }`}
                     />
                   ))}
-                </div>
+                </div> */}
               </div>
             </div>
           )}

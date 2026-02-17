@@ -1,10 +1,10 @@
 import axios from "axios";
 
 // DEV
-// const apiUrl = "http://192.168.0.135:6090/";
+const apiUrl = "http://192.168.0.135:6090/";
 
 // QA (commented as requested)
-const apiUrl = "http://103.152.79.63:6090/";
+// const apiUrl = "http://103.152.79.63:6090/";
 
 const API = axios.create({ baseURL: apiUrl });
 
@@ -461,14 +461,14 @@ export const updateAboutUsByPropertyTypeId = (aboutUsId, payload) => {
   formData.append(
     "data",
     JSON.stringify({
-      sectionTitle: payload.sectionTitle,
-      subTitle: payload.subTitle,
-      description: payload.description,
-      videoUrl: payload.videoUrl,
-      videoTitle: payload.videoTitle,
+      sectionTitle: payload.sectionTitle || "",
+      subTitle: payload.subTitle || "",
+      description: payload.description || "",
+      videoUrl: payload.videoUrl || "",
+      videoTitle: payload.videoTitle || "",
       mediaUrls: payload.mediaUrls || [],
-      ctaButtonText: payload.ctaButtonText,
-      ctaButtonUrl: payload.ctaButtonUrl,
+      ctaButtonText: payload.ctaButtonText || "",
+      ctaButtonUrl: payload.ctaButtonUrl || "",
     }),
   );
 
@@ -480,7 +480,7 @@ export const updateAboutUsByPropertyTypeId = (aboutUsId, payload) => {
   }
 
   // 🔁 Update by AboutUs ID
-  return API.put(`api/v1/admin/about-us/property/${aboutUsId}`, formData);
+  return API.put(`api/v1/admin/about-us/${aboutUsId}`, formData);
 };
 
 export default API;
