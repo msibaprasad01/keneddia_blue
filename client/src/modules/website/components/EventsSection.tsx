@@ -1,14 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  Calendar,
-  ArrowRight,
   MapPin,
   Loader2,
   Image as ImageIcon,
   Clock,
-  ArrowUpRight
+  ArrowUpRight,
+  ArrowRight
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getEventsUpdated } from "@/Api/Api";
@@ -23,21 +22,27 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 
 // ============================================================================
-// CONFIGURATION & DETECTION
+// TYPE DEFINITIONS
 // ============================================================================
 
-const MEDIA_RULES = {
-  reel: { aspectRatio: "9:16", tolerance: 0.15 },
-  portrait: { aspectRatio: "4:5", tolerance: 0.1 },
-};
-
-const detectBanner = (image: any) => {
-  if (!image?.width || !image?.height) return false;
-  const ratio = image.width / image.height;
-  const isReel = Math.abs(ratio - 9 / 16) <= MEDIA_RULES.reel.tolerance;
-  const isPortrait = Math.abs(ratio - 4 / 5) <= MEDIA_RULES.portrait.tolerance;
-  return isReel || isPortrait;
-};
+interface ApiEvent {
+  id: number | string;
+  title: string;
+  locationName: string;
+  eventDate: string;
+  description: string;
+  status: "ACTIVE" | "COMING_SOON" | "SOLD_OUT";
+  active: boolean;
+  ctaText: string;
+  ctaLink: string | null;
+  image?: {
+    type?: "IMAGE" | "VIDEO";
+    url: string;
+    width?: number | null;
+    height?: number | null;
+    fileName?: string | null;
+  } | null;
+}
 
 // ============================================================================
 // MAIN COMPONENT
@@ -56,26 +61,23 @@ export default function EventsSection() {
     try {
       setLoading(true);
       const response = await getEventsUpdated();
-      const rawEvents = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response)
-          ? response
+      
+      // Handle various response structures from API
+      const rawEvents = Array.isArray(response?.data) 
+        ? response.data 
+        : Array.isArray(response) 
+          ? response 
           : [];
 
-      const activeEvents = rawEvents
-        .filter(
-          (event: any) => event.status === "ACTIVE" && event.active === true,
-        )
-        .map((event: any) => ({
-          ...event,
-          image: event.image ? { ...event.image } : null,
-        }));
+      // Filter based on your requirements (ACTIVE status)
+      const activeEvents = rawEvents.filter(
+        (event: any) => event.status === "ACTIVE" || event.active === true
+      );
 
       setApiEvents(
         activeEvents.sort(
-          (a, b) =>
-            new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
-        ),
+          (a: any, b: any) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+        )
       );
     } catch (error) {
       console.error("Failed to fetch events:", error);
@@ -148,7 +150,15 @@ export default function EventsSection() {
 }
 
 function EventCard({ event, index }: { event: ApiEvent; index: number }) {
-  const isBanner = detectBanner(event.image);
+  const [isBanner, setIsBanner] = useState(false);
+
+  // MANUALLY ANALYZE SIZE ON LOAD (since API returns null)
+  const analyzeMediaSize = (w: number, h: number) => {
+    const ratio = w / h;
+    if (ratio <= 0.85) {
+      setIsBanner(true);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -170,10 +180,12 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
     >
       {/* Media Container */}
       <div
-        className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[280px]"}`}
+        className={`relative overflow-hidden transition-all duration-500 ${
+          isBanner ? "h-full" : "h-[280px]"
+        }`}
       >
         {event.image?.url ? (
-          event.image.type === "VIDEO" ? (
+          event.image.type === "VIDEO" || event.image.url.includes(".mp4") ? (
             <video
               src={event.image.url}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -181,12 +193,18 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
               loop
               muted
               playsInline
+              onLoadedMetadata={(e) => 
+                analyzeMediaSize(e.currentTarget.videoWidth, e.currentTarget.videoHeight)
+              }
             />
           ) : (
-            <OptimizedImage
+            <img
               src={event.image.url}
               alt={event.title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              onLoad={(e) => 
+                analyzeMediaSize(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)
+              }
             />
           )
         ) : (
@@ -195,46 +213,39 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
           </div>
         )}
 
-        {/* Badges */}
+        {/* Date Badge */}
         <div className="absolute top-4 left-4 z-20 flex flex-col items-center bg-black/70 backdrop-blur-md text-white px-3 py-1 rounded-lg border border-white/10">
           <span className="text-lg font-black leading-none">{day}</span>
           <span className="text-[9px] font-bold tracking-tighter">{month}</span>
         </div>
 
+        {/* Location Badge */}
         <div className="absolute top-4 right-4 z-20 bg-primary text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1">
           <MapPin size={10} /> {event.locationName}
         </div>
 
-        {/* Overlay for Banner Mode (PORTRAIT/REEL) */}
+        {/* Banner Mode UI (Text Over Media) */}
         {isBanner && (
-          <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out bg-gradient-to-t from-black via-black/60 to-transparent pt-20 z-20">
-            <h3 className="text-white font-serif font-bold text-xl mb-2">
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+            <h3 className="text-white font-serif font-bold text-xl mb-2 drop-shadow-md">
               {event.title}
             </h3>
-            <p className="text-white/80 text-xs mb-6 line-clamp-2 italic">
+            <p className="text-white/80 text-xs mb-6 line-clamp-2 italic drop-shadow-sm">
               {event.description}
             </p>
-
-            {/* TWO BUTTON ROW - BANNER */}
-            <div className="flex items-center gap-3">
+            <div className="flex gap-2">
               <Link
-                to="#"
-                className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 hover:bg-primary/90 shadow-lg active:scale-95 uppercase tracking-wider"
+                to={event.ctaLink || "#"}
+                className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
               >
-                {event.ctaText || "Book"} <ArrowRight size={14} />
-              </Link>
-              <Link
-                to="#"
-                className="flex-1 bg-white/20 backdrop-blur-md border border-white/30 text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 hover:bg-white/30 transition-all active:scale-95 uppercase tracking-wider"
-              >
-                Details
+                {event.ctaText || "Book Now"} <ArrowRight size={14} />
               </Link>
             </div>
           </div>
         )}
       </div>
 
-      {/* Content for Standard Mode (LANDSCAPE) */}
+      {/* Standard Mode UI (Text Below Media) */}
       {!isBanner && (
         <div className="p-6 flex flex-col flex-1 bg-card">
           <h3 className="text-lg font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
@@ -243,52 +254,23 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
           <div className="flex items-center gap-1.5 text-muted-foreground mt-2 mb-3">
             <Clock size={12} className="text-primary" />
             <span className="text-[11px] font-medium italic uppercase">
-              Starts 8:00 PM
+              Available 8:00 PM
             </span>
           </div>
           <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed mb-4">
             {event.description}
           </p>
 
-          <div className="mt-auto pt-4 border-t border-dashed border-border">
-            <div className="flex items-center gap-2">
-              <Link
-                to="#"
-                className="flex-[2] bg-primary text-white py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-primary/90 active:scale-95 uppercase tracking-wider"
-              >
-                {event.ctaText || "Book Now"}
-              </Link>
-              <Link
-                to="#"
-                className="flex-1 bg-muted text-foreground py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-muted/80 active:scale-95 uppercase tracking-wider"
-              >
-                Details
-              </Link>
-            </div>
+          <div className="mt-auto pt-4 border-t border-dashed border-border flex gap-2">
+            <Link
+              to={event.ctaLink || "#"}
+              className="flex-1 bg-primary text-white py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-primary/90 active:scale-95 uppercase tracking-wider transition-all"
+            >
+              {event.ctaText || "Book Now"}
+            </Link>
           </div>
         </div>
       )}
     </motion.div>
   );
-}
-
-// ============================================================================
-// INTERFACES
-// ============================================================================
-
-interface ApiEvent {
-  id: number | string;
-  title: string;
-  locationName: string;
-  eventDate: string;
-  description: string;
-  status: "ACTIVE" | "COMING_SOON" | "SOLD_OUT";
-  active: boolean;
-  image?: {
-    type?: "IMAGE" | "VIDEO";
-    url: string;
-    width?: number;
-    height?: number;
-  } | null;
-  ctaText: string;
 }

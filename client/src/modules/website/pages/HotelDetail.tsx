@@ -136,25 +136,25 @@ export default function HotelDetail() {
   const socialPlatforms = [
     {
       name: "WhatsApp",
-      icon: <MessageCircle size={20} />,
+      icon: MessageCircle, // Just the name of the component
       color: "bg-[#25D366]",
       link: `https://wa.me/?text=${encodeURIComponent(shareUrl)}`,
     },
     {
       name: "Facebook",
-      icon: <Facebook size={20} />,
+      icon: Facebook,
       color: "bg-[#1877F2]",
       link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
     },
     {
       name: "X",
-      icon: <Twitter size={18} />,
+      icon: Twitter,
       color: "bg-black",
       link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`,
     },
     {
       name: "LinkedIn",
-      icon: <Linkedin size={20} />,
+      icon: Linkedin,
       color: "bg-[#0A66C2]",
       link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
     },
@@ -452,12 +452,10 @@ export default function HotelDetail() {
   };
 
   const topGridImages = useMemo(() => {
-    const combined = [
-      ...(hotel?.media || []),
-      ...galleryData.map((g) => g.media),
-    ];
-    return combined.filter((m) => m && m.url);
-  }, [hotel?.media, galleryData]);
+    return galleryData
+      .filter((g) => g.media?.url) // safety check
+      .map((g) => g.media);
+  }, [galleryData]);
 
   const sections = useMemo(
     () => [
@@ -557,7 +555,7 @@ export default function HotelDetail() {
                   </div>
                   {hotel.coordinates && (
                     <a
-                      href={`http://googleusercontent.com/maps.google.com/?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`}
+                      href={`https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-bold text-destructive hover:underline flex items-center gap-1"
@@ -606,18 +604,22 @@ export default function HotelDetail() {
                       exit={{ opacity: 0, y: 10, scale: 0.9 }}
                       className="absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-2.5 py-2 flex gap-2.5 z-50 backdrop-blur-md"
                     >
-                      {socialPlatforms.map((p) => (
-                        <motion.a
-                          key={p.name}
-                          href={p.link}
-                          target="_blank"
-                          rel="noreferrer"
-                          whileHover={{ scale: 1.2, y: -3 }}
-                          className={`${p.color} text-white p-2.5 rounded-full shadow-lg flex items-center justify-center`}
-                        >
-                          <p.icon size={20} />
-                        </motion.a>
-                      ))}
+                      {socialPlatforms.map((p) => {
+                        const Icon = p.icon; // ✅ Capitalize so React treats it as a component
+                        return (
+                          <motion.a
+                            key={p.name}
+                            href={p.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            whileHover={{ scale: 1.2, y: -3 }}
+                            className={`${p.color} text-white p-2.5 rounded-full shadow-lg flex items-center justify-center`}
+                          >
+                            <Icon className="w-4 h-4" />{" "}
+                            {/* ✅ Render as JSX element */}
+                          </motion.a>
+                        );
+                      })}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -645,23 +647,25 @@ export default function HotelDetail() {
             variants={fadeIn}
             initial="initial"
             animate="animate"
-            className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[350px] md:h-[450px] mb-8 rounded-2xl overflow-hidden shadow-xl relative cursor-pointer"
+            className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[350px] md:h-[450px] mb-8 rounded-2xl overflow-hidden shadow-xl relative cursor-pointer [&>*]:min-h-0"
           >
             <div
-              className="md:col-span-2 h-full bg-muted overflow-hidden relative group"
+              className="md:col-span-2 h-full bg-muted overflow-hidden relative group row-span-2"
               onClick={() => openGalleryAt(0)}
             >
               <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
-              <OptimizedImage
-                src={topGridImages[0]?.url || ""}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
+              <div className="absolute inset-0">
+                <OptimizedImage
+                  src={topGridImages[0]?.url || ""}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
             </div>
-            <div className="md:col-span-1 flex flex-col gap-3">
+            <div className="md:col-span-1 flex flex-col gap-3 h-full">
               {[1, 2].map((idx) => (
                 <div
                   key={idx}
-                  className="h-1/2 bg-muted overflow-hidden relative group"
+                  className="flex-1 bg-muted overflow-hidden relative group"
                   onClick={() => openGalleryAt(idx)}
                 >
                   <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />

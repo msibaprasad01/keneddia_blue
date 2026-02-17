@@ -410,9 +410,9 @@ export default function NewsListing() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                   {currentItems.map((item) => (
                     <Link
-                      // to={`/news/${item.slug || item.id}`}
-                      to={`#`}
-                      key={item.id}
+                       to={`/news/${item.id}`} key={item.id}
+                      // to={`#`}
+                      // key={item.id}
                       className="group flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300"
                     >
                       <div className="relative aspect-[4/3] overflow-hidden">

@@ -339,82 +339,105 @@ export default function PropertiesSection() {
                   </h3>
 
                   <div className="space-y-4">
-                    <div className="flex flex-col pb-4 border-b border-border">
-                      <div className="flex justify-between items-end">
-                        <span className="text-sm text-muted-foreground uppercase font-bold">
-                          Base Price
-                        </span>
-                        <span className="text-xl font-semibold">
-                          ₹{(active.price ?? 0).toLocaleString()}
-                        </span>
-                      </div>
-                      {active.discountAmount && active.discountAmount > 0 ? (
-                        <div className="flex justify-between text-sm text-green-600 mt-1">
-                          <span>Discount</span>
-                          <span>
-                            -₹{active.discountAmount.toLocaleString()}
+                    {/* Price block — only show if price > 0 */}
+                    {active.price > 0 && (
+                      <div className="flex flex-col pb-4 border-b border-border">
+                        <div className="flex justify-between items-end">
+                          <span className="text-sm text-muted-foreground uppercase font-bold">
+                            Base Price
+                          </span>
+                          <span className="text-xl font-semibold">
+                            ₹{active.price.toLocaleString()}
                           </span>
                         </div>
-                      ) : null}
-                      {active.gstPercentage && active.gstPercentage > 0 ? (
-                        <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                          <span>GST ({active.gstPercentage}%)</span>
-                          <span>
-                            +₹
+
+                        {/* Discount — only show if > 0 */}
+                        {active.discountAmount && active.discountAmount > 0 ? (
+                          <div className="flex justify-between text-sm text-green-600 mt-1">
+                            <span>Discount</span>
+                            <span>
+                              -₹{active.discountAmount.toLocaleString()}
+                            </span>
+                          </div>
+                        ) : null}
+
+                        {/* GST — only show if > 0 */}
+                        {active.gstPercentage && active.gstPercentage > 0 ? (
+                          <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                            <span>GST ({active.gstPercentage}%)</span>
+                            <span>
+                              +₹
+                              {(
+                                (active.price - (active.discountAmount || 0)) *
+                                (active.gstPercentage / 100)
+                              ).toLocaleString()}
+                            </span>
+                          </div>
+                        ) : null}
+
+                        {/* Total — only show if price > 0 */}
+                        <div className="flex justify-between items-end mt-4">
+                          <span className="text-sm text-foreground font-bold uppercase">
+                            Total
+                          </span>
+                          <span className="text-3xl font-black text-primary">
+                            ₹
                             {(
                               (active.price - (active.discountAmount || 0)) *
-                              (active.gstPercentage / 100)
+                              (1 + (active.gstPercentage || 0) / 100)
                             ).toLocaleString()}
                           </span>
                         </div>
-                      ) : null}
-                      <div className="flex justify-between items-end mt-4">
-                        <span className="text-sm text-foreground font-bold uppercase">
-                          Total
-                        </span>
-                        <span className="text-3xl font-black text-primary">
-                          ₹
-                          {(
-                            (active.price - (active.discountAmount || 0)) *
-                            (1 + (active.gstPercentage || 0) / 100)
-                          ).toLocaleString()}
-                        </span>
                       </div>
-                    </div>
+                    )}
 
-                    <div className="grid grid-cols-2 gap-4 text-sm font-bold">
-                      <div className="p-4 bg-secondary/20 rounded-2xl border border-border/50">
-                        <p className="text-[10px] text-muted-foreground mb-1 uppercase">
-                          Capacity
-                        </p>
-                        {active.capacity ? `${active.capacity} Guests` : "N/A"}
+                    {/* Capacity + Rating grid — only render grid if at least one exists */}
+                    {(!!active.capacity || !!active.rating) && (
+                      <div className="grid grid-cols-2 gap-4 text-sm font-bold">
+                        {!!active.capacity && (
+                          <div className="p-4 bg-secondary/20 rounded-2xl border border-border/50">
+                            <p className="text-[10px] text-muted-foreground mb-1 uppercase">
+                              Capacity
+                            </p>
+                            {active.capacity} Guests
+                          </div>
+                        )}
+                        {!!active.rating && (
+                          <div className="p-4 bg-secondary/20 rounded-2xl border border-border/50">
+                            <p className="text-[10px] text-muted-foreground mb-1 uppercase">
+                              Rating
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                              {active.rating.toFixed(1)}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="p-4 bg-secondary/20 rounded-2xl border border-border/50">
-                        <p className="text-[10px] text-muted-foreground mb-1 uppercase">
-                          Rating
-                        </p>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                          {active.rating ? active.rating.toFixed(1) : "N/A"}
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="mt-8 space-y-4">
+                  {/* Only show Book Your Stay for hotels */}
                   <button
-                    onClick={handleBookNow}
+                    onClick={
+                      active.propertyType?.toLowerCase() === "hotel"
+                        ? handleBookNow : handleBookNow
+                    }
                     className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
                   >
-                    Book Your Stay <ArrowRight size={20} />
+                    {active.propertyType?.toLowerCase() === "hotel"
+                      ? "Book Your Stay"
+                      : "Explore"}
+                    <ArrowRight size={20} />
                   </button>
 
                   <div className="grid grid-cols-2 gap-3">
                     <button
-                      onClick={() =>
-                        (window.location.href = `tel:+911234567890`)
-                      }
+                      // onClick={() =>
+                      //   (window.location.href = `tel:+91`)
+                      // }
                       className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer"
                     >
                       <Phone size={18} /> Call

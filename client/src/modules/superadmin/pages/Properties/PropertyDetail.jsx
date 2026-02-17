@@ -20,11 +20,18 @@ import OverviewTab from "./tabs/OverviewTab";
 import RoomsTab from "./tabs/RoomsTab";
 import AmenitiesTab from "./tabs/AmenitiesTab";
 import GalleryTab from "./tabs/GalleryTab";
-import EventsTab from "./tabs/EventsTab";
 import PricingTab from "./tabs/PricingTab";
 import PoliciesTab from "./tabs/PoliciesTab";
-import MenuTab from "./tabs/MenuTab";
+
+import ResturantVerticals from "./tabs/resturant/ResturantVerticals";
+import EventsTab from "./tabs/resturant/EventsTab";
+import MenuTab from "./tabs/resturant/MenuTab";
 import TablesTab from "./tabs/TablesTab";
+import BuffetSection from "./tabs/resturant/BuffetSection";
+import ResturantOffers from "./tabs/resturant/ResturantOffers";
+import ResturantAbout from "./tabs/resturant/ResturantAbout";
+import GroupBookingSection from "./tabs/resturant/GroupBookingSection";
+import Gallery3d from "./tabs/resturant/Gallery3d";
 
 // Import Modals
 import AddEditOverviewModal from "./modals/AddEditOverviewModal";
@@ -37,13 +44,11 @@ import AddMenuItemModal from "./modals/AddMenuItemModal";
 import AddTableModal from "./modals/AddTableModal";
 
 const PropertyDetail = ({ property, onBack }) => {
-  console.log("property->", property);
   const normalizeProperty = (property) => {
     const base = property?.propertyResponseDTO ?? property;
     const listing = property?.propertyListingResponseDTOS?.[0] ?? {};
 
     return {
-      // ---- Base Property ----
       id: base?.id,
       propertyName: base?.propertyName,
       propertyTypes: base?.propertyTypes ?? [],
@@ -61,10 +66,8 @@ const PropertyDetail = ({ property, onBack }) => {
       parentPropertyName: base?.parentPropertyName,
       childProperties: base?.childProperties ?? [],
       isActive: base?.isActive,
-
       // ---- Listing (flattened) ----
-      propertyType:
-        listing?.propertyType || base?.propertyTypes?.[0] || "Hotel",
+      propertyType: listing?.propertyType || base?.propertyTypes?.[0] || "",
       city: listing?.city || base?.locationName,
       mainHeading: listing?.mainHeading,
       subTitle: listing?.subTitle,
@@ -184,6 +187,7 @@ const PropertyDetail = ({ property, onBack }) => {
     Cafe: ["overview", "menu", "tables", "gallery"],
     Restaurant: [
       "overview",
+      "gallery",
       "verticals",
       "buffet section",
       "offers section",
@@ -261,11 +265,52 @@ const PropertyDetail = ({ property, onBack }) => {
       case "tables":
         return <TablesTab {...commonProps} />;
       case "verticals":
+        return (
+          <ResturantVerticals
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
+        );
+
       case "buffet section":
+        return (
+          <BuffetSection
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
+        );
+
       case "offers section":
+        return (
+          <ResturantOffers
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
+        );
+
       case "about":
+        return (
+          <ResturantAbout
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
+        );
+
       case "group bookings":
+        return (
+          <GroupBookingSection
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
+        );
+
       case "3d gallery":
+        return (
+          <Gallery3d
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
+        );
       case "enquiries":
         return (
           <div className="py-20 text-center text-gray-400 text-sm font-medium">

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { PlusIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { colors } from "@/lib/colors/colors";
-import AddEventModal from "../modals/AddEventModal";
+import AddEventModal from "../../modals/AddEventModal";
 
 const EventsTab = ({ data = [], propertyData, refreshData }) => {
   const [isAdding, setIsAdding] = useState(false);
