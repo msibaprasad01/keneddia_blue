@@ -9,6 +9,7 @@ import {
   Info,
   MessageSquare,
   Calendar,
+  ExternalLink,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
@@ -56,6 +57,40 @@ interface RightSidebarProps {
   numberOfNights: number;
 }
 
+// Configuration for third-party booking links based on city
+const OTA_LINKS: Record<
+  string,
+  { goibibo?: string; mmt?: string; agoda?: string; hotels?: string }
+> = {
+  bangalore: {
+    goibibo:
+      "https://www.goibibo.com/hotels/kennedia-international-and-suites-hotel-in-bangalore-8194858207990819191/",
+    mmt: "https://www.makemytrip.com/hotels/kennedia_international_hotel_and_suites-details-bangalore.html",
+    hotels: "https://in.hotels.com/ho3985157152/",
+  },
+  bengaluru: {
+    goibibo:
+      "https://www.goibibo.com/hotels/kennedia-international-and-suites-hotel-in-bangalore-8194858207990819191/",
+    mmt: "https://www.makemytrip.com/hotels/kennedia_international_hotel_and_suites-details-bangalore.html",
+    hotels: "https://in.hotels.com/ho3985157152/",
+  },
+  varanasi: {
+    mmt: "https://www.makemytrip.com/hotels/kennedia_international_hotel_and_suites-details-varanasi.html",
+    goibibo:
+      "https://www.goibibo.com/hotels/kennedia-international-and-suites-hotel-in-varanasi-7481286019158286391/",
+    agoda:
+      "https://www.agoda.com/en-in/kennedia-international-hotel-and-suites/hotel/varanasi-in.html?cid=1844104&ds=pFc0pg7XB95WTT9A",
+  },
+};
+
+// All possible OTA platforms - shown for all cities, but only clickable where links exist
+const ALL_OTAS = [
+  { key: 'mmt', name: 'MakeMyTrip', shortName: 'MMT', color: '#df1f26' },
+  { key: 'goibibo', name: 'Goibibo', shortName: 'GO', color: '#2276e3' },
+  { key: 'agoda', name: 'Agoda', shortName: '', color: '' },
+  { key: 'hotels', name: 'Hotels.com', shortName: '', color: '#d32f2f' },
+] as const;
+
 export default function RightSidebar({
   hotel,
   selectedRoom,
@@ -82,34 +117,43 @@ export default function RightSidebar({
     }).format(amount);
   };
 
-  // Get room price (handle both basePrice and price)
   const getRoomPrice = (room: Room | null): number => {
     if (!room) return 0;
     const price = room.basePrice ?? room.price ?? 0;
     return typeof price === "number" ? price : 0;
   };
 
-  // Calculate total price based on nights
   const calculateTotalPrice = (room: Room | null): number => {
     if (!room) return 0;
     const roomPrice = getRoomPrice(room);
     return roomPrice * numberOfNights;
   };
 
-  // Generate dynamic map URL based on coordinates
   const getMapEmbedUrl = () => {
     if (hotel.coordinates?.lat && hotel.coordinates?.lng) {
       const { lat, lng } = hotel.coordinates;
       const bbox = `${lng - 0.01},${lat - 0.01},${lng + 0.01},${lat + 0.01}`;
       return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
     }
-    // Default fallback
     return "https://www.openstreetmap.org/export/embed.html?bbox=72.82,18.91,72.85,18.93&layer=mapnik&marker=18.922,72.8347";
   };
 
+  // Get dynamic links based on normalized city name
+  const cityKey = hotel.city?.toLowerCase().trim() || "";
+  const availableLinks = OTA_LINKS[cityKey];
+  
+  // Debug - remove after testing
+  console.log('🏨 OTA Links Debug:', {
+    rawCity: hotel.city,
+    cityKey,
+    availableLinks,
+    hasLinks: !!availableLinks,
+    availableKeys: Object.keys(OTA_LINKS)
+  });
+
   return (
     <div className="space-y-6 sticky top-24">
-      {/* Price Summary Card - UPDATED WITH DATES */}
+      {/* Price Summary Card */}
       <div
         className={`bg-card border ${selectedRoom ? "border-primary ring-1 ring-primary" : "border-border"} rounded-xl p-5 shadow-lg relative overflow-hidden transition-all text-left`}
       >
@@ -118,7 +162,6 @@ export default function RightSidebar({
         </div>
 
         <div className="relative z-10 text-left">
-          {/* Date Display Section */}
           {checkInDate && checkOutDate && (
             <div className="mb-4 pb-4 border-b border-border">
               <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
@@ -133,7 +176,7 @@ export default function RightSidebar({
                     {format(checkInDate, "EEE")}
                   </p>
                 </div>
-                
+
                 <div className="text-center px-2">
                   <div className="flex flex-col items-center justify-center bg-primary/10 rounded-lg px-3 py-2">
                     <Calendar className="w-4 h-4 text-primary mb-1" />
@@ -145,7 +188,7 @@ export default function RightSidebar({
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="text-right">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
                     Check-out
@@ -161,13 +204,13 @@ export default function RightSidebar({
             </div>
           )}
 
-          {/* Price Display Section */}
           <div className="flex justify-between items-end mb-4 text-left">
             <div className="text-left w-full">
               {selectedRoom ? (
                 <>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                    Total Price for {numberOfNights} {numberOfNights === 1 ? "Night" : "Nights"}
+                    Total Price for {numberOfNights}{" "}
+                    {numberOfNights === 1 ? "Night" : "Nights"}
                   </p>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-2xl font-serif font-bold text-primary">
@@ -222,28 +265,126 @@ export default function RightSidebar({
         </div>
       </div>
 
-      {/* Mini Map Card - Dynamic Coordinates */}
+      {/* OTA Links - Always show all platforms, but gray out unavailable ones */}
+      <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+        <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center">
+          View on Other Platforms
+        </h4>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {ALL_OTAS.map((ota) => {
+            const link = availableLinks?.[ota.key as keyof typeof availableLinks];
+            const isAvailable = !!link;
+            
+            const Component = isAvailable ? 'a' : 'div';
+            const componentProps = isAvailable 
+              ? { href: link, target: "_blank", rel: "noopener noreferrer" } 
+              : {};
+
+            if (ota.key === 'mmt') {
+              return (
+                <Component
+                  key={ota.key}
+                  {...componentProps}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
+                    isAvailable
+                      ? 'border-[#df1f26]/20 bg-[#df1f26]/5 hover:bg-[#df1f26]/10 cursor-pointer'
+                      : 'border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed'
+                  } group`}
+                >
+                  <span className={`text-[10px] font-black tracking-tighter uppercase ${isAvailable ? 'text-[#df1f26]' : 'text-muted-foreground'}`}>
+                    MMT
+                  </span>
+                  <span className="text-[11px] font-bold text-foreground">
+                    MakeMyTrip
+                  </span>
+                  {isAvailable && <ExternalLink className="w-3 h-3 text-[#df1f26] opacity-50 group-hover:opacity-100" />}
+                </Component>
+              );
+            }
+
+            if (ota.key === 'goibibo') {
+              return (
+                <Component
+                  key={ota.key}
+                  {...componentProps}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
+                    isAvailable
+                      ? 'border-[#2276e3]/20 bg-[#2276e3]/5 hover:bg-[#2276e3]/10 cursor-pointer'
+                      : 'border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed'
+                  } group`}
+                >
+                  <span className={`text-[10px] font-black tracking-tighter uppercase ${isAvailable ? 'text-[#2276e3]' : 'text-muted-foreground'}`}>
+                    GO
+                  </span>
+                  <span className="text-[11px] font-bold text-foreground">
+                    Goibibo
+                  </span>
+                  {isAvailable && <ExternalLink className="w-3 h-3 text-[#2276e3] opacity-50 group-hover:opacity-100" />}
+                </Component>
+              );
+            }
+
+            if (ota.key === 'agoda') {
+              return (
+                <Component
+                  key={ota.key}
+                  {...componentProps}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
+                    isAvailable
+                      ? 'border-border bg-secondary/30 hover:bg-secondary/50 cursor-pointer'
+                      : 'border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed'
+                  } group`}
+                >
+                  <div className="flex gap-0.5">
+                    <div className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-[#5e96d2]' : 'bg-muted-foreground'}`} />
+                    <div className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-[#f34f36]' : 'bg-muted-foreground'}`} />
+                  </div>
+                  <span className="text-[11px] font-bold text-foreground">
+                    Agoda
+                  </span>
+                  {isAvailable && <ExternalLink className="w-3 h-3 text-muted-foreground opacity-50 group-hover:opacity-100" />}
+                </Component>
+              );
+            }
+
+            if (ota.key === 'hotels') {
+              return (
+                <Component
+                  key={ota.key}
+                  {...componentProps}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
+                    isAvailable
+                      ? 'border-[#d32f2f]/20 bg-[#d32f2f]/5 hover:bg-[#d32f2f]/10 cursor-pointer'
+                      : 'border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed'
+                  } group`}
+                >
+                  <span className={`text-[11px] font-bold ${isAvailable ? 'text-[#d32f2f]' : 'text-muted-foreground'}`}>
+                    Hotels.com
+                  </span>
+                  {isAvailable && <ExternalLink className="w-3 h-3 text-[#d32f2f] opacity-50 group-hover:opacity-100" />}
+                </Component>
+              );
+            }
+          })}
+        </div>
+      </div>
+
+      {/* Mini Map Card */}
       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm group">
         <div className="h-40 relative w-full bg-secondary/20">
-          {/* Dynamic Map Preview */}
           <iframe
             width="100%"
             height="100%"
             frameBorder="0"
             scrolling="no"
-            marginHeight={0}
-            marginWidth={0}
             src={getMapEmbedUrl()}
             className="opacity-60 grayscale hover:grayscale-0 transition-all duration-500 pointer-events-none"
           ></iframe>
-
           <div className="absolute inset-0 bg-transparent flex items-center justify-center pointer-events-none">
             <div className="bg-primary text-primary-foreground p-2 rounded-full shadow-lg animate-bounce">
               <MapPin className="w-4 h-4" />
             </div>
           </div>
-
-          {/* Overlay Content */}
           <div className="absolute inset-0 p-4 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
             <div className="text-white">
               <p className="text-xs font-semibold flex items-center gap-1">
@@ -443,7 +584,6 @@ export default function RightSidebar({
                     {...event.image}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  {/* Date Badge Overlay */}
                   <div className="absolute top-0 left-0 bg-primary/90 text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-br-md">
                     {event.date.split(",")[0]}
                   </div>
@@ -476,25 +616,7 @@ export default function RightSidebar({
         </div>
       )}
 
-      {/* Also Available On */}
-      <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
-        <h4 className="text-sm font-serif font-bold text-foreground mb-3 text-center">
-          Also Available On
-        </h4>
-        <div className="flex items-center justify-center gap-4 opacity-70 grayscale hover:grayscale-0 transition-all">
-          <div className="text-[10px] font-bold border border-border px-2 py-1 rounded">
-            Goibibo
-          </div>
-          <div className="text-[10px] font-bold border border-border px-2 py-1 rounded">
-            MakeMyTrip
-          </div>
-          <div className="text-[10px] font-bold border border-border px-2 py-1 rounded">
-            Agoda
-          </div>
-        </div>
-      </div>
-
-      {/* Hotel Specific WhatsApp */}
+      {/* WhatsApp Button */}
       <Button
         variant="outline"
         className="w-full h-12 gap-2 text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10 hover:text-[#25D366] font-bold shadow-sm"
