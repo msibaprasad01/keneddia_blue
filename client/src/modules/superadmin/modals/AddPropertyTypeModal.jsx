@@ -1,23 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { colors } from "@/lib/colors/colors";
-import { addPropertyType } from "@/Api/Api";
+import { addPropertyType, updatePropertyType } from "@/Api/Api";
 
-function AddPropertyTypeModal({ onClose, onSuccess }) {
+/**
+ * Props:
+ *  editItem  – { id, typeName, isActive } — if provided, switches to edit mode
+ *  onClose   – fn()
+ *  onSuccess – fn()
+ */
+function AddPropertyTypeModal({ editItem, onClose, onSuccess }) {
+  const isEditMode = Boolean(editItem);
+
   const [typeName, setTypeName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Pre-fill when editing
+  useEffect(() => {
+    if (editItem) {
+      setTypeName(editItem.typeName || "");
+    }
+  }, [editItem]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!typeName.trim()) return;
+
     setLoading(true);
     setError("");
 
     try {
-      await addPropertyType({ typeName });
+      if (isEditMode) {
+        // updatePropertyType(id, payload)
+        await updatePropertyType(editItem.id, { typeName: typeName.trim() });
+      } else {
+        await addPropertyType({ typeName: typeName.trim() });
+      }
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to add property type");
+      setError(
+        err.response?.data?.message ||
+          `Failed to ${isEditMode ? "update" : "add"} property type`,
+      );
     } finally {
       setLoading(false);
     }
@@ -26,6 +51,7 @@ function AddPropertyTypeModal({ onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+        {/* Header */}
         <div
           className="p-6 border-b flex items-center justify-between"
           style={{ borderColor: colors.border }}
@@ -34,7 +60,7 @@ function AddPropertyTypeModal({ onClose, onSuccess }) {
             className="text-xl font-semibold"
             style={{ color: colors.textPrimary }}
           >
-            Add Property Type
+            {isEditMode ? "Edit Property Type" : "Add Property Type"}
           </h2>
           <button
             onClick={onClose}
@@ -44,6 +70,7 @@ function AddPropertyTypeModal({ onClose, onSuccess }) {
           </button>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
@@ -84,7 +111,13 @@ function AddPropertyTypeModal({ onClose, onSuccess }) {
               className="px-4 py-2 rounded-lg text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
               style={{ backgroundColor: colors.primary }}
             >
-              {loading ? "Adding..." : "Add Type"}
+              {loading
+                ? isEditMode
+                  ? "Saving..."
+                  : "Adding..."
+                : isEditMode
+                  ? "Save Changes"
+                  : "Add Type"}
             </button>
           </div>
         </form>

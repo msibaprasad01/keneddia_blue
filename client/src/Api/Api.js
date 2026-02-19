@@ -38,10 +38,17 @@ export const uploadMedia = (formData) =>
   API.post("api/v1/media/upload", formData);
 export const PropertyUploadMedia = (formData) =>
   API.post("api/v1/property-listings/upload-media", formData);
+export const PropertyEdiMedia = (formData) =>
+  API.put("api/v1/property-listings/edit-media", formData);
 export const getMediaById = (id) => API.get(`api/v1/media/${id}`);
 export const createUser = (data) => API.post("api/v1/users/create", data);
 export const getUsersPaginated = () => API.get("api/v1/users/auth/paginated");
 export const addLocation = (data) => API.post("api/v1/locations/create", data);
+export const getLocationsByType = (type) =>
+  API.get("/api/v1/locations", {
+    params: { type },
+  });
+
 export const getAllLocations = () => API.get("api/v1/locations/all");
 export const updateLocationById = (id, data) =>
   API.put(`api/v1/locations/${id}/edit`, data);
@@ -50,6 +57,7 @@ export const updateLocationStatus = (id, isActive) =>
 
 export const addPropertyType = (data) =>
   API.post("api/v1/property-types/create", data);
+export const updatePropertyType = (id,data) =>API.put(`api/v1/property-types/${id}`, data);
 export const getPropertyTypes = () => API.get("api/v1/property-types");
 export const getPropertyTypeById = (id) =>
   API.get(`api/v1/property-types/${id}`);
@@ -61,6 +69,7 @@ export const updatePropertyTypeStatus = (id, isActive) =>
   });
 export const addPropertyCategory = (data) =>
   API.post("api/v1/property-categories/add", data);
+export const updatePropertyCategory = (id,data) =>API.put(`api/v1/property-categories/update/${id}`, data);
 export const getAllPropertyCategories = () =>
   API.get("api/v1/property-categories/all");
 export const getActivePropertyCategories = () =>
@@ -69,6 +78,7 @@ export const updatePropertyCategoryStatus = (id, isActive) =>
   API.patch(`api/v1/property-categories/${id}/status`, null, {
     params: { isActive },
   });
+
 export const addProperty = (type, data) =>
   API.post(`api/v1/properties/add/${type}`, data);
 export const getAllProperties = () => API.get("api/v1/properties/showAll");
@@ -325,6 +335,8 @@ export const deletePropertyListing = (propertyListingId) =>
 
 export const createAmenityFeature = (data) =>
   API.post("api/v1/admin/amenities-features", data);
+export const updateAmenityFeature = (id, data) =>
+  API.put(`/api/v1/admin/amenities-features/${id}`, data);
 export const getAllAmenityFeatures = () =>
   API.get("api/v1/admin/amenities-features");
 export const insertAmenitiesByPropertyId = (propertyId, amenityIds) => {

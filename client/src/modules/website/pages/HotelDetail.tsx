@@ -70,6 +70,7 @@ interface HotelData {
   id: number;
   propertyId: number;
   name: string;
+  bookingEngineUrl?: string | null;
   location: string;
   city: string;
   locationId: number;
@@ -339,6 +340,7 @@ export default function HotelDetail() {
           media: listing?.media || [],
           coordinates: coords,
           amenities: listing?.amenities || [],
+          bookingEngineUrl: parent.bookingEngineUrl || null,
           image: { src: listing?.media?.[0]?.url || "", alt: displayName },
           nearbyPlaces:
             dynamicNearby.length > 0
@@ -440,15 +442,23 @@ export default function HotelDetail() {
     setSelectedRoomId(null);
   };
 
+  const DEFAULT_BOOKING_URL =
+    "https://asiatech.in/booking_engine/index3?token=ODQ2Mg==";
+
   const handleBookNow = () => {
-    if (!searchData.checkIn || !searchData.checkOut || !selectedRoomId) {
-      toast.error("Please select dates and a room");
+    if (!searchData.checkIn || !searchData.checkOut) {
+      toast.error("Please select dates");
       return;
     }
-    window.open(
-      `https://asiatech.in/booking_engine/index3?token=ODQ2Mg==&checkin=${searchData.checkIn.toISOString().split("T")[0]}&checkout=${searchData.checkOut.toISOString().split("T")[0]}`,
-      "_blank",
-    );
+
+    const baseUrl = hotel?.bookingEngineUrl || DEFAULT_BOOKING_URL;
+
+    const finalUrl = `${baseUrl}${
+      baseUrl.includes("?") ? "&" : "?"
+    }checkin=${searchData.checkIn.toISOString().split("T")[0]}
+  &checkout=${searchData.checkOut.toISOString().split("T")[0]}`;
+
+    window.open(finalUrl, "_blank");
   };
 
   const topGridImages = useMemo(() => {

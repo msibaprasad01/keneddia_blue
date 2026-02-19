@@ -1,6 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { format, parseISO, isFuture } from "date-fns";
-import { Calendar, Clock, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import { getEventsUpdated } from "@/Api/Api";
@@ -55,10 +61,16 @@ export default function EventSectionPropertySpecific({
     try {
       setLoading(true);
       const response = await getEventsUpdated();
-      const allEvents = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
+      const allEvents = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response)
+          ? response
+          : [];
 
-      console.log(`--- Debug: Filtering Events for Location ID: ${locationId} (${locationName || 'Unknown'}) ---`);
-      
+      console.log(
+        `--- Debug: Filtering Events for Location ID: ${locationId} (${locationName || "Unknown"}) ---`,
+      );
+
       const debugInfo = allEvents.map((event: Event) => ({
         id: event.id,
         title: event.title,
@@ -67,7 +79,7 @@ export default function EventSectionPropertySpecific({
         isMatch: Number(event.locationId) === Number(locationId),
         isActive: event.active,
         date: event.eventDate,
-        isFuture: isFuture(parseISO(event.eventDate))
+        isFuture: isFuture(parseISO(event.eventDate)),
       }));
 
       // View this in your browser console to see exactly why events are appearing or not
@@ -75,10 +87,11 @@ export default function EventSectionPropertySpecific({
 
       // Filter events by locationId, active status, and upcoming dates
       const filteredEvents = allEvents.filter((event: Event) => {
-        const isMatchingLocation = Number(event.locationId) === Number(locationId);
+        const isMatchingLocation =
+          Number(event.locationId) === Number(locationId);
         const isActive = event.active === true;
         const isUpcoming = isFuture(parseISO(event.eventDate));
-        
+
         return isMatchingLocation && isActive && isUpcoming;
       });
 
@@ -86,7 +99,9 @@ export default function EventSectionPropertySpecific({
 
       // Sort by event date (nearest first)
       const sortedEvents = filteredEvents.sort((a: Event, b: Event) => {
-        return new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime();
+        return (
+          new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+        );
       });
 
       setEvents(sortedEvents);
@@ -99,7 +114,9 @@ export default function EventSectionPropertySpecific({
   };
 
   const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? Math.max(0, events.length - 2) : prev - 1));
+    setCurrentIndex((prev) =>
+      prev === 0 ? Math.max(0, events.length - 2) : prev - 1,
+    );
   };
 
   const handleNext = () => {
@@ -137,8 +154,12 @@ export default function EventSectionPropertySpecific({
   if (events.length === 0) {
     return (
       <div className="text-center py-12 border rounded-xl bg-muted/20">
-        <p className="text-muted-foreground italic mb-2">No upcoming events at this location</p>
-        <p className="text-xs text-muted-foreground/60">Location ID: {locationId}</p>
+        <p className="text-muted-foreground italic mb-2">
+          No upcoming events at this location
+        </p>
+        <p className="text-xs text-muted-foreground/60">
+          {locationName ? `Location: ${locationName}` : ""}
+        </p>
       </div>
     );
   }
@@ -269,17 +290,19 @@ export default function EventSectionPropertySpecific({
       {/* Pagination Dots */}
       {events.length > 2 && (
         <div className="flex justify-center gap-2 mt-6">
-          {Array.from({ length: Math.ceil(events.length / 2) }).map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                Math.floor(currentIndex / 2) === idx
-                  ? "bg-primary w-6"
-                  : "bg-border hover:bg-muted-foreground"
-              }`}
-            />
-          ))}
+          {Array.from({ length: Math.ceil(events.length / 2) }).map(
+            (_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  Math.floor(currentIndex / 2) === idx
+                    ? "bg-primary w-6"
+                    : "bg-border hover:bg-muted-foreground"
+                }`}
+              />
+            ),
+          )}
         </div>
       )}
     </div>

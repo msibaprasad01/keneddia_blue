@@ -34,7 +34,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { getAllLocations, searchRooms } from "@/Api/Api";
+import { getAllLocations, searchRooms, getLocationsByType } from "@/Api/Api";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -98,7 +98,9 @@ export default function QuickBooking() {
   const [guestsOpen, setGuestsOpen] = useState(false);
 
   // Search State
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    null,
+  );
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState({ adults: 2, children: 0, rooms: 1 });
@@ -121,13 +123,15 @@ export default function QuickBooking() {
     const fetchLocations = async () => {
       try {
         setLocationsLoading(true);
-        const res = await getAllLocations();
+        // Using the specific API for Hotel locations
+        const res = await getLocationsByType("Hotel");
         const data = res?.data || res || [];
+
         // Keep only active locations
         const activeLocations = data.filter((l: Location) => l.isActive);
         setLocations(activeLocations);
       } catch (err) {
-        console.error("Failed to load locations", err);
+        console.error("Failed to load hotel locations", err);
         setLocations([]);
       } finally {
         setLocationsLoading(false);
@@ -237,7 +241,7 @@ export default function QuickBooking() {
 
       // Filter only bookable and active rooms
       const availableRooms = rooms.filter(
-        (room) => room.bookable && room.active && room.status === "AVAILABLE"
+        (room) => room.bookable && room.active && room.status === "AVAILABLE",
       );
 
       setSearchResults(availableRooms);
@@ -265,7 +269,7 @@ export default function QuickBooking() {
     if (!bookingUrl) {
       console.warn("Booking URL not generated. Missing dates.");
       // Navigate to room detail page instead
-      navigate(`/hotels/room/${room.roomId}`);
+      navigate(`/hotels/${room.propertyId}`);
       return;
     }
 
@@ -292,7 +296,7 @@ export default function QuickBooking() {
   const totalPages = Math.ceil(searchResults.length / ITEMS_PER_PAGE);
   const paginatedRooms = searchResults.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
   return (
@@ -333,7 +337,7 @@ export default function QuickBooking() {
                     variant="outline"
                     className={cn(
                       "w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors",
-                      !selectedLocation && "text-muted-foreground"
+                      !selectedLocation && "text-muted-foreground",
                     )}
                   >
                     <span className="flex items-center">
@@ -362,7 +366,7 @@ export default function QuickBooking() {
                             "px-3 py-2.5 cursor-pointer text-sm font-medium transition-colors flex items-center gap-2",
                             selectedLocation === null
                               ? "bg-primary/10 text-primary"
-                              : "hover:bg-muted"
+                              : "hover:bg-muted",
                           )}
                           onClick={() => handleLocationSelect(null)}
                         >
@@ -378,7 +382,7 @@ export default function QuickBooking() {
                               "px-3 py-2.5 cursor-pointer text-sm transition-colors flex items-center justify-between",
                               selectedLocation?.id === location.id
                                 ? "bg-primary/10 text-primary font-medium"
-                                : "hover:bg-muted"
+                                : "hover:bg-muted",
                             )}
                             onClick={() => handleLocationSelect(location)}
                           >
@@ -415,12 +419,14 @@ export default function QuickBooking() {
                     variant="outline"
                     className={cn(
                       "w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors",
-                      !checkIn && "text-muted-foreground"
+                      !checkIn && "text-muted-foreground",
                     )}
                   >
                     <span className="flex items-center">
                       <Calendar className="mr-2 h-4 w-4 text-primary" />
-                      {checkIn ? format(checkIn, "MMM dd, yyyy") : "Select Date"}
+                      {checkIn
+                        ? format(checkIn, "MMM dd, yyyy")
+                        : "Select Date"}
                     </span>
                     <ChevronDown className="h-4 w-4 opacity-50 group-data-[state=open]:rotate-180 transition-transform" />
                   </Button>
@@ -479,7 +485,7 @@ export default function QuickBooking() {
                     variant="outline"
                     className={cn(
                       "w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors",
-                      !checkOut && "text-muted-foreground"
+                      !checkOut && "text-muted-foreground",
                     )}
                   >
                     <span className="flex items-center">
@@ -564,7 +570,9 @@ export default function QuickBooking() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium">Adults</p>
-                        <p className="text-xs text-muted-foreground">Ages 13+</p>
+                        <p className="text-xs text-muted-foreground">
+                          Ages 13+
+                        </p>
                       </div>
                       <div className="flex items-center gap-3">
                         <Button
@@ -604,7 +612,9 @@ export default function QuickBooking() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium">Children</p>
-                        <p className="text-xs text-muted-foreground">Ages 2-12</p>
+                        <p className="text-xs text-muted-foreground">
+                          Ages 2-12
+                        </p>
                       </div>
                       <div className="flex items-center gap-3">
                         <Button
@@ -763,7 +773,9 @@ export default function QuickBooking() {
             >
               <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
                 Available Rooms{" "}
-                {selectedLocation ? `in ${selectedLocation.locationName}` : "in All Locations"}{" "}
+                {selectedLocation
+                  ? `in ${selectedLocation.locationName}`
+                  : "in All Locations"}{" "}
                 ({searchResults.length})
               </h4>
 
@@ -784,7 +796,9 @@ export default function QuickBooking() {
                       ) : (
                         <div className="flex flex-col items-center justify-center text-muted-foreground">
                           <BedDouble className="w-10 h-10 opacity-30" />
-                          <span className="text-[10px] mt-1 opacity-50">No Image</span>
+                          <span className="text-[10px] mt-1 opacity-50">
+                            No Image
+                          </span>
                         </div>
                       )}
                     </div>
@@ -799,7 +813,7 @@ export default function QuickBooking() {
                           <span
                             className={cn(
                               "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase",
-                              getRoomTypeBadgeColor(room.roomType)
+                              getRoomTypeBadgeColor(room.roomType),
                             )}
                           >
                             {room.roomType}
@@ -827,7 +841,8 @@ export default function QuickBooking() {
                           </span>
                           <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                             <Maximize className="w-3 h-3" />
-                            {room.roomSize} {room.roomSizeUnit?.replace("_", " ")}
+                            {room.roomSize}{" "}
+                            {room.roomSizeUnit?.replace("_", " ")}
                           </span>
                           <span className="text-[10px] text-muted-foreground">
                             Floor {room.floorNumber}
@@ -836,14 +851,16 @@ export default function QuickBooking() {
 
                         {/* Amenities */}
                         <div className="flex flex-wrap gap-1.5">
-                          {room.amenitiesAndFeatures?.slice(0, 4).map((amenity) => (
-                            <span
-                              key={amenity.id}
-                              className="text-[10px] bg-secondary/30 px-2 py-0.5 rounded text-muted-foreground"
-                            >
-                              {amenity.name}
-                            </span>
-                          ))}
+                          {room.amenitiesAndFeatures
+                            ?.slice(0, 4)
+                            .map((amenity) => (
+                              <span
+                                key={amenity.id}
+                                className="text-[10px] bg-secondary/30 px-2 py-0.5 rounded text-muted-foreground"
+                              >
+                                {amenity.name}
+                              </span>
+                            ))}
                           {room.amenitiesAndFeatures?.length > 4 && (
                             <span className="text-[10px] text-primary">
                               +{room.amenitiesAndFeatures.length - 4} more
@@ -933,7 +950,9 @@ export default function QuickBooking() {
           {hasSearched && !isSearching && searchResults.length === 0 && (
             <div className="text-center py-8 text-muted-foreground border-t border-border/10 pt-6 mt-6">
               <BedDouble className="w-12 h-12 mx-auto opacity-20 mb-3" />
-              <p className="font-medium">No rooms found matching your criteria.</p>
+              <p className="font-medium">
+                No rooms found matching your criteria.
+              </p>
               <p className="text-xs mt-1">
                 Try adjusting your filters or selecting a different location.
               </p>

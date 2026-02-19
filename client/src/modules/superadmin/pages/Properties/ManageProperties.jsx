@@ -23,6 +23,8 @@ import {
   enableProperty,
   disableProperty,
   GetAllPropertyDetails,
+  updatePropertyCategoryStatus,
+  updatePropertyTypeStatus,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import PropertyDetail from "./PropertyDetail";
@@ -36,14 +38,16 @@ function ManageProperties() {
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
 
-  const [editItem, setEditItem] = useState(null); // item to edit
-  const [selectedProperty, setSelectedProperty] = useState(null); // item to view detail
+  const [editItem, setEditItem] = useState(null);
+  const [editTypeItem, setEditTypeItem] = useState(null);       // type being edited
+  const [editCategoryItem, setEditCategoryItem] = useState(null); // category being edited
+  const [selectedProperty, setSelectedProperty] = useState(null);
 
   const [properties, setProperties] = useState([]);
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [propertyCategories, setPropertyCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null); // "prop-{id}" | "type-{id}" | "cat-{id}"
 
   // ── Fetch all data ─────────────────────────────────────────────────────────
   const fetchData = useCallback(async () => {
@@ -72,8 +76,8 @@ function ManageProperties() {
   const getPropertyData = (item) =>
     item?.propertyResponseDTO ? item.propertyResponseDTO : item;
 
-  // ── Toggle enable / disable ────────────────────────────────────────────────
-  const handleToggleStatus = async (item) => {
+  // ── Toggle property enable / disable ──────────────────────────────────────
+  const handleTogglePropertyStatus = async (item) => {
     const p = getPropertyData(item);
     if (!p?.id) return;
     if (
@@ -83,7 +87,8 @@ function ManageProperties() {
     )
       return;
 
-    setActionLoading(p.id);
+    const key = `prop-${p.id}`;
+    setActionLoading(key);
     try {
       if (p.isActive) {
         await disableProperty(p.id);
@@ -95,6 +100,50 @@ function ManageProperties() {
       fetchData();
     } catch {
       toast.error("Status update failed");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // ── Toggle type enable / disable ──────────────────────────────────────────
+  const handleToggleTypeStatus = async (type) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to ${type.isActive ? "disable" : "enable"} this type?`,
+      )
+    )
+      return;
+
+    const key = `type-${type.id}`;
+    setActionLoading(key);
+    try {
+      await updatePropertyTypeStatus(type.id, !type.isActive);
+      toast.success(`Type ${type.isActive ? "deactivated" : "activated"}`);
+      fetchData();
+    } catch {
+      toast.error("Failed to update type status");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // ── Toggle category enable / disable ──────────────────────────────────────
+  const handleToggleCategoryStatus = async (cat) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to ${cat.isActive ? "disable" : "enable"} this category?`,
+      )
+    )
+      return;
+
+    const key = `cat-${cat.id}`;
+    setActionLoading(key);
+    try {
+      await updatePropertyCategoryStatus(cat.id, !cat.isActive);
+      toast.success(`Category ${cat.isActive ? "deactivated" : "activated"}`);
+      fetchData();
+    } catch {
+      toast.error("Failed to update category status");
     } finally {
       setActionLoading(null);
     }
@@ -184,6 +233,7 @@ function ManageProperties() {
 
         {/* ── Main Content Card ───────────────────────────────────────────── */}
         <div className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+
           {/* ════ PROPERTIES TAB ════ */}
           {activeMainTab === "properties" && (
             <>
@@ -241,7 +291,6 @@ function ManageProperties() {
                             key={p.id}
                             className="hover:bg-gray-50/50 transition-colors"
                           >
-                            {/* Property Name + Admin */}
                             <td className="px-6 py-4">
                               <div className="font-bold text-gray-900">
                                 {p.propertyName}
@@ -251,8 +300,6 @@ function ManageProperties() {
                                 {p.assignedAdminName || "Unassigned"}
                               </div>
                             </td>
-
-                            {/* Location */}
                             <td className="px-6 py-4">
                               <div className="text-sm font-bold text-gray-700">
                                 {p.locationName}
@@ -261,15 +308,11 @@ function ManageProperties() {
                                 {p.address}
                               </div>
                             </td>
-
-                            {/* Type chip */}
                             <td className="px-6 py-4">
                               <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-black uppercase">
                                 {p.propertyTypes?.[0] || "Standard"}
                               </span>
                             </td>
-
-                            {/* Status */}
                             <td className="px-6 py-4">
                               <span
                                 className={`px-2 py-1 rounded-full text-[9px] font-black uppercase ${
@@ -281,11 +324,8 @@ function ManageProperties() {
                                 {p.isActive ? "Active" : "Inactive"}
                               </span>
                             </td>
-
-                            {/* Actions */}
                             <td className="px-6 py-4 text-center">
                               <div className="flex justify-center gap-2">
-                                {/* 👁 View Detail */}
                                 <button
                                   onClick={() => setSelectedProperty(item)}
                                   title="View Details"
@@ -293,8 +333,6 @@ function ManageProperties() {
                                 >
                                   <Eye size={15} />
                                 </button>
-
-                                {/* ✏️ Edit */}
                                 <button
                                   onClick={() => setEditItem(item)}
                                   title="Edit Property"
@@ -302,23 +340,18 @@ function ManageProperties() {
                                 >
                                   <Edit2 size={15} />
                                 </button>
-
-                                {/* ⚡ Toggle Status */}
                                 <button
-                                  onClick={() => handleToggleStatus(item)}
+                                  onClick={() => handleTogglePropertyStatus(item)}
                                   title={p.isActive ? "Deactivate" : "Activate"}
-                                  disabled={actionLoading === p.id}
+                                  disabled={actionLoading === `prop-${p.id}`}
                                   className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
                                     p.isActive
                                       ? "text-orange-500 hover:bg-orange-50"
                                       : "text-green-600 hover:bg-green-50"
                                   }`}
                                 >
-                                  {actionLoading === p.id ? (
-                                    <Loader2
-                                      size={15}
-                                      className="animate-spin"
-                                    />
+                                  {actionLoading === `prop-${p.id}` ? (
+                                    <Loader2 size={15} className="animate-spin" />
                                   ) : (
                                     <Power size={15} />
                                   )}
@@ -347,10 +380,7 @@ function ManageProperties() {
                 ])}
                 <tbody className="divide-y divide-gray-100">
                   {propertyTypes.map((type) => (
-                    <tr
-                      key={type.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
+                    <tr key={type.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 text-sm text-gray-500">
                         #{type.id}
                       </td>
@@ -369,9 +399,33 @@ function ManageProperties() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors">
-                          <Edit2 size={15} />
-                        </button>
+                        <div className="flex justify-center gap-2">
+                          {/* Edit */}
+                          <button
+                            onClick={() => setEditTypeItem(type)}
+                            title="Edit Type"
+                            className="p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800 rounded-lg transition-colors"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                          {/* Toggle status */}
+                          <button
+                            onClick={() => handleToggleTypeStatus(type)}
+                            title={type.isActive ? "Deactivate" : "Activate"}
+                            disabled={actionLoading === `type-${type.id}`}
+                            className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
+                              type.isActive
+                                ? "text-orange-500 hover:bg-orange-50"
+                                : "text-green-600 hover:bg-green-50"
+                            }`}
+                          >
+                            {actionLoading === `type-${type.id}` ? (
+                              <Loader2 size={15} className="animate-spin" />
+                            ) : (
+                              <Power size={15} />
+                            )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -392,10 +446,7 @@ function ManageProperties() {
                 ])}
                 <tbody className="divide-y divide-gray-100">
                   {propertyCategories.map((cat) => (
-                    <tr
-                      key={cat.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
+                    <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 font-bold text-gray-900">
                         {cat.categoryName}
                       </td>
@@ -414,9 +465,33 @@ function ManageProperties() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors">
-                          <Edit2 size={15} />
-                        </button>
+                        <div className="flex justify-center gap-2">
+                          {/* Edit */}
+                          <button
+                            onClick={() => setEditCategoryItem(cat)}
+                            title="Edit Category"
+                            className="p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800 rounded-lg transition-colors"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                          {/* Toggle status */}
+                          <button
+                            onClick={() => handleToggleCategoryStatus(cat)}
+                            title={cat.isActive ? "Deactivate" : "Activate"}
+                            disabled={actionLoading === `cat-${cat.id}`}
+                            className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
+                              cat.isActive
+                                ? "text-orange-500 hover:bg-orange-50"
+                                : "text-green-600 hover:bg-green-50"
+                            }`}
+                          >
+                            {actionLoading === `cat-${cat.id}` ? (
+                              <Loader2 size={15} className="animate-spin" />
+                            ) : (
+                              <Power size={15} />
+                            )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -463,14 +538,34 @@ function ManageProperties() {
           propertyTypes={propertyTypes}
           propertyCategories={propertyCategories}
           allProperties={properties}
-          // Optional — pass these if you have the API data loaded:
-          // amenities={amenities}
-          // admins={admins}
-          // locations={locations}
           onClose={() => setEditItem(null)}
           onSuccess={() => {
             fetchData();
             setEditItem(null);
+          }}
+        />
+      )}
+
+      {/* ─── Edit Type Modal ─────────────────────────────────────────────────── */}
+      {editTypeItem && (
+        <AddPropertyTypeModal
+          editItem={editTypeItem}
+          onClose={() => setEditTypeItem(null)}
+          onSuccess={() => {
+            fetchData();
+            setEditTypeItem(null);
+          }}
+        />
+      )}
+
+      {/* ─── Edit Category Modal ─────────────────────────────────────────────── */}
+      {editCategoryItem && (
+        <AddPropertyCategoryModal
+          editItem={editCategoryItem}
+          onClose={() => setEditCategoryItem(null)}
+          onSuccess={() => {
+            fetchData();
+            setEditCategoryItem(null);
           }}
         />
       )}

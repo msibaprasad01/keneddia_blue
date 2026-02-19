@@ -71,7 +71,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     availableHours: "",
     imageMediaId: null,
     isActive: false,
-    showOnHomePage: false,
+    showOnHomepage: false,
     quickOfferActive: false,
     displayLocation: "PROPERTY_PAGE",
   });
@@ -134,6 +134,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         ctaLink: editingOffer.ctaLink || "",
         quickOfferActive: editingOffer.quickOfferActive ?? false,
       });
+
       setUploadedMediaId(editingOffer.imageMediaId || null);
       setImagePreview(
         editingOffer.image?.url || editingOffer.image?.src || null,
@@ -211,7 +212,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       availableHours: "",
       imageMediaId: null,
       isActive: false,
-      showOnHomePage: false,
+      showOnHomepage: false,
       displayLocation: "PROPERTY_PAGE",
       quickOfferActive: false,
     });
@@ -482,7 +483,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase">
-                   Offer Title
+                    Offer Title
                   </label>
                   <input
                     type="text"
@@ -490,7 +491,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                     onChange={(e) =>
                       setFormData((p) => ({ ...p, title: e.target.value }))
                     }
-                   className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm"
+                    className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm"
                     placeholder="Weekend Special"
                   />
                 </div>
@@ -694,6 +695,35 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   <span
                     className={`absolute top-1 h-4 w-4 bg-white rounded-full transition-all ${
                       formData.quickOfferActive ? "left-6" : "left-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="p-4 border rounded-lg bg-[#F3F4F6] flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-gray-600">
+                    Show On Homepage
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">
+                    Display this offer on homepage slider
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((p) => ({
+                      ...p,
+                      showOnHomepage: !p.showOnHomepage,
+                    }))
+                  }
+                  className={`h-6 w-11 rounded-full relative transition-colors ${
+                    formData.showOnHomepage ? "bg-purple-500" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-1 h-4 w-4 bg-white rounded-full transition-all ${
+                      formData.showOnHomepage ? "left-6" : "left-1"
                     }`}
                   />
                 </button>

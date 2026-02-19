@@ -422,7 +422,7 @@ export default function Hotels() {
   const displaySlides = heroSlides.length > 0 ? heroSlides : [];
   const useFallback = displaySlides.length === 0;
 
-  const displayAboutSections = aboutSections.length > 0 ? aboutSections : "";
+  const displayAboutSections = aboutSections;
   const useAboutFallback = aboutSections.length === 0;
   useEffect(() => {
     const currentSection = displayAboutSections[currentAboutIndex];

@@ -18,9 +18,13 @@ import {
   ToggleLeft,
   Sparkles,
   Navigation,
-  LinkIcon
+  LinkIcon,
+  ImageIcon,
+  Upload,
+  Trash2,
+  RefreshCw,
 } from "lucide-react";
-import { updatePropertyById } from "@/Api/Api";
+import { updatePropertyById, PropertyEdiMedia } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 
 const inputCls =
@@ -56,9 +60,15 @@ function EditPropertyModal({
   onClose,
   onSuccess,
 }) {
-  console.log(item);
   const p = item?.propertyResponseDTO || {};
   const listing = item?.propertyListingResponseDTOS?.[0] || {};
+
+  // ── Existing media (max 3) ─────────────────────────────────────────────────
+  const existingMedia = (listing.media || []).slice(0, 3);
+
+  // ── New files to replace media ─────────────────────────────────────────────
+  const [newFiles, setNewFiles] = useState([]);         // File[]
+  const [mediaUploading, setMediaUploading] = useState(false);
 
   const resolveTypeIds = () =>
     (p.propertyTypes || [])
@@ -67,9 +77,7 @@ function EditPropertyModal({
 
   const resolveCategoryIds = () =>
     (p.propertyCategories || [])
-      .map(
-        (name) => propertyCategories?.find((c) => c.categoryName === name)?.id,
-      )
+      .map((name) => propertyCategories?.find((c) => c.categoryName === name)?.id)
       .filter(Boolean);
 
   const resolveAmenityIds = () =>
@@ -115,6 +123,51 @@ function EditPropertyModal({
         : [...prev[key], id],
     }));
 
+  // ── Handle file selection ──────────────────────────────────────────────────
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setNewFiles(files);
+  };
+
+  const removeNewFile = (index) => {
+    setNewFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // ── Upload media via PropertyEdiMedia ──────────────────────────────────────
+  const handleMediaUpload = async () => {
+    if (!newFiles.length) return;
+    if (!listing.id) {
+      toast.error("No listing ID found for media upload");
+      return;
+    }
+
+    setMediaUploading(true);
+    try {
+      const mediaFormData = new FormData();
+      mediaFormData.append("propertyListingId", listing.id);
+      mediaFormData.append("mediaType", "IMAGE");
+
+      // Send existing mediaIds so backend knows which to replace
+      const existingMediaIds = (listing.media || [])
+        .map((m) => m.mediaId)
+        .filter(Boolean);
+      existingMediaIds.forEach((id) => mediaFormData.append("mediaIds", id));
+
+      // Attach new files
+      newFiles.forEach((file) => mediaFormData.append("files", file));
+
+      await PropertyEdiMedia(mediaFormData);
+      toast.success("Media updated successfully");
+      setNewFiles([]);
+    } catch (err) {
+      console.error(err);
+      toast.error("Media upload failed");
+    } finally {
+      setMediaUploading(false);
+    }
+  };
+
+  // ── Submit property update ─────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -127,12 +180,8 @@ function EditPropertyModal({
         area: form.area,
         pincode: form.pincode,
         locationId: form.locationId ? Number(form.locationId) : null,
-        assignedAdminId: form.assignedAdminId
-          ? Number(form.assignedAdminId)
-          : null,
-        parentPropertyId: form.parentPropertyId
-          ? Number(form.parentPropertyId)
-          : null,
+        assignedAdminId: form.assignedAdminId ? Number(form.assignedAdminId) : null,
+        parentPropertyId: form.parentPropertyId ? Number(form.parentPropertyId) : null,
         childPropertyIds: null,
         latitude: form.latitude !== "" ? Number(form.latitude) : null,
         longitude: form.longitude !== "" ? Number(form.longitude) : null,
@@ -145,16 +194,20 @@ function EditPropertyModal({
         rating: form.rating !== "" ? Number(form.rating) : null,
         capacity: form.capacity !== "" ? Number(form.capacity) : null,
         price: form.price !== "" ? Number(form.price) : null,
-        gstPercentage:
-          form.gstPercentage !== "" ? Number(form.gstPercentage) : null,
-        discountAmount:
-          form.discountAmount !== "" ? Number(form.discountAmount) : null,
+        gstPercentage: form.gstPercentage !== "" ? Number(form.gstPercentage) : null,
+        discountAmount: form.discountAmount !== "" ? Number(form.discountAmount) : null,
         amenitiesAndFeaturesIds: form.amenitiesAndFeaturesIds.length
           ? form.amenitiesAndFeaturesIds
           : null,
       };
 
       await updatePropertyById(p.id, payload);
+
+      // Upload media if any new files were selected
+      if (newFiles.length > 0) {
+        await handleMediaUpload();
+      }
+
       toast.success("Property updated successfully");
       onSuccess?.();
       onClose();
@@ -231,6 +284,7 @@ function EditPropertyModal({
         >
           <div className="flex-1 overflow-y-auto px-7 py-6">
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
+
               {/* ─── IDENTITY ─────────────────────────────────────── */}
               <Section label="Identity" icon={Building2} />
 
@@ -378,6 +432,7 @@ function EditPropertyModal({
                   />
                 )}
               </Field>
+
               <Field label="Booking Engine URL" icon={LinkIcon} span={2}>
                 <input
                   type="url"
@@ -533,6 +588,121 @@ function EditPropertyModal({
                   </Field>
                 </>
               )}
+
+              {/* ─── MEDIA ────────────────────────────────────────── */}
+              <Section label="Media" icon={ImageIcon} />
+
+              <div className="col-span-2 space-y-4">
+
+                {/* Existing Media — max 3 */}
+                {existingMedia.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                      Current Photos ({existingMedia.length})
+                    </p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {existingMedia.map((media, idx) => (
+                        <div
+                          key={idx}
+                          className="relative rounded-xl overflow-hidden border border-gray-200 aspect-video bg-gray-100"
+                        >
+                          <img
+                            src={media.url}
+                            alt={media.alt || `Media ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              e.target.nextSibling.style.display = "flex";
+                            }}
+                          />
+                          {/* Fallback if image fails */}
+                          <div
+                            className="absolute inset-0 items-center justify-center bg-gray-100 hidden"
+                          >
+                            <ImageIcon size={24} className="text-gray-300" />
+                          </div>
+                          {/* Index badge */}
+                          <div className="absolute bottom-1.5 right-1.5 bg-black/50 text-white text-[9px] font-black px-1.5 py-0.5 rounded">
+                            {idx + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Replace / Upload new media */}
+                <div>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                    <RefreshCw size={10} />
+                    {existingMedia.length > 0 ? "Replace Media" : "Upload Media"}
+                  </p>
+
+                  {/* Drop zone — same pattern as AddPropertyModal */}
+                  <div
+                    className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 hover:border-blue-300 transition-all cursor-pointer"
+                    onClick={() => document.getElementById("edit-media-input").click()}
+                  >
+                    <Upload size={32} className="mx-auto text-gray-300 mb-2" />
+                    <p className="text-sm font-bold text-gray-500">
+                      Click to select photos
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {newFiles.length > 0
+                        ? `${newFiles.length} file${newFiles.length > 1 ? "s" : ""} selected`
+                        : "PNG, JPG, WEBP supported"}
+                    </p>
+                    <input
+                      id="edit-media-input"
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+
+                  {/* Selected file chips */}
+                  {newFiles.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {newFiles.map((file, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-[11px] font-bold rounded-full border border-blue-100"
+                        >
+                          <ImageIcon size={10} />
+                          <span className="max-w-[120px] truncate">{file.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeNewFile(i)}
+                            className="text-blue-400 hover:text-red-500 transition-colors ml-0.5"
+                          >
+                            <X size={11} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Standalone upload button (for uploading media without saving the full form) */}
+                  {newFiles.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleMediaUpload}
+                      disabled={mediaUploading}
+                      className="mt-3 flex items-center gap-2 px-4 py-2 text-xs font-black uppercase tracking-widest rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-all"
+                    >
+                      {mediaUploading ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <Upload size={13} />
+                      )}
+                      {mediaUploading ? "Uploading..." : "Upload Now"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -540,6 +710,9 @@ function EditPropertyModal({
           <div className="shrink-0 flex items-center justify-between px-7 py-4 border-t border-gray-100 bg-gray-50/60 rounded-b-2xl">
             <span className="text-[10px] text-gray-400 font-semibold">
               Property ID #{p.id}
+              {listing.id && (
+                <span className="ml-2 text-gray-300">· Listing #{listing.id}</span>
+              )}
             </span>
             <div className="flex gap-3">
               <button

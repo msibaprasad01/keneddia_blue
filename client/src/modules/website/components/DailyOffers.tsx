@@ -116,10 +116,9 @@ export default function DailyOffers() {
         const active = list.filter((o: any) => {
           const notExpired =
             !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+
           return (
-            o.isActive &&
-            notExpired &&
-            ["HOME_PAGE", "BOTH", "PROPERTY_PAGE"].includes(o.displayLocation)
+            o.isActive && notExpired && o.showOnHomepage === true // ✅ ONLY homepage offers
           );
         });
 
@@ -196,7 +195,11 @@ export default function DailyOffers() {
             768: { slidesPerView: 3 },
             1200: { slidesPerView: 4 },
           }}
-          autoplay={{ delay: 5000 }}
+          autoplay={{
+            delay: 5000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }}
           onSwiper={setSwiper}
         >
           {offers.map((offer, i) => {
@@ -214,7 +217,7 @@ export default function DailyOffers() {
 
             return (
               <SwiperSlide key={offer.id || i}>
-                <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl">
+                <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer">
                   {/* MEDIA CONTAINER */}
                   <div
                     className={`relative overflow-hidden ${showFullImage ? "h-full" : "h-[280px]"}`}

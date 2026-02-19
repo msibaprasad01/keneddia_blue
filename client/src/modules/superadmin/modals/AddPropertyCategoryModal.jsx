@@ -1,9 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { colors } from "@/lib/colors/colors";
-import { addPropertyCategory } from "@/Api/Api";
+import { addPropertyCategory, updatePropertyCategory } from "@/Api/Api";
 
-function AddPropertyCategoryModal({ onClose, onSuccess }) {
+/**
+ * Props:
+ *  editItem  – { id, categoryName, description, isActive } — if provided, switches to edit mode
+ *  onClose   – fn()
+ *  onSuccess – fn()
+ */
+function AddPropertyCategoryModal({ editItem, onClose, onSuccess }) {
+  const isEditMode = Boolean(editItem);
+
   const [formData, setFormData] = useState({
     categoryName: "",
     description: "",
@@ -11,6 +19,17 @@ function AddPropertyCategoryModal({ onClose, onSuccess }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Pre-fill when editing
+  useEffect(() => {
+    if (editItem) {
+      setFormData({
+        categoryName: editItem.categoryName || "",
+        description: editItem.description || "",
+        isActive: editItem.isActive ?? true,
+      });
+    }
+  }, [editItem]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -26,10 +45,18 @@ function AddPropertyCategoryModal({ onClose, onSuccess }) {
     setError("");
 
     try {
-      await addPropertyCategory(formData);
+      if (isEditMode) {
+        // updatePropertyCategory(id, payload)
+        await updatePropertyCategory(editItem.id, formData);
+      } else {
+        await addPropertyCategory(formData);
+      }
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to add category");
+      setError(
+        err.response?.data?.message ||
+          `Failed to ${isEditMode ? "update" : "add"} category`,
+      );
     } finally {
       setLoading(false);
     }
@@ -38,6 +65,7 @@ function AddPropertyCategoryModal({ onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+        {/* Header */}
         <div
           className="p-6 border-b flex items-center justify-between"
           style={{ borderColor: colors.border }}
@@ -46,7 +74,7 @@ function AddPropertyCategoryModal({ onClose, onSuccess }) {
             className="text-xl font-semibold"
             style={{ color: colors.textPrimary }}
           >
-            Add Property Category
+            {isEditMode ? "Edit Property Category" : "Add Property Category"}
           </h2>
           <button
             onClick={onClose}
@@ -56,6 +84,7 @@ function AddPropertyCategoryModal({ onClose, onSuccess }) {
           </button>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
@@ -135,7 +164,13 @@ function AddPropertyCategoryModal({ onClose, onSuccess }) {
               className="px-4 py-2 rounded-lg text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
               style={{ backgroundColor: colors.primary }}
             >
-              {loading ? "Adding..." : "Add Category"}
+              {loading
+                ? isEditMode
+                  ? "Saving..."
+                  : "Adding..."
+                : isEditMode
+                  ? "Save Changes"
+                  : "Add Category"}
             </button>
           </div>
         </form>

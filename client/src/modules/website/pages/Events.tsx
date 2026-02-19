@@ -130,7 +130,7 @@ export default function EventsListing() {
   const [eventList, setEventList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
-  const [activeTab, setActiveTab] = useState<"upcoming" | "expired">(
+  const [activeTab, setActiveTab] = useState<"upcoming" | "past">(
     "upcoming",
   );
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(false);
@@ -166,7 +166,7 @@ export default function EventsListing() {
       const eventDate = new Date(event.eventDate);
       const isUpcoming = eventDate >= now;
       if (activeTab === "upcoming" && !isUpcoming) return false;
-      if (activeTab === "expired" && isUpcoming) return false;
+      if (activeTab === "past" && isUpcoming) return false;
 
       if (
         filters.locations.length > 0 &&
@@ -314,7 +314,7 @@ export default function EventsListing() {
               <div className="mb-8">
                 <h2 className="text-3xl font-serif mb-2">Events</h2>
                 <div className="flex gap-8 border-b">
-                  {["upcoming", "expired"].map((tab: any) => (
+                  {["upcoming", "past"].map((tab: any) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}

@@ -142,12 +142,12 @@ function PriceBreakdown({
                 Pricing
               </span>
             </div>
-            <button
+            {/* <button
               onClick={() => setShowDetails(true)}
               className="text-[9px] text-primary hover:underline font-medium"
             >
               View Breakdown
-            </button>
+            </button> */}
           </div>
 
           <div className="flex items-center justify-between">

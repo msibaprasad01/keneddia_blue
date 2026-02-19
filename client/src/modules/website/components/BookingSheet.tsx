@@ -21,6 +21,11 @@ interface BookingSheetProps {
   onOpenChange: (open: boolean) => void
 }
 
+const HOTEL_TYPE = "hotel"
+
+const isHotel = (type?: string | null) =>
+  type?.toLowerCase() === HOTEL_TYPE
+
 export function BookingSheet({ isOpen, onOpenChange }: BookingSheetProps) {
   const navigate = useNavigate()
   const [properties, setProperties] = useState<ApiProperty[]>([])
@@ -38,14 +43,18 @@ export function BookingSheet({ isOpen, onOpenChange }: BookingSheetProps) {
           const formatted: ApiProperty[] = rawData.flatMap((item: any) => {
             const parent = item.propertyResponseDTO
             const listings = item.propertyListingResponseDTOS || []
+
+            // Skip if parent inactive OR parent type is not Hotel
             if (!parent || parent.isActive !== true) return []
+            if (!parent.propertyTypes?.some((t: string) => isHotel(t))) return []
+
             return listings
-              .filter((l: any) => l.isActive === true)
+              .filter((l: any) => l.isActive === true && isHotel(l.propertyType))
               .map((l: any) => ({
                 propertyId:       parent.id,
                 listingId:        l.id,
-                propertyName:     parent.propertyName || "Unnamed Property",
-                propertyType:     l.propertyType || parent.propertyTypes?.[0] || "Property",
+                propertyName:     parent.propertyName || "",
+                propertyType:     l.propertyType || parent.propertyTypes?.[0] || "Hotel",
                 city:             parent.locationName || "",
                 bookingEngineUrl: parent.bookingEngineUrl || null,
               }))
@@ -66,12 +75,7 @@ export function BookingSheet({ isOpen, onOpenChange }: BookingSheetProps) {
     if (property.bookingEngineUrl) {
       window.open(property.bookingEngineUrl, "_blank")
     } else {
-      const type = property.propertyType?.toLowerCase()
-      navigate(
-        type === "restaurant" || type === "resturant"
-          ? `/resturant/${property.propertyId}`
-          : `/hotels/${property.propertyId}`
-      )
+      navigate(`/hotels/${property.propertyId}`)
     }
   }
 
@@ -93,9 +97,9 @@ export function BookingSheet({ isOpen, onOpenChange }: BookingSheetProps) {
           >
             <X className="w-5 h-5" />
           </button>
-          <SheetTitle className="text-xl font-serif font-medium">Select Property</SheetTitle>
+          <SheetTitle className="text-xl font-serif font-medium">Select Hotel</SheetTitle>
           <SheetDescription className="text-muted-foreground text-xs mt-1">
-            Click a property to book or view details
+            Click a hotel to book or view details
           </SheetDescription>
         </div>
 
@@ -115,19 +119,21 @@ export function BookingSheet({ isOpen, onOpenChange }: BookingSheetProps) {
               />
               <CommandList className="max-h-[600px]">
                 <CommandEmpty className="py-6 text-sm text-center text-muted-foreground">
-                  No properties found.
+                  No hotels found.
                 </CommandEmpty>
                 <CommandGroup>
                   {filtered.map((p) => (
                     <CommandItem
                       key={`${p.propertyId}-${p.listingId}`}
                       onSelect={() => handleSelect(p)}
-                      className="flex items-center justify-between py-3 px-3 cursor-pointer rounded-lg aria-selected:bg-primary/10"
+                      className="flex items-center justify-between py-3.5 px-3 cursor-pointer rounded-lg aria-selected:bg-primary/10"
                     >
                       <div>
-                        <p className="font-medium text-foreground text-sm">{p.propertyName}</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                          {p.city && `${p.city} • `}{p.propertyType}
+                        <p className="font-bold text-foreground text-base leading-snug">{p.propertyName}</p>
+                        <p className="text-xs font-semibold text-muted-foreground mt-1 flex items-center gap-1">
+                          {p.city && <span className="text-foreground/70">{p.city}</span>}
+                          {p.city && p.propertyType && <span className="text-muted-foreground/40">•</span>}
+                          {p.propertyType && <span className="text-primary/70 uppercase tracking-wide text-[11px]">{p.propertyType}</span>}
                         </p>
                       </div>
                       {p.bookingEngineUrl
