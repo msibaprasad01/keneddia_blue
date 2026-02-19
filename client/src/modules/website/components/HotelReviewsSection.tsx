@@ -19,6 +19,7 @@ import {
   getGuestExperienceSection,
   createGuestExperienceByGuest,
   getGuestExperienceSectionHeader,
+  getGuestExperineceRatingHeader,
 } from "@/Api/Api";
 
 import "swiper/css";
@@ -40,6 +41,11 @@ interface SectionHeader {
   id?: number;
   sectionTag?: string;
   title?: string;
+}
+interface RatingHeader {
+  description?: string;
+  rating?: number;
+  isActive?: boolean;
 }
 
 const isYoutubeUrl = (url: string): boolean =>
@@ -131,7 +137,7 @@ export default function HotelReviewsSection() {
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState<Set<string>>(new Set());
   const [mutedVideos, setMutedVideos] = useState<Set<string>>(new Set());
-
+  const [ratingHeader, setRatingHeader] = useState<RatingHeader | null>(null);
   const swiperRef = useRef<any>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -181,6 +187,15 @@ export default function HotelReviewsSection() {
       console.warn("Header fetch failed:", err);
     }
   };
+  const fetchRatingHeader = async () => {
+    try {
+      const res = await getGuestExperineceRatingHeader();
+      const data = Array.isArray(res.data) ? res.data[0] : res.data;
+      if (data) setRatingHeader(data);
+    } catch (err) {
+      console.warn("Rating header fetch failed:", err);
+    }
+  };
 
   const fetchExperiences = async () => {
     try {
@@ -207,6 +222,7 @@ export default function HotelReviewsSection() {
 
   useEffect(() => {
     fetchHeader();
+    fetchRatingHeader();
     fetchExperiences();
   }, []);
 
@@ -261,11 +277,7 @@ export default function HotelReviewsSection() {
     setError("");
     setIsVerified(true);
     setShowPopup(false);
-    
-    // Auto-submit the form after verification
-    setTimeout(() => {
-      handleSubmit();
-    }, 100);
+    // ❌ Remove the setTimeout block entirely
   };
 
   const handleSubmit = async () => {
@@ -307,6 +319,11 @@ export default function HotelReviewsSection() {
       setIsSubmitting(false);
     }
   };
+  useEffect(() => {
+    if (isVerified) {
+      handleSubmit();
+    }
+  }, [isVerified]);
 
   const renderMediaItem = (
     m: { type: "image" | "video"; url: string },
@@ -331,20 +348,26 @@ export default function HotelReviewsSection() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setMutedVideos(prev => {
+                setMutedVideos((prev) => {
                   const next = new Set(prev);
-                  next.has(videoKey) ? next.delete(videoKey) : next.add(videoKey);
+                  next.has(videoKey)
+                    ? next.delete(videoKey)
+                    : next.add(videoKey);
                   return next;
                 });
               }}
               className="absolute bottom-3 right-3 z-20 bg-black/70 hover:bg-black/90 text-white p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
             >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              {isMuted ? (
+                <VolumeX className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
             </button>
           </div>
         );
       }
-      
+
       return (
         <div key={idx} className="relative group w-full h-full">
           <video
@@ -359,7 +382,7 @@ export default function HotelReviewsSection() {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setMutedVideos(prev => {
+              setMutedVideos((prev) => {
                 const next = new Set(prev);
                 next.has(videoKey) ? next.delete(videoKey) : next.add(videoKey);
                 return next;
@@ -367,12 +390,16 @@ export default function HotelReviewsSection() {
             }}
             className="absolute bottom-3 right-3 z-20 bg-black/70 hover:bg-black/90 text-white p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
           >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            {isMuted ? (
+              <VolumeX className="w-4 h-4" />
+            ) : (
+              <Volume2 className="w-4 h-4" />
+            )}
           </button>
         </div>
       );
     }
-    
+
     return (
       <img
         key={idx}
@@ -381,7 +408,7 @@ export default function HotelReviewsSection() {
         className="w-full h-full object-cover"
         loading="lazy"
         onError={() => {
-          setMediaErrors(prev => new Set(prev).add(m.url));
+          setMediaErrors((prev) => new Set(prev).add(m.url));
         }}
       />
     );
@@ -392,16 +419,22 @@ export default function HotelReviewsSection() {
     item: any,
   ) => {
     const total = allMedia.length;
-    const hasMediaErrors = allMedia.some(m => mediaErrors.has(m.url));
+    const hasMediaErrors = allMedia.some((m) => mediaErrors.has(m.url));
 
     if (total === 0 || hasMediaErrors) {
       return (
         <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-8">
           <div className="text-center space-y-3">
-            <p className="text-white text-base md:text-lg italic leading-relaxed line-clamp-4" style={{ fontSize: '120%' }}>
+            <p
+              className="text-white text-base md:text-lg italic leading-relaxed line-clamp-4"
+              style={{ fontSize: "120%" }}
+            >
               "{item.description}"
             </p>
-            <p className="text-white/90 font-bold text-lg md:text-xl" style={{ fontSize: '120%' }}>
+            <p
+              className="text-white/90 font-bold text-lg md:text-xl"
+              style={{ fontSize: "120%" }}
+            >
               — {item.author}
             </p>
           </div>
@@ -410,7 +443,9 @@ export default function HotelReviewsSection() {
     }
 
     if (total === 1) {
-      return <div className="w-full h-full">{renderMediaItem(allMedia[0], 0)}</div>;
+      return (
+        <div className="w-full h-full">{renderMediaItem(allMedia[0], 0)}</div>
+      );
     }
 
     if (total === 2) {
@@ -419,7 +454,9 @@ export default function HotelReviewsSection() {
       const isMixed = hasVideo && hasImage;
 
       if (isMixed) {
-        const sorted = [...allMedia].sort((a, b) => (a.type === "image" ? -1 : 1));
+        const sorted = [...allMedia].sort((a, b) =>
+          a.type === "image" ? -1 : 1,
+        );
         return (
           <div className="grid grid-rows-2 h-full gap-0.5">
             {sorted.map((m, i) => (
@@ -445,10 +482,16 @@ export default function HotelReviewsSection() {
     if (total === 3) {
       return (
         <div className="grid grid-cols-2 h-full gap-0.5">
-          <div className="h-full overflow-hidden">{renderMediaItem(allMedia[0], 0)}</div>
+          <div className="h-full overflow-hidden">
+            {renderMediaItem(allMedia[0], 0)}
+          </div>
           <div className="grid grid-rows-2 h-full gap-0.5">
-            <div className="overflow-hidden">{renderMediaItem(allMedia[1], 1)}</div>
-            <div className="overflow-hidden">{renderMediaItem(allMedia[2], 2)}</div>
+            <div className="overflow-hidden">
+              {renderMediaItem(allMedia[1], 1)}
+            </div>
+            <div className="overflow-hidden">
+              {renderMediaItem(allMedia[2], 2)}
+            </div>
           </div>
         </div>
       );
@@ -461,7 +504,9 @@ export default function HotelReviewsSection() {
             {renderMediaItem(m, i)}
             {i === 3 && total > 4 && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <span className="text-white font-black text-xl">+{total - 4}</span>
+                <span className="text-white font-black text-xl">
+                  +{total - 4}
+                </span>
               </div>
             )}
           </div>
@@ -490,16 +535,41 @@ export default function HotelReviewsSection() {
                   {sectionHeader?.title || "Moments of Excellence"}
                 </h2>
               </div>
-              <div className="text-right">
-                <div className="flex items-center gap-1 justify-end text-primary mb-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} className="fill-current" />
-                  ))}
+              {ratingHeader && (
+                <div className="text-right">
+                  <div className="flex items-center gap-1 justify-end text-primary mb-1">
+                    {[...Array(5)].map((_, i) => {
+                      const rating = ratingHeader.rating ?? 0;
+                      const full = i < Math.floor(rating);
+                      const partial = !full && i < rating;
+                      return (
+                        <span key={i} className="relative inline-block">
+                          <Star
+                            size={14}
+                            className="text-primary/20 fill-primary/20"
+                          />
+                          {(full || partial) && (
+                            <span
+                              className="absolute inset-0 overflow-hidden"
+                              style={{
+                                width: full ? "100%" : `${(rating % 1) * 100}%`,
+                              }}
+                            >
+                              <Star
+                                size={14}
+                                className="fill-primary text-primary"
+                              />
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-tighter">
+                    {ratingHeader.description}
+                  </p>
                 </div>
-                <p className="text-[10px] font-bold uppercase tracking-tighter">
-                  5.0★ from 2500+ reviews
-                </p>
-              </div>
+              )}
             </div>
 
             <div
@@ -534,16 +604,19 @@ export default function HotelReviewsSection() {
                             <div className="relative aspect-[3/4] bg-muted overflow-hidden">
                               {renderMediaGrid(allMedia, item)}
 
-                              {allMedia.length > 0 && !allMedia.some(m => mediaErrors.has(m.url)) && (
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none">
-                                  <p className="text-white text-xs italic mb-2 line-clamp-2">
-                                    "{item.description}"
-                                  </p>
-                                  <p className="text-white font-bold text-sm">
-                                    {item.author}
-                                  </p>
-                                </div>
-                              )}
+                              {allMedia.length > 0 &&
+                                !allMedia.some((m) =>
+                                  mediaErrors.has(m.url),
+                                ) && (
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none">
+                                    <p className="text-white text-xs italic mb-2 line-clamp-2">
+                                      "{item.description}"
+                                    </p>
+                                    <p className="text-white font-bold text-sm">
+                                      {item.author}
+                                    </p>
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </SwiperSlide>

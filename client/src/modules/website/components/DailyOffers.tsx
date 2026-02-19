@@ -209,11 +209,8 @@ export default function DailyOffers() {
             );
             const hasCtaText = !!(offer.ctaText && offer.ctaText.trim());
 
-            // Show full-height image if:
-            // 1. It's a banner (portrait/Instagram format), OR
-            // 2. No content available, OR
-            // 3. No CTA text available
-            const showFullImage = isBanner || !hasContent || !hasCtaText;
+            // Only banner OR no content triggers full mode
+            const showFullImage = isBanner || !hasContent;
 
             return (
               <SwiperSlide key={offer.id || i}>

@@ -230,8 +230,9 @@ export const getOurPresenceSection = () => API.get("api/v1/our-presence");
 export const updateOurPresenceSectionItemsById = (id, formData) =>
   API.put(`api/v1/our-presence/admin/items/${id}`, formData);
 
-export const addGuestExperineceRatingHeader = (data) =>API.post("/api/property-overall-reviews", data);
-export const getGuestExperineceRatingHeader  = () =>API.get("/api/property-overall-reviews");
+export const addGuestExperineceRatingHeader = (data) =>API.post("/api/v1/ratings", data);
+export const EditGuestExperineceRatingHeader = (id,data) =>API.put(`/api/v1/ratings/${id}`, data);
+export const getGuestExperineceRatingHeader  = (id) =>API.get("/api/v1/ratings");
 
 
 

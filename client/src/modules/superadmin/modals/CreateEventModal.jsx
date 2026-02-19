@@ -195,27 +195,27 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
   const validateForm = () => {
     const errors = [];
 
-    if (!formData.title?.trim()) {
-      errors.push("Event Title");
-    }
+    // if (!formData.title?.trim()) {
+    //   errors.push("Event Title");
+    // }
     if (!formData.locationId) {
       errors.push("Location");
     }
     if (!formData.propertyTypeId) {
       errors.push("Property Type");
     }
-    if (!formData.eventDate) {
-      errors.push("Event Date");
-    }
-    if (!formData.description?.trim()) {
-      errors.push("Short Description");
-    }
-    if (formData.description.length > 50) {
-      errors.push("Short Description (must be ≤50 chars)");
-    }
-    if (!formData.ctaText?.trim()) {
-      errors.push("CTA Button Text");
-    }
+    // if (!formData.eventDate) {
+    //   errors.push("Event Date");
+    // }
+    // if (!formData.description?.trim()) {
+    //   errors.push("Short Description");
+    // }
+    // if (formData.description.length > 50) {
+    //   errors.push("Short Description (must be ≤50 chars)");
+    // }
+    // if (!formData.ctaText?.trim()) {
+    //   errors.push("CTA Button Text");
+    // }
     if (!selectedFile && !imageUrl) {
       errors.push("Event Image");
     }
@@ -392,7 +392,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                 style={{ color: colors.textSecondary }}
               >
-                <Tag size={14} /> Event Title <span className="text-red-500">*</span>
+                <Tag size={14} /> Event Title
               </label>
               <input
                 type="text"
@@ -505,7 +505,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
-                  <CalendarIcon size={14} /> Event Date <span className="text-red-500">*</span>
+                  <CalendarIcon size={14} /> Event Date
                 </label>
                 <input
                   type="date"
@@ -538,7 +538,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
-                  Status <span className="text-red-500">*</span>
+                  Status 
                 </label>
                 <select
                   value={formData.status}
@@ -565,7 +565,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 style={{ color: colors.textSecondary }}
               >
                 <span className="flex items-center gap-2">
-                  <FileText size={14} /> Short Description <span className="text-red-500">*</span>
+                  <FileText size={14} /> Short Description 
                 </span>
                 <span
                   className={`text-[10px] font-mono ${formData.description.length > 50 ? "text-red-500 font-bold" : "text-gray-400"}`}
@@ -645,7 +645,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
                   style={{ color: colors.textSecondary }}
                 >
-                  CTA Button Text <span className="text-red-500">*</span>
+                  CTA Button Text
                 </label>
                 <input
                   type="text"

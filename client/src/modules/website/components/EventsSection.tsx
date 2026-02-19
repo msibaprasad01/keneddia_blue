@@ -68,7 +68,7 @@ export default function EventsSection() {
           : [];
 
       const activeEvents = rawEvents.filter(
-        (event: any) => event.status === "ACTIVE" || event.active === true,
+        (event: any) => event.active === true,
       );
 
       setApiEvents(
@@ -177,9 +177,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
     const date = new Date(dateString);
     return {
       day: date.getDate(),
-      month: date
-        .toLocaleDateString("en-US", { month: "short" })
-        .toUpperCase(),
+      month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
     };
   };
 
@@ -270,12 +268,14 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
               {event.description}
             </p>
             <div className="flex gap-2">
-              <Link
-                to={event.ctaLink || "#"}
-                className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
-              >
-                {event.ctaText || "Book Now"} <ArrowRight size={14} />
-              </Link>
+              {event.ctaText?.trim() && (
+                <Link
+                  to={event.ctaLink || "#"}
+                  className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
+                >
+                  {event.ctaText} <ArrowRight size={14} />
+                </Link>
+              )}
             </div>
           </div>
         )}
@@ -298,12 +298,14 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
           </p>
 
           <div className="mt-auto pt-4 border-t border-dashed border-border flex gap-2">
-            <Link
-              to={event.ctaLink || "#"}
-              className="flex-1 bg-primary text-white py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-primary/90 active:scale-95 uppercase tracking-wider transition-all"
-            >
-              {event.ctaText || "Book Now"}
-            </Link>
+            {event.ctaText?.trim() && (
+              <Link
+                to={event.ctaLink || "#"}
+                className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
+              >
+                {event.ctaText} <ArrowRight size={14} />
+              </Link>
+            )}
           </div>
         </div>
       )}

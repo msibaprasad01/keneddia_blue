@@ -19,6 +19,7 @@ import {
   getGuestExperienceSection,
   createGuestExperienceByGuest,
   getGuestExperienceSectionHeader,
+  getGuestExperineceRatingHeader,
 } from "@/Api/Api";
 
 import "swiper/css";
@@ -40,6 +41,11 @@ interface SectionHeader {
   id?: number;
   sectionTag?: string;
   title?: string;
+}
+interface RatingHeader {
+  description?: string;
+  rating?: number;
+  isActive?: boolean;
 }
 
 const isYoutubeUrl = (url: string): boolean =>
@@ -131,7 +137,7 @@ export default function OurStoryPreview() {
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState<Set<string>>(new Set());
   const [mutedVideos, setMutedVideos] = useState<Set<string>>(new Set());
-
+  const [ratingHeader, setRatingHeader] = useState<RatingHeader | null>(null);
   const swiperRef = useRef<any>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -181,6 +187,15 @@ export default function OurStoryPreview() {
       console.warn("Header fetch failed:", err);
     }
   };
+  const fetchRatingHeader = async () => {
+    try {
+      const res = await getGuestExperineceRatingHeader();
+      const data = Array.isArray(res.data) ? res.data[0] : res.data;
+      if (data) setRatingHeader(data);
+    } catch (err) {
+      console.warn("Rating header fetch failed:", err);
+    }
+  };
 
   const fetchExperiences = async () => {
     try {
@@ -207,6 +222,7 @@ export default function OurStoryPreview() {
 
   useEffect(() => {
     fetchHeader();
+    fetchRatingHeader();
     fetchExperiences();
   }, []);
 
@@ -519,16 +535,41 @@ export default function OurStoryPreview() {
                   {sectionHeader?.title || "Moments of Excellence"}
                 </h2>
               </div>
-              <div className="text-right">
-                <div className="flex items-center gap-1 justify-end text-primary mb-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} className="fill-current" />
-                  ))}
+              {ratingHeader && (
+                <div className="text-right">
+                  <div className="flex items-center gap-1 justify-end text-primary mb-1">
+                    {[...Array(5)].map((_, i) => {
+                      const rating = ratingHeader.rating ?? 0;
+                      const full = i < Math.floor(rating);
+                      const partial = !full && i < rating;
+                      return (
+                        <span key={i} className="relative inline-block">
+                          <Star
+                            size={14}
+                            className="text-primary/20 fill-primary/20"
+                          />
+                          {(full || partial) && (
+                            <span
+                              className="absolute inset-0 overflow-hidden"
+                              style={{
+                                width: full ? "100%" : `${(rating % 1) * 100}%`,
+                              }}
+                            >
+                              <Star
+                                size={14}
+                                className="fill-primary text-primary"
+                              />
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-tighter">
+                    {ratingHeader.description}
+                  </p>
                 </div>
-                <p className="text-[10px] font-bold uppercase tracking-tighter">
-                  5.0★ from 2500+ reviews
-                </p>
-              </div>
+              )}
             </div>
 
             <div

@@ -545,7 +545,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                     setFormData((p) => ({ ...p, description: e.target.value }))
                   }
                   className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm"
-                  maxLength={50}
+                  maxLength={100}
                 />
               </div>
               {/* CTA Section */}

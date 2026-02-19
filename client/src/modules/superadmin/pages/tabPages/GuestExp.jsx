@@ -20,6 +20,7 @@ import {
   getGuestExperienceSectionHeader,
   addGuestExperineceRatingHeader,
   getGuestExperineceRatingHeader,
+  EditGuestExperineceRatingHeader,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 
@@ -53,7 +54,11 @@ function GuestExp() {
   const [modalLoading, setModalLoading] = useState(false);
   const [form, setForm] = useState({ sectionTag: "", title: "" });
 
-  const [ratingForm, setRatingForm] = useState({ description: "", rating: "" });
+  const [ratingForm, setRatingForm] = useState({
+    description: "",
+    rating: "",
+    isActive: true,
+  });
   const [savingRating, setSavingRating] = useState(false);
   const [ratingData, setRatingData] = useState(null);
 
@@ -84,6 +89,7 @@ function GuestExp() {
         setRatingForm({
           description: data.description || "",
           rating: data.rating || "",
+          isActive: data.isActive !== undefined ? data.isActive : true,
         });
       }
     } catch (err) {
@@ -94,11 +100,21 @@ function GuestExp() {
   const handleSaveRating = async () => {
     try {
       setSavingRating(true);
-      await addGuestExperineceRatingHeader({
+      const payload = {
         description: ratingForm.description,
         rating: parseFloat(ratingForm.rating),
-      });
-      toast.success("Rating header saved successfully");
+        isActive: ratingForm.isActive,
+      };
+
+      if (ratingData?.id) {
+        await EditGuestExperineceRatingHeader(ratingData.id, payload);
+        toast.success("Rating updated successfully");
+      } else {
+        await addGuestExperineceRatingHeader(payload);
+        toast.success("Rating saved successfully");
+      }
+
+      await fetchRating();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to save rating");
     } finally {
@@ -126,6 +142,7 @@ function GuestExp() {
 
   useEffect(() => {
     fetchHeader();
+    fetchRating();
     fetchGuestExperience();
   }, [fetchHeader, fetchGuestExperience]);
 
@@ -300,7 +317,7 @@ function GuestExp() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-white hover:opacity-90 disabled:opacity-50"
           >
             {savingRating && <Loader2 size={13} className="animate-spin" />}
-            Save Rating
+            {ratingData?.id ? "Update Rating" : "Save Rating"}
           </button>
         </div>
 
@@ -351,6 +368,28 @@ function GuestExp() {
                 color: colors.textPrimary,
               }}
             />
+          </div>
+          <div>
+            <label
+              className="block text-xs font-semibold mb-1.5"
+              style={{ color: colors.textSecondary }}
+            >
+              Active Status
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer mt-2">
+              <input
+                type="checkbox"
+                checked={ratingForm.isActive}
+                onChange={(e) =>
+                  setRatingForm({ ...ratingForm, isActive: e.target.checked })
+                }
+                className="w-4 h-4 rounded"
+                style={{ accentColor: colors.primary }}
+              />
+              <span className="text-sm" style={{ color: colors.textPrimary }}>
+                Section is active
+              </span>
+            </label>
           </div>
         </div>
       </div>
