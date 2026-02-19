@@ -1,20 +1,16 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Building2, Coffee, Wine, Music, Briefcase, ArrowRight, UtensilsCrossed } from "lucide-react";
+import {
+  Building2,
+  Coffee,
+  Wine,
+  Music,
+  Briefcase,
+  ArrowRight,
+  UtensilsCrossed,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { getKennediaGroup } from "@/Api/Api";
-
-const STATIC_DATA = {
-  mainTitle: "Kennedia Group",
-  subTitle: "A diverse ecosystem of luxury hospitality brands.",
-  logoText: "KB",
-  logoSubText: "Group",
-  divisions: [
-    { id: 1, title: "Hotels & Resorts", icon: "HOTEL", description: "Luxury stays globally", displayOrder: 1, ctaLink: "" },
-    { id: 2, title: "Cafes & Dining", icon: "CAFE", description: "Artisan culinary delights", displayOrder: 2, ctaLink: "" },
-    { id: 3, title: "Bars & Lounges", icon: "BAR", description: "Signature cocktails", displayOrder: 3, ctaLink: "" },
-  ],
-};
 
 const IconMap: Record<string, any> = {
   // Uppercase keys
@@ -47,7 +43,8 @@ const isValidDivision = (div: any): boolean => {
 
 export default function BusinessVerticals() {
   const [isMobile, setIsMobile] = useState(false);
-  const [groupData, setGroupData] = useState(STATIC_DATA);
+  const [groupData, setGroupData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -56,26 +53,32 @@ export default function BusinessVerticals() {
 
     const fetchData = async () => {
       try {
+        setLoading(true);
         const res = await getKennediaGroup();
         const validData = res?.divisions ? res : res?.data;
+
         if (validData && Array.isArray(validData.divisions)) {
-          const limitedData = {
+          const cleaned = {
             ...validData,
-            divisions: validData.divisions
-              .filter(isValidDivision) // Skip empty/incomplete divisions
-              .slice(0, 5),
+            divisions: validData.divisions.filter(isValidDivision).slice(0, 5),
           };
-          setGroupData(limitedData);
+          setGroupData(cleaned);
+        } else {
+          setGroupData(null);
         }
       } catch (error) {
-        console.warn("API failed, staying with static fallback", error);
+        console.error("Kennedia Group fetch failed:", error);
+        setGroupData(null);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
+  if (loading) return null;
+  if (!groupData) return null;
   return (
     <section className="py-2 bg-gradient-to-b from-background to-secondary/10 overflow-hidden relative">
       <div className="container mx-auto px-6 relative z-10">
@@ -114,8 +117,12 @@ function DesktopTree({ divisions, logoText, logoSubText }: any) {
       <div className="relative z-20 mb-16">
         <div className="w-32 h-32 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20">
           <div className="text-center">
-            <h2 className="text-2xl font-serif font-bold text-foreground leading-none">{logoText}</h2>
-            <p className="text-[10px] uppercase tracking-widest text-primary mt-1 font-bold">{logoSubText}</p>
+            <h2 className="text-2xl font-serif font-bold text-foreground leading-none">
+              {logoText}
+            </h2>
+            <p className="text-[10px] uppercase tracking-widest text-primary mt-1 font-bold">
+              {logoSubText}
+            </p>
           </div>
         </div>
         <div className="absolute left-1/2 top-full -translate-x-1/2 h-16 w-[1px] bg-primary/20" />
@@ -157,7 +164,9 @@ function BranchNode({ item, index }: any) {
         <div className="cursor-default">{cardContent}</div>
       )}
 
-      <h3 className={`text-sm font-bold ${hasLink ? "group-hover:text-primary transition-colors" : ""}`}>
+      <h3
+        className={`text-sm font-bold ${hasLink ? "group-hover:text-primary transition-colors" : ""}`}
+      >
         {item.title}
       </h3>
       <p className="text-xs text-muted-foreground/70 max-w-[120px] line-clamp-2">
@@ -188,7 +197,9 @@ function MobileTimeline({ verticals }: any) {
               <Icon className="w-4 h-4" />
             </div>
             <h3 className="text-base font-bold">{v.title}</h3>
-            {hasLink && <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />}
+            {hasLink && (
+              <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
+            )}
           </div>
         );
 

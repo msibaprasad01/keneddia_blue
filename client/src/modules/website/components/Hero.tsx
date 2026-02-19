@@ -8,11 +8,6 @@ import "swiper/css";
 import "swiper/css/effect-fade";
 import "swiper/css/navigation";
 import { getHeroSectionsPaginated } from "@/Api/Api";
-import { siteContent } from "@/data/siteContent";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
-
-// Assets - Fallback
-import video1 from "@assets/video/video1.mp4";
 
 // Cache configuration
 const CACHE_KEY = "hero_sections_cache";
@@ -23,36 +18,6 @@ interface CachedData {
   timestamp: number;
   hash: string;
 }
-
-// Default slides as fallback
-const defaultSlides = [
-  {
-    type: "video" as const,
-    media: video1,
-    mobileMedia: video1,
-    thumbnail: siteContent.images.hero.slide1,
-    title: siteContent.text.hero.slides[0].title,
-    subtitle: siteContent.text.hero.slides[0].subtitle,
-  },
-  {
-    type: "image" as const,
-    media: siteContent.images.hero.slide2,
-    mobileMedia: siteContent.images.hero.slide2,
-    thumbnail: siteContent.images.hero.slide2,
-    title: siteContent.text.hero.slides[1].title,
-    subtitle: siteContent.text.hero.slides[1].subtitle,
-    cta: "Explore",
-  },
-  {
-    type: "image" as const,
-    media: siteContent.images.hero.slide3,
-    mobileMedia: siteContent.images.hero.slide3,
-    thumbnail: siteContent.images.hero.slide3,
-    title: siteContent.text.hero.slides[2].title,
-    subtitle: siteContent.text.hero.slides[2].subtitle,
-    cta: "Explore",
-  },
-];
 
 interface MediaItem {
   mediaId: number;
@@ -82,15 +47,13 @@ interface ApiHeroItem {
 
 interface HeroSlide {
   type: "video" | "image";
-  media: string | any;
-  mobileMedia: string | any;
-  thumbnail: string | any;
+  media: string;
+  mobileMedia: string;
+  thumbnail: string;
   title: string;
   subtitle: string;
   cta?: string;
   ctaLink?: string | null;
-  fallbackMedia?: any;
-  fallbackThumbnail?: any;
 }
 
 const getCurrentTheme = (): "light" | "dark" => {
@@ -155,7 +118,6 @@ const transformApiDataToSlides = (
   content: ApiHeroItem[],
   theme: "light" | "dark",
 ): HeroSlide[] => {
-
   // CRITICAL FIX: Only show if BOTH conditions are true
   const filteredContent = content.filter((item) => {
     const shouldShow = item.active === true && item.showOnHomepage === true;
@@ -194,8 +156,6 @@ const transformApiDataToSlides = (
       subtitle: item.subTitle || "",
       cta: item.ctaText,
       ctaLink: item.ctaLink ?? null,
-      fallbackMedia: defaultSlides[index % defaultSlides.length].media,
-      fallbackThumbnail: defaultSlides[index % defaultSlides.length].thumbnail,
     };
   });
 };
@@ -207,13 +167,7 @@ export default function Hero() {
     getCurrentTheme(),
   );
 
-  const [slides, setSlides] = useState<HeroSlide[]>(
-    defaultSlides.map((slide) => ({
-      ...slide,
-      fallbackMedia: slide.media,
-      fallbackThumbnail: slide.thumbnail,
-    })),
-  );
+  const [slides, setSlides] = useState<HeroSlide[]>([]);
 
   const [isFetching, setIsFetching] = useState(true);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
@@ -259,39 +213,16 @@ export default function Hero() {
 
           const apiSlides = transformApiDataToSlides(apiContent, currentTheme);
           if (apiSlides.length > 0) {
-            const finalSlides = [...apiSlides];
-
-            // Only add default slides if NO API slides are available
-            if (finalSlides.length === 0) {
-              finalSlides.push(
-                ...defaultSlides.map((slide) => ({
-                  ...slide,
-                  fallbackMedia: slide.media,
-                  fallbackThumbnail: slide.thumbnail,
-                })),
-              );
-            }
-
-            setSlides(finalSlides);
+            setSlides(apiSlides);
             currentHashRef.current = newHash;
-            setCachedData(finalSlides, newHash);
+            setCachedData(apiSlides, newHash);
           } else {
-            const defaultSlidesWithFallback = defaultSlides.map((slide) => ({
-              ...slide,
-              fallbackMedia: slide.media,
-              fallbackThumbnail: slide.thumbnail,
-            }));
-            setSlides(defaultSlidesWithFallback);
+            setSlides([]); // no fallback
           }
         }
       } catch (error) {
-        // Use defaults on error
-        const defaultSlidesWithFallback = defaultSlides.map((slide) => ({
-          ...slide,
-          fallbackMedia: slide.media,
-          fallbackThumbnail: slide.thumbnail,
-        }));
-        setSlides(defaultSlidesWithFallback);
+        console.error("Hero fetch failed:", error);
+        setSlides([]); // no fallback
       } finally {
         setIsFetching(false);
         isFetchingRef.current = false;
@@ -307,13 +238,7 @@ export default function Hero() {
         setSlides(newSlides);
         setCachedData(newSlides, currentHashRef.current);
       } else {
-        // If no slides for new theme, use defaults
-        const defaultSlidesWithFallback = defaultSlides.map((slide) => ({
-          ...slide,
-          fallbackMedia: slide.media,
-          fallbackThumbnail: slide.thumbnail,
-        }));
-        setSlides(defaultSlidesWithFallback);
+        setSlides([]);
       }
     }
   }, []);
@@ -359,16 +284,10 @@ export default function Hero() {
   const renderMedia = useCallback(
     (slide: HeroSlide, isMobile: boolean = false) => {
       const mediaUrl = isMobile ? slide.mobileMedia : slide.media;
-      const shouldUseFallback =
-        !mediaUrl ||
-        (typeof mediaUrl === "string" && imageErrors.has(mediaUrl));
-      const finalMedia = shouldUseFallback ? slide.fallbackMedia : mediaUrl;
 
-      if (
-        slide.type === "video" &&
-        typeof finalMedia === "string" &&
-        !shouldUseFallback
-      ) {
+      if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
+
+      if (slide.type === "video") {
         return (
           <video
             autoPlay
@@ -377,29 +296,20 @@ export default function Hero() {
             playsInline
             preload="metadata"
             className="w-full h-full object-cover"
-            key={finalMedia}
-            onError={() => handleImageError(finalMedia)}
+            key={mediaUrl}
+            onError={() => handleImageError(mediaUrl)}
           >
-            <source src={finalMedia} type="video/mp4" />
+            <source src={mediaUrl} type="video/mp4" />
           </video>
         );
       }
 
-      if (typeof finalMedia === "string") {
-        return (
-          <img
-            src={finalMedia}
-            alt={slide.title}
-            className="w-full h-full object-cover"
-            onError={() => handleImageError(finalMedia)}
-          />
-        );
-      }
-
       return (
-        <OptimizedImage
-          {...finalMedia}
+        <img
+          src={mediaUrl}
+          alt={slide.title}
           className="w-full h-full object-cover"
+          onError={() => handleImageError(mediaUrl)}
         />
       );
     },
@@ -409,28 +319,15 @@ export default function Hero() {
   const renderThumbnail = useCallback(
     (slide: HeroSlide) => {
       const thumbnailUrl = slide.thumbnail;
-      const shouldUseFallback =
-        !thumbnailUrl ||
-        (typeof thumbnailUrl === "string" && imageErrors.has(thumbnailUrl));
-      const finalThumbnail = shouldUseFallback
-        ? slide.fallbackThumbnail
-        : thumbnailUrl;
 
-      if (typeof finalThumbnail === "string") {
-        return (
-          <img
-            src={finalThumbnail}
-            alt={slide.subtitle}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            onError={() => handleImageError(finalThumbnail)}
-          />
-        );
-      }
+      if (!thumbnailUrl || imageErrors.has(thumbnailUrl)) return null;
 
       return (
-        <OptimizedImage
-          {...finalThumbnail}
+        <img
+          src={thumbnailUrl}
+          alt={slide.subtitle}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          onError={() => handleImageError(thumbnailUrl)}
         />
       );
     },

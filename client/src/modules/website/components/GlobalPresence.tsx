@@ -25,40 +25,6 @@ interface PresenceSectionData {
   }[];
 }
 
-const fallbackLocations = [
-  { state: "Karnataka", city: "Bangalore" },
-  { state: "Uttar Pradesh", city: "Varanasi" },
-  { state: "Rajasthan", city: "Jaipur" },
-  { state: "Maharashtra", city: "Mumbai" },
-  { state: "Tamil Nadu", city: "Chennai" },
-  { state: "Kerala", city: "Kochi" },
-  { state: "Delhi", city: "New Delhi" },
-  { state: "Goa", city: "Panaji" },
-];
-
-const fallbackHighlights = [
-  {
-    icon: Sparkles,
-    title: "Curated Experiences",
-    description: "Premium locations in heritage cities",
-  },
-  {
-    icon: Award,
-    title: "Excellence Awarded",
-    description: "Recognized for outstanding hospitality",
-  },
-  {
-    icon: Users,
-    title: "Guest-Centric",
-    description: "24/7 concierge & wellness amenities",
-  },
-  {
-    icon: Star,
-    title: "Sustainable Luxury",
-    description: "Eco-conscious practices meet comfort",
-  },
-];
-
 // Icon mapping helper
 const getIconComponent = (iconName: string) => {
   const iconMap: { [key: string]: any } = {
@@ -74,13 +40,13 @@ const getIconComponent = (iconName: string) => {
 };
 
 export default function GlobalPresence() {
-  const [locations, setLocations] = useState<{ state: string; city: string }[]>(fallbackLocations);
+  const [locations, setLocations] = useState<{ state: string; city: string }[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(true);
-  const [sectionData, setSectionData] = useState<PresenceSectionData>({
-    sectionTitle: "Our Presence",
-    sectionSubtitle: "Luxury Hospitality Across India",
-    items: [],
-  });
+  const [sectionData, setSectionData] = useState<PresenceSectionData | null>(
+    null,
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -89,11 +55,8 @@ export default function GlobalPresence() {
 
         // Fetch locations
         const locationsRes = await getAllLocations();
-        console.log("Locations API full response:", locationsRes);
-        console.log("Locations API data:", locationsRes.data);
 
         if (locationsRes?.data && Array.isArray(locationsRes.data)) {
-          // Filter only active locations and map to the format we need
           const activeLocations = locationsRes.data
             .filter((location: LocationData) => location.isActive)
             .map((location: LocationData) => ({
@@ -101,59 +64,35 @@ export default function GlobalPresence() {
               city: location.locationName,
             }));
 
-          // Only update if we have active locations
-          if (activeLocations.length > 0) {
-            setLocations(activeLocations);
-          }
+          setLocations(activeLocations);
         }
 
         // Fetch presence section data
         const presenceRes = await getOurPresenceSection();
-        console.log("Presence Section API response:", presenceRes);
 
         if (presenceRes?.data) {
-          // Use API items if available, otherwise use fallback highlights
-          const items = presenceRes.data.items && presenceRes.data.items.length > 0
-            ? presenceRes.data.items
-            : fallbackHighlights.map((item, index) => ({
-                id: index + 1,
-                title: item.title,
-                subtitle: item.description,
-                icon: 'sparkles',
-                displayOrder: index + 1,
-              }));
-
-          setSectionData({
-            sectionTitle: presenceRes.data.sectionTitle || "Our Presence",
-            sectionSubtitle: presenceRes.data.sectionSubtitle || "Luxury Hospitality Across India",
-            items: items,
-          });
+          setSectionData(presenceRes.data);
         } else {
-          // If API fails, use fallback data
-          setSectionData({
-            sectionTitle: "Our Presence",
-            sectionSubtitle: "Luxury Hospitality Across India",
-            items: fallbackHighlights.map((item, index) => ({
-              id: index + 1,
-              title: item.title,
-              subtitle: item.description,
-              icon: 'sparkles',
-              displayOrder: index + 1,
-            })),
-          });
+          setSectionData(null);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
-        // Keep fallback data on error
+        console.error("Error fetching Global Presence:", error);
+        setSectionData(null);
+        setLocations([]);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
-  // Sort items by displayOrder
-  const sortedItems = [...sectionData.items].sort((a, b) => a.displayOrder - b.displayOrder);
+  const sortedItems = sectionData?.items
+    ? [...sectionData.items].sort((a, b) => a.displayOrder - b.displayOrder)
+    : [];
+
+  if (isLoading) return null;
+  if (!sectionData) return null;
 
   return (
     <section className="py-16 md:py-20 bg-secondary/20 relative overflow-hidden">
@@ -243,7 +182,7 @@ export default function GlobalPresence() {
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
             {sortedItems.map((item, index) => {
               const IconComponent = getIconComponent(item.icon);
-              
+
               return (
                 <motion.div
                   key={item.id}
