@@ -210,20 +210,6 @@ export default function GlobalPresence() {
             })}
           </div>
         </div>
-
-        {/* Bottom Tagline - Subtle */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.9 }}
-          className="text-center mt-12 pt-8 border-t border-primary/10"
-        >
-          <p className="text-sm text-muted-foreground font-light italic">
-            Where tradition meets contemporary luxury — Experience India like
-            never before
-          </p>
-        </motion.div>
       </div>
     </section>
   );
