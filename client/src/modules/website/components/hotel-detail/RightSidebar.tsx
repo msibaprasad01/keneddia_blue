@@ -258,10 +258,10 @@ export default function RightSidebar({
             {selectedRoom ? "Proceed to Book" : "Select Room"}
           </Button>
 
-          <p className="text-[10px] text-center text-muted-foreground mt-3 flex items-center justify-center gap-1">
+          {/* <p className="text-[10px] text-center text-muted-foreground mt-3 flex items-center justify-center gap-1">
             <Check className="w-3 h-3 text-green-500" /> Best Price Guarantee •
             Instant Confirmation
-          </p>
+          </p> */}
         </div>
       </div>
 
@@ -406,7 +406,7 @@ export default function RightSidebar({
       </div>
 
       {/* Reviews Snapshot */}
-      {hotel.rating && (
+      {/* {hotel.rating && (
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
           <h4 className="text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between">
             Guest Reviews
@@ -434,7 +434,7 @@ export default function RightSidebar({
             "Exceptional stay with wonderful staff..."
           </p>
         </div>
-      )}
+      )} */}
 
       {/* Amenities Snapshot */}
       {hotel.amenities && hotel.amenities.length > 0 && (

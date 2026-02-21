@@ -4,7 +4,9 @@ import axios from "axios";
 const apiUrl = "http://192.168.0.135:6090/";
 
 // QA (commented as requested)
+// https://backend.kennediablu.com
 // const apiUrl = "http://103.152.79.63:6090/";
+// const apiUrl = "https://backend.kennediablu.com/";
 
 const API = axios.create({ baseURL: apiUrl });
 
@@ -34,12 +36,9 @@ API.interceptors.response.use(
 export const loginAPI = (data) => API.post("api/v1/staff/login", data);
 export const createRole = (data) => API.post("api/v1/roles", data);
 export const getAllRoles = () => API.get("api/v1/showAll");
-export const uploadMedia = (formData) =>
-  API.post("api/v1/media/upload", formData);
-export const PropertyUploadMedia = (formData) =>
-  API.post("api/v1/property-listings/upload-media", formData);
-export const PropertyEdiMedia = (formData) =>
-  API.put("api/v1/property-listings/edit-media", formData);
+export const uploadMedia = (formData) =>API.post("api/v1/media/upload", formData);
+export const PropertyUploadMedia = (formData) =>API.post("api/v1/property-listings/upload-media", formData);
+export const PropertyEdiMedia = (formData) =>API.put("api/v1/property-listings/edit-media", formData);
 export const getMediaById = (id) => API.get(`api/v1/media/${id}`);
 export const createUser = (data) => API.post("api/v1/users/create", data);
 export const getUsersPaginated = () => API.get("api/v1/users/auth/paginated");
@@ -50,40 +49,30 @@ export const getLocationsByType = (type) =>
   });
 
 export const getAllLocations = () => API.get("api/v1/locations/all");
-export const updateLocationById = (id, data) =>
-  API.put(`api/v1/locations/${id}/edit`, data);
-export const updateLocationStatus = (id, isActive) =>
-  API.patch(`api/v1/locations/${id}/status`, null, { params: { isActive } });
+export const updateLocationById = (id, data) =>API.put(`api/v1/locations/${id}/edit`, data);
+export const updateLocationStatus = (id, isActive) =>API.patch(`api/v1/locations/${id}/status`, null, { params: { isActive } });
 
-export const addPropertyType = (data) =>
-  API.post("api/v1/property-types/create", data);
+export const addPropertyType = (data) =>API.post("api/v1/property-types/create", data);
 export const updatePropertyType = (id,data) =>API.put(`api/v1/property-types/${id}`, data);
 export const getPropertyTypes = () => API.get("api/v1/property-types");
-export const getPropertyTypeById = (id) =>
-  API.get(`api/v1/property-types/${id}`);
-export const getActivePropertyTypes = () =>
-  API.get("api/v1/property-types/active");
+export const getPropertyTypeById = (id) =>API.get(`api/v1/property-types/${id}`);
+export const getActivePropertyTypes = () =>API.get("api/v1/property-types/active");
 export const updatePropertyTypeStatus = (id, isActive) =>
   API.patch(`api/v1/property-types/${id}/status`, null, {
     params: { isActive },
   });
-export const addPropertyCategory = (data) =>
-  API.post("api/v1/property-categories/add", data);
+export const addPropertyCategory = (data) =>API.post("api/v1/property-categories/add", data);
 export const updatePropertyCategory = (id,data) =>API.put(`api/v1/property-categories/update/${id}`, data);
-export const getAllPropertyCategories = () =>
-  API.get("api/v1/property-categories/all");
-export const getActivePropertyCategories = () =>
-  API.get("api/v1/property-categories/all?activeOnly=true");
+export const getAllPropertyCategories = () =>API.get("api/v1/property-categories/all");
+export const getActivePropertyCategories = () =>API.get("api/v1/property-categories/all?activeOnly=true");
 export const updatePropertyCategoryStatus = (id, isActive) =>
   API.patch(`api/v1/property-categories/${id}/status`, null, {
     params: { isActive },
   });
 
-export const addProperty = (type, data) =>
-  API.post(`api/v1/properties/add/${type}`, data);
+export const addProperty = (type, data) =>API.post(`api/v1/properties/add/${type}`, data);
 export const getAllProperties = () => API.get("api/v1/properties/showAll");
-export const createOrUpdateHeroSection = (formData) =>
-  API.post("api/v1/hero-sections/bulk", formData);
+export const createOrUpdateHeroSection = (formData) =>API.post("api/v1/hero-sections/bulk", formData);
 export const getHeroSection = () => API.get("api/v1/hero-sections");
 
 export const addAboutUs = (payload) => {
@@ -109,43 +98,9 @@ export const addAboutUs = (payload) => {
 
   return API.post("api/v1/admin/about-us", formData);
 };
-export const enableAboutUs = (id) =>
-  API.patch(`api/v1/admin/about-us/${id}/enable`);
-export const disableAboutUs = (id) =>
-  API.patch(`api/v1/admin/about-us/${id}/disable`);
-// export const updateAboutUsById = (id, payload) => {
-//   const formData = new FormData();
+export const enableAboutUs = (id) =>API.patch(`api/v1/admin/about-us/${id}/enable`);
+export const disableAboutUs = (id) =>API.patch(`api/v1/admin/about-us/${id}/disable`);
 
-//   // data → stringified JSON (MANDATORY, same as add)
-//   formData.append(
-//     "data",
-//     JSON.stringify({
-//       sectionTitle: payload.sectionTitle,
-//       subTitle: payload.subTitle,
-//       description: payload.description,
-//       videoUrl: payload.videoUrl,
-//       videoTitle: payload.videoTitle,
-//       mediaUrls: payload.mediaUrls || [],
-//       ctaButtonText: payload.ctaButtonText,
-//       ctaButtonUrl: payload.ctaButtonUrl,
-//     }),
-//   );
-
-//   // files → multipart (optional)
-//   if (payload.files && payload.files.length > 0) {
-//     payload.files.forEach((file) => {
-//       formData.append("files", file);
-//     });
-//   }
-
-//   return API.put(`api/v1/admin/about-us/${id}`, formData, {
-//     headers: {
-//       "Content-Type": "multipart/form-data",
-//     },
-//   });
-// };
-
-// api.js
 export const updateAboutUsById = (id, payload) => {
   const formData = new FormData();
 
@@ -169,8 +124,7 @@ export const updateAboutUsById = (id, payload) => {
   });
 };
 export const getAboutUsAdmin = () => API.get("api/v1/admin/about-us");
-export const getAboutUsPublicById = (id) =>
-  API.get(`api/v1/public/about-us/${id}`);
+export const getAboutUsPublicById = (id) =>API.get(`api/v1/public/about-us/${id}`);
 
 export const addVenture = (aboutUsId, payload) => {
   const formData = new FormData();
@@ -195,41 +149,26 @@ export const updateVentureById = (ventureId, payload) => {
   });
 };
 
-export const getVenturesByAboutUsId = (aboutUsId) =>
-  API.get(`api/v1/admin/about-us/${aboutUsId}/ventures`);
-export const getPublicVenturesByAboutUsId = (aboutUsId) =>
-  API.get(`api/v1/public/about-us/${aboutUsId}/ventures`);
+export const getVenturesByAboutUsId = (aboutUsId) =>API.get(`api/v1/admin/about-us/${aboutUsId}/ventures`);
+export const getPublicVenturesByAboutUsId = (aboutUsId) =>API.get(`api/v1/public/about-us/${aboutUsId}/ventures`);
 
-export const addRecognition = (aboutUsId, data) =>
-  API.post(`api/v1/admin/about-us/${aboutUsId}/recognitions`, data);
-export const updateRecognition = (recognitionId, data) =>
-  API.put(`api/v1/admin/about-us/recognitions/${recognitionId}`, data);
-export const getRecognitionsByAboutUsId = (aboutUsId) =>
-  API.get(`api/v1/admin/about-us/${aboutUsId}/recognitions`);
-export const getPublicRecognitionsByAboutUsId = (aboutUsId) =>
-  API.get(`api/v1/public/about-us/${aboutUsId}/recognitions`);
+export const addRecognition = (aboutUsId, data) =>API.post(`api/v1/admin/about-us/${aboutUsId}/recognitions`, data);
+export const updateRecognition = (recognitionId, data) =>API.put(`api/v1/admin/about-us/recognitions/${recognitionId}`, data);
+export const getRecognitionsByAboutUsId = (aboutUsId) =>API.get(`api/v1/admin/about-us/${aboutUsId}/recognitions`);
+export const getPublicRecognitionsByAboutUsId = (aboutUsId) =>API.get(`api/v1/public/about-us/${aboutUsId}/recognitions`);
 
-export const addGuestExperienceSectionHeader = (data) =>
-  API.post("api/v1/guest-experience/section", data);
-export const getGuestExperienceSectionHeader = () =>
-  API.get("/api/v1/guest-experience/section");
-export const createGuestExperienceByGuest = (formData) =>
-  API.post("api/v1/guest-experience/byGuests", formData);
-export const deleteGuestExperience = (id) =>
-  API.delete(`api/v1/guest-experience/${id}`);
-export const addGuestExperienceSection = (data) =>
-  API.post("api/v1/guest-experience/section", data);
-export const getGuestExperienceSection = () =>
-  API.get("/api/v1/guest-experience");
-export const addGuestExperienceItem = (formData) =>
-  API.post("api/v1/guest-experience", formData);
-export const updateGuestExperienceItem = (id, formData) =>
-  API.put(`api/v1/guest-experience/${id}`, formData);
+export const addGuestExperienceSectionHeader = (data) =>API.post("api/v1/guest-experience/section", data);
+export const getGuestExperienceSectionHeader = () =>API.get("/api/v1/guest-experience/section");
+export const createGuestExperienceByGuest = (formData) =>API.post("api/v1/guest-experience/byGuests", formData);
+export const deleteGuestExperience = (id) =>API.delete(`api/v1/guest-experience/${id}`);
+export const addGuestExperienceSection = (data) =>API.post("api/v1/guest-experience/section", data);
+export const getGuestExperienceSection = () =>API.get("/api/v1/guest-experience");
+export const addGuestExperienceItem = (formData) =>API.post("api/v1/guest-experience", formData);
+export const updateGuestExperienceItem = (id, formData) =>API.put(`api/v1/guest-experience/${id}`, formData);
 
 //our presence section
 
-export const AddOurPresenceSectionItems = (data) =>
-  API.post("api/v1/our-presence/admin/items", data);
+export const AddOurPresenceSectionItems = (data) =>API.post("api/v1/our-presence/admin/items", data);
 export const UpdateOurPresenceSectionHeaders = (data) =>
   API.put("api/v1/our-presence/admin/section", data, {
     headers: {
@@ -237,8 +176,7 @@ export const UpdateOurPresenceSectionHeaders = (data) =>
     },
   });
 export const getOurPresenceSection = () => API.get("api/v1/our-presence");
-export const updateOurPresenceSectionItemsById = (id, formData) =>
-  API.put(`api/v1/our-presence/admin/items/${id}`, formData);
+export const updateOurPresenceSectionItemsById = (id, formData) =>API.put(`api/v1/our-presence/admin/items/${id}`, formData);
 
 export const addGuestExperineceRatingHeader = (data) =>API.post("/api/v1/ratings", data);
 export const EditGuestExperineceRatingHeader = (id,data) =>API.put(`/api/v1/ratings/${id}`, data);
@@ -246,36 +184,23 @@ export const getGuestExperineceRatingHeader  = (id) =>API.get("/api/v1/ratings")
 
 
 
-export const createOrUpdateOurPropertiesSection = (data) =>
-  API.post("api/v1/our-properties/section", data);
-export const getOurPropertiesSection = () =>
-  API.get("api/v1/our-properties/section");
-export const addOurPropertyItem = (sectionId, formData) =>
-  API.post(`api/v1/our-properties/${sectionId}/items`, formData);
-export const updateOurPropertyItem = (itemId, formData) =>
-  API.put(`api/v1/our-properties/items/${itemId}`, formData);
-export const getOurPropertyItemsBySectionId = (sectionId) =>
-  API.get(`api/v1/our-properties/${sectionId}/items`);
-export const createOrUpdateKennediaGroup = (data) =>
-  API.post("api/v1/kennedia-group", data);
-export const updateDailyOfferById = (id, data) =>
-  API.put(`api/v1/daily-offer/${id}`, data);
+export const createOrUpdateOurPropertiesSection = (data) =>API.post("api/v1/our-properties/section", data);
+export const getOurPropertiesSection = () =>API.get("api/v1/our-properties/section");
+export const addOurPropertyItem = (sectionId, formData) =>API.post(`api/v1/our-properties/${sectionId}/items`, formData);
+export const updateOurPropertyItem = (itemId, formData) =>API.put(`api/v1/our-properties/items/${itemId}`, formData);
+export const getOurPropertyItemsBySectionId = (sectionId) =>API.get(`api/v1/our-properties/${sectionId}/items`);
+export const createOrUpdateKennediaGroup = (data) =>API.post("api/v1/kennedia-group", data);
+export const updateDailyOfferById = (id, data) =>API.put(`api/v1/daily-offer/${id}`, data);
 export const getKennediaGroup = () => API.get("api/v1/kennedia-group");
 // Enable a business division
-export const enableKennediaDivision = (id) =>
-  API.put(`api/v1/kennedia-group/division/${id}/enable`);
-export const disableKennediaDivision = (id) =>
-  API.put(`api/v1/kennedia-group/division/${id}/disable`);
+export const enableKennediaDivision = (id) =>API.put(`api/v1/kennedia-group/division/${id}/enable`);
+export const disableKennediaDivision = (id) =>API.put(`api/v1/kennedia-group/division/${id}/disable`);
 
 // offer section
-export const createDailyOffer = (data) =>
-  API.post("api/v1/daily-offer/create", data);
-export const UpdateDailyOffer = (id, data) =>
-  API.put(`api/v1/daily-offer/${id}`, data);
-export const getDailyOffers = ({ page = 0, size = 10 }) =>
-  API.get("api/v1/daily-offer/paginated/all", { params: { page, size } });
-export const updateDailyOfferActiveStatus = (id, isActive) =>
-  API.patch(`api/v1/daily-offer/${id}/status`, null, { params: { isActive } });
+export const createDailyOffer = (data) =>API.post("api/v1/daily-offer/create", data);
+export const UpdateDailyOffer = (id, data) =>API.put(`api/v1/daily-offer/${id}`, data);
+export const getDailyOffers = ({ page = 0, size = 10 }) =>API.get("api/v1/daily-offer/paginated/all", { params: { page, size } });
+export const updateDailyOfferActiveStatus = (id, isActive) =>API.patch(`api/v1/daily-offer/${id}/status`, null, { params: { isActive } });
 
 //events section
 export const createEvent = (formData) =>
@@ -284,8 +209,7 @@ export const createEvent = (formData) =>
       "Content-Type": "multipart/form-data",
     },
   });
-export const getEvents = ({ status = "ACTIVE", page = 0, size = 10 }) =>
-  API.get("api/v1/events-updated/showAll", { params: { status, page, size } });
+export const getEvents = ({ status = "ACTIVE", page = 0, size = 10 }) =>API.get("api/v1/events-updated/showAll", { params: { status, page, size } });
 export const updateEventById = (id, formData) =>
   API.put(`api/v1/events-updated/events/${id}`, formData, {
     headers: {
@@ -298,47 +222,32 @@ export const updateEventStatus = (id, active) =>
     params: { active },
   });
 
-export const createEventUpdated = (formData) =>
-  API.post("api/v1/events-updated/events", formData);
+export const createEventUpdated = (formData) =>API.post("api/v1/events-updated/events", formData);
 export const getEventsUpdated = () => API.get("api/v1/events-updated/showAll");
 
 export const createNews = (data) => API.post("api/v1/news/create", data);
-export const getAllNews = ({ category = "", page = 0, size = 10 }) =>
-  API.get("api/v1/news/showAll", { params: { category, page, size } });
+export const getAllNews = ({ category = "", page = 0, size = 10 }) =>API.get("api/v1/news/showAll", { params: { category, page, size } });
 export const updateNewsById = (id, data) => API.put(`api/v1/news/${id}`, data);
-export const updateNewsStatus = (id, isActive) =>
-  API.patch(`api/v1/news/${id}/status`, null, { params: { isActive } });
+export const updateNewsStatus = (id, isActive) =>API.patch(`api/v1/news/${id}/status`, null, { params: { isActive } });
 
 // properties
-export const createPropertyByType = (typeName, data) =>
-  API.post(`api/v1/properties/add/${typeName}`, data);
-export const createPropertyListing = (data) =>
-  API.post("api/v1/property-listings", data);
+export const createPropertyByType = (typeName, data) =>API.post(`api/v1/properties/add/${typeName}`, data);
+export const createPropertyListing = (data) =>API.post("api/v1/property-listings", data);
 export const GetAllPropertyListing = () => API.get("api/v1/property-listings");
 
-export const GetAllPropertyDetails = () =>
-  API.get("api/v1/properties/showAllDetails");
-export const updatePropertyById = (propertyId, payload) =>
-  API.put(`api/v1/properties/edit/${propertyId}`, payload);
+export const GetAllPropertyDetails = () =>API.get("api/v1/properties/showAllDetails");
+export const updatePropertyById = (propertyId, payload) =>API.put(`api/v1/properties/edit/${propertyId}`, payload);
 
 // properties/showAllDetails
-export const getPropertyListingMedia = (propertyListingId) =>
-  API.get(`api/v1/property-listings/${propertyListingId}/media`);
-export const GetAllPropertyDetailsByID = (id) =>
-  API.get(`api/v1/properties/AllDetailsById/${id}`);
-export const enableProperty = (propertyId) =>
-  API.patch(`api/v1/properties/enable/${propertyId}`);
-export const disableProperty = (propertyId) =>
-  API.patch(`api/v1/properties/disable/${propertyId}`);
-export const deletePropertyListing = (propertyListingId) =>
-  API.delete(`api/v1/property-listings/${propertyListingId}`);
+export const getPropertyListingMedia = (propertyListingId) =>API.get(`api/v1/property-listings/${propertyListingId}/media`);
+export const GetAllPropertyDetailsByID = (id) =>API.get(`api/v1/properties/AllDetailsById/${id}`);
+export const enableProperty = (propertyId) =>API.patch(`api/v1/properties/enable/${propertyId}`);
+export const disableProperty = (propertyId) =>API.patch(`api/v1/properties/disable/${propertyId}`);
+export const deletePropertyListing = (propertyListingId) =>API.delete(`api/v1/property-listings/${propertyListingId}`);
 
-export const createAmenityFeature = (data) =>
-  API.post("api/v1/admin/amenities-features", data);
-export const updateAmenityFeature = (id, data) =>
-  API.put(`/api/v1/admin/amenities-features/${id}`, data);
-export const getAllAmenityFeatures = () =>
-  API.get("api/v1/admin/amenities-features");
+export const createAmenityFeature = (data) =>API.post("api/v1/admin/amenities-features", data);
+export const updateAmenityFeature = (id, data) =>API.put(`/api/v1/admin/amenities-features/${id}`, data);
+export const getAllAmenityFeatures = () =>API.get("api/v1/admin/amenities-features");
 export const insertAmenitiesByPropertyId = (propertyId, amenityIds) => {
   return API.put(
     `api/v1/property-listings/insertAmenitiesByPropertyId/${propertyId}`,
@@ -349,39 +258,27 @@ export const insertAmenitiesByPropertyId = (propertyId, amenityIds) => {
 // ===============================
 // HERO SECTION (V2)
 // ===============================
-export const uploadHeroMediaBulk = (formData) =>
-  API.post("api/v1/media/bulk", formData);
-export const createHeroSection = (data) =>
-  API.post("api/v1/hero-sections/create", data);
-export const getHeroSectionsPaginated = ({ page = 0, size = 10 }) =>
-  API.get("api/v1/hero-sections/paginated/all", { params: { page, size } });
-export const updateHeroSectionById = (id, data) =>
-  API.put(`api/v1/hero-sections/${id}`, data);
-export const toggleHeroSectionActive = (id, active) =>
-  API.patch(`api/v1/hero-sections/${id}/active`, null, { params: { active } });
-export const toggleHeroSectionHomepage = (id, show) =>
-  API.patch(`api/v1/hero-sections/${id}/homepage`, null, { params: { show } });
+export const uploadHeroMediaBulk = (formData) =>API.post("api/v1/media/bulk", formData);
+export const createHeroSection = (data) =>API.post("api/v1/hero-sections/create", data);
+export const getHeroSectionsPaginated = ({ page = 0, size = 10 }) =>API.get("api/v1/hero-sections/paginated/all", { params: { page, size } });
+export const updateHeroSectionById = (id, data) =>API.put(`api/v1/hero-sections/${id}`, data);
+export const toggleHeroSectionActive = (id, active) =>API.patch(`api/v1/hero-sections/${id}/active`, null, { params: { active } });
+export const toggleHeroSectionHomepage = (id, show) =>API.patch(`api/v1/hero-sections/${id}/homepage`, null, { params: { show } });
 
 // property detail page
 // ===============================
 // POLICY OPTIONS
 // ===============================
-export const createPolicyOption = (data) =>
-  API.post("api/v1/policy-options/create", data);
+export const createPolicyOption = (data) =>API.post("api/v1/policy-options/create", data);
 export const getAllPolicyOptions = () => API.get("api/v1/policy-options");
-export const updatePolicyOptionById = (id, data) =>
-  API.put(`api/v1/policy-options/${id}`, data);
-export const updatePolicyOptionStatus = (id, isActive) =>
-  API.patch(`api/v1/policy-options/${id}/status`, { isActive });
+export const updatePolicyOptionById = (id, data) =>API.put(`api/v1/policy-options/${id}`, data);
+export const updatePolicyOptionStatus = (id, isActive) =>API.patch(`api/v1/policy-options/${id}/status`, { isActive });
 // ===============================
 // PROPERTY POLICIES
 // ===============================
-export const attachPoliciesToProperty = (data) =>
-  API.post("api/v1/property-policy", data);
-export const updatePropertyPolicyById = (id, data) =>
-  API.put(`api/v1/property-policy/${id}`, data);
-export const getAllPropertyPolicies = () =>
-  API.get("api/v1/property-policy/getAll");
+export const attachPoliciesToProperty = (data) =>API.post("api/v1/property-policy", data);
+export const updatePropertyPolicyById = (id, data) =>API.put(`api/v1/property-policy/${id}`, data);
+export const getAllPropertyPolicies = () =>API.get("api/v1/property-policy/getAll");
 export const updatePropertyPolicyStatus = (propertyId, isActive) =>
   API.patch(`api/v1/property-policy/property/${propertyId}/status`, {
     isActive,
@@ -390,12 +287,9 @@ export const updatePropertyPolicyStatus = (propertyId, isActive) =>
 // ===============================
 // GALLERY
 // ===============================
-export const uploadGalleryMedia = (formData) =>
-  API.post("api/v1/gallery/upload", formData);
-export const updateGalleryMedia = (galleryId, formData) =>
-  API.put(`api/v1/gallery/${galleryId}/media`, formData);
-export const getAllGalleries = ({ page = 0, size = 10 }) =>
-  API.get("api/v1/gallery/showAll", { params: { page, size } });
+export const uploadGalleryMedia = (formData) =>API.post("api/v1/gallery/upload", formData);
+export const updateGalleryMedia = (galleryId, formData) =>API.put(`api/v1/gallery/${galleryId}/media`, formData);
+export const getAllGalleries = ({ page = 0, size = 10 }) =>API.get("api/v1/gallery/showAll", { params: { page, size } });
 export const getGalleryById = (id) => API.get(`api/v1/gallery/${id}`);
 export const deleteGalleryById = (id) => API.delete(`api/v1/gallery/${id}`);
 
@@ -409,15 +303,11 @@ export const getGroupBookings = () =>API.get("/api/v1/group-bookings");
 // ===============================
 // ROOMS
 // ===============================
-export const addRoomToProperty = (propertyId, data) =>
-  API.post(`api/v1/rooms/property/${propertyId}`, data);
-export const updateRoomById = (roomId, data) =>
-  API.put(`api/v1/rooms/${roomId}`, data);
+export const addRoomToProperty = (propertyId, data) =>API.post(`api/v1/rooms/property/${propertyId}`, data);
+export const updateRoomById = (roomId, data) =>API.put(`api/v1/rooms/${roomId}`, data);
 export const getRoomById = (roomId) => API.get(`api/v1/rooms/${roomId}`);
-export const getRoomsByPropertyId = (propertyId) =>
-  API.get(`api/v1/rooms/property/${propertyId}`);
-export const deleteOrDeactivateRoom = (roomId) =>
-  API.delete(`api/v1/rooms/${roomId}`);
+export const getRoomsByPropertyId = (propertyId) =>API.get(`api/v1/rooms/property/${propertyId}`);
+export const deleteOrDeactivateRoom = (roomId) =>API.delete(`api/v1/rooms/${roomId}`);
 
 //hotel homepage items
 export const HotelAddAboutUs = (payload) => {
@@ -443,10 +333,8 @@ export const HotelAddAboutUs = (payload) => {
 
   return API.post("api/v1/admin/about-us", formData);
 };
-export const searchRooms = (payload) =>
-  API.post("api/v1/rooms/search", payload);
-export const getHotelHomepageHeroSection = (id) =>
-  API.get(`api/v1/hero-sections/property/${id}`);
+export const searchRooms = (payload) =>API.post("api/v1/rooms/search", payload);
+export const getHotelHomepageHeroSection = (id) =>API.get(`api/v1/hero-sections/property/${id}`);
 //hotel about
 export const addAboutUsByPropertyType = (propertyTypeId, payload) => {
   const formData = new FormData();

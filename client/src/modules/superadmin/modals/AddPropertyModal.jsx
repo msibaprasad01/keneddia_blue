@@ -383,7 +383,7 @@ function AddPropertyModal({ onClose, onSuccess }) {
             <div className="grid grid-cols-2 gap-6 animate-in fade-in duration-300">
               <div className="col-span-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
-                  Listing Heading <span className="text-red-500">*</span>
+                  Listing Description <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"

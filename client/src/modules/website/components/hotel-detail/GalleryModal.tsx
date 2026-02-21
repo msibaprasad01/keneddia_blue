@@ -55,28 +55,14 @@ export default function GalleryModal({
 
   // Combine hotel media + gallery data
   const allImages = useMemo(() => {
-    const images: { src: string; category: string; caption: string }[] = [];
-
-    // Add hotel's main media
-    hotel.media?.forEach((media, idx) => {
-      images.push({
-        src: media.url,
-        category: "PROPERTY",
-        caption: `${hotel.name} - Image ${idx + 1}`,
-      });
-    });
-
-    // Add gallery images
-    galleryData.forEach((item) => {
-      images.push({
+    return galleryData
+      .filter((item) => item.media?.url)
+      .map((item) => ({
         src: item.media.url,
         category: item.category,
         caption: item.media.fileName || `${item.category} Image`,
-      });
-    });
-
-    return images;
-  }, [hotel.media, galleryData, hotel.name]);
+      }));
+  }, [galleryData, hotel.name]);
 
   // Extract unique categories dynamically
   const categories = useMemo(() => {
@@ -101,7 +87,9 @@ export default function GalleryModal({
   }, [filteredImages.length]);
 
   const handlePrev = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + filteredImages.length) % filteredImages.length);
+    setCurrentIndex(
+      (prev) => (prev - 1 + filteredImages.length) % filteredImages.length,
+    );
   }, [filteredImages.length]);
 
   // Keyboard navigation
@@ -142,38 +130,20 @@ export default function GalleryModal({
           </button>
         </div>
 
-        {/* Main Image Area */}
-        <div className="flex-1 flex items-center justify-center relative px-4 md:px-16 overflow-hidden">
-          {/* Navigation Buttons */}
-          {filteredImages.length > 1 && (
-            <>
-              <button
-                onClick={handlePrev}
-                className="absolute left-4 md:left-8 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors backdrop-blur-sm z-20"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-
-              <button
-                onClick={handleNext}
-                className="absolute right-4 md:right-8 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors backdrop-blur-sm z-20"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </>
-          )}
-
+        {/* Main image - change this */}
+        {/* Main Image Section */}
+        <div className="flex-1 flex items-center justify-center px-6">
           <motion.div
             key={currentIndex}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
-            className="relative max-h-[80vh] max-w-full aspect-video rounded-lg overflow-hidden shadow-2xl"
+            className="relative w-full max-w-6xl h-[80vh]"
           >
             <OptimizedImage
               src={filteredImages[currentIndex].src}
               alt={filteredImages[currentIndex].caption}
-              className="object-contain w-full h-full"
+              className="object-contain"
             />
           </motion.div>
         </div>
@@ -199,6 +169,7 @@ export default function GalleryModal({
 
           {/* Thumbnails Strip */}
           <div className="flex gap-2 overflow-x-auto justify-start md:justify-center px-4 no-scrollbar h-16">
+            {/* Thumbnails - change this */}
             {filteredImages.map((img, idx) => (
               <div
                 key={idx}
@@ -209,10 +180,9 @@ export default function GalleryModal({
                     : "opacity-50 hover:opacity-80"
                 }`}
               >
-                <OptimizedImage
+                <OptimizedImage // wrapper is absolute inset-0 now, parent has w-24 h-16 ✅
                   src={img.src}
                   alt={img.caption}
-                  className="w-full h-full object-cover"
                 />
               </div>
             ))}

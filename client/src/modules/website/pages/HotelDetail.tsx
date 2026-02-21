@@ -399,12 +399,17 @@ export default function HotelDetail() {
     try {
       const res = await getAllGalleries({ page: 0, size: 100 });
       const all = res?.data?.content || [];
-      setGalleryData(
-        all.filter(
-          (i: any) => Number(i.propertyId) === Number(propId) && i.isActive,
-        ),
+
+      const filtered = all.filter(
+        (i: any) =>
+          Number(i.propertyId) === Number(propId) && i.isActive && i.media?.url,
       );
-    } catch {
+
+      console.log("🎯 FINAL FILTERED GALLERY:", filtered);
+
+      setGalleryData(filtered);
+    } catch (error) {
+      console.error("❌ GALLERY FETCH ERROR:", error);
       setGalleryData([]);
     }
   };
@@ -459,9 +464,7 @@ export default function HotelDetail() {
   };
 
   const topGridImages = useMemo(() => {
-    return galleryData
-      .filter((g) => g.media?.url) // safety check
-      .map((g) => g.media);
+    return galleryData.filter((g) => g.media?.url).map((g) => g.media);
   }, [galleryData]);
 
   const sections = useMemo(
@@ -669,29 +672,39 @@ export default function HotelDetail() {
               </div>
             </div>
             <div className="md:col-span-1 flex flex-col gap-3 h-full">
-              {[1, 2].map((idx) => (
-                <div
-                  key={idx}
-                  className="flex-1 bg-muted overflow-hidden relative group"
-                  onClick={() => openGalleryAt(idx)}
-                >
-                  <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
-                  <OptimizedImage
-                    src={topGridImages[idx]?.url || ""}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-              ))}
+              {[1, 2].map((idx) =>
+                topGridImages[idx] ? (
+                  <div
+                    key={idx}
+                    className="flex-1 bg-muted overflow-hidden relative group"
+                    onClick={() => openGalleryAt(idx)}
+                  >
+                    <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
+                    <OptimizedImage
+                      src={topGridImages[idx]?.url || ""}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  </div>
+                ) : (
+                  <div key={idx} className="flex-1 bg-muted/40 rounded" /> // empty placeholder
+                ),
+              )}
             </div>
             <div
               className="md:col-span-1 bg-muted relative overflow-hidden group"
-              onClick={() => openGalleryAt(3)}
+              onClick={() => (topGridImages[3] ? openGalleryAt(3) : undefined)}
             >
-              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
-              <OptimizedImage
-                src={topGridImages[3]?.url || ""}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
+              {topGridImages[3] ? (
+                <>
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
+                  <OptimizedImage
+                    src={topGridImages[3]?.url || ""}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                </>
+              ) : (
+                <div className="w-full h-full bg-muted/40" />
+              )}
               <div className="absolute inset-0 z-20 flex items-center justify-center">
                 <div className="bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transform transition-transform group-hover:scale-110">
                   <ImageIcon className="w-4 h-4 text-primary" />
@@ -743,9 +756,11 @@ export default function HotelDetail() {
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">
                   About {hotel.name}
                 </h2>
-                <p className="text-muted-foreground leading-relaxed text-base">
-                  {hotel.description}
-                </p>
+                <div className="text-muted-foreground leading-relaxed text-base space-y-4">
+                  {hotel.description?.split("\n\n").map((para, index) => (
+                    <p key={index}>{para.trim()}</p>
+                  ))}
+                </div>
               </section>
 
               {hotel.amenities.length > 0 && (

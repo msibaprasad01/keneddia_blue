@@ -1,25 +1,19 @@
 import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils"; // Assuming utils exists, otherwise I'll stick to class string management or standard template literals if cn not found. I'll check if lib/utils exists. Standard shadcn structure usually has it. 
-
-// Fallback to simple class join if cn is not guaranteed, but I saw 'ui' folder so likely shadcn.
-// I'll check existence of lib/utils in a moment. For now I will write without it to be safe or use a local helper.
-
-function classNames(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
+import { cn } from "@/lib/utils";
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
-  alt: string;
+  alt?: string;
   className?: string;
+  wrapperClassName?: string;
   priority?: boolean;
 }
 
 export const OptimizedImage = ({
   src,
-  alt,
+  alt = "",
   className,
-  priority = false, // Default to lazy
+  wrapperClassName,
+  priority = false,
   ...props
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -33,26 +27,23 @@ export const OptimizedImage = ({
   }, [src, priority]);
 
   return (
-    <div className={classNames("relative overflow-hidden bg-gray-200", className)}>
-      {/* SKELETON / BLUR PLACEHOLDER */}
+    <div className={`absolute inset-0 bg-gray-200 ${wrapperClassName || ""}`}>
+      {/* Skeleton */}
       <div
-        className={classNames(
-          "absolute inset-0 bg-gray-300 animate-pulse transition-opacity duration-700",
+        className={`absolute inset-0 bg-gray-300 animate-pulse transition-opacity duration-700 ${
           isLoaded ? "opacity-0" : "opacity-100"
-        )}
+        }`}
       />
-
-      {/* ACTUAL IMAGE */}
+      {/* Image */}
       <img
         src={src}
         alt={alt}
         loading={priority ? "eager" : "lazy"}
         decoding={priority ? "sync" : "async"}
         onLoad={() => setIsLoaded(true)}
-        className={classNames(
-          "w-full h-full object-cover transition-opacity duration-700",
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
           isLoaded ? "opacity-100" : "opacity-0"
-        )}
+        } ${className || ""}`}
         {...props}
       />
     </div>

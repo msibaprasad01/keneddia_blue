@@ -8,7 +8,8 @@ import { ThemeToggle } from "./ThemeToggle";
 
 // Business Dropdown Items
 const BUSINESS_ITEMS = [
-  { label: "Hotels & Resorts", href: "/hotels" },
+  // { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },
+  { label: "Hotels & Resorts", href: "/hotels", external: true },
   { label: "Restaurants", href: "/resturant/27" },
   // { label: "Cafes & Dining", href: "/cafes" },
   // { label: "Bars & Lounges", href: "/bars" },
@@ -35,9 +36,9 @@ const QUICK_BOOKING_OPTIONS = [
 // Types
 type NavItem =
   | { type: 'link'; label: string; href: string; key: string }
-  | { type: 'dropdown'; label: string; key: string; items: { label: string; href: string }[] };
+  | { type: 'dropdown'; label: string; key: string; items: { label: string; href: string; external?: boolean }[] };
 
-// Main Navigation Items - Updated to use hash links for home sections
+// Main Navigation Items
 const NAV_ITEMS: NavItem[] = [
   {
     type: 'dropdown',
@@ -49,13 +50,13 @@ const NAV_ITEMS: NavItem[] = [
     type: 'link',
     label: 'EVENTS',
     key: 'events',
-    href: '#events' // Scroll to #events section
+    href: '#events'
   },
   {
     type: 'link',
     label: 'REVIEWS',
     key: 'story',
-    href: '#story' // Scroll to #reviews section
+    href: '#story'
   },
   // {
   //   type: 'dropdown',
@@ -67,7 +68,7 @@ const NAV_ITEMS: NavItem[] = [
     type: 'link',
     label: 'ABOUT US',
     key: 'about',
-    href: '#about' // Scroll to #about section
+    href: '#about'
   }
 ];
 
@@ -85,7 +86,6 @@ const NAVBAR_CONFIG = {
 // MAIN NAVBAR COMPONENT
 // ============================================================================
 
-// Brand Interface
 interface NavbarBrand {
   image: { src: string; alt: string };
   subImage?: { src: string; alt: string };
@@ -96,7 +96,6 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
   const brandLogo = logo || siteContent.brand.logo;
   const darkLogo = brandLogo.image;
   const lightLogo = brandLogo.subImage || brandLogo.image;
-  
 
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -115,7 +114,6 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
     setActiveDropdown(null);
   };
 
-  // Scroll & Active State Logic
   useEffect(() => {
     let ticking = false;
 
@@ -124,7 +122,6 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
         window.requestAnimationFrame(() => {
           setScrolled(window.scrollY > NAVBAR_CONFIG.scrollThreshold);
 
-          // Active Section Detection
           const currentSection = TRACKED_SECTIONS.find(sectionId => {
             const el = document.getElementById(sectionId);
             if (!el) return false;
@@ -140,10 +137,8 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
       }
     };
 
-    // Handle initial state
     onScroll();
 
-    // Handle initial hash scroll
     if (location.hash) {
       const id = location.hash.replace('#', '');
       const el = document.getElementById(id);
@@ -163,7 +158,6 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
     return () => window.removeEventListener("scroll", onScroll);
   }, [location]);
 
-  // Handle Hash Links specifically
   const handleHashLink = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
       e.preventDefault();
@@ -171,21 +165,17 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
       const targetElement = document.getElementById(targetId);
 
       if (targetElement) {
-        // If we're on the home page, just scroll
         if (location.pathname === '/') {
           const elementPosition = targetElement.getBoundingClientRect().top;
           const offsetPosition = elementPosition + window.scrollY - NAVBAR_CONFIG.navbarHeight;
-
           window.scrollTo({
             top: offsetPosition,
             behavior: NAVBAR_CONFIG.scrollBehavior
           });
         } else {
-          // If on another page, navigate to home with hash
           navigate(`/${href}`);
         }
       } else {
-        // Element not found, navigate to home with hash
         if (location.pathname !== '/') {
           navigate(`/${href}`);
         }
@@ -193,7 +183,6 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
       setMobileMenuOpen(false);
       setActiveDropdown(null);
     } else {
-      // For normal routes (not hash links), just close menu and scroll to top
       setMobileMenuOpen(false);
       setActiveDropdown(null);
       window.scrollTo(0, 0);
@@ -244,7 +233,6 @@ export default function Navbar({ navItems = NAV_ITEMS, logo }: { navItems?: NavI
 
           {/* Desktop Right Actions */}
           <div className="hidden xl:flex items-center justify-end gap-2 2xl:gap-3 w-auto">
-            {/* Quick Action Selector */}
             <div className="relative group">
               <button className="flex items-center gap-1.5 px-3 2xl:px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-xs 2xl:text-sm font-medium rounded-full hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer whitespace-nowrap">
                 <span>Quick Book</span>
@@ -396,7 +384,7 @@ function ActiveIndicator() {
 
 // Dropdown Menu Component
 interface DropdownMenuProps {
-  items: { label: string; href: string }[];
+  items: { label: string; href: string; external?: boolean }[];
   handleHashLink: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
 }
 
@@ -410,17 +398,28 @@ function DropdownMenu({ items, handleHashLink }: DropdownMenuProps) {
       className="absolute top-full mt-2 bg-card border border-border/50 shadow-xl rounded-lg overflow-hidden right-0 w-64"
     >
       <div className="py-2">
-        {items.map((subItem, idx) => (
-          <div key={idx}>
+        {items.map((subItem, idx) =>
+          subItem.external ? (
+            <a
+              key={idx}
+              href={subItem.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+            >
+              {subItem.label}
+            </a>
+          ) : (
             <Link
+              key={idx}
               to={subItem.href}
               onClick={(e) => handleHashLink(e, subItem.href)}
               className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
             >
               {subItem.label}
             </Link>
-          </div>
-        ))}
+          )
+        )}
       </div>
     </motion.div>
   );
@@ -500,7 +499,11 @@ function MobileMenu({ mobileMenuOpen, mobileExpandedMenu, setMobileExpandedMenu,
             )}
 
             <div className="px-4 pt-4">
-              <Link to="/login" onClick={() => handleHashLink({ preventDefault: () => { } } as any, '/login')} className="flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all cursor-pointer">
+              <Link
+                to="/login"
+                onClick={(e) => handleHashLink(e, '/login')}
+                className="flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all cursor-pointer"
+              >
                 <LogIn className="w-4 h-4" />
                 LOGIN
               </Link>
@@ -549,16 +552,28 @@ function MobileDropdown({ item, mobileExpandedMenu, setMobileExpandedMenu, handl
             transition={{ duration: 0.2 }}
             className="bg-accent/5 overflow-hidden"
           >
-            {item.items.map((subItem, idx) => (
-              <Link
-                key={idx}
-                to={subItem.href}
-                onClick={(e) => handleHashLink(e, subItem.href)}
-                className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer"
-              >
-                {subItem.label}
-              </Link>
-            ))}
+            {item.items.map((subItem, idx) =>
+              subItem.external ? (
+                <a
+                  key={idx}
+                  href={subItem.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer"
+                >
+                  {subItem.label}
+                </a>
+              ) : (
+                <Link
+                  key={idx}
+                  to={subItem.href}
+                  onClick={(e) => handleHashLink(e, subItem.href)}
+                  className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer"
+                >
+                  {subItem.label}
+                </Link>
+              )
+            )}
           </motion.div>
         )}
       </AnimatePresence>

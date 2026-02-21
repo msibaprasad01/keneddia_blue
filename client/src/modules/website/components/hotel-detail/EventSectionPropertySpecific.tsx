@@ -1,14 +1,15 @@
-import { useState, useEffect, useMemo } from "react";
-import { format, parseISO, isFuture } from "date-fns";
+import { useState, useEffect, useRef } from "react";
+import { format, parseISO, isBefore, startOfToday } from "date-fns";
 import {
-  Calendar,
-  Clock,
+  MapPin,
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  Image as ImageIcon,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import { getEventsUpdated } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 
@@ -45,6 +46,167 @@ interface EventSectionPropertySpecificProps {
   locationName?: string;
 }
 
+/* ================= EVENT CARD — matches EventsSection frame exactly ================= */
+function EventCard({ event, index }: { event: Event; index: number }) {
+  const [isBanner, setIsBanner] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const isVideo =
+    event.image?.type === "VIDEO" || event.image?.url?.includes(".mp4");
+
+  const analyzeMediaSize = (w: number, h: number) => {
+    if (w / h <= 0.85) setIsBanner(true);
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted((prev) => !prev);
+    }
+  };
+
+  const day = new Date(event.eventDate).getDate();
+  const month = new Date(event.eventDate)
+    .toLocaleDateString("en-US", { month: "short" })
+    .toUpperCase();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.08 }}
+      className="group h-[440px] bg-card border rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl"
+    >
+      {/* Media */}
+      <div
+        className={`relative overflow-hidden transition-all duration-500 ${
+          isBanner ? "h-full" : "h-[220px]"
+        }`}
+      >
+        {event.image?.url ? (
+          isVideo ? (
+            <>
+              <video
+                ref={videoRef}
+                src={event.image.url}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                autoPlay
+                loop
+                muted
+                playsInline
+                onLoadedMetadata={(e) =>
+                  analyzeMediaSize(
+                    e.currentTarget.videoWidth,
+                    e.currentTarget.videoHeight,
+                  )
+                }
+              />
+              <button
+                onClick={toggleMute}
+                className="absolute bottom-3 right-3 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 transition-colors backdrop-blur-sm"
+                aria-label={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+              </button>
+            </>
+          ) : (
+            <img
+              src={event.image.url}
+              alt={event.image.alt || event.title}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              onLoad={(e) =>
+                analyzeMediaSize(
+                  e.currentTarget.naturalWidth,
+                  e.currentTarget.naturalHeight,
+                )
+              }
+            />
+          )
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted">
+            <ImageIcon className="w-10 h-10 text-muted-foreground/20" />
+          </div>
+        )}
+
+        {/* Date Badge */}
+        <div className="absolute top-4 left-4 z-20 flex flex-col items-center bg-black/70 backdrop-blur-md text-white px-3 py-1 rounded-lg border border-white/10">
+          <span className="text-lg font-black leading-none">{day}</span>
+          <span className="text-[9px] font-bold tracking-tighter">{month}</span>
+        </div>
+
+        {/* Location Badge */}
+        <div className="absolute top-4 right-4 z-20 bg-primary text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1">
+          <MapPin size={10} /> {event.locationName}
+        </div>
+
+        {/* Banner Hover Overlay */}
+        {isBanner && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+            <h3 className="text-white font-serif font-bold text-xl mb-2 drop-shadow-md">
+              {event.title}
+            </h3>
+            <p className="text-white/80 text-xs mb-6 line-clamp-2 italic drop-shadow-sm">
+              {event.description}
+            </p>
+            {event.ctaText?.trim() && (
+              <a
+                href={event.ctaLink || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
+              >
+                {event.ctaText} <ArrowRight size={14} />
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Standard Mode Content */}
+      {!isBanner && (
+        <div className="p-5 flex flex-col flex-1 bg-card">
+          <h3 className="text-base font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
+            {event.title}
+          </h3>
+          <div className="flex items-center gap-1.5 text-muted-foreground mt-2 mb-2">
+            <MapPin size={11} className="text-primary shrink-0" />
+            <span className="text-[11px] font-medium italic uppercase truncate">
+              {event.locationName}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed mb-3">
+            {event.description}
+          </p>
+          <div className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wide mb-3">
+            {format(parseISO(event.eventDate), "EEE, dd MMM yyyy")}
+          </div>
+          {event.ctaText?.trim() && (
+            <div className="mt-auto pt-3 border-t border-dashed border-border">
+              <a
+                href={event.ctaLink || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-primary text-white py-2.5 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform hover:opacity-90"
+              >
+                {event.ctaText} <ArrowRight size={13} />
+              </a>
+            </div>
+          )}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+/* ================= MAIN ================= */
 export default function EventSectionPropertySpecific({
   locationId,
   locationName,
@@ -67,44 +229,21 @@ export default function EventSectionPropertySpecific({
           ? response
           : [];
 
-      console.log(
-        `--- Debug: Filtering Events for Location ID: ${locationId} (${locationName || "Unknown"}) ---`,
-      );
-
-      const debugInfo = allEvents.map((event: Event) => ({
-        id: event.id,
-        title: event.title,
-        eventLocationId: event.locationId,
-        propLocationId: locationId,
-        isMatch: Number(event.locationId) === Number(locationId),
-        isActive: event.active,
-        date: event.eventDate,
-        isFuture: isFuture(parseISO(event.eventDate)),
-      }));
-
-      // View this in your browser console to see exactly why events are appearing or not
-      console.table(debugInfo);
-
-      // Filter events by locationId, active status, and upcoming dates
       const filteredEvents = allEvents.filter((event: Event) => {
         const isMatchingLocation =
           Number(event.locationId) === Number(locationId);
         const isActive = event.active === true;
-        const isUpcoming = isFuture(parseISO(event.eventDate));
-
+        if (!event.eventDate) return false;
+        const isUpcoming = !isBefore(parseISO(event.eventDate), startOfToday());
         return isMatchingLocation && isActive && isUpcoming;
       });
 
-      console.log(`Found ${filteredEvents.length} matching events.`);
-
-      // Sort by event date (nearest first)
-      const sortedEvents = filteredEvents.sort((a: Event, b: Event) => {
-        return (
-          new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
-        );
-      });
-
-      setEvents(sortedEvents);
+      setEvents(
+        filteredEvents.sort(
+          (a: Event, b: Event) =>
+            new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime(),
+        ),
+      );
     } catch (error) {
       console.error("Error fetching events:", error);
       toast.error("Failed to load events");
@@ -113,40 +252,18 @@ export default function EventSectionPropertySpecific({
     }
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = () =>
     setCurrentIndex((prev) =>
       prev === 0 ? Math.max(0, events.length - 2) : prev - 1,
     );
-  };
 
-  const handleNext = () => {
+  const handleNext = () =>
     setCurrentIndex((prev) => (prev >= events.length - 2 ? 0 : prev + 1));
-  };
-
-  const getStatusBadge = (status: string) => {
-    const badges = {
-      ACTIVE: { text: "OPEN", color: "bg-green-500" },
-      COMING_SOON: { text: "COMING SOON", color: "bg-blue-500" },
-      SOLD_OUT: { text: "SOLD OUT", color: "bg-red-500" },
-    };
-    return badges[status as keyof typeof badges] || badges.ACTIVE;
-  };
-
-  const getEventCategory = (typeName: string) => {
-    const categories: { [key: string]: string } = {
-      Hotel: "NETWORKING",
-      Cafe: "SOCIAL",
-      Restaurant: "DINING",
-      Resort: "LEISURE",
-      Bar: "NIGHTLIFE",
-    };
-    return categories[typeName] || "EVENT";
-  };
 
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -157,152 +274,77 @@ export default function EventSectionPropertySpecific({
         <p className="text-muted-foreground italic mb-2">
           No upcoming events at this location
         </p>
-        <p className="text-xs text-muted-foreground/60">
-          {locationName ? `Location: ${locationName}` : ""}
-        </p>
+        {locationName && (
+          <p className="text-xs text-muted-foreground/60">
+            Location: {locationName}
+          </p>
+        )}
       </div>
     );
   }
 
+  /* ── Single event ── */
+  if (events.length === 1) {
+    return (
+      <div className="max-w-sm">
+        <EventCard event={events[0]} index={0} />
+      </div>
+    );
+  }
+
+  /* ── Multiple events carousel ── */
   return (
     <div className="relative">
-      {/* Carousel Container */}
-      <div className="relative overflow-hidden">
+      <div className="overflow-hidden">
         <div
-          className="flex transition-transform duration-500 ease-out gap-6"
-          style={{
-            transform: `translateX(-${currentIndex * (100 / 2)}%)`,
-          }}
+          className="flex transition-transform duration-500 ease-out gap-5"
+          style={{ transform: `translateX(-${currentIndex * (100 / 2)}%)` }}
         >
-          {events.map((event) => (
+          {events.map((event, index) => (
             <div
               key={event.id}
-              className="min-w-[calc(50%-12px)] flex-shrink-0"
+              className="min-w-[calc(50%-10px)] flex-shrink-0"
             >
-              <div className="bg-card border border-border rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group">
-                {/* Event Image */}
-                <div className="relative h-56 overflow-hidden">
-                  {event.image.type === "VIDEO" ? (
-                    <video
-                      src={event.image.url}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      muted
-                      loop
-                      autoPlay
-                      playsInline
-                    />
-                  ) : (
-                    <OptimizedImage
-                      src={event.image.url}
-                      alt={event.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  )}
-
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-red-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded">
-                      {getEventCategory(event.typeName)}
-                    </span>
-                  </div>
-
-                  {event.status !== "ACTIVE" && (
-                    <div className="absolute top-4 right-4">
-                      <span
-                        className={`${getStatusBadge(event.status).color} text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded`}
-                      >
-                        {getStatusBadge(event.status).text}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                    <div className="flex items-center gap-4 text-white text-sm">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        <span className="font-medium">
-                          {format(parseISO(event.eventDate), "EEE, dd MMM")}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <span className="font-medium">7:00 PM</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-5">
-                  <h3 className="text-xl font-serif font-bold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                    {event.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                    {event.description}
-                  </p>
-
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                    <span>{event.locationName}</span>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    className="w-full group/btn hover:bg-primary hover:text-white transition-all"
-                    onClick={() => {
-                      if (event.ctaLink) {
-                        window.open(event.ctaLink, "_blank");
-                      } else {
-                        toast.success("Event details coming soon!");
-                      }
-                    }}
-                  >
-                    <span className="flex items-center justify-center gap-2 font-semibold text-sm uppercase tracking-wider">
-                      {event.ctaText || "View Details"}
-                      <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                    </span>
-                  </Button>
-                </div>
-              </div>
+              <EventCard event={event} index={index} />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Navigation Arrows */}
+      {/* Nav arrows */}
       {events.length > 2 && (
         <>
           <button
             onClick={handlePrevious}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white border border-border rounded-full p-2 shadow-lg hover:bg-primary hover:text-white transition-all z-10 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={currentIndex === 0}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white border border-border rounded-full p-2 shadow-lg hover:bg-primary hover:text-white transition-all z-10 disabled:opacity-40"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={handleNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white border border-border rounded-full p-2 shadow-lg hover:bg-primary hover:text-white transition-all z-10 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={currentIndex >= events.length - 2}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white border border-border rounded-full p-2 shadow-lg hover:bg-primary hover:text-white transition-all z-10 disabled:opacity-40"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
         </>
       )}
 
-      {/* Pagination Dots */}
+      {/* Dots */}
       {events.length > 2 && (
-        <div className="flex justify-center gap-2 mt-6">
-          {Array.from({ length: Math.ceil(events.length / 2) }).map(
-            (_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  Math.floor(currentIndex / 2) === idx
-                    ? "bg-primary w-6"
-                    : "bg-border hover:bg-muted-foreground"
-                }`}
-              />
-            ),
-          )}
+        <div className="flex justify-center gap-2 mt-5">
+          {Array.from({ length: Math.ceil(events.length / 2) }).map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`h-2 rounded-full transition-all ${
+                Math.floor(currentIndex / 2) === idx
+                  ? "bg-primary w-6"
+                  : "bg-border hover:bg-muted-foreground w-2"
+              }`}
+            />
+          ))}
         </div>
       )}
     </div>
