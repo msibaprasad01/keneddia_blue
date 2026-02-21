@@ -31,6 +31,7 @@ import ResturantCategoryPageTemplate from "@/modules/website/pages/restaurant/Re
 
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
+  // <Route key="home" path="/" element={<Hotels />} />,
   <Route key="hotels" path="/hotels" element={<Hotels />} />,
   // <Route key="hotel-detail" path="/hotels/:city/:propertyId" element={<HotelDetail />} />,
   <Route key="hotel-detail" path="/hotels/:propertyId" element={<HotelDetail />} />,
