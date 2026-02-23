@@ -62,6 +62,7 @@ const mapApiToHotelUI = (item: any) => {
     location: listing?.fullAddress || parent?.address || "N/A",
     city: parent?.locationName || "Unknown",
     type: listing?.propertyType || parent?.propertyTypes?.[0] || "Hotel",
+    bookingEngineUrl: parent?.bookingEngineUrl || null,
 
     image: {
       src: listing?.media?.[0]?.url || listing?.media?.[0] || "",
@@ -325,25 +326,31 @@ export default function HotelCarouselSection() {
   }, [viewMode, isPaused, filteredHotels.length]);
 
   const handleBookNow = (hotel: any) => {
-    // Use current date for check-in and tomorrow for check-out by default
+    if (!hotel.bookingEngineUrl) {
+      console.warn("No booking engine URL available for this property.");
+      return;
+    }
+
+    // If URL already contains checkin/checkout — use as-is
+    if (hotel.bookingEngineUrl.includes("checkin")) {
+      window.open(hotel.bookingEngineUrl, "_blank");
+      return;
+    }
+
+    // Otherwise append dynamic dates
     const checkInDate = new Date();
     const checkOutDate = new Date();
     checkOutDate.setDate(checkInDate.getDate() + 1);
 
-    const token = "ODQ2Mg==";
-    const params = new URLSearchParams({
-      token,
-      checkin: checkInDate.toISOString().split("T")[0],
-      checkout: checkOutDate.toISOString().split("T")[0],
-      adults: "2",
-      children: "0",
-      rooms: "1",
-      // You can optionally pass propertyId if the engine supports it
-      propertyId: String(hotel.propertyId),
-    });
+    const url = new URL(hotel.bookingEngineUrl);
 
-    const bookingUrl = `https://asiatech.in/booking_engine/index3?${params.toString()}`;
-    window.open(bookingUrl, "_blank");
+    url.searchParams.set("checkin", checkInDate.toISOString().split("T")[0]);
+    url.searchParams.set("checkout", checkOutDate.toISOString().split("T")[0]);
+    url.searchParams.set("adults", "2");
+    url.searchParams.set("children", "0");
+    url.searchParams.set("rooms", "1");
+
+    window.open(url.toString(), "_blank");
   };
   const goToHotelDetails = (hotel: any) => {
     navigate(`/hotels/${hotel.propertyId}`);

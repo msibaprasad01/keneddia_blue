@@ -5,8 +5,6 @@ import {
   Eye, EyeOff, IndianRupee,
 } from "lucide-react";
 
-// ── Static seed data (replace with API calls) ─────────────────────────────────
-
 const INITIAL_HEADER = {
   headlinePart1: "Buffet",
   headlinePart2: "Selection",

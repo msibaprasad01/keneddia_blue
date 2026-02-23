@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { addDays } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { showSuccess,showWarning,showError } from "@/lib/toasters/toastUtils";
 import {
   MapPin,
   Star,
@@ -444,23 +445,44 @@ export default function HotelDetail() {
     setSelectedRoomId(null);
   };
 
-  const DEFAULT_BOOKING_URL =
-    "https://asiatech.in/booking_engine/index3?token=ODQ2Mg==";
-
   const handleBookNow = () => {
+    if (!hotel?.bookingEngineUrl) {
+      showWarning("Online booking is not available for this property yet.");
+      return;
+    }
+
     if (!searchData.checkIn || !searchData.checkOut) {
       toast.error("Please select dates");
       return;
     }
 
-    const baseUrl = hotel?.bookingEngineUrl || DEFAULT_BOOKING_URL;
+    try {
+      const baseUrl = hotel.bookingEngineUrl;
 
-    const finalUrl = `${baseUrl}${
-      baseUrl.includes("?") ? "&" : "?"
-    }checkin=${searchData.checkIn.toISOString().split("T")[0]}
-  &checkout=${searchData.checkOut.toISOString().split("T")[0]}`;
+      if (baseUrl.includes("checkin")) {
+        window.open(baseUrl, "_blank");
+        return;
+      }
 
-    window.open(finalUrl, "_blank");
+      const url = new URL(baseUrl);
+
+      url.searchParams.set(
+        "checkin",
+        searchData.checkIn.toISOString().split("T")[0],
+      );
+      url.searchParams.set(
+        "checkout",
+        searchData.checkOut.toISOString().split("T")[0],
+      );
+      url.searchParams.set("adults", String(searchData.adults));
+      url.searchParams.set("children", String(searchData.children));
+      url.searchParams.set("rooms", String(searchData.rooms));
+
+      window.open(url.toString(), "_blank");
+    } catch (error) {
+      console.error("Booking URL error:", error);
+      toast.error("Booking link is not configured correctly.");
+    }
   };
 
   const topGridImages = useMemo(() => {
@@ -494,6 +516,8 @@ export default function HotelDetail() {
         </div>
       </div>
     );
+  console.log("Selected Room:", selectedRoomId);
+  console.log("Booking URL:", hotel?.bookingEngineUrl);
 
   return (
     <>
