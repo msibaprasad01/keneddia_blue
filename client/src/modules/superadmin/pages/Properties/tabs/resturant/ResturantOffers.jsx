@@ -6,6 +6,10 @@ import {
 import CreateOfferModal from "@/modules/superadmin/modals/CreateOfferModal";
 import { getDailyOffers, updateDailyOfferById } from "@/Api/Api";
 import { showSuccess, showError } from "@/lib/toasters/toastUtils";
+import {
+  createOfferHeader, getOfferHeaderById,
+  updateOfferHeader, toggleOfferHeaderActive,
+} from "@/Api/RestaurantApi";
 
 // ── Shared input style ────────────────────────────────────────────────────────
 const inp =
@@ -42,29 +46,101 @@ const buildDefaultTypeFilter = (propertyData) => {
   return [...new Set([...types.map(normalize)])];
 };
 
-// ── Initial header state ──────────────────────────────────────────────────────
-const INITIAL_HEADER = {
-  headlinePart1: "Today's",
-  headlinePart2: "Deals",
-  description: "Claim your rewards on your favorite culinary treats.",
-};
+// ── localStorage key for persisting header ID per property ───────────────────
+const headerIdKey = (propertyId) => `offer_header_id_${propertyId}`;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HEADER EDITOR
 // ─────────────────────────────────────────────────────────────────────────────
 
-function HeaderEditor({ header, onSave }) {
-  const [form, setForm] = useState(header);
-  const [saving, setSaving] = useState(false);
+const EMPTY_HEADER = {
+  id: null,
+  headLine1: "",
+  headLine2: "",
+  description: "",
+  isActive: true,
+};
+
+function HeaderEditor({ propertyId, onSaved }) {
+  const [form, setForm]       = useState(EMPTY_HEADER);
+  const [saving, setSaving]   = useState(false);
+  const [loading, setLoading] = useState(true);
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  // Load existing header using stored ID
+  useEffect(() => {
+    (async () => {
+      try {
+        const storedId = localStorage.getItem(headerIdKey(propertyId));
+        if (storedId) {
+          const res      = await getOfferHeaderById(storedId);
+          const existing = res.data?.data ?? res.data;
+          if (existing) {
+            setForm({
+              id:          existing.id ?? storedId,
+              headLine1:   existing.headLine1 ?? "",
+              headLine2:   existing.headLine2 ?? "",
+              description: existing.description ?? "",
+              isActive:    existing.isActive ?? true,
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load offer header", e);
+        // If fetch fails (e.g. stale ID), clear stored ID so we create fresh
+        localStorage.removeItem(headerIdKey(propertyId));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [propertyId]);
 
   const handleSave = async () => {
     setSaving(true);
-    // TODO: await updateOffersHeader(form)
-    await new Promise(r => setTimeout(r, 500));
-    onSave(form);
-    setSaving(false);
+    try {
+      const payload = {
+        headLine1:   form.headLine1,
+        headLine2:   form.headLine2,
+        description: form.description,
+        isActive:    form.isActive,
+        propertyId,
+      };
+
+      if (form.id) {
+        await updateOfferHeader(form.id, payload);
+      } else {
+        const res   = await createOfferHeader(payload);
+        const newId = res.data?.data?.id ?? res.data?.id;
+        if (newId) {
+          localStorage.setItem(headerIdKey(propertyId), newId);
+          setForm(p => ({ ...p, id: newId }));
+        }
+      }
+      showSuccess("Header saved successfully");
+      onSaved?.();
+    } catch (e) {
+      console.error("Failed to save offer header", e);
+      showError("Failed to save header. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleToggleActive = async () => {
+    if (!form.id) return;
+    try {
+      await toggleOfferHeaderActive(form.id, { isActive: !form.isActive });
+      set("isActive", !form.isActive);
+      showSuccess(`Header ${!form.isActive ? "activated" : "deactivated"}`);
+    } catch (e) {
+      console.error("Failed to toggle header status", e);
+      showError("Failed to toggle header status");
+    }
+  };
+
+  if (loading) {
+    return <div className="py-10 text-center text-sm text-gray-400">Loading header…</div>;
+  }
 
   return (
     <div className="space-y-4">
@@ -75,13 +151,13 @@ function HeaderEditor({ header, onSave }) {
         <div className="p-4 space-y-3">
           <div className="flex gap-3">
             <Field label='Headline Part 1 (normal, e.g. "Today&apos;s")' half>
-              <input className={inp} value={form.headlinePart1}
-                onChange={e => set("headlinePart1", e.target.value)}
+              <input className={inp} value={form.headLine1}
+                onChange={e => set("headLine1", e.target.value)}
                 placeholder="Today's" />
             </Field>
             <Field label='Headline Part 2 (italic accent, e.g. "Deals")' half>
-              <input className={inp} value={form.headlinePart2}
-                onChange={e => set("headlinePart2", e.target.value)}
+              <input className={inp} value={form.headLine2}
+                onChange={e => set("headLine2", e.target.value)}
                 placeholder="Deals" />
             </Field>
           </div>
@@ -92,12 +168,22 @@ function HeaderEditor({ header, onSave }) {
               placeholder="Short description shown below the heading..." />
           </Field>
 
+          {/* Active toggle */}
+          <label className="flex items-center gap-2 cursor-pointer w-fit">
+            <div
+              onClick={form.id ? handleToggleActive : () => set("isActive", !form.isActive)}
+              className={`relative w-9 h-5 rounded-full transition-colors ${form.isActive ? "bg-blue-500" : "bg-gray-300"}`}>
+              <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isActive ? "translate-x-4" : "translate-x-0.5"}`} />
+            </div>
+            <span className="text-xs font-semibold text-gray-600">Active</span>
+          </label>
+
           {/* Live preview */}
           <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Preview</p>
             <p className="text-xl font-serif text-gray-900">
-              {form.headlinePart1 || "Today's"}{" "}
-              <em className="text-rose-600 not-italic font-serif">{form.headlinePart2 || "Deals"}</em>
+              {form.headLine1 || "Today's"}{" "}
+              <em className="text-rose-600 not-italic font-serif">{form.headLine2 || "Deals"}</em>
             </p>
             <p className="text-xs text-gray-500 mt-1">{form.description}</p>
           </div>
@@ -107,7 +193,7 @@ function HeaderEditor({ header, onSave }) {
       <div className="flex justify-end">
         <button onClick={handleSave} disabled={saving}
           className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-bold bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-60">
-          {saving ? "Saving..." : <><Save size={14} /> Save Header</>}
+          {saving ? "Saving…" : <><Save size={14} /> Save Header</>}
         </button>
       </div>
     </div>
@@ -119,6 +205,8 @@ function HeaderEditor({ header, onSave }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ResturantOffers({ propertyData, refreshData }) {
+  const propertyId = propertyData?.id ?? propertyData?.propertyId ?? 1;
+
   const [allOffers, setAllOffers]           = useState([]);
   const [loading, setLoading]               = useState(false);
   const [modalOpen, setModalOpen]           = useState(false);
@@ -126,13 +214,12 @@ function ResturantOffers({ propertyData, refreshData }) {
   const [statusFilter, setStatusFilter]     = useState("all");
   const [showTypePanel, setShowTypePanel]   = useState(false);
   const [availableTypes, setAvailableTypes] = useState([]);
-  const [header, setHeader]                 = useState(INITIAL_HEADER);
-  const [activePanel, setActivePanel]       = useState("offers"); // "header" | "offers"
+  const [activePanel, setActivePanel]       = useState("offers");
 
   const defaultTypeFilter = buildDefaultTypeFilter(propertyData);
   const [activeTypeFilters, setActiveTypeFilters] = useState(defaultTypeFilter);
 
-  // ── Fetch ─────────────────────────────────────────────────────────────────
+  // ── Fetch offers ──────────────────────────────────────────────────────────
   const fetchOffers = useCallback(async () => {
     setLoading(true);
     try {
@@ -259,7 +346,7 @@ function ResturantOffers({ propertyData, refreshData }) {
 
       {/* ── HEADER PANEL ──────────────────────────────────────────────────── */}
       {activePanel === "header" && (
-        <HeaderEditor header={header} onSave={setHeader} />
+        <HeaderEditor propertyId={propertyId} onSaved={refreshData} />
       )}
 
       {/* ── OFFERS PANEL ──────────────────────────────────────────────────── */}
@@ -465,7 +552,7 @@ function ResturantOffers({ propertyData, refreshData }) {
                         </span>
                       </td>
 
-                      {/* Actions — always visible */}
+                      {/* Actions */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <button onClick={() => openEdit(offer)}
