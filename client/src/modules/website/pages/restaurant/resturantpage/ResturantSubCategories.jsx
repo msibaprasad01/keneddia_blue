@@ -1,9 +1,13 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles, ChevronRight, Beer, Quote } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  getAllVerticalCards,
+  getAllVerticalSectionsHeader,
+} from "@/Api/RestaurantApi";
 
-const EXPERIENCES = [
+const STATIC_EXPERIENCES = [
   {
     id: "italian",
     title: "Italian",
@@ -50,9 +54,46 @@ const EXPERIENCES = [
   },
 ];
 
+const CARD_BG_COLORS = [
+  {
+    bgColor: "bg-orange-50 dark:bg-orange-950/10",
+    hoverBg: "hover:bg-orange-50 dark:hover:bg-orange-900/20",
+  },
+  {
+    bgColor: "bg-blue-50 dark:bg-blue-950/10",
+    hoverBg: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
+  },
+  {
+    bgColor: "bg-red-50 dark:bg-red-950/10",
+    hoverBg: "hover:bg-red-50 dark:hover:bg-red-900/20",
+  },
+  {
+    bgColor: "bg-emerald-50 dark:bg-emerald-950/10",
+    hoverBg: "hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
+  },
+];
+
+const STATIC_HEADER = {
+  badgeLabel: "Verticals",
+  headlineLine1: "One Location.",
+  headlineLine2: "Diverse Verticals.",
+  description:
+    "Discover a curated collection of culinary spaces designed for every mood and occasion. From intimate fine dining to casual gourmet treats.",
+  policyType: "Dining Policy",
+  policyName: "BYOB Support",
+  policyDescription:
+    "Bring your favorite spirits; we provide the perfect ambiance and premium glassware.",
+  policyMedia: {
+    url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=200&h=200&auto=format&fit=crop",
+  },
+};
+
 export default function ResturantSubCategories({ propertyId }) {
   const navigate = useNavigate();
   const containerRef = useRef(null);
+
+  const [header, setHeader] = useState(null);
+  const [experiences, setExperiences] = useState(null);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -65,6 +106,59 @@ export default function ResturantSubCategories({ propertyId }) {
     [0, 0.2, 0.8, 1],
     [0, 0.04, 0.04, 0],
   );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch header
+        const headerRes = await getAllVerticalSectionsHeader();
+        const headers = headerRes?.data || headerRes || [];
+        const matchedHeader = headers.find(
+          (h) => h.propertyId === propertyId && h.isActive,
+        );
+        if (matchedHeader) setHeader(matchedHeader);
+      } catch (err) {
+        console.error("Failed to fetch vertical section header:", err);
+      }
+
+      try {
+        // Fetch cards
+        const cardsRes = await getAllVerticalCards();
+        const cards = cardsRes?.data || cardsRes || [];
+        const filtered = cards
+          .filter((c) => c.propertyId === propertyId && c.isActive)
+          .sort((a, b) => a.displayOrder - b.displayOrder);
+
+        if (filtered.length > 0) {
+          const mapped = filtered.map((card, index) => ({
+            id: String(card.id),
+            title: card.verticalName || card.itemName,
+            description: card.description || "",
+            image:
+              card.media?.url ||
+              "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
+            link: card.link || "#",
+            ctaButtonText: card.showOrderButton
+              ? card.extraText || "Order"
+              : null,
+            bgColor:
+              card.cardBackgroundColor ||
+              CARD_BG_COLORS[index % CARD_BG_COLORS.length].bgColor,
+            hoverBg: CARD_BG_COLORS[index % CARD_BG_COLORS.length].hoverBg,
+            isHexColor: !!card.cardBackgroundColor,
+          }));
+          setExperiences(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch vertical cards:", err);
+      }
+    };
+
+    if (propertyId) fetchData();
+  }, [propertyId]);
+
+  const activeHeader = header || STATIC_HEADER;
+  const activeExperiences = experiences || STATIC_EXPERIENCES;
 
   return (
     <section
@@ -94,19 +188,19 @@ export default function ResturantSubCategories({ propertyId }) {
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-4 h-4 text-primary animate-pulse" />
               <span className="text-primary text-[11px] font-bold uppercase tracking-[0.4em]">
-                Verticals
+                {activeHeader.badgeLabel}
               </span>
             </div>
 
             <h2 className="text-4xl md:text-6xl font-serif text-zinc-900 dark:text-white tracking-tight mb-6">
-              One Location. <br />
-              <span className="text-primary italic">Diverse Verticals.</span>
+              {activeHeader.headlineLine1} <br />
+              <span className="text-primary italic">
+                {activeHeader.headlineLine2}
+              </span>
             </h2>
 
             <p className="text-zinc-500 dark:text-zinc-400 text-base md:text-lg font-light leading-relaxed">
-              Discover a curated collection of culinary spaces designed for
-              every mood and occasion. From intimate fine dining to casual
-              gourmet treats.
+              {activeHeader.description}
             </p>
           </motion.div>
 
@@ -118,9 +212,8 @@ export default function ResturantSubCategories({ propertyId }) {
             className="flex items-center gap-6 bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-[2rem] border border-primary/10 max-w-lg shadow-sm backdrop-blur-md"
           >
             <div className="relative shrink-0">
-              {/* Bottle/Drink Themed Image */}
               <img
-                src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=200&h=200&auto=format&fit=crop"
+                src={activeHeader.policyMedia?.url}
                 className="w-20 h-20 rounded-full object-cover border-4 border-white dark:border-zinc-800 shadow-md"
                 alt="BYOB Support"
               />
@@ -133,15 +226,17 @@ export default function ResturantSubCategories({ propertyId }) {
               <div className="flex items-center gap-2">
                 <Quote className="w-3 h-3 text-primary fill-primary" />
                 <span className="text-[10px] font-bold dark:text-zinc-400 uppercase tracking-widest">
-                  Dining Policy
+                  {activeHeader.policyType}
                 </span>
               </div>
               <h3 className="text-xl font-serif dark:text-white text-zinc-900">
-                BYOB <span className="italic text-primary">Support</span>
+                {activeHeader.policyName.split(" ").slice(0, -1).join(" ")}{" "}
+                <span className="italic text-primary">
+                  {activeHeader.policyName.split(" ").slice(-1)}
+                </span>
               </h3>
               <p className="text-sm italic dark:text-zinc-400 text-zinc-500 leading-snug">
-                "Bring your favorite spirits; we provide the perfect ambiance
-                and premium glassware."
+                "{activeHeader.policyDescription}"
               </p>
             </div>
           </motion.div>
@@ -149,7 +244,7 @@ export default function ResturantSubCategories({ propertyId }) {
 
         {/* ── EXPERIENCE GRID ── */}
         <div className="flex flex-wrap justify-center gap-4 lg:gap-8">
-          {EXPERIENCES.map((exp, index) => (
+          {activeExperiences.map((exp, index) => (
             <motion.div
               key={exp.id}
               initial={{ opacity: 0, y: 20 }}
@@ -157,12 +252,13 @@ export default function ResturantSubCategories({ propertyId }) {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
               onClick={() => navigate(`/resturant/${propertyId}/${exp.id}`)}
+              style={exp.isHexColor ? { backgroundColor: exp.bgColor } : {}}
               className={`
-                group cursor-pointer relative flex transition-all duration-500 hover:shadow-2xl
-                ${exp.bgColor} ${exp.hoverBg}
-                w-full p-4 rounded-2xl flex-row items-center border border-zinc-100 dark:border-white/5 shadow-sm
-                lg:flex-col lg:items-center lg:text-center lg:p-10 lg:rounded-[2.5rem] lg:w-[calc(25%-1.5rem)] lg:min-h-[420px] lg:hover:border-primary/20
-              `}
+    group cursor-pointer relative flex transition-all duration-500 hover:shadow-2xl
+    ${!exp.isHexColor ? exp.bgColor : ""} ${exp.hoverBg}
+    w-full p-4 rounded-2xl flex-row items-center border border-zinc-100 dark:border-white/5 shadow-sm
+    lg:flex-col lg:items-center lg:text-center lg:p-10 lg:rounded-[2.5rem] lg:w-[calc(25%-1.5rem)] lg:min-h-[420px] lg:hover:border-primary/20
+  `}
             >
               <div className="shrink-0 overflow-hidden rounded-full border-4 border-white dark:border-zinc-800 shadow-lg z-20 transition-transform duration-500 group-hover:scale-110 w-14 h-14 lg:w-28 lg:h-28 lg:mb-8">
                 <img
@@ -189,15 +285,15 @@ export default function ResturantSubCategories({ propertyId }) {
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                     Explore Vertical
                   </span>
-                  {exp.id === "takeaway" && (
+                  {exp.ctaButtonText && (
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // 🚨 prevent parent click
-                        navigate(`#`);
+                        e.stopPropagation();
+                        navigate(exp.link || "#");
                       }}
                       className="px-3 py-2 text-[10px] font-light uppercase tracking-wider bg-primary text-white rounded-full shadow-lg hover:scale-105 transition-all"
                     >
-                      Order
+                      {exp.ctaButtonText}
                     </button>
                   )}
                 </div>

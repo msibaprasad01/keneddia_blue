@@ -22,17 +22,14 @@ import { Button } from "@/components/ui/button";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import { toast } from "react-hot-toast";
 
-import gallery1 from "@/assets/resturant_images/beverage.jpg";
-import gallery2 from "@/assets/resturant_images/drink1.jpg";
-import gallery3 from "@/assets/resturant_images/drink2.jpg";
-import gallery4 from "@/assets/resturant_images/drink3.jpg";
 import gallery5 from "@/assets/resturant_images/food1.jpg";
-
 import gallery6 from "@/assets/resturant_images/099A9549.jpg";
 import gallery7 from "@/assets/resturant_images/099A9570.jpg";
 import gallery8 from "@/assets/resturant_images/099A9580.jpg";
 import gallery9 from "@/assets/resturant_images/099A9595.jpg";
 import gallery10 from "@/assets/resturant_images/099A9691.jpg";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface PropertyMedia {
   mediaId: number | null;
@@ -53,7 +50,7 @@ interface RestaurantData {
   type: string;
   tagline: string;
   rating: number | null;
-  price: string;
+  price: string | number;
   media: PropertyMedia[];
   coordinates: { lat: number; lng: number } | null;
   image: { src: string; alt: string };
@@ -68,6 +65,31 @@ interface GalleryItem {
   media: PropertyMedia;
   isActive: boolean;
 }
+
+interface ResturantBannerProps {
+  propertyData: any | null; // raw API shape
+  galleryData: GalleryItem[];
+  loading: boolean;
+}
+
+// ── Fallback static data ──────────────────────────────────────────────────────
+
+const FALLBACK_GALLERY_MEDIA: PropertyMedia[] = [
+  gallery5,
+  gallery6,
+  gallery7,
+  gallery8,
+  gallery9,
+  gallery10,
+].map((img, index) => ({
+  mediaId: index,
+  type: "IMAGE",
+  url: img,
+  fileName: null,
+  alt: `Restaurant Gallery ${index + 1}`,
+  width: null,
+  height: null,
+}));
 
 const FALLBACK_RESTAURANT: RestaurantData = {
   id: 1,
@@ -90,13 +112,12 @@ const FALLBACK_RESTAURANT: RestaurantData = {
       height: null,
     },
   ],
-  coordinates: null, // Not using lat/lng now since we have direct map link
-  image: {
-    src: gallery5,
-    alt: "Kennedia Blu Restaurant Ghaziabad",
-  },
+  coordinates: null,
+  image: { src: gallery5, alt: "Kennedia Blu Restaurant Ghaziabad" },
   nearbyPlaces: ["300 meters from T&T Fragrance"],
 };
+
+// ── Motion variants ───────────────────────────────────────────────────────────
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -105,44 +126,80 @@ const fadeIn = {
 };
 const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
 
-function ResturantBanner() {
-  const [restaurant, setRestaurant] =
-    useState<RestaurantData>(FALLBACK_RESTAURANT);
-  const [galleryData, setGalleryData] = useState<GalleryItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-  const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [showShareReactions, setShowShareReactions] = useState(false);
-  const localGalleryMedia: PropertyMedia[] = useMemo(() => {
-    const images = [
-      // gallery1,
-      // gallery2,
-      // gallery3,
-      // gallery4,
-      gallery5,
-      gallery6,
-      gallery7,
-      gallery8,
-      gallery9,
-      gallery10,
-    ];
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
 
-    // Shuffle
-    const shuffled = [...images].sort(() => Math.random() - 0.5);
+function ResturantBanner({
+  propertyData,
+  galleryData,
+  loading,
+}: ResturantBannerProps) {
+  // ── Derive restaurant fields from propertyData, fallback to static ────────
+  const restaurant: RestaurantData = useMemo(() => {
+    if (!propertyData) return FALLBACK_RESTAURANT;
+    return {
+      id: propertyData.id ?? propertyData.propertyId ?? FALLBACK_RESTAURANT.id,
+      propertyId:
+        propertyData.propertyId ??
+        propertyData.id ??
+        FALLBACK_RESTAURANT.propertyId,
+      name:
+        propertyData.propertyName ??
+        propertyData.name ??
+        FALLBACK_RESTAURANT.name,
+      location:
+        propertyData.fullAddress ??
+        propertyData.address ??
+        propertyData.location ??
+        FALLBACK_RESTAURANT.location,
+      city:
+        propertyData.city ??
+        propertyData.locationName ??
+        FALLBACK_RESTAURANT.city,
+      type:
+        propertyData.propertyType ??
+        propertyData.propertyTypes?.[0] ??
+        FALLBACK_RESTAURANT.type,
+      tagline:
+        propertyData.tagline ??
+        propertyData.subTitle ??
+        FALLBACK_RESTAURANT.tagline,
+      rating: propertyData.rating ?? FALLBACK_RESTAURANT.rating,
+      price: propertyData.price ?? FALLBACK_RESTAURANT.price,
+      // media intentionally NOT used for gallery — kept for type completeness
+      media: propertyData.media ?? FALLBACK_RESTAURANT.media,
+      coordinates:
+        propertyData.coordinates ??
+        (propertyData.latitude && propertyData.longitude
+          ? { lat: propertyData.latitude, lng: propertyData.longitude }
+          : FALLBACK_RESTAURANT.coordinates),
+      image: {
+        src: propertyData.media?.[0]?.url ?? gallery5,
+        alt: propertyData.propertyName ?? FALLBACK_RESTAURANT.name,
+      },
+      nearbyPlaces: propertyData.nearbyLocations?.length
+        ? propertyData.nearbyLocations.map((n: any) => n.name ?? n)
+        : FALLBACK_RESTAURANT.nearbyPlaces,
+    };
+  }, [propertyData]);
 
-    return shuffled.map((img, index) => ({
-      mediaId: index,
-      type: "IMAGE",
-      url: img,
-      fileName: null,
-      alt: `Restaurant Gallery ${index + 1}`,
-      width: null,
-      height: null,
-    }));
-  }, []);
-  const localGalleryItems: GalleryItem[] = useMemo(() => {
-    return localGalleryMedia.map((media, index) => ({
+  // ── Gallery images — from galleryData API, fallback to static assets ──────
+  // Rule: NEVER use propertyData.media for the gallery grid.
+  const galleryMedia: PropertyMedia[] = useMemo(() => {
+    if (galleryData && galleryData.length > 0) {
+      return galleryData
+        .filter((g) => g.isActive && g.media?.url)
+        .map((g) => g.media);
+    }
+    return FALLBACK_GALLERY_MEDIA;
+  }, [galleryData]);
+
+  const galleryItems: GalleryItem[] = useMemo(() => {
+    if (galleryData && galleryData.length > 0) {
+      return galleryData.filter((g) => g.isActive && g.media?.url);
+    }
+    return FALLBACK_GALLERY_MEDIA.map((media, index) => ({
       id: index,
       category: "RESTAURANT",
       propertyId: restaurant.propertyId,
@@ -150,23 +207,15 @@ function ResturantBanner() {
       media,
       isActive: true,
     }));
-  }, [localGalleryMedia, restaurant.propertyId, restaurant.name]);
+  }, [galleryData, restaurant.propertyId, restaurant.name]);
+
+  // ── UI state ──────────────────────────────────────────────────────────────
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showShareReactions, setShowShareReactions] = useState(false);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-
-  const topGridImages = localGalleryMedia.length
-    ? localGalleryMedia
-    : FALLBACK_RESTAURANT.media;
-
-  // const topGridImages = useMemo(() => {
-  //   const combined = [
-  //     ...(restaurant?.media || []),
-  //     ...galleryData.map((g) => g.media),
-  //   ];
-  //   return combined.length === 0
-  //     ? FALLBACK_RESTAURANT.media
-  //     : combined.filter((m) => m && m.url);
-  // }, [restaurant?.media, galleryData]);
 
   const socialPlatforms = [
     {
@@ -207,12 +256,18 @@ function ResturantBanner() {
     setIsGalleryOpen(true);
   };
 
+  // ── Map coordinates link ──────────────────────────────────────────────────
+  const mapsLink = restaurant.coordinates
+    ? `https://www.google.com/maps?q=${restaurant.coordinates.lat},${restaurant.coordinates.lng}`
+    : "https://google.com/maps/place/kennedia+blu+restaurant+ghaziabad/data=!4m2!3m1!1s0x390cf1005bab4c6f:0xb455a48e012d76e7?sa=X&ved=1t:242&ictx=111";
+
   if (loading)
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader2 className="animate-spin w-10 h-10 text-primary" />
       </div>
     );
+
   if (!restaurant) return null;
 
   return (
@@ -228,13 +283,14 @@ function ResturantBanner() {
           name: restaurant.name,
           location: restaurant.location,
           propertyId: restaurant.propertyId,
-          media: localGalleryMedia, // 🔥 SAME IMAGES
+          media: galleryMedia,
         }}
         initialImageIndex={initialGalleryIndex}
-        galleryData={localGalleryItems} // 🔥 SAME SHUFFLED DATA
+        galleryData={galleryItems}
       />
 
       <div className="container mx-auto px-4 md:px-8 lg:px-12">
+        {/* Breadcrumb */}
         <motion.nav
           variants={fadeIn}
           className="flex items-center gap-2 text-sm text-muted-foreground mb-6"
@@ -242,19 +298,13 @@ function ResturantBanner() {
           <Link to="/" className="hover:text-primary transition-colors">
             Home
           </Link>
-          {/* <ChevronRight className="w-4 h-4" /> */}
-          {/* <Link
-            to="/resturants"
-            className="hover:text-primary transition-colors"
-          >
-            Restaurants
-          </Link> */}
           <ChevronRight className="w-4 h-4" />
           <span className="text-foreground font-semibold truncate">
             {restaurant.name}
           </span>
         </motion.nav>
 
+        {/* Title row */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
           <motion.div
             variants={staggerContainer}
@@ -271,6 +321,7 @@ function ResturantBanner() {
                 </div>
               )}
             </motion.div>
+
             <motion.h1
               variants={fadeIn}
               className="text-4xl md:text-5xl font-serif font-bold tracking-tight"
@@ -286,11 +337,14 @@ function ResturantBanner() {
                 <div className="flex items-center gap-1.5 cursor-default">
                   <MapPin className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium">
-                    {restaurant.location}, {restaurant.city}
+                    {restaurant.location}
+                    {restaurant.city && restaurant.location !== restaurant.city
+                      ? `, ${restaurant.city}`
+                      : ""}
                   </span>
                 </div>
                 <a
-                  href="https://google.com/maps/place/kennedia+blu+restaurant+ghaziabad/data=!4m2!3m1!1s0x390cf1005bab4c6f:0xb455a48e012d76e7?sa=X&ved=1t:242&ictx=111"
+                  href={mapsLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm font-bold text-destructive hover:underline flex items-center gap-1"
@@ -299,25 +353,28 @@ function ResturantBanner() {
                 </a>
               </motion.div>
 
-              <motion.div
-                variants={fadeIn}
-                className="flex flex-wrap items-center gap-4 pt-1"
-              >
-                {restaurant.nearbyPlaces?.map((place, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-1.5 text-xs text-muted-foreground/80"
+              {restaurant.nearbyPlaces &&
+                restaurant.nearbyPlaces.length > 0 && (
+                  <motion.div
+                    variants={fadeIn}
+                    className="flex flex-wrap items-center gap-4 pt-1"
                   >
-                    <div className="w-1 h-1 rounded-full bg-primary/40" />
-                    <span>{place}</span>
-                  </div>
-                ))}
-              </motion.div>
+                    {restaurant.nearbyPlaces.map((place, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground/80"
+                      >
+                        <div className="w-1 h-1 rounded-full bg-primary/40" />
+                        <span>{place}</span>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
             </div>
           </motion.div>
 
+          {/* Share + Save */}
           <div className="flex gap-3 relative">
-            {/* SHARE BUTTON WITH REFINED POPUP SPACING */}
             <div
               className="relative"
               onMouseEnter={() => setShowShareReactions(true)}
@@ -327,7 +384,7 @@ function ResturantBanner() {
                 {showShareReactions && (
                   <motion.div
                     initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                    animate={{ opacity: 1, y: -60, scale: 1 }} // Added gap as requested
+                    animate={{ opacity: 1, y: -60, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.9 }}
                     className="absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-2.5 py-2 flex gap-2.5 z-50 backdrop-blur-md"
                   >
@@ -350,7 +407,6 @@ function ResturantBanner() {
                   </motion.div>
                 )}
               </AnimatePresence>
-
               <Button
                 variant="outline"
                 className="rounded-full active:scale-95"
@@ -372,22 +428,25 @@ function ResturantBanner() {
           </div>
         </div>
 
+        {/* Photo grid — uses galleryMedia exclusively */}
         <motion.div
           variants={fadeIn}
           className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[320px] md:h-[440px] rounded-3xl overflow-hidden shadow-xl relative"
         >
+          {/* Main large image */}
           <div
             className="md:col-span-2 relative group cursor-pointer overflow-hidden"
             onClick={() => openGalleryAt(0)}
           >
             <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
             <OptimizedImage
-              src={topGridImages[0]?.url || ""}
+              src={galleryMedia[0]?.url ?? ""}
               alt={restaurant.name}
               className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
           </div>
 
+          {/* Two stacked images */}
           <div className="md:col-span-1 flex flex-col gap-3">
             {[1, 2].map((idx) => (
               <div
@@ -397,20 +456,21 @@ function ResturantBanner() {
               >
                 <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
                 <OptimizedImage
-                  src={topGridImages[idx]?.url || ""}
+                  src={galleryMedia[idx]?.url ?? ""}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
               </div>
             ))}
           </div>
 
+          {/* 4th image with "View Gallery" overlay */}
           <div
             className="md:col-span-1 relative group cursor-pointer overflow-hidden"
             onClick={() => openGalleryAt(3)}
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
             <OptimizedImage
-              src={topGridImages[3]?.url || ""}
+              src={galleryMedia[3]?.url ?? ""}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
             <div className="absolute inset-0 z-20 flex items-center justify-center">
@@ -423,8 +483,8 @@ function ResturantBanner() {
               >
                 <ImageIcon className="w-4 h-4 text-primary" />
                 <span>
-                  {topGridImages.length > 4
-                    ? `+${topGridImages.length - 4} MORE`
+                  {galleryMedia.length > 4
+                    ? `+${galleryMedia.length - 4} MORE`
                     : "VIEW GALLERY"}
                 </span>
               </button>

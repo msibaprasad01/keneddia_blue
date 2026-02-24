@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import ResturantBanner from "./resturantpage/ResturantBanner";
@@ -12,7 +12,7 @@ import ResturantGallerypage from "./resturantpage/ResturantGallerypage";
 import ReservationForm from "./components/ReservationForm";
 import { siteContent } from "@/data/siteContent";
 import { useParams } from "react-router-dom";
-
+import { GetAllPropertyDetails, getAllGalleries } from "@/Api/Api";
 /* ===============================
    RESTAURANT NAVIGATION ITEMS
 ================================= */
@@ -27,60 +27,146 @@ const RESTAURANT_NAV_ITEMS = [
 ];
 
 export default function RestaurantHomepage() {
-  const params = useParams();
-  const propertyId = params.propertyId;
+  const { propertyId } = useParams();
+  const numericPropertyId = propertyId ? Number(propertyId) : null;
 
-  /* Scroll to top on page load */
+  const [propertyData, setPropertyData] = useState(null);
+  const [galleryData, setGalleryData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Scroll to top (ONLY ONCE)
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
+  useEffect(() => {
+    if (!numericPropertyId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setPropertyData(null);
+        setGalleryData([]);
+
+        // 1️⃣ Fetch property details
+        const response = await GetAllPropertyDetails();
+        const rawData = response?.data || response;
+
+        const flattened = (Array.isArray(rawData) ? rawData : []).flatMap(
+          (item) => {
+            const parent = item.propertyResponseDTO;
+            const listings = item.propertyListingResponseDTOS || [];
+
+            return listings.length === 0
+              ? [{ parent, listing: null }]
+              : listings.map((l) => ({ parent, listing: l }));
+          },
+        );
+
+        const matched = flattened.find(
+          (m) => Number(m.parent.id) === numericPropertyId,
+        );
+
+        if (!matched) {
+          console.warn("Property not found");
+          return;
+        }
+
+        const { parent, listing } = matched;
+
+        const combinedProperty = {
+          ...parent,
+          ...listing,
+
+          // Override specific fields cleanly
+          id: parent.id,
+          propertyId: parent.id,
+          name: listing?.propertyName?.trim() || parent.propertyName,
+
+          description: listing?.mainHeading || "",
+
+          location: listing?.fullAddress || parent.address,
+
+          city: listing?.city || parent.locationName,
+
+          media:
+            listing?.media?.length > 0 ? listing.media : parent.media || [],
+
+          coordinates:
+            parent.latitude && parent.longitude
+              ? {
+                  lat: Number(parent.latitude),
+                  lng: Number(parent.longitude),
+                }
+              : null,
+        };
+
+        setPropertyData(combinedProperty);
+
+        // 2️⃣ Fetch gallery separately
+        const galleryRes = await getAllGalleries({
+          page: 0,
+          size: 100,
+        });
+
+        const allGallery = galleryRes?.data?.content || [];
+
+        const filteredGallery = allGallery.filter(
+          (g) =>
+            Number(g.propertyId) === parent.id && g.isActive && g.media?.url,
+        );
+
+        console.log("Filtered Gallery:", filteredGallery);
+
+        setGalleryData(filteredGallery);
+      } catch (err) {
+        console.error("Restaurant Fetch Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [numericPropertyId]);
+
   return (
     <div className="min-h-screen bg-background">
-      {/* ===============================
-          NAVBAR
-      =============================== */}
-      <Navbar navItems={RESTAURANT_NAV_ITEMS} logo={siteContent.brand.logo_hotel} />
+      <Navbar
+        navItems={RESTAURANT_NAV_ITEMS}
+        logo={siteContent.brand.logo_hotel}
+      />
 
-      {/* ===============================
-          MAIN CONTENT
-      =============================== */}
       <main>
-        {/* HERO SECTION */}
         <div id="home">
-          <ResturantBanner propertyId={propertyId} />
+          <ResturantBanner
+            propertyData={propertyData}
+            galleryData={galleryData}
+            loading={loading}
+          />
         </div>
 
-        {/* MENU SECTION (Categories + Signature Dishes) */}
         <div id="menu">
-          <ResturantSubCategories propertyId={propertyId} />
-          <SignatureDishesAndBuffet propertyId={propertyId} />
+          <ResturantSubCategories propertyId={numericPropertyId} />
+          <SignatureDishesAndBuffet propertyId={numericPropertyId} />
         </div>
 
-        {/* ABOUT SECTION */}
         <div id="about">
-          <AboutResturantPage propertyId={propertyId} />
+          <AboutResturantPage propertyId={numericPropertyId} />
         </div>
 
-        {/* EVENTS SECTION */}
         <div id="events">
-          <ResturantpageEvents propertyId={propertyId} />
+          <ResturantpageEvents propertyId={numericPropertyId} />
         </div>
 
-        {/* TESTIMONIALS */}
-        <Testimonials propertyId={propertyId} />
+        <Testimonials propertyId={numericPropertyId} />
 
-        {/* GALLERY SECTION */}
         <div id="gallery">
-          <ResturantGallerypage propertyId={propertyId} />
+          <ResturantGallerypage propertyId={numericPropertyId} />
         </div>
-        {/* Reservation Form */}
+
         <ReservationForm />
       </main>
 
-      {/* ===============================
-          FOOTER / CONTACT
-      =============================== */}
       <div id="contact">
         <Footer />
       </div>
