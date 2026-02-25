@@ -251,7 +251,14 @@ export default function ResturantSubCategories({ propertyId }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              onClick={() => navigate(`/resturant/${propertyId}/${exp.id}`)}
+              // onClick={() => navigate(`/resturant/${propertyId}/${exp.id}`)}
+              onClick={() =>
+                navigate(`/resturant/${propertyId}/${exp.id}`, {
+                  state: {
+                    verticalTitle: exp.title,
+                  },
+                })
+              }
               style={exp.isHexColor ? { backgroundColor: exp.bgColor } : {}}
               className={`
     group cursor-pointer relative flex transition-all duration-500 hover:shadow-2xl

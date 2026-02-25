@@ -15,41 +15,30 @@ import { Input } from "@/components/ui/input";
 import ResturantpageOffers from "./ResturantpageOffers";
 import { useNavigate } from "react-router-dom";
 import resturant_buffet1 from "@/assets/resturant_images/resturant_buffet1.jpeg";
-// --- Data ---
-// const BUFFET_DATA = [
-//   {
-//     id: "b1",
-//     name: "Royal Lunch",
-//     tag: "STUDENT SPECIAL",
-//     tagColor: "#e67e22",
-//     img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200",
-//     remark: "Show your Student ID and enjoy the unlimited buffet.",
-//     bg: "#fdf2f2",
-//   },
-//   {
-//     id: "b2",
-//     name: "Grand Dinner",
-//     tag: "WEEKEND SPECIAL",
-//     tagColor: "#2ecc71",
-//     img: "https://images.unsplash.com/photo-1544148103-0773bf10d330?q=80&w=1200",
-//     remark: "Applewood smoked grills and coastal curries.",
-//     bg: "#f0fdf4",
-//   },
-//   {
-//     id: "b3",
-//     name: "Sunday Brunch",
-//     tag: "BOTTOMLESS BRUNCH",
-//     tagColor: "#8e44ad",
-//     img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=1200",
-//     remark: "Live pasta stations and bottomless prosecco.",
-//     bg: "#f5f3ff",
-//   },
-// ];
-const BUFFET_DATA = [
+import {
+  getAllBuffetSectionHeaders,
+  getAllBuffetItems,
+  getOfferHeaderById,
+} from "@/Api/RestaurantApi";
+
+// --- Static Fallback Data ---
+const BUFFET_DATA_FALLBACK = [
   { id: "b1", img: resturant_buffet1 },
   { id: "b2", img: resturant_buffet1 },
   { id: "b3", img: resturant_buffet1 },
 ];
+
+const BUFFET_HEADER_FALLBACK = {
+  headlinePart1: "Buffet",
+  headlinePart2: "Selection",
+  description: "Explore international delicacies curated for every occasion.",
+};
+
+const OFFER_HEADER_FALLBACK = {
+  headLine1: "Today's",
+  headLine2: "Deals",
+  description: "Claim your rewards on your favorite culinary treats.",
+};
 
 const SIGNATURE_DATA = [
   {
@@ -94,9 +83,10 @@ const SIGNATURE_DATA = [
   },
 ];
 
-function BuffetCarousel({ onBook }) {
+// --- Buffet Carousel ---
+function BuffetCarousel({ items, onBook }) {
   const [active, setActive] = useState(0);
-  const total = BUFFET_DATA.length;
+  const total = items.length;
   const next = () => setActive((a) => (a + 1) % total);
   const prev = () => setActive((a) => (a - 1 + total) % total);
 
@@ -107,12 +97,15 @@ function BuffetCarousel({ onBook }) {
     hidden: { zIndex: 0, scale: 0.7, opacity: 0 },
   };
 
+  if (!items.length) return null;
+
   return (
     <div className="relative w-full h-[400px] flex flex-col justify-center overflow-hidden">
       <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-40 bg-primary/10 blur-[120px] pointer-events-none" />
       <div className="relative w-full h-full flex items-center justify-center">
+        {/* Desktop Carousel */}
         <div className="hidden md:block relative w-full h-full">
-          {BUFFET_DATA.map((item, idx) => {
+          {items.map((item, idx) => {
             const pos =
               idx === active
                 ? "center"
@@ -121,6 +114,9 @@ function BuffetCarousel({ onBook }) {
                   : idx === (active + 1) % total
                     ? "right"
                     : "hidden";
+
+            const imgSrc = item.media?.url || item.img || resturant_buffet1;
+
             return (
               <motion.div
                 key={item.id}
@@ -129,49 +125,77 @@ function BuffetCarousel({ onBook }) {
                 className={`absolute inset-0 m-auto w-[55%] h-[85%] rounded-[32px] overflow-hidden shadow-xl border border-white/20 backdrop-blur-md ${pos === "center" ? "pointer-events-auto" : "pointer-events-none"}`}
               >
                 <img
-                  src={item.img}
+                  src={imgSrc}
                   className="absolute inset-0 w-full h-full object-cover"
-                  alt=""
+                  alt={item.itemName || ""}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-6 flex flex-col justify-end text-left">
-                  <span
-                    className="w-fit px-3 py-1 rounded-full text-white text-[9px] font-black uppercase mb-3"
-                    style={{ backgroundColor: item.tagColor }}
-                  >
-                    {item.tag}
-                  </span>
-                  <h3 className="text-white font-serif text-2xl mb-1">
-                    {item.name}
-                  </h3>
-                  <p className="text-white/70 text-xs italic mb-4 line-clamp-1">
-                    {item.remark}
-                  </p>
-                  {/* <button
-                    onClick={() => onBook(item)}
-                    className="w-fit py-2 px-6 rounded-full text-white text-[10px] font-black uppercase bg-primary"
-                  >
-                    Book Unlimited
-                  </button> */}
+                  {item.price > 0 && (
+                    <span className="w-fit px-3 py-1 rounded-full text-white text-[9px] font-black uppercase mb-3 bg-primary">
+                      ₹{item.price}
+                    </span>
+                  )}
+                  {item.itemName && (
+                    <h3 className="text-white font-serif text-2xl mb-1">
+                      {item.itemName}
+                    </h3>
+                  )}
+                  {item.description && (
+                    <p className="text-white/70 text-xs italic mb-4 line-clamp-1">
+                      {item.description}
+                    </p>
+                  )}
+                  {item.ctaLink && item.ctaButtonText && (
+                    <a
+                      href={item.ctaLink}
+                      className="w-fit py-2 px-6 rounded-full text-white text-[10px] font-black uppercase bg-primary"
+                    >
+                      {item.ctaButtonText}
+                    </a>
+                  )}
                 </div>
               </motion.div>
             );
           })}
         </div>
+
+        {/* Mobile Stack */}
         <div className="md:hidden w-full space-y-4 px-2">
-          {BUFFET_DATA.map((item) => (
-            <div
-              key={item.id}
-              className="h-60 rounded-2xl overflow-hidden shadow-md"
-            >
-              <img
-                src={item.img}
-                className="w-full h-full object-cover"
-                alt="Buffet"
-              />
-            </div>
-          ))}
+          {items.map((item) => {
+            const imgSrc = item.media?.url || item.img || resturant_buffet1;
+            return (
+              <div
+                key={item.id}
+                className="h-60 rounded-2xl overflow-hidden shadow-md"
+              >
+                <img
+                  src={imgSrc}
+                  className="w-full h-full object-cover"
+                  alt={item.itemName || "Buffet"}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
+
+      {/* Nav Arrows (desktop) */}
+      {total > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-40 p-2 bg-white/80 dark:bg-zinc-800/80 rounded-full shadow"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            onClick={next}
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-40 p-2 bg-white/80 dark:bg-zinc-800/80 rounded-full shadow"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -193,14 +217,82 @@ function AnimatedCounter({ target }) {
   return <span>{count.toLocaleString()}</span>;
 }
 
-export default function EnhancedCulinaryCuration() {
+export default function EnhancedCulinaryCuration({ propertyId }) {
+  console.log(propertyId);
   const navigate = useNavigate();
+
+  // --- API State ---
+  const [buffetHeader, setBuffetHeader] = useState(BUFFET_HEADER_FALLBACK);
+  const [buffetItems, setBuffetItems] = useState(BUFFET_DATA_FALLBACK);
+  const [offerHeader, setOfferHeader] = useState(OFFER_HEADER_FALLBACK);
+
   const [bookingModal, setBookingModal] = useState({
     isOpen: false,
     item: null,
     type: "book",
   });
   const [likedItems, setLikedItems] = useState({});
+
+  // --- Fetch APIs — all filtered by numericPropertyId (prop from ResturantSubCategories) ---
+  useEffect(() => {
+    if (!propertyId) return;
+
+    // Buffet Section Header — filter by propertyId, pick first active match
+    getAllBuffetSectionHeaders()
+      .then((res) => {
+        const data = Array.isArray(res) ? res : res?.data;
+        if (data && data.length > 0) {
+          const matched = data.filter(
+            (h) => h.propertyId === propertyId && h.isActive,
+          );
+          const active = matched[0];
+          if (active) {
+            setBuffetHeader({
+              headlinePart1:
+                active.headlinePart1 || BUFFET_HEADER_FALLBACK.headlinePart1,
+              headlinePart2:
+                active.headlinePart2 || BUFFET_HEADER_FALLBACK.headlinePart2,
+              description:
+                active.description || BUFFET_HEADER_FALLBACK.description,
+            });
+          }
+        }
+      })
+      .catch(() => {
+        // keep fallback
+      });
+
+    // Buffet Items — filter by propertyId + isActive, sort by displayOrder
+    getAllBuffetItems()
+      .then((res) => {
+        const data = Array.isArray(res) ? res : res?.data;
+        if (data && data.length > 0) {
+          const matched = data
+            .filter((item) => item.propertyId === propertyId && item.isActive)
+            .sort((a, b) => a.displayOrder - b.displayOrder);
+          setBuffetItems(matched.length > 0 ? matched : BUFFET_DATA_FALLBACK);
+        }
+      })
+      .catch(() => {
+        // keep fallback
+      });
+
+    // Offer Header — fetch by propertyId, validate it matches before applying
+    getOfferHeaderById(propertyId)
+      .then((res) => {
+        const data = res?.data || res;
+        if (data && data.propertyId === propertyId && data.isActive) {
+          setOfferHeader({
+            headLine1: data.headLine1 || OFFER_HEADER_FALLBACK.headLine1,
+            headLine2: data.headLine2 || OFFER_HEADER_FALLBACK.headLine2,
+            description: data.description || OFFER_HEADER_FALLBACK.description,
+          });
+        }
+      })
+      .catch(() => {
+        // keep fallback
+      });
+  }, [propertyId]);
 
   const handleLikeSubmit = () => {
     if (bookingModal.item) {
@@ -215,38 +307,51 @@ export default function EnhancedCulinaryCuration() {
       <section className="pt-20 pb-12 border-b border-zinc-100 dark:border-white/5">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-left">
           <div className="flex flex-col lg:flex-row gap-10 items-stretch">
+            {/* Buffet Column */}
             <div className="lg:w-[70%] flex flex-col pt-8">
+              {/* Buffet Header — from API */}
               <div className="mb-6 h-[100px]">
                 <h2 className="text-3xl md:text-4xl font-serif dark:text-white mb-2">
-                  Buffet <span className="italic text-primary">Selection</span>
+                  {buffetHeader.headlinePart1}{" "}
+                  <span className="italic text-primary">
+                    {buffetHeader.headlinePart2}
+                  </span>
                 </h2>
                 <p className="text-zinc-500 dark:text-zinc-400 text-xs font-light truncate">
-                  Explore international delicacies curated for every occasion.
+                  {buffetHeader.description}
                 </p>
               </div>
+
+              {/* Buffet Carousel — from API */}
               <BuffetCarousel
+                items={buffetItems}
                 onBook={(item) =>
                   setBookingModal({ isOpen: true, item, type: "book" })
                 }
               />
             </div>
 
+            {/* Offers Column */}
             <div className="lg:w-[30%] bg-zinc-50/50 dark:bg-white/[0.02] rounded-[40px] p-8 border border-zinc-100 dark:border-white/5 flex flex-col justify-end">
+              {/* Offer Header — from API */}
               <div className="mb-6 h-[80px]">
                 <h3 className="text-2xl font-serif dark:text-white mb-1">
-                  Today's <span className="italic text-primary">Deals</span>
+                  {offerHeader.headLine1}{" "}
+                  <span className="italic text-primary">
+                    {offerHeader.headLine2}
+                  </span>
                 </h3>
                 <p className="text-zinc-500 dark:text-zinc-400 text-[10px] font-light truncate">
-                  Claim your rewards on your favorite culinary treats.
+                  {offerHeader.description}
                 </p>
               </div>
-              <ResturantpageOffers />
+              <ResturantpageOffers propertyId={propertyId} />
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. SIGNATURE DISHES (Compact Card & Likes Only) */}
+      {/* 2. SIGNATURE DISHES — unchanged */}
       <section className="pt-16 pb-2">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-left">
           <div className="flex flex-col lg:flex-row justify-between items-start gap-8 mb-20">
@@ -352,6 +457,7 @@ export default function EnhancedCulinaryCuration() {
         </div>
       </section>
 
+      {/* Booking / Like Modal — unchanged */}
       <AnimatePresence>
         {bookingModal.isOpen && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -371,7 +477,7 @@ export default function EnhancedCulinaryCuration() {
               <h3 className="text-2xl font-serif mb-2 dark:text-white">
                 {bookingModal.type === "like"
                   ? "Show your love"
-                  : `Reserve ${bookingModal.item?.name}`}
+                  : `Reserve ${bookingModal.item?.name || bookingModal.item?.itemName}`}
               </h3>
               <p className="text-xs text-zinc-500 mb-6 italic">
                 {bookingModal.type === "like"

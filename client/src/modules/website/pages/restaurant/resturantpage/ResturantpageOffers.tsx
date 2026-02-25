@@ -11,45 +11,13 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import TodayOffer from "@/assets/video/Todayoffer.mp4";
+import { getDailyOffers } from "@/Api/Api";
 // Swiper Styles
 import "swiper/css";
 import "swiper/css/navigation";
 
 // ─── Static Fallback Data ──────────────────────────────────────────────────
 const FALLBACK_OFFERS = [
-  // {
-  //   id: "fallback-1",
-  //   title: "Weekend Gourmet Buffet",
-  //   description:
-  //     "Enjoy a lavish spread of over 50+ delicacies with live music.",
-  //   couponCode: "BUFFET20",
-  //   ctaText: "Book Table",
-  //   ctaLink: "#",
-  //   expiresAt: new Date(Date.now() + 86400000).toISOString(), // 24h from now
-  //   propertyType: "Restaurant",
-  //   image: {
-  //     url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800",
-  //     type: "IMAGE",
-  //     width: 800,
-  //     height: 600,
-  //   },
-  // },
-  // {
-  //   id: "fallback-2",
-  //   title: "Happy Hours: Buy 1 Get 1",
-  //   description: "Premium cocktails and appetizers at half the price.",
-  //   couponCode: "HAPPYH",
-  //   ctaText: "View Menu",
-  //   ctaLink: "#",
-  //   expiresAt: new Date(Date.now() + 172800000).toISOString(),
-  //   propertyType: "Bar & Lounge",
-  //   image: {
-  //     url: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?q=80&w=800",
-  //     type: "IMAGE",
-  //     width: 800,
-  //     height: 1200, // To trigger portrait mode logic
-  //   },
-  // },
   // {
   //   id: "fallback-3",
   //   title: "Candlelight Dinner Special",
@@ -121,7 +89,9 @@ const MEDIA_DETECTION_RULES = {
     ratioTolerance: 0.1,
   },
 };
-
+interface ResturantpageOffersProps {
+  propertyId: number;
+}
 const aspectRatioMatches = (
   width: number,
   height: number,
@@ -193,7 +163,9 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
   );
 }
 
-export default function ResturantpageOffers() {
+export default function ResturantpageOffers({
+  propertyId,
+}: ResturantpageOffersProps) {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
