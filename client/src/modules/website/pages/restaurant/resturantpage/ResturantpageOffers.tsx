@@ -12,123 +12,63 @@ import { Navigation, Autoplay } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import TodayOffer from "@/assets/video/Todayoffer.mp4";
 import { getDailyOffers } from "@/Api/Api";
-// Swiper Styles
+import OfferVideo from "@/modules/website/components/OfferVideo";
 import "swiper/css";
 import "swiper/css/navigation";
 
-// ─── Static Fallback Data ──────────────────────────────────────────────────
+// ─── Static Fallback ──────────────────────────────────────────────────────────
 const FALLBACK_OFFERS = [
-  // {
-  //   id: "fallback-3",
-  //   title: "Candlelight Dinner Special",
-  //   description: "A private 5-course meal for couples with complimentary wine.",
-  //   couponCode: "ROMANCE",
-  //   ctaText: "Inquire Now",
-  //   ctaLink: "#",
-  //   expiresAt: null,
-  //   propertyType: "Fine Dining",
-  //   image: {
-  //     url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
-  //     type: "IMAGE",
-  //     width: 1080,
-  //     height: 1920, // To trigger reel mode logic
-  //   },
-  // },
-  // {
-  //   id: "fallback-4",
-  //   title: "Candlelight Dinner Special",
-  //   description: "A private 5-course meal for couples with complimentary wine.",
-  //   couponCode: "ROMANCE",
-  //   ctaText: "Inquire Now",
-  //   ctaLink: "#",
-  //   expiresAt: null,
-  //   propertyType: "Fine Dining",
-  //   image: {
-  //     url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
-  //     type: "IMAGE",
-  //     width: 1080,
-  //     height: 1920, // To trigger reel mode logic
-  //   },
-  // },
-  // {
-  //   id: "fallback-5",
-  //   title: "Candlelight Dinner Special",
-  //   description: "A private 5-course meal for couples with complimentary wine.",
-  //   couponCode: "ROMANCE",
-  //   ctaText: "Inquire Now",
-  //   ctaLink: "#",
-  //   expiresAt: null,
-  //   propertyType: "Fine Dining",
-  //   image: {
-  //     url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
-  //     type: "IMAGE",
-  //     width: 1080,
-  //     height: 1920, // To trigger reel mode logic
-  //   },
-  // },
   {
     id: "fallback-video",
+    title: "",
+    description: "",
+    couponCode: "",
+    ctaText: "",
+    ctaLink: "",
+    expiresAt: null,
     image: {
-      url: TodayOffer,
+      src: TodayOffer,
       type: "VIDEO",
       width: 1080,
       height: 1920,
+      fileName: "",
+      alt: "",
     },
   },
 ];
 
-const MEDIA_DETECTION_RULES = {
-  instagramBannerReel: {
-    aspectRatio: "9:16",
-    minHeight: 800,
-    ratioTolerance: 0.1, // Increased tolerance for better detection
-  },
-  instagramBannerPortrait: {
-    aspectRatio: "4:5",
-    minHeight: 1000,
-    ratioTolerance: 0.1,
-  },
-};
-interface ResturantpageOffersProps {
-  propertyId: number;
-}
-const aspectRatioMatches = (
-  width: number,
-  height: number,
-  targetRatio: string,
-  tolerance = 0.05,
-) => {
-  const [tw, th] = targetRatio.split(":").map(Number);
-  return Math.abs(width / height - tw / th) <= tolerance;
-};
-
+// ─── Media Detection (extracted from DailyOffers) ────────────────────────────
+// image shape expected: { src, type, width, height, fileName }
 const detectBanner = (image: any) => {
-  if (!image?.width || !image?.height) return false;
+  if (!image) return false;
 
-  const isReel =
-    aspectRatioMatches(
-      image.width,
-      image.height,
-      MEDIA_DETECTION_RULES.instagramBannerReel.aspectRatio,
-      MEDIA_DETECTION_RULES.instagramBannerReel.ratioTolerance,
-    ) && image.height >= MEDIA_DETECTION_RULES.instagramBannerReel.minHeight;
+  // 1. Dimension ratio — portrait ≤ 0.85 covers 9:16, 4:5, 3:4 etc.
+  if (image.width && image.height) {
+    const ratio = image.width / image.height;
+    if (ratio <= 0.85) return true;
+  }
 
-  const isPortrait =
-    aspectRatioMatches(
-      image.width,
-      image.height,
-      MEDIA_DETECTION_RULES.instagramBannerPortrait.aspectRatio,
-      MEDIA_DETECTION_RULES.instagramBannerPortrait.ratioTolerance,
-    ) &&
-    image.height >= MEDIA_DETECTION_RULES.instagramBannerPortrait.minHeight;
+  // 2. Filename / URL string hints (catches cases where dimensions are null)
+  const name = (image.fileName || "").toLowerCase();
+  const url  = (image.src    || "").toLowerCase();
+  const sourceString = `${name} ${url}`;
+  if (
+    sourceString.includes("1080") ||
+    sourceString.includes("1350") ||
+    sourceString.includes("instagram_post")
+  ) {
+    return true;
+  }
 
-  return isReel || isPortrait;
+  // 3. Videos are always full-banner — they control their own aspect ratio
+  if (image.type === "VIDEO") return true;
+
+  return false;
 };
-/* =======================
-    TIMER COMPONENT
-======================= */
+
+// ─── Countdown Timer ─────────────────────────────────────────────────────────
 function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
-  const [label, setLabel] = useState("");
+  const [label, setLabel]       = useState("");
   const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
@@ -163,34 +103,76 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
   );
 }
 
-export default function ResturantpageOffers({
-  propertyId,
-}: ResturantpageOffersProps) {
-  const [swiper, setSwiper] = useState<SwiperType | null>(null);
-  const [offers, setOffers] = useState<any[]>([]);
+// ─── Props ────────────────────────────────────────────────────────────────────
+interface ResturantpageOffersProps {
+  propertyId: number;
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+export default function ResturantpageOffers({ propertyId }: ResturantpageOffersProps) {
+  const [swiper, setSwiper]   = useState<SwiperType | null>(null);
+  const [offers, setOffers]   = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Standardizing on fallback for this view
-    setOffers(FALLBACK_OFFERS);
-    setLoading(false);
-  }, []);
+    if (!propertyId) {
+      setOffers(FALLBACK_OFFERS);
+      setLoading(false);
+      return;
+    }
+
+    getDailyOffers({ page: 0, size: 100 })
+      .then((res) => {
+        const raw: any[] = res?.data?.content ?? res?.data ?? [];
+
+        const filtered = raw.filter(
+          (o) =>
+            o.propertyId === propertyId &&
+            o.isActive   === true        &&
+            o.image?.url,
+        );
+
+        if (filtered.length > 0) {
+          const mapped = filtered.map((o) => ({
+            id:          o.id,
+            title:       o.title       ?? "",
+            description: o.description ?? "",
+            couponCode:  o.couponCode  ?? "",
+            ctaText:     o.ctaText     ?? "",
+            ctaLink:     o.ctaUrl || o.ctaLink || null,
+            expiresAt:   o.expiresAt   ?? null,
+            // Map to the shape detectBanner expects (src + fileName)
+            image: {
+              src:      o.image.url,
+              type:     o.image.type     ?? "IMAGE",
+              width:    o.image.width    ?? null,
+              height:   o.image.height   ?? null,
+              fileName: o.image.fileName ?? "",
+              alt:      o.title          ?? "Offer",
+            },
+          }));
+          setOffers(mapped);
+        } else {
+          setOffers(FALLBACK_OFFERS);
+        }
+      })
+      .catch(() => setOffers(FALLBACK_OFFERS))
+      .finally(() => setLoading(false));
+  }, [propertyId]);
 
   if (loading)
     return (
-      <div className="flex justify-center py-20">
+      <div className="flex justify-center py-10">
         <Loader2 className="animate-spin text-primary" size={24} />
       </div>
     );
+
   if (!offers.length) return null;
 
   return (
     <div className="w-full">
-      {/* 1. Optimized Header for 30% width */}
+      {/* Nav arrows */}
       <div className="flex justify-between items-center mb-4">
-        {/* <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400">
-          Exclusive Deals
-        </h3> */}
         <div className="flex gap-1.5">
           <button
             onClick={() => swiper?.slidePrev()}
@@ -207,7 +189,6 @@ export default function ResturantpageOffers({
         </div>
       </div>
 
-      {/* 2. Single card view restricted to container width */}
       <div className="w-full max-w-full">
         <Swiper
           modules={[Navigation, Autoplay]}
@@ -215,33 +196,138 @@ export default function ResturantpageOffers({
           spaceBetween={0}
           centeredSlides={true}
           loop={offers.length > 1}
-          autoplay={{ delay: 5000, disableOnInteraction: false }}
+          autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
           onSwiper={setSwiper}
           className="rounded-[28px]"
         >
           {offers.map((offer, i) => {
-            const isBanner = detectBanner(offer.image);
+            const isBanner    = detectBanner(offer.image);
+            const isVideo     = offer.image?.type === "VIDEO";
+            const hasContent  = !!(offer.title || offer.description || offer.couponCode);
+            const hasCtaText  = !!(offer.ctaText?.trim());
+            const isClickable = !!offer.ctaLink;
+
+            // Banner (portrait/video) OR offers with no text → fill the fixed frame
+            // Standard (landscape image with text) → split: media top, content below
+            const showFullImage = isBanner || !hasContent;
 
             return (
-              <SwiperSlide key={offer.id || i}>
-                <div className="rounded-[28px] overflow-hidden border border-zinc-100 dark:border-white/5 shadow-sm bg-black flex items-center justify-center">
-                  {offer.image?.type === "VIDEO" ? (
-                    <video
-                      src={offer.image.url}
-                      className="max-w-full max-h-[80vh]"
-                      autoPlay
-                      loop
-                      playsInline
-                      // controls
-                      muted
-                    />
-                  ) : (
-                    <img
-                      src={offer.image?.url}
-                      className="max-w-full max-h-[80vh]"
-                      alt="Offer"
-                    />
+              <SwiperSlide key={offer.id ?? i}>
+                {/*
+                  Fixed h-[520px] frame — mirrors DailyOffers card height exactly.
+                  Images/videos never blow out the container regardless of source dimensions.
+                */}
+                <div className="group h-[520px] bg-zinc-900 border border-zinc-100 dark:border-white/5 rounded-[28px] overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl">
+
+                  {/* ── MEDIA CONTAINER ────────────────────────────────── */}
+                  <div
+                    className={`relative overflow-hidden shrink-0 ${
+                      showFullImage ? "h-full" : "h-[280px]"
+                    }`}
+                  >
+                    {offer.image ? (
+                      isVideo ? (
+                        // OfferVideo handles its own sizing inside the container
+                        <OfferVideo src={offer.image.src} />
+                      ) : (
+                        <img
+                          src={offer.image.src}
+                          alt={offer.image.alt}
+                          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                        />
+                      )
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-zinc-800">
+                        <Tag className="w-10 h-10 text-zinc-600" />
+                      </div>
+                    )}
+
+                    {/* Timer */}
+                    {offer.expiresAt && (
+                      <div className="absolute top-3 right-3 z-10">
+                        <CountdownTimer expiresAt={offer.expiresAt} />
+                      </div>
+                    )}
+
+                    {/* Banner / full-image: hover overlay */}
+                    {showFullImage && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 z-20">
+                        <div className="mb-3">
+                          {offer.title && (
+                            <h3 className="text-white font-bold text-sm line-clamp-1">
+                              {offer.title}
+                            </h3>
+                          )}
+                          {offer.description && (
+                            <p className="text-white/80 text-[10px] line-clamp-1">
+                              {offer.description}
+                            </p>
+                          )}
+                        </div>
+                        {hasCtaText && (
+                          isClickable ? (
+                            <a
+                              href={offer.ctaLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full bg-primary text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-lg hover:opacity-90"
+                            >
+                              {offer.ctaText} <ExternalLink size={12} />
+                            </a>
+                          ) : (
+                            <button
+                              disabled
+                              className="w-full bg-white/20 text-white py-2.5 rounded-lg text-xs font-bold cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                              {offer.ctaText} <ExternalLink size={12} />
+                            </button>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── STANDARD CARD CONTENT (landscape + text) ───────── */}
+                  {!showFullImage && (
+                    <div className="p-4 flex flex-col flex-1 bg-white dark:bg-zinc-900">
+                      <h3 className="text-sm font-serif font-bold line-clamp-2 leading-tight text-zinc-900 dark:text-white group-hover:text-primary transition-colors">
+                        {offer.title}
+                      </h3>
+                      <p className="text-[11px] text-zinc-500 italic line-clamp-2 mt-2">
+                        {offer.description}
+                      </p>
+                      <div className="mt-auto pt-3 border-t border-zinc-100 dark:border-white/10">
+                        {offer.couponCode && (
+                          <div className="text-[11px] mb-3 flex items-center justify-center gap-2 bg-zinc-50 dark:bg-zinc-800 px-3 py-2 rounded-md border border-dashed border-primary/20">
+                            <span className="text-zinc-400 font-medium uppercase">Code</span>
+                            <span className="font-mono font-black text-primary text-xs tracking-widest bg-white dark:bg-zinc-900 px-2 py-0.5 rounded shadow-sm border">
+                              {offer.couponCode}
+                            </span>
+                          </div>
+                        )}
+                        {hasCtaText && (
+                          isClickable ? (
+                            <a
+                              href={offer.ctaLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full bg-primary text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-md"
+                            >
+                              {offer.ctaText} <ExternalLink size={12} />
+                            </a>
+                          ) : (
+                            <button
+                              disabled
+                              className="w-full bg-zinc-100 dark:bg-zinc-800 py-2.5 rounded-lg text-xs font-bold opacity-70 cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                              {offer.ctaText} <ExternalLink size={12} />
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </div>
                   )}
+
                 </div>
               </SwiperSlide>
             );
