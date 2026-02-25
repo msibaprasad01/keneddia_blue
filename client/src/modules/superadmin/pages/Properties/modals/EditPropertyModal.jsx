@@ -60,6 +60,7 @@ function EditPropertyModal({
   onClose,
   onSuccess,
 }) {
+  console.log('item',item);
   const p = item?.propertyResponseDTO || {};
   const listing = item?.propertyListingResponseDTOS?.[0] || {};
 

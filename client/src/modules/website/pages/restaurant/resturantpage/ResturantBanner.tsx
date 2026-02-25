@@ -137,6 +137,7 @@ function ResturantBanner({
 }: ResturantBannerProps) {
   // ── Derive restaurant fields from propertyData, fallback to static ────────
   const restaurant: RestaurantData = useMemo(() => {
+    console.log('propertyData',propertyData);
     if (!propertyData) return FALLBACK_RESTAURANT;
     return {
       id: propertyData.id ?? propertyData.propertyId ?? FALLBACK_RESTAURANT.id,
@@ -312,7 +313,7 @@ function ResturantBanner({
           >
             <motion.div variants={fadeIn} className="flex items-center gap-3">
               <span className="inline-flex bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
-                {restaurant.type}
+                {restaurant.tagline}
               </span>
               {restaurant.rating && (
                 <div className="flex items-center gap-1.5 bg-green-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">
