@@ -22,6 +22,7 @@ import {
   getChefRemarks,
   getMenuHeaders,
   getMenuItems,
+  getAllOfferHeaders,
 } from "@/Api/RestaurantApi";
 
 // ── Fallbacks ─────────────────────────────────────────────────────────────────
@@ -257,18 +258,39 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
       })
       .catch(() => {});
 
-    getOfferHeaderById(propertyId)
+    getAllOfferHeaders()
       .then((res) => {
-        const data = res?.data || res;
-        if (data && data.propertyId === propertyId && data.isActive) {
-          setOfferHeader({
-            headLine1: data.headLine1 || OFFER_HEADER_FALLBACK.headLine1,
-            headLine2: data.headLine2 || OFFER_HEADER_FALLBACK.headLine2,
-            description: data.description || OFFER_HEADER_FALLBACK.description,
-          });
+        const data = Array.isArray(res) ? res : res?.data;
+
+        if (data?.length) {
+          // filter by propertyId + active
+          const matchedHeaders = data
+            .filter(
+              (h) =>
+                Number(h.propertyId) === Number(propertyId) &&
+                h.isActive === true,
+            )
+            .sort((a, b) => b.id - a.id); // latest first
+
+          const latestHeader = matchedHeaders[0];
+
+          if (latestHeader) {
+            setOfferHeader({
+              headLine1:
+                latestHeader.headLine1 || OFFER_HEADER_FALLBACK.headLine1,
+              headLine2:
+                latestHeader.headLine2 || OFFER_HEADER_FALLBACK.headLine2,
+              description:
+                latestHeader.description || OFFER_HEADER_FALLBACK.description,
+            });
+          } else {
+            setOfferHeader(OFFER_HEADER_FALLBACK);
+          }
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setOfferHeader(OFFER_HEADER_FALLBACK);
+      });
   }, [propertyId]);
 
   // ── Fetch menu header, chef remark, menu items ─────────────────────────────

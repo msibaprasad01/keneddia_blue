@@ -31,6 +31,7 @@ export const toggleBuffetItemStatus = (id, active) =>API.patch(`api/v1/buffet-it
 // restaurant offer header section
 export const createOfferHeader = (data) =>API.post("api/v1/offer-sections/createOffer", data);
 export const getOfferHeaderById = (id) =>API.get(`api/v1/offer-sections/getOfferById/${id}`);
+export const getAllOfferHeaders = (id) =>API.get(`api/v1/offer-sections/getOffers`);
 export const updateOfferHeader = (id, data) =>API.patch(`api/v1/offer-sections/updateOffer/${id}`, data);
 export const toggleOfferHeaderActive = (id, data) =>API.patch(`api/v1/offer-sections/toggleActive/${id}`, data);
 
@@ -148,3 +149,11 @@ export const getPrimaryConversionsHeader = () =>API.get("api/v1/primary-conversi
 export const getActivePrimaryConversionsHeader = () =>API.get("api/v1/primary-conversion/getActivePrimaryConversions");
 export const getPrimaryConversionHeaderById = (id) =>API.get(`api/v1/primary-conversion/getPrimaryConversionById/${id}`);
 export const updatePrimaryConversionHeader = (id, data) =>API.patch(`api/v1/primary-conversion/updatePrimaryConversion/${id}`, data);
+
+// ─────────────────────────────
+// JOINING US (TABLE / RESERVATION)
+// ─────────────────────────────
+export const createJoiningUs = (data) =>API.post("api/v1/joining-us/createJoiningUs", data);
+export const getAllJoiningUs = () =>API.get("api/v1/joining-us/getAllJoiningUs");
+export const getJoiningUsById = (id) =>API.get(`api/v1/joining-us/getJoiningUsById/${id}`);
+export const updateJoiningUs = (id, data) =>API.patch(`api/v1/joining-us/updateJoiningUs/${id}`, data);

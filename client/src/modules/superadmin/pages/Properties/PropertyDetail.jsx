@@ -32,7 +32,7 @@ import ResturantOffers from "./tabs/resturant/ResturantOffers";
 import ResturantAbout from "./tabs/resturant/ResturantAbout";
 import GroupBookingSection from "./tabs/resturant/GroupBookingSection";
 import Gallery3d from "./tabs/resturant/Gallery3d";
-
+import EnquiriesTab from "./tabs/resturant/EnquiriesTab";
 // Import Modals
 import AddEditOverviewModal from "./modals/AddEditOverviewModal";
 import AddRoomModal from "./modals/AddRoomModal";
@@ -310,13 +310,14 @@ const PropertyDetail = ({ property, onBack }) => {
             propertyData={currentPropertyInfo}
             refreshData={fetchAllData}
           />
+          // EnquiriesTab
         );
       case "enquiries":
         return (
-          <div className="py-20 text-center text-gray-400 text-sm font-medium">
-            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} — Coming
-            Soon
-          </div>
+          <EnquiriesTab
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
         );
       default:
         return null;
