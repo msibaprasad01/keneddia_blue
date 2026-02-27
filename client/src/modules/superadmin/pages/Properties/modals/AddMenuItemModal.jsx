@@ -1,5 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { X, Save, Loader2, Image as ImageIcon, Heart } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  X, Save, Loader2, Image as ImageIcon, Heart,
+  Plus, Pencil, Check, AlertCircle,
+} from "lucide-react";
+import {
+  createItemType, getAllItemTypes, updateItemType, toggleItemTypeStatus,
+  createItemCategory, getAllActiveItemCategory, updateItemCategory, toggleItemCategoryStatus,
+  createMenuItem, updateMenuItem,
+} from "@/Api/RestaurantApi";
 
 // ── Shared input style ────────────────────────────────────────────────────────
 const inp =
@@ -14,20 +22,6 @@ const Field = ({ label, children, half }) => (
   </div>
 );
 
-// ── Category options (can be fetched from API) ────────────────────────────────
-const CATEGORIES = [
-  "North Indian",
-  "Coastal Tandoor",
-  "Asian Fusion",
-  "Szechuan",
-  "Continental",
-  "Desserts",
-  "Beverages",
-  "Starters",
-  "Breads",
-  "Rice & Biryani",
-];
-
 // ── Image Upload ──────────────────────────────────────────────────────────────
 function ImageUpload({ value, onChange, onClear }) {
   return (
@@ -39,7 +33,6 @@ function ImageUpload({ value, onChange, onClear }) {
           onChange={e => {
             const file = e.target.files?.[0];
             if (!file) return;
-            // TODO: replace with uploadMedia(fd) call, use returned URL
             onChange(URL.createObjectURL(file), file);
           }} />
       </label>
@@ -56,72 +49,353 @@ function ImageUpload({ value, onChange, onClear }) {
   );
 }
 
+// ── Inline tag manager (shared for category & type) ───────────────────────────
+function TagSelector({ label, items, value, onChange, onAdd, onUpdate, onToggleStatus }) {
+  const [showAdd, setShowAdd]         = useState(false);
+  const [newName, setNewName]         = useState("");
+  const [editingId, setEditingId]     = useState(null);
+  const [editName, setEditName]       = useState("");
+  const [editActive, setEditActive]   = useState(true);
+  const [localAdding, setLocalAdding]     = useState(false);
+  const [localUpdating, setLocalUpdating] = useState(false);
+  const [togglingId, setTogglingId]       = useState(null);
+
+  const handleAdd = async () => {
+    if (!newName.trim()) return;
+    setLocalAdding(true);
+    try {
+      await onAdd(newName.trim());
+      setNewName("");
+      setShowAdd(false);
+    } finally {
+      setLocalAdding(false);
+    }
+  };
+
+  const handleUpdate = async (id) => {
+    if (!editName.trim()) return;
+    setLocalUpdating(true);
+    try {
+      await onUpdate(id, editName.trim(), editActive);
+      setEditingId(null);
+    } finally {
+      setLocalUpdating(false);
+    }
+  };
+
+  const handleToggle = async (item, e) => {
+    e.stopPropagation();
+    setTogglingId(item.id);
+    try {
+      await onToggleStatus(item.id, !item.isActive);
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const startEdit = (item, e) => {
+    e.stopPropagation();
+    setEditingId(item.id);
+    setEditName(item.name);
+    setEditActive(item.isActive ?? true);
+    setShowAdd(false);
+  };
+
+  return (
+    <div className="space-y-2">
+      {/* Dropdown + New button */}
+      <div className="flex gap-2">
+        <select className={inp} value={value} onChange={e => onChange(e.target.value)}>
+          <option value="">Select {label}...</option>
+          {items.filter(i => i.isActive !== false).map(item => (
+            <option key={item.id} value={item.id}>{item.name}</option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() => { setShowAdd(v => !v); setEditingId(null); }}
+          className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold transition-all"
+        >
+          <Plus size={13} /> New
+        </button>
+      </div>
+
+      {/* Inline add form */}
+      {showAdd && (
+        <div className="flex gap-2 items-center bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+          <input
+            className="flex-1 text-sm border border-blue-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-400 bg-white"
+            placeholder={`New ${label} name…`}
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleAdd()}
+            autoFocus
+          />
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={localAdding || !newName.trim()}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold disabled:opacity-50 hover:bg-blue-700 transition-all"
+          >
+            {localAdding ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+            Add
+          </button>
+          <button type="button" onClick={() => setShowAdd(false)} className="text-gray-400 hover:text-gray-600">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Pill list — all items with edit + active toggle */}
+      {items.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {items.map(item => (
+            <div key={item.id} className="group">
+              {editingId === item.id ? (
+                /* ── Edit panel ── */
+                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                  <input
+                    className="text-xs w-28 border border-amber-300 rounded-lg px-2 py-1 outline-none focus:border-amber-400 bg-white"
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleUpdate(item.id)}
+                    autoFocus
+                  />
+                  {/* Active toggle inside edit */}
+                  <div className="flex items-center gap-1.5 border-l border-amber-200 pl-2">
+                    <span className="text-[9px] font-black uppercase text-amber-600 tracking-wider whitespace-nowrap">
+                      Active
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setEditActive(v => !v)}
+                      className={`relative w-8 h-4 rounded-full transition-colors shrink-0 ${editActive ? "bg-green-500" : "bg-gray-300"}`}
+                    >
+                      <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${editActive ? "translate-x-4" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
+                  {/* Confirm */}
+                  <button
+                    type="button"
+                    onClick={() => handleUpdate(item.id)}
+                    disabled={localUpdating || !editName.trim()}
+                    className="text-amber-600 hover:text-amber-800 disabled:opacity-50"
+                  >
+                    {localUpdating ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                  </button>
+                  {/* Cancel */}
+                  <button type="button" onClick={() => setEditingId(null)} className="text-gray-400 hover:text-gray-600">
+                    <X size={12} />
+                  </button>
+                </div>
+              ) : (
+                /* ── Display pill ── */
+                <div
+                  className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full border transition-all ${
+                    String(value) === String(item.id)
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : item.isActive === false
+                        ? "bg-gray-50 text-gray-400 border-gray-200 opacity-60"
+                        : "bg-gray-100 text-gray-600 border-gray-200"
+                  }`}
+                >
+                  {/* Active dot */}
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                    item.isActive === false ? "bg-gray-400" : "bg-green-400"
+                  }`} />
+
+                  {item.name}
+
+                  {/* Active/Inactive toggle button */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleToggle(item, e)}
+                    disabled={togglingId === item.id}
+                    title={item.isActive === false ? "Set Active" : "Set Inactive"}
+                    className={`opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 disabled:opacity-50 ${
+                      String(value) === String(item.id) ? "text-blue-200 hover:text-white" : "text-gray-400 hover:text-red-500"
+                    }`}
+                  >
+                    {togglingId === item.id
+                      ? <Loader2 size={9} className="animate-spin" />
+                      : item.isActive === false
+                        ? <Check size={9} />
+                        : <X size={9} />
+                    }
+                  </button>
+
+                  {/* Edit button */}
+                  <button
+                    type="button"
+                    onClick={(e) => startEdit(item, e)}
+                    title={`Edit ${item.name}`}
+                    className={`opacity-0 group-hover:opacity-100 transition-opacity ${
+                      String(value) === String(item.id) ? "text-blue-200 hover:text-white" : "text-gray-400 hover:text-gray-700"
+                    }`}
+                  >
+                    <Pencil size={9} />
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Empty form ────────────────────────────────────────────────────────────────
+const EMPTY = {
+  itemName: "",
+  category_id: "",
+  type_id: "",
+  description: "",
+  likeCount: 0,
+  foodType: "VEG",
+  signatureItem: false,
+  status: true,
+  image: "",
+  imageFile: null,
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MODAL
 // ─────────────────────────────────────────────────────────────────────────────
-
-const ITEM_TYPES = [
-  "Starter",
-  "Main Course",
-  "Breads",
-  "Rice & Biryani",
-  "Dessert",
-  "Beverage",
-  "Side Dish",
-  "Salad",
-  "Soup",
-];
-
-const EMPTY = {
-  name: "",
-  category: "",
-  itemType: "",
-  description: "",
-  likeCount: 0,
-  isVeg: true,
-  isSignature: false,
-  image: "",
-  imageFile: null,
-  isActive: true,
-};
-
 function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }) {
-  const [form, setForm]     = useState(EMPTY);
-  const [saving, setSaving] = useState(false);
+  const [form, setForm]         = useState(EMPTY);
+  const [saving, setSaving]     = useState(false);
+  const [error, setError]       = useState(null);
+
+  // ── Dynamic lists ──────────────────────────────────────────────────────────
+  const [categories, setCategories] = useState([]);
+  const [types, setTypes]           = useState([]);
+  const [loadingMeta, setLoadingMeta] = useState(false);
 
   const isEditing = !!initialData?.id;
 
+  // ── Fetch categories & types ───────────────────────────────────────────────
+  const fetchMeta = useCallback(async () => {
+    setLoadingMeta(true);
+    try {
+      const [catRes, typeRes] = await Promise.all([
+        getAllActiveItemCategory(),
+        getAllItemTypes(),
+      ]);
+      setCategories(
+        (catRes?.data || []).map(c => ({ id: c.id, name: c.categoryName, isActive: c.isActive }))
+      );
+      setTypes(
+        (typeRes?.data || []).map(t => ({ id: t.id, name: t.typeName, isActive: t.isActive }))
+      );
+    } catch {
+      // non-fatal; user can still type
+    } finally {
+      setLoadingMeta(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
+      fetchMeta();
       if (initialData) {
         setForm({
           ...EMPTY,
-          ...initialData,
-          image: initialData.image?.url || initialData.image || "",
+          itemName: initialData.itemName || "",
+          category_id: initialData.category?.id ? String(initialData.category.id) : "",
+          type_id: initialData.type?.id ? String(initialData.type.id) : "",
+          description: initialData.description || "",
+          likeCount: initialData.likeCount || 0,
+          foodType: initialData.foodType || "VEG",
+          signatureItem: initialData.signatureItem ?? false,
+          status: initialData.status ?? true,
+          // prefer media url if present, fall back to mediaId-based path
+          image: initialData.media?.url || initialData.image?.url || initialData.image || "",
           imageFile: null,
         });
       } else {
         setForm(EMPTY);
       }
+      setError(null);
     }
   }, [isOpen, initialData]);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
+  // ── Category handlers ──────────────────────────────────────────────────────
+  const handleAddCategory = async (name) => {
+    const res = await createItemCategory({ categoryName: name, isActive: true });
+    const created = res?.data;
+    if (created) {
+      const newCat = { id: created.id, name: created.categoryName, isActive: created.isActive ?? true };
+      setCategories(prev => [...prev, newCat]);
+      set("category_id", String(created.id));
+    }
+  };
+
+  const handleUpdateCategory = async (id, name, isActive) => {
+    await updateItemCategory(id, { categoryName: name, isActive });
+    setCategories(prev => prev.map(c => c.id === id ? { ...c, name, isActive } : c));
+  };
+
+  const handleToggleCategoryStatus = async (id, newStatus) => {
+    await toggleItemCategoryStatus(id, { isActive: newStatus });
+    setCategories(prev => prev.map(c => c.id === id ? { ...c, isActive: newStatus } : c));
+  };
+
+  // ── Type handlers ──────────────────────────────────────────────────────────
+  const handleAddType = async (name) => {
+    const res = await createItemType({ typeName: name, isActive: true });
+    const created = res?.data;
+    if (created) {
+      const newType = { id: created.id, name: created.typeName, isActive: created.isActive ?? true };
+      setTypes(prev => [...prev, newType]);
+      set("type_id", String(created.id));
+    }
+  };
+
+  const handleUpdateType = async (id, name, isActive) => {
+    await updateItemType(id, { typeName: name, isActive });
+    setTypes(prev => prev.map(t => t.id === id ? { ...t, name, isActive } : t));
+  };
+
+  const handleToggleTypeStatus = async (id, newStatus) => {
+    await toggleItemTypeStatus(id, { isActive: newStatus });
+    setTypes(prev => prev.map(t => t.id === id ? { ...t, isActive: newStatus } : t));
+  };
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    if (!form.name.trim()) return;
+    if (!form.itemName.trim()) { setError("Item name is required."); return; }
+    if (!form.category_id)     { setError("Please select a category."); return; }
+    if (!form.type_id)         { setError("Please select an item type."); return; }
+
     setSaving(true);
+    setError(null);
     try {
-      // TODO: wire up createMenuItem / updateMenuItem API
-      // const fd = new FormData();
-      // fd.append("data", JSON.stringify({ ...form, propertyId: propertyData?.id }));
-      // if (form.imageFile) fd.append("file", form.imageFile);
-      // isEditing ? await updateMenuItem(initialData.id, fd) : await createMenuItem(fd);
-      await new Promise(r => setTimeout(r, 600)); // stub
+      const fd = new FormData();
+      fd.append("itemName",      form.itemName.trim());
+      fd.append("description",   form.description);
+      fd.append("category_id",   form.category_id);
+      fd.append("type_id",       form.type_id);
+      fd.append("foodType",      form.foodType);
+      fd.append("signatureItem", String(form.signatureItem));
+      fd.append("status",        String(form.status));
+      fd.append("likeCount",     String(form.likeCount));
+      fd.append("propertyId",    String(propertyData?.id || ""));
+      fd.append("propertyTypeId", String(propertyData?.propertyTypeId || ""));
+      if (form.imageFile) fd.append("image", form.imageFile);
+
+      if (isEditing) {
+        await updateMenuItem(initialData.id, fd);
+      } else {
+        await createMenuItem(fd);
+      }
+
       onSave?.();
       onClose(true);
     } catch (err) {
-      console.error(err);
+      setError(err?.response?.data?.message || "Failed to save item. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -133,7 +407,7 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
 
-        {/* Header */}
+        {/* ── Header ── */}
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
           <h3 className="text-lg font-bold text-gray-800">
             {isEditing ? "Edit Menu Item" : "Add Menu Item"}
@@ -144,134 +418,154 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
           </button>
         </div>
 
-        {/* Body */}
+        {/* ── Body ── */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
 
+          {/* Error banner */}
+          {error && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">
+              <AlertCircle size={15} className="shrink-0" />
+              {error}
+            </div>
+          )}
+
           {/* Image */}
-          <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
-              Item Image
-            </label>
+          <Field label="Item Image">
             <ImageUpload
               value={form.image}
               onChange={(url, file) => { set("image", url); set("imageFile", file); }}
               onClear={() => { set("image", ""); set("imageFile", null); }}
             />
+          </Field>
+
+          {/* Name */}
+          <Field label="Item Name">
+            <input className={inp} value={form.itemName}
+              onChange={e => set("itemName", e.target.value)}
+              placeholder="e.g. Paneer Butter Masala" />
+          </Field>
+
+          {/* Category */}
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+              Category
+              {loadingMeta && <span className="ml-2 text-[9px] font-normal text-gray-400 normal-case tracking-normal">Loading…</span>}
+            </label>
+            <TagSelector
+              label="Category"
+              items={categories}
+              value={form.category_id}
+              onChange={v => set("category_id", v)}
+              onAdd={handleAddCategory}
+              onUpdate={handleUpdateCategory}
+              onToggleStatus={handleToggleCategoryStatus}
+            />
           </div>
 
-          {/* Name + Category */}
-          <div className="flex gap-3">
-            <Field label="Item Name" half>
-              <input className={inp} value={form.name}
-                onChange={e => set("name", e.target.value)}
-                placeholder="e.g. Butter Chicken" />
-            </Field>
-            <Field label="Category" half>
-              <select className={inp} value={form.category}
-                onChange={e => set("category", e.target.value)}>
-                <option value="">Select category...</option>
-                {CATEGORIES.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </Field>
+          {/* Item Type */}
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+              Item Type
+              {loadingMeta && <span className="ml-2 text-[9px] font-normal text-gray-400 normal-case tracking-normal">Loading…</span>}
+            </label>
+            <TagSelector
+              label="Type"
+              items={types}
+              value={form.type_id}
+              onChange={v => set("type_id", v)}
+              onAdd={handleAddType}
+              onUpdate={handleUpdateType}
+              onToggleStatus={handleToggleTypeStatus}
+            />
           </div>
 
           {/* Description */}
-          <Field label='Description (shown as italic quote on card)'>
+          <Field label="Description">
             <textarea className={inp} rows={3} value={form.description}
               onChange={e => set("description", e.target.value)}
-              placeholder='"Our legendary cream-based curry with succulent clay-oven grilled...' />
+              placeholder="Creamy paneer curry with aromatic spices…" />
           </Field>
 
-          {/* Item Type + Like Count */}
-          <div className="flex gap-3">
-            <Field label="Item Type" half>
-              <select className={inp} value={form.itemType}
-                onChange={e => set("itemType", e.target.value)}>
-                <option value="">Select type...</option>
-                {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </Field>
-            <Field label="Like Count" half>
-              <div className="relative">
-                <Heart size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 fill-rose-400" />
-                <input type="number" className={`${inp} pl-8`} value={form.likeCount} min={0}
-                  onChange={e => set("likeCount", Number(e.target.value))}
-                  placeholder="1240" />
-              </div>
-            </Field>
-          </div>
+          {/* Like Count */}
+          <Field label="Like Count">
+            <div className="relative max-w-[160px]">
+              <Heart size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 fill-rose-400" />
+              <input type="number" className={`${inp} pl-8`} value={form.likeCount} min={0}
+                onChange={e => set("likeCount", Number(e.target.value))}
+                placeholder="0" />
+            </div>
+          </Field>
 
-          {/* Veg / Non-Veg + Signature + Active */}
+          {/* Food Type + Signature + Status */}
           <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
 
-            {/* Veg / Non-Veg toggle */}
+            {/* Food Type */}
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Food Type</span>
               <div className="flex rounded-lg overflow-hidden border border-gray-200">
-                <button type="button"
-                  onClick={() => set("isVeg", true)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all ${
-                    form.isVeg ? "bg-green-500 text-white" : "bg-white text-gray-500 hover:bg-gray-50"
-                  }`}>
-                  <span className="w-3 h-3 rounded-sm border-2 border-current flex items-center justify-center">
-                    <span className={form.isVeg ? "w-1.5 h-1.5 bg-white rounded-full" : ""} />
-                  </span>
-                  Veg
-                </button>
-                <button type="button"
-                  onClick={() => set("isVeg", false)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all border-l ${
-                    !form.isVeg ? "bg-red-500 text-white" : "bg-white text-gray-500 hover:bg-gray-50"
-                  }`}>
-                  <span className="w-3 h-3 rounded-sm border-2 border-current flex items-center justify-center">
-                    <span className={!form.isVeg ? "w-1.5 h-1.5 bg-white rounded-full" : ""} />
-                  </span>
-                  Non-Veg
-                </button>
+                {["VEG", "NON_VEG", "EGG"].map((ft, i) => (
+                  <button
+                    key={ft}
+                    type="button"
+                    onClick={() => set("foodType", ft)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all ${
+                      i > 0 ? "border-l border-gray-200" : ""
+                    } ${
+                      form.foodType === ft
+                        ? ft === "VEG"
+                          ? "bg-green-500 text-white"
+                          : ft === "NON_VEG"
+                            ? "bg-red-500 text-white"
+                            : "bg-yellow-500 text-white"
+                        : "bg-white text-gray-500 hover:bg-gray-50"
+                    }`}
+                  >
+                    {ft === "VEG" ? "Veg" : ft === "NON_VEG" ? "Non-Veg" : "Egg"}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Signature dish toggle */}
+            {/* Signature */}
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Signature Dish</span>
               <label className="flex items-center gap-2 cursor-pointer h-[34px]">
-                <div onClick={() => set("isSignature", !form.isSignature)}
-                  className={`relative w-9 h-5 rounded-full transition-colors ${form.isSignature ? "bg-amber-400" : "bg-gray-300"}`}>
-                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isSignature ? "translate-x-4" : "translate-x-0.5"}`} />
+                <div onClick={() => set("signatureItem", !form.signatureItem)}
+                  className={`relative w-9 h-5 rounded-full transition-colors ${form.signatureItem ? "bg-amber-400" : "bg-gray-300"}`}>
+                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.signatureItem ? "translate-x-4" : "translate-x-0.5"}`} />
                 </div>
                 <span className="text-xs font-semibold text-gray-600">
-                  {form.isSignature ? "⭐ Yes, Signature" : "No"}
+                  {form.signatureItem ? "⭐ Yes" : "No"}
                 </span>
               </label>
             </div>
 
-            {/* Active toggle */}
+            {/* Status */}
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Status</span>
               <label className="flex items-center gap-2 cursor-pointer h-[34px]">
-                <div onClick={() => set("isActive", !form.isActive)}
-                  className={`relative w-9 h-5 rounded-full transition-colors ${form.isActive ? "bg-blue-500" : "bg-gray-300"}`}>
-                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isActive ? "translate-x-4" : "translate-x-0.5"}`} />
+                <div onClick={() => set("status", !form.status)}
+                  className={`relative w-9 h-5 rounded-full transition-colors ${form.status ? "bg-blue-500" : "bg-gray-300"}`}>
+                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.status ? "translate-x-4" : "translate-x-0.5"}`} />
                 </div>
-                <span className="text-xs font-semibold text-gray-600">Active</span>
+                <span className="text-xs font-semibold text-gray-600">
+                  {form.status ? "Active" : "Inactive"}
+                </span>
               </label>
             </div>
           </div>
-
         </div>
 
-        {/* Footer */}
+        {/* ── Footer ── */}
         <div className="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3 shrink-0">
           <button onClick={() => onClose(false)}
             className="px-5 py-2.5 rounded-lg border text-sm font-bold text-gray-600 hover:bg-white transition-all">
             Cancel
           </button>
-          <button onClick={handleSubmit} disabled={saving || !form.name.trim()}
+          <button onClick={handleSubmit} disabled={saving || !form.itemName.trim()}
             className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-all disabled:opacity-50">
             {saving
-              ? <><Loader2 size={15} className="animate-spin" /> Saving...</>
+              ? <><Loader2 size={15} className="animate-spin" /> Saving…</>
               : <><Save size={15} /> {isEditing ? "Update Item" : "Add Item"}</>
             }
           </button>

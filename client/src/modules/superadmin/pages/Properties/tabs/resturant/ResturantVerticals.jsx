@@ -74,7 +74,10 @@ function ImageUpload({ value, onChange, onClear, rounded = false }) {
       const fd = new FormData();
       fd.append("file", file);
       const res = await uploadMedia(fd);
-      const mediaId = res.data?.id ?? res.data?.mediaId ?? res.data?.data?.id;
+      const mediaId =
+        typeof res.data === "number"
+          ? res.data
+          : (res.data?.id ?? res.data?.mediaId ?? res.data?.data?.id);
       const url =
         res.data?.url ?? res.data?.data?.url ?? URL.createObjectURL(file);
       onChange(url, mediaId);
