@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
@@ -394,8 +394,36 @@ export default function ResturantpageEvents({ propertyId }) {
 }
 
 function EventCard({ event, index }) {
-  const isVideo = event.image.type === "VIDEO";
-  const isBanner = isVideo || detectBanner(event.image);
+  const [isBanner, setIsBanner] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef(null);
+
+  const isVideo =
+    event.image?.type === "VIDEO" ||
+    event.image?.url?.match(/\.(mp4|webm|ogg|mov)$/i);
+
+  const analyzeMediaSize = (w, h) => {
+    if (!w || !h) return;
+    const ratio = w / h;
+
+    // Vertical / banner-like media
+    if (ratio <= 0.85) {
+      setIsBanner(true);
+    } else {
+      setIsBanner(false);
+    }
+  };
+
+  const toggleMute = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted((prev) => !prev);
+    }
+  };
+
   const dateObj = new Date(event.eventDate);
   const day = dateObj.getDate();
   const month = dateObj
@@ -403,7 +431,9 @@ function EventCard({ event, index }) {
     .toUpperCase();
 
   const handleCta = () => {
-    if (event.ctaLink) window.open(event.ctaLink, "_blank", "noopener");
+    if (event.ctaLink) {
+      window.open(event.ctaLink, "_blank", "noopener");
+    }
   };
 
   return (
@@ -415,82 +445,115 @@ function EventCard({ event, index }) {
       transition={{ duration: 0.5 }}
       className="group h-[520px] bg-card border rounded-[2.5rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
     >
+      {/* Media Section */}
       <div
-        className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[280px]"}`}
+        className={`relative overflow-hidden transition-all duration-500 ${
+          isBanner ? "h-full" : "h-[280px]"
+        }`}
       >
-        {isVideo ? (
-          <video
-            src={event.image.url}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-          />
+        {event.image?.url ? (
+          isVideo ? (
+            <>
+              <video
+                ref={videoRef}
+                src={event.image.url}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                onLoadedMetadata={(e) =>
+                  analyzeMediaSize(
+                    e.currentTarget.videoWidth,
+                    e.currentTarget.videoHeight,
+                  )
+                }
+              />
+
+              {/* Mute Toggle */}
+              <button
+                onClick={toggleMute}
+                className="absolute bottom-4 right-4 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors backdrop-blur-sm"
+              >
+                {isMuted ? "🔇" : "🔊"}
+              </button>
+            </>
+          ) : (
+            <img
+              src={event.image.url}
+              alt={event.title}
+              className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-110"
+              onLoad={(e) =>
+                analyzeMediaSize(
+                  e.currentTarget.naturalWidth,
+                  e.currentTarget.naturalHeight,
+                )
+              }
+            />
+          )
         ) : (
-          <OptimizedImage
-            src={event.image.url}
-            alt={event.title}
-            className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-110"
-          />
+          <div className="w-full h-full flex items-center justify-center bg-muted">
+            <ImageIcon className="w-10 h-10 text-muted-foreground/20" />
+          </div>
         )}
+
+        {/* Date Badge */}
         <div className="absolute top-5 left-5 z-30 flex flex-col items-center bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-2xl border border-white/10">
           <span className="text-xl font-black leading-none">{day}</span>
           <span className="text-[10px] font-bold tracking-tighter opacity-80">
             {month}
           </span>
         </div>
+
+        {/* Location Badge */}
         <div className="absolute top-5 right-5 z-30 bg-primary text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1.5">
           <MapPin size={10} /> {event.locationName}
         </div>
 
+        {/* Banner Overlay Mode */}
         {isBanner && (
           <div className="absolute inset-0 z-20 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            <div className="translate-y-8 group-hover:translate-y-0 transition-transform duration-500 ease-out space-y-4">
+            <div className="space-y-4">
               <div>
                 <h3 className="text-white font-serif font-bold text-2xl">
                   {event.title}
                 </h3>
-                <p className="text-white/70 text-xs italic font-light line-clamp-2 mt-1">
+                <p className="text-white/70 text-xs italic line-clamp-2 mt-1">
                   {event.description}
                 </p>
               </div>
+
               {event.ctaText && (
-                <div className="flex gap-2 pb-2">
-                  <button
-                    onClick={handleCta}
-                    className="flex-[2] py-3 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider bg-primary text-white shadow-lg transition-all"
-                  >
-                    {event.ctaText}
-                  </button>
-                  <button className="flex-1 bg-white/20 backdrop-blur-md text-white py-3 rounded-xl text-[10px] font-bold flex items-center justify-center uppercase tracking-wider border border-white/20 hover:bg-white hover:text-black transition-colors">
-                    Details
-                  </button>
-                </div>
+                <button
+                  onClick={handleCta}
+                  className="py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-primary text-white shadow-lg"
+                >
+                  {event.ctaText}
+                </button>
               )}
             </div>
           </div>
         )}
       </div>
 
+      {/* Normal Card Mode */}
       {!isBanner && (
         <div className="p-6 flex flex-col flex-1 bg-card text-left">
           <h3 className="text-lg font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
             {event.title}
           </h3>
+
           <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed mb-4">
             {event.description}
           </p>
+
           {event.ctaText && (
-            <div className="mt-auto pt-4 border-t border-dashed border-border flex items-center gap-2">
+            <div className="mt-auto pt-4 border-t border-dashed border-border">
               <button
                 onClick={handleCta}
-                className="flex-[2] py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider bg-primary text-white"
+                className="w-full py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-primary text-white"
               >
                 {event.ctaText}
-              </button>
-              <button className="flex-1 bg-muted text-foreground py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center uppercase tracking-wider">
-                Details
               </button>
             </div>
           )}

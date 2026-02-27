@@ -82,7 +82,7 @@ function BuffetCarousel({ items, onBook }) {
                 key={item.id}
                 animate={positionStyles[pos]}
                 transition={{ duration: 0.6 }}
-                className={`absolute inset-0 m-auto w-[55%] h-[85%] rounded-[32px] overflow-hidden shadow-xl border border-white/20 backdrop-blur-md ${pos === "center" ? "pointer-events-auto" : "pointer-events-none"}`}
+                className={`absolute inset-0 m-auto w-[80%] h-[90%] rounded-[32px] overflow-hidden shadow-xl border border-white/20 backdrop-blur-md ${pos === "center" ? "pointer-events-auto" : "pointer-events-none"}`}
               >
                 <img
                   src={imgSrc}
@@ -341,7 +341,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-left">
           <div className="flex flex-col lg:flex-row gap-10 items-stretch">
             {/* Buffet Column */}
-            <div className="lg:w-[70%] flex flex-col pt-8">
+            <div className="lg:w-[60%] flex flex-col pt-8">
               <div className="mb-6 h-[100px]">
                 <h2 className="text-3xl md:text-4xl font-serif dark:text-white mb-2">
                   {buffetHeader.headlinePart1}{" "}
@@ -362,7 +362,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
             </div>
 
             {/* Offers Column */}
-            <div className="lg:w-[30%] bg-zinc-50/50 dark:bg-white/[0.02] rounded-[40px] p-8 border border-zinc-100 dark:border-white/5 flex flex-col justify-end">
+            <div className="lg:w-[35%] bg-zinc-50/50 dark:bg-white/[0.02] rounded-[40px] p-8 border border-zinc-100 dark:border-white/5 flex flex-col justify-end">
               <div className="mb-6 h-[80px]">
                 <h3 className="text-2xl font-serif dark:text-white mb-1">
                   {offerHeader.headLine1}{" "}
