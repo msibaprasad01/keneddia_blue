@@ -16,6 +16,7 @@ interface PropertyMedia {
 interface GalleryItem {
   id: number;
   category: string;
+  categoryName:string;
   propertyId: number;
   propertyName: string;
   media: PropertyMedia;
@@ -53,16 +54,20 @@ export default function GalleryModal({
   const [currentIndex, setCurrentIndex] = useState(initialImageIndex);
   const [activeCategory, setActiveCategory] = useState("ALL");
 
-  // Combine hotel media + gallery data
   const allImages = useMemo(() => {
     return galleryData
-      .filter((item) => item.media?.url)
+      .filter(
+        (item) =>
+          item.isActive &&
+          item.media?.url &&
+          item.categoryName?.toLowerCase() !== "3d",
+      )
       .map((item) => ({
         src: item.media.url,
-        category: item.category,
-        caption: item.media.fileName || `${item.category} Image`,
+        category: item.categoryName || "OTHER", // ✅ correct field
+        caption: item.media.fileName || `${item.categoryName || "Image"} Image`,
       }));
-  }, [galleryData, hotel.name]);
+  }, [galleryData]);
 
   // Extract unique categories dynamically
   const categories = useMemo(() => {

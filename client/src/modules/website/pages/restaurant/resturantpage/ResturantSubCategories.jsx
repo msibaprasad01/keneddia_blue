@@ -99,6 +99,8 @@ export default function ResturantSubCategories({ propertyId }) {
     target: containerRef,
     offset: ["start end", "end start"],
   });
+  const generateSlug = (name) =>
+    name?.toLowerCase().trim().replace(/\s+/g, "-");
 
   const moveTL_BR = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
   const bgOpacity = useTransform(
@@ -128,10 +130,12 @@ export default function ResturantSubCategories({ propertyId }) {
         const filtered = cards
           .filter((c) => c.propertyId === propertyId && c.isActive)
           .sort((a, b) => a.displayOrder - b.displayOrder);
+        console.log("filtered", filtered);
 
         if (filtered.length > 0) {
           const mapped = filtered.map((card, index) => ({
-            id: String(card.id),
+            slug: generateSlug(card.verticalName),
+            id: card.id, // keep ID if needed internally
             title: card.verticalName || card.itemName,
             description: card.description || "",
             image:
@@ -251,7 +255,7 @@ export default function ResturantSubCategories({ propertyId }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              // onClick={() => navigate(`/resturant/${propertyId}/${exp.id}`)}
+              onClick={() => navigate(`/resturant/${propertyId}/${exp.slug}`)}
               // onClick={() =>
               //   navigate(`/resturant/${propertyId}/${exp.id}`, {
               //     state: {

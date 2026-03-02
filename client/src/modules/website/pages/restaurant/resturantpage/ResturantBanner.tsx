@@ -118,7 +118,7 @@ const FALLBACK_RESTAURANT: RestaurantData = {
   ],
   coordinates: null,
   image: { src: gallery5, alt: "Kennedia Blu Restaurant Ghaziabad" },
-  nearbyPlaces: ["300 meters from T&T Fragrance"],
+  nearbyPlaces: [{ nearbyLocationName: "300 meters from T&T Fragrance" }],
 };
 
 // ── Motion variants ───────────────────────────────────────────────────────────
