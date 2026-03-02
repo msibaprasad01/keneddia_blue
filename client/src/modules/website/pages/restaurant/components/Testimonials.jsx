@@ -312,6 +312,7 @@ const FeedbackCard = ({ item }) => {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function AutoTestimonials({ propertyId }) {
+  console.log('propertyId',propertyId)
   const containerRef = useRef(null);
   const fileInputRef = useRef(null);
   const [testimonialHeader, setTestimonialHeader] = useState({

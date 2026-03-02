@@ -11,25 +11,7 @@ import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
 import Testimonials from "./components/Testimonials";
 import ReservationForm from "./components/ReservationForm";
 import { getAllVerticalCards, getMenuItems } from "@/Api/RestaurantApi";
-import { getAllGalleries } from "@/Api/Api";
-
-import beverage from "@/assets/resturant_images/beverage.jpg";
-import drink1 from "@/assets/resturant_images/drink1.jpg";
-import drink2 from "@/assets/resturant_images/drink2.jpg";
-import drink3 from "@/assets/resturant_images/drink3.jpg";
-import food1 from "@/assets/resturant_images/food1.jpg";
-import italian1 from "@/assets/resturant_images/italian1.jpg";
-import item1 from "@/assets/resturant_images/item1.jpg";
-import item2 from "@/assets/resturant_images/item2.jpg";
-
-import luxury1 from "@/assets/resturant_images/luxuary/099A9508.JPG";
-import luxury2 from "@/assets/resturant_images/luxuary/099A9535.JPG";
-import luxury3 from "@/assets/resturant_images/luxuary/099A9684.JPG";
-import luxury4 from "@/assets/resturant_images/luxuary/luxury1.JPG";
-import luxury5 from "@/assets/resturant_images/luxuary/luxury2.JPG";
-
-const LUXURY_IMAGES = [luxury1, luxury2, luxury3, luxury4, luxury5];
-const SHUFFLED_LUXURY = [...LUXURY_IMAGES].sort(() => Math.random() - 0.5);
+import { getAllGalleries, GetAllPropertyDetails } from "@/Api/Api";
 
 /* Navigation for Category Page */
 const resturant_NAV_ITEMS = [
@@ -37,26 +19,6 @@ const resturant_NAV_ITEMS = [
   { type: "link", label: "MENU", href: "#menu" },
   { type: "link", label: "CONTACT", href: "#contact" },
 ];
-
-const CARD_BG_COLORS = [
-  {
-    bgColor: "bg-orange-50 dark:bg-orange-950/10",
-    hoverBg: "hover:bg-orange-50 dark:hover:bg-orange-900/20",
-  },
-  {
-    bgColor: "bg-blue-50 dark:bg-blue-950/10",
-    hoverBg: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
-  },
-  {
-    bgColor: "bg-red-50 dark:bg-red-950/10",
-    hoverBg: "hover:bg-red-50 dark:hover:bg-red-900/20",
-  },
-  {
-    bgColor: "bg-emerald-50 dark:bg-emerald-950/10",
-    hoverBg: "hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
-  },
-];
-
 const generateSlug = (name) => name?.toLowerCase().trim().replace(/\s+/g, "-");
 
 function buildMenuFromApi(allItems, verticalTitle) {
@@ -191,8 +153,10 @@ function OtherVerticalsSection({ experiences, propertyId }) {
 
 /* ── Main Template ─────────────────────────────────────────────────────────── */
 function ResturantCategoryPageTemplate() {
-  const { propertyId, categoryType } = useParams();
+  const { propertyId: paramPropertyId, categoryType } = useParams();
+  const propertyId = paramPropertyId ? Number(paramPropertyId) : null;
   const navigate = useNavigate();
+  const [propertyData, setPropertyData] = useState(null);
 
   const [currentCategory, setCurrentCategory] = useState(null);
   const [otherVerticals, setOtherVerticals] = useState([]);
@@ -215,7 +179,49 @@ function ResturantCategoryPageTemplate() {
       setNotFound(false);
 
       try {
-        // 1️⃣ Vertical cards
+        /* ─────────────────────────────────────────────
+         0️⃣ Fetch Property Details
+      ───────────────────────────────────────────── */
+        const propertyRes = await GetAllPropertyDetails();
+        const rawData = propertyRes?.data || propertyRes;
+
+        const flattened = (Array.isArray(rawData) ? rawData : []).flatMap(
+          (item) => {
+            const parent = item.propertyResponseDTO;
+            const listings = item.propertyListingResponseDTOS || [];
+
+            return listings.length === 0
+              ? [{ parent, listing: null }]
+              : listings.map((l) => ({ parent, listing: l }));
+          },
+        );
+
+        const matchedProperty = flattened.find(
+          (m) => Number(m.parent.id) === Number(propertyId),
+        );
+
+        if (matchedProperty) {
+          const { parent, listing } = matchedProperty;
+
+          const combinedProperty = {
+            ...parent,
+            ...listing,
+            id: parent.id,
+            propertyId: parent.id,
+            name: listing?.propertyName?.trim() || parent.propertyName,
+            description: listing?.mainHeading || "",
+            location: listing?.fullAddress || parent.address,
+            city: listing?.city || parent.locationName,
+            media:
+              listing?.media?.length > 0 ? listing.media : parent.media || [],
+          };
+
+          setPropertyData(combinedProperty);
+        }
+
+        /* ─────────────────────────────────────────────
+         1️⃣ Vertical Cards
+      ───────────────────────────────────────────── */
         const cardsRes = await getAllVerticalCards();
         const cards = cardsRes?.data || cardsRes || [];
 
@@ -225,31 +231,29 @@ function ResturantCategoryPageTemplate() {
           )
           .sort((a, b) => a.displayOrder - b.displayOrder);
 
-        const mapped = filtered.map((card, index) => {
+        const mapped = filtered.map((card) => {
           const slug = generateSlug(card.verticalName);
+
           return {
             slug,
             id: card.id,
             title: card.verticalName || card.itemName,
             description: card.description || "",
             image: card.media?.url || "",
-            link: card.link || "#",
+            link: card.link || "",
             ctaButtonText: card.showOrderButton
-              ? card.extraText || "Order"
+              ? card.extraText || ""
               : null,
-            bgColor:
-              card.cardBackgroundColor ||
-              CARD_BG_COLORS[index % CARD_BG_COLORS.length].bgColor,
-            hoverBg: CARD_BG_COLORS[index % CARD_BG_COLORS.length].hoverBg,
+            bgColor: card.cardBackgroundColor || "",
+            hoverBg: "",
             isHexColor: !!card.cardBackgroundColor,
-
-            // Dynamic only
             heroImage: card.media?.url || "",
-            themeColor: card.cardBackgroundColor || "#ef4444",
+            themeColor: card.cardBackgroundColor || null,
           };
         });
 
         const matched = mapped.find((m) => m.slug === normalizedSlug);
+
         if (!matched) {
           setNotFound(true);
         } else {
@@ -257,18 +261,29 @@ function ResturantCategoryPageTemplate() {
           setOtherVerticals(mapped.filter((m) => m.slug !== normalizedSlug));
         }
 
-        // 2️⃣ Menu items — all items for this property
+        /* ─────────────────────────────────────────────
+         2️⃣ Menu Items
+      ───────────────────────────────────────────── */
         const menuRes = await getMenuItems();
         const allItems = menuRes?.data || menuRes || [];
+
         const propItems = allItems.filter(
           (i) =>
             String(i.propertyId) === String(propertyId) && i.status !== false,
         );
+
         setApiMenuItems(propItems);
 
-        // 3️⃣ Gallery
-        const galleryRes = await getAllGalleries({ page: 0, size: 100 });
+        /* ─────────────────────────────────────────────
+         3️⃣ Gallery
+      ───────────────────────────────────────────── */
+        const galleryRes = await getAllGalleries({
+          page: 0,
+          size: 100,
+        });
+
         const allGallery = galleryRes?.data?.content || [];
+
         const filteredGallery = allGallery.filter(
           (g) =>
             String(g.propertyId) === String(propertyId) &&
@@ -276,6 +291,7 @@ function ResturantCategoryPageTemplate() {
             g.media?.url &&
             g.categoryName?.toLowerCase() !== "3d",
         );
+
         setGalleryData(filteredGallery);
       } catch (err) {
         console.error("[CategoryPage] Error:", err);
@@ -287,7 +303,6 @@ function ResturantCategoryPageTemplate() {
 
     fetchData();
   }, [propertyId, normalizedSlug]);
-
   /* ── Loading ── */
   if (loading) {
     return (
@@ -334,6 +349,7 @@ function ResturantCategoryPageTemplate() {
           content={currentCategory}
           propertyId={propertyId}
           galleryData={galleryData}
+          propertyData={propertyData}
         />
 
         {/* Menu — API items matched by categoryName, grouped by typeName as tabs */}
@@ -359,15 +375,15 @@ function ResturantCategoryPageTemplate() {
         </div>
 
         <div id="events">
-          <ResturantpageEvents />
+          <ResturantpageEvents propertyId={propertyId} />
         </div>
 
         <div id="testimonials">
-          <Testimonials />
+          <Testimonials propertyId={propertyId} />
         </div>
 
         <div id="ReservationForm">
-          <ReservationForm />
+          <ReservationForm propertyId={propertyId} />
         </div>
       </main>
 

@@ -88,7 +88,7 @@ const STATIC_HEADER = {
   },
 };
 
-export default function ResturantSubCategories({ propertyId,propertyData  }) {
+export default function ResturantSubCategories({ propertyId, propertyData }) {
   const navigate = useNavigate();
   const containerRef = useRef(null);
 
@@ -255,7 +255,11 @@ export default function ResturantSubCategories({ propertyId,propertyData  }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              onClick={() => navigate(`/resturant/${propertyId}/${exp.slug}`)}
+              onClick={() =>
+                navigate(`/resturant/${propertyId}/${exp.slug}`, {
+                  state: { propertyData },
+                })
+              }
               // onClick={() =>
               //   navigate(`/resturant/${propertyId}/${exp.id}`, {
               //     state: {
