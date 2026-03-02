@@ -23,6 +23,7 @@ import {
   getMenuHeaders,
   getMenuItems,
   getAllOfferHeaders,
+  addItemLike,
 } from "@/Api/RestaurantApi";
 
 // ── Fallbacks ─────────────────────────────────────────────────────────────────
@@ -221,6 +222,12 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
     type: "book",
   });
   const [likedItems, setLikedItems] = useState({});
+  const [likeForm, setLikeForm] = useState({
+    name: "",
+    phone: "",
+    description: "",
+  });
+  const [likeSubmitting, setLikeSubmitting] = useState(false);
 
   // ── Fetch buffet / offer (existing logic, unchanged) ──────────────────────
   useEffect(() => {
@@ -343,10 +350,33 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
       .finally(() => setMenuLoading(false));
   }, [propertyId]);
 
-  const handleLikeSubmit = () => {
-    if (bookingModal.item) {
+  const handleLikeSubmit = async () => {
+    if (!bookingModal.item) return;
+    setLikeSubmitting(true);
+    try {
+      const res = await addItemLike(bookingModal.item.id, {
+        name: likeForm.name,
+        mobileNumber: likeForm.phone,
+        description: likeForm.description || "Great taste!",
+      });
+      const updated = res?.data || res;
+      // Update likeCount in menuItems from API response totalLikeCount
+      setMenuItems((prev) =>
+        prev.map((i) =>
+          i.id === bookingModal.item.id
+            ? { ...i, likeCount: updated.totalLikeCount ?? i.likeCount }
+            : i,
+        ),
+      );
       setLikedItems((prev) => ({ ...prev, [bookingModal.item.id]: true }));
       setBookingModal({ isOpen: false, item: null, type: "book" });
+      setLikeForm({ name: "", phone: "", description: "" });
+    } catch {
+      // fail silently — still mark as liked locally
+      setLikedItems((prev) => ({ ...prev, [bookingModal.item.id]: true }));
+      setBookingModal({ isOpen: false, item: null, type: "book" });
+    } finally {
+      setLikeSubmitting(false);
     }
   };
 
@@ -612,13 +642,35 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
               <div className="space-y-4">
                 <Input
                   placeholder="Your Name"
+                  value={likeForm.name}
+                  onChange={(e) =>
+                    setLikeForm((f) => ({ ...f, name: e.target.value }))
+                  }
                   className="h-14 rounded-2xl bg-zinc-50 border-none"
                 />
                 <Input
                   placeholder="Phone Number"
+                  value={likeForm.phone}
+                  onChange={(e) =>
+                    setLikeForm((f) => ({ ...f, phone: e.target.value }))
+                  }
                   className="h-14 rounded-2xl bg-zinc-50 border-none"
                 />
+                {bookingModal.type === "like" && (
+                  <Input
+                    placeholder="Leave a comment (optional)"
+                    value={likeForm.description}
+                    onChange={(e) =>
+                      setLikeForm((f) => ({
+                        ...f,
+                        description: e.target.value,
+                      }))
+                    }
+                    className="h-14 rounded-2xl bg-zinc-50 border-none"
+                  />
+                )}
                 <Button
+                  disabled={!likeForm.name || !likeForm.phone || likeSubmitting}
                   onClick={
                     bookingModal.type === "like"
                       ? handleLikeSubmit
@@ -631,9 +683,13 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                   }
                   className="w-full h-14 bg-primary rounded-2xl font-black uppercase shadow-lg"
                 >
-                  {bookingModal.type === "like"
-                    ? "Submit Like"
-                    : "Confirm Request"}
+                  {likeSubmitting ? (
+                    <Loader2 size={18} className="animate-spin mx-auto" />
+                  ) : bookingModal.type === "like" ? (
+                    "Submit Like"
+                  ) : (
+                    "Confirm Request"
+                  )}
                 </Button>
               </div>
             </motion.div>

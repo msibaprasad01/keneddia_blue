@@ -164,3 +164,10 @@ export const updateJoiningUs = (id, data) =>API.patch(`api/v1/joining-us/updateJ
 export const createGroupBookingEnquiry = (data) =>API.post("/api/v1/enquiry", data);
 export const getAllGroupBookingEnquiries = () =>API.get("/api/v1/enquiry");
 export const updateGroupBookingEnquiryStatus = (id, enabled) =>API.put(`/api/v1/enquiry/${id}/status?enabled=${enabled}`);
+
+// ─────────────────────────────
+// ITEM LIKE / REVIEWS
+// ─────────────────────────────
+export const addItemLike = (menuItemId, data) =>API.post(`/api/v1/item-like/addLike/${menuItemId}`, data);
+export const getItemLikes = () =>API.get("/api/v1/item-like/getLikes");
+export const getItemLikesByMenuItemId = (menuItemId) =>API.get(`/api/v1/item-like/getLikesByMenuItemId/${menuItemId}`);
