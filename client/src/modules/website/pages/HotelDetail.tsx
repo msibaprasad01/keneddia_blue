@@ -36,7 +36,7 @@ import {
   getAllPropertyPolicies,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
-
+import HotelGalleryGrid from "../components/hotel/Hotelgallerygrid";
 // Components
 import RightSidebar from "@/modules/website/components/hotel-detail/RightSidebar";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
@@ -606,7 +606,6 @@ export default function HotelDetail() {
                       variants={fadeIn}
                       className="flex flex-wrap items-center gap-4 pt-1 text-xs text-muted-foreground/80"
                     >
-
                       {hotel.nearbyPlaces.map((place: any, i) => {
                         const mapLink =
                           place.googleMapLink ||
@@ -698,70 +697,10 @@ export default function HotelDetail() {
             </div>
           </div>
 
-          <motion.div
-            variants={fadeIn}
-            initial="initial"
-            animate="animate"
-            className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[350px] md:h-[450px] mb-8 rounded-2xl overflow-hidden shadow-xl relative cursor-pointer [&>*]:min-h-0"
-          >
-            <div
-              className="md:col-span-2 h-full bg-muted overflow-hidden relative group row-span-2"
-              onClick={() => openGalleryAt(0)}
-            >
-              <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
-              <div className="absolute inset-0">
-                <OptimizedImage
-                  src={topGridImages[0]?.url || ""}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-            </div>
-            <div className="md:col-span-1 flex flex-col gap-3 h-full">
-              {[1, 2].map((idx) =>
-                topGridImages[idx] ? (
-                  <div
-                    key={idx}
-                    className="flex-1 bg-muted overflow-hidden relative group"
-                    onClick={() => openGalleryAt(idx)}
-                  >
-                    <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
-                    <OptimizedImage
-                      src={topGridImages[idx]?.url || ""}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                  </div>
-                ) : (
-                  <div key={idx} className="flex-1 bg-muted/40 rounded" /> // empty placeholder
-                ),
-              )}
-            </div>
-            <div
-              className="md:col-span-1 bg-muted relative overflow-hidden group"
-              onClick={() => (topGridImages[3] ? openGalleryAt(3) : undefined)}
-            >
-              {topGridImages[3] ? (
-                <>
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
-                  <OptimizedImage
-                    src={topGridImages[3]?.url || ""}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                </>
-              ) : (
-                <div className="w-full h-full bg-muted/40" />
-              )}
-              <div className="absolute inset-0 z-20 flex items-center justify-center">
-                <div className="bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transform transition-transform group-hover:scale-110">
-                  <ImageIcon className="w-4 h-4 text-primary" />
-                  <span>
-                    {topGridImages.length > 4
-                      ? `+${topGridImages.length - 4} MORE`
-                      : "VIEW GALLERY"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          <HotelGalleryGrid
+            galleryData={galleryData}
+            onOpenGallery={openGalleryAt}
+          />
 
           <FindYourStay
             onChange={handleSearchDataChange}

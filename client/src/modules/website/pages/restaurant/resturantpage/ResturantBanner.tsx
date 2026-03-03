@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRef } from "react";
 import {
   MapPin,
   Share2,
   Heart,
   ChevronRight,
   Loader2,
+  ChevronLeft,
   Star,
   Navigation,
   Image as ImageIcon,
@@ -234,6 +236,12 @@ function ResturantBanner({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showShareReactions, setShowShareReactions] = useState(false);
 
+  const [mobileIndex, setMobileIndex] = useState(0);
+  const mobileTouchStart = useRef<number | null>(null);
+  const mobilePrev = () =>
+    setMobileIndex((c) => (c - 1 + galleryMedia.length) % galleryMedia.length);
+  const mobileNext = () => setMobileIndex((c) => (c + 1) % galleryMedia.length);
+
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   const socialPlatforms = [
@@ -460,65 +468,136 @@ function ResturantBanner({
         </div>
 
         {/* Photo grid — uses galleryMedia exclusively */}
-        <motion.div
-          variants={fadeIn}
-          className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[320px] md:h-[440px] rounded-3xl overflow-hidden shadow-xl relative"
-        >
-          {/* Main large image */}
-          <div
-            className="md:col-span-2 relative group cursor-pointer overflow-hidden"
-            onClick={() => openGalleryAt(0)}
-          >
-            <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
-            <OptimizedImage
-              src={galleryMedia[0]?.url ?? ""}
-              alt={restaurant.name}
-              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-          </div>
+        {/* Photo grid — Mobile: HeroBanner-style carousel | Desktop: 4-col grid */}
+        <motion.div variants={fadeIn}>
+          {/* ── MOBILE CAROUSEL ── */}
+          <div className="relative w-full h-[420px] overflow-hidden bg-black md:hidden">
+            {/* Watermark text */}
+            <div className="absolute top-1/4 left-0 whitespace-nowrap text-[8rem] font-black text-white/[0.03] select-none z-0 pointer-events-none italic">
+              GALLERY
+            </div>
 
-          {/* Two stacked images */}
-          <div className="md:col-span-1 flex flex-col gap-3">
-            {[1, 2].map((idx) => (
-              <div
-                key={idx}
-                className="h-1/2 relative group cursor-pointer overflow-hidden"
-                onClick={() => openGalleryAt(idx)}
-              >
-                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
-                <OptimizedImage
-                  src={galleryMedia[idx]?.url ?? ""}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* 4th image with "View Gallery" overlay */}
-          <div
-            className="md:col-span-1 relative group cursor-pointer overflow-hidden"
-            onClick={() => openGalleryAt(3)}
-          >
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
-            <OptimizedImage
-              src={galleryMedia[3]?.url ?? ""}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 z-20 flex items-center justify-center">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsGalleryOpen(true);
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={mobileIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.5 }}
+                className="absolute inset-0 cursor-pointer"
+                onClick={() => openGalleryAt(mobileIndex)}
+                onTouchStart={(e) => {
+                  mobileTouchStart.current = e.touches[0].clientX;
                 }}
-                className="bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transform transition-transform group-hover:scale-110 hover:bg-white"
+                onTouchEnd={(e) => {
+                  if (mobileTouchStart.current === null) return;
+                  const diff =
+                    mobileTouchStart.current - e.changedTouches[0].clientX;
+                  if (Math.abs(diff) > 40)
+                    diff > 0 ? mobileNext() : mobilePrev();
+                  mobileTouchStart.current = null;
+                }}
               >
-                <ImageIcon className="w-4 h-4 text-primary" />
-                <span>
-                  {galleryMedia.length > 4
-                    ? `+${galleryMedia.length - 4} MORE`
-                    : "VIEW GALLERY"}
-                </span>
-              </button>
+                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
+                <img
+                  src={galleryMedia[mobileIndex]?.url || ""}
+                  alt=""
+                  className="h-full w-full object-cover scale-110"
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Counter + arrows */}
+            <div className="absolute bottom-8 right-5 z-30 flex items-center gap-6">
+              <div className="flex flex-col items-end">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-white text-4xl font-serif italic tracking-tighter">
+                    0{mobileIndex + 1}
+                  </span>
+                  <span className="text-white/20 text-lg font-serif">
+                    /{String(galleryMedia.length).padStart(2, "0")}
+                  </span>
+                </div>
+                <div className="w-24 h-[2px] bg-white/10 relative mt-1.5 overflow-hidden">
+                  <motion.div
+                    className="absolute h-full bg-primary top-0 left-0"
+                    animate={{
+                      width: `${((mobileIndex + 1) / galleryMedia.length) * 100}%`,
+                    }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={mobilePrev}
+                  className="p-3 border border-white/10 text-white hover:bg-white hover:text-black transition-all group active:scale-95"
+                >
+                  <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                </button>
+                <button
+                  onClick={mobileNext}
+                  className="p-3 bg-white text-black hover:bg-primary hover:text-white transition-all group active:scale-95"
+                >
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── DESKTOP GRID ── */}
+          <div className="hidden md:grid grid-cols-4 gap-3 h-[440px] rounded-3xl overflow-hidden shadow-xl">
+            <div
+              className="md:col-span-2 relative group cursor-pointer overflow-hidden"
+              onClick={() => openGalleryAt(0)}
+            >
+              <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
+              <OptimizedImage
+                src={galleryMedia[0]?.url ?? ""}
+                alt={restaurant.name}
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+            </div>
+            <div className="md:col-span-1 flex flex-col gap-3">
+              {[1, 2].map((idx) => (
+                <div
+                  key={idx}
+                  className="h-1/2 relative group cursor-pointer overflow-hidden"
+                  onClick={() => openGalleryAt(idx)}
+                >
+                  <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
+                  <OptimizedImage
+                    src={galleryMedia[idx]?.url ?? ""}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                </div>
+              ))}
+            </div>
+            <div
+              className="md:col-span-1 relative group cursor-pointer overflow-hidden"
+              onClick={() => openGalleryAt(3)}
+            >
+              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
+              <OptimizedImage
+                src={galleryMedia[3]?.url ?? ""}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 z-20 flex items-center justify-center">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsGalleryOpen(true);
+                  }}
+                  className="bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transform transition-transform group-hover:scale-110 hover:bg-white"
+                >
+                  <ImageIcon className="w-4 h-4 text-primary" />
+                  <span>
+                    {galleryMedia.length > 4
+                      ? `+${galleryMedia.length - 4} MORE`
+                      : "VIEW GALLERY"}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
