@@ -295,6 +295,7 @@ const Spinner = ({ className = "w-4 h-4" }) => (
 // ============================================================================
 const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [displayOrders, setDisplayOrders] = useState([]);
   const [categoryId, setCategoryId] = useState("");
   const [previews, setPreviews] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -332,6 +333,7 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
     if (!isOpen) {
       setSelectedFiles([]);
       setPreviews([]);
+      setDisplayOrders([]);
       setShowCategoryManager(false);
     }
   }, [isOpen]);
@@ -355,11 +357,20 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
     );
     if (valid.length !== files.length)
       showError("Some files were skipped. Only images and videos are allowed.");
-    setSelectedFiles((prev) => [...prev, ...valid]);
+    setSelectedFiles((prev) => {
+      const updated = [...prev, ...valid];
+      setDisplayOrders((prevOrders) => [
+        ...prevOrders,
+        ...valid.map((_, i) => prevOrders.length + prev.length + i + 1),
+      ]);
+      return updated;
+    });
   };
 
-  const removeFile = (index) =>
+  const removeFile = (index) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setDisplayOrders((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -374,6 +385,9 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
       selectedFiles.forEach((f) => formData.append("files", f));
       formData.append("categoryId", categoryId.toString());
       formData.append("propertyId", propId.toString());
+      selectedFiles.forEach((_, i) =>
+        formData.append("displayOrders", displayOrders[i] ?? i + 1),
+      );
 
       await uploadGalleryMedia(formData);
       showSuccess(`Successfully uploaded ${selectedFiles.length} file(s)`);
@@ -534,8 +548,28 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
                         >
                           <XCircleIcon className="w-5 h-5" />
                         </button>
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 truncate">
-                          {file.name}
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-1.5 flex items-center gap-1.5">
+                          <span className="text-[10px] text-gray-300 shrink-0">
+                            Order
+                          </span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={displayOrders[index] ?? index + 1}
+                            onChange={(e) =>
+                              setDisplayOrders((prev) => {
+                                const updated = [...prev];
+                                updated[index] = Number(e.target.value) || 1;
+                                return updated;
+                              })
+                            }
+                            onClick={(e) => e.stopPropagation()}
+                            disabled={uploading}
+                            className="w-12 px-1 py-0.5 text-xs text-center bg-white/20 border border-white/30 rounded text-white focus:outline-none focus:bg-white/30 disabled:opacity-50"
+                          />
+                          <span className="text-[10px] text-gray-400 truncate flex-1 text-right">
+                            {file.name}
+                          </span>
                         </div>
                       </div>
                     ))}

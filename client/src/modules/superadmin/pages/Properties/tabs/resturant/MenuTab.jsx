@@ -20,6 +20,7 @@ import {
   createMenuHeaderSection,
   getMenuHeaders,
   updateMenuHeadersSection,
+  getItemLikes,
 } from "@/Api/RestaurantApi";
 import { getMenuItems, toggleMenuItemStatus } from "@/Api/RestaurantApi";
 
@@ -817,6 +818,189 @@ function MenuItemsPanel({
     </div>
   );
 }
+function ItemLikesPanel({ propertyId }) {
+  const [likes, setLikes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await getItemLikes();
+        const all = res?.data || [];
+        setLikes(all.filter((l) => l.propertyId === propertyId));
+      } catch {
+        setError("Failed to load likes.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [propertyId]);
+
+  if (loading)
+    return (
+      <div className="flex items-center justify-center py-16 text-gray-400 gap-2 text-sm">
+        <Loader2 size={16} className="animate-spin" /> Loading likes…
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">
+        {error}
+      </div>
+    );
+
+  const filtered = likes.filter(
+    (l) =>
+      !search ||
+      l.name?.toLowerCase().includes(search.toLowerCase()) ||
+      l.itemName?.toLowerCase().includes(search.toLowerCase()) ||
+      String(l.mobileNumber).includes(search),
+  );
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 flex-wrap">
+        <input
+          className={`${inp} max-w-xs`}
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(0);
+          }}
+          placeholder="Search by name, item or mobile…"
+        />
+        {search && (
+          <button
+            onClick={() => {
+              setSearch("");
+              setPage(0);
+            }}
+            className="text-xs font-bold text-gray-400 hover:text-gray-600 underline"
+          >
+            Clear
+          </button>
+        )}
+        <span className="ml-auto text-xs text-gray-400 font-semibold">
+          {filtered.length} record{filtered.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+
+      <div className="rounded-xl border border-gray-100 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-100">
+              {["#", "User", "Mobile", "Item", "Total Likes", "Note"].map(
+                (h) => (
+                  <th
+                    key={h}
+                    className="text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap"
+                  >
+                    {h}
+                  </th>
+                ),
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {paginated.length === 0 && (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-4 py-16 text-center text-sm text-gray-400"
+                >
+                  No likes data found.
+                </td>
+              </tr>
+            )}
+            {paginated.map((l, idx) => (
+              <tr
+                key={l.id}
+                className="bg-white hover:bg-gray-50/50 transition-colors"
+              >
+                <td className="px-4 py-3 text-xs text-gray-400 font-bold">
+                  {page * PAGE_SIZE + idx + 1}
+                </td>
+                <td className="px-4 py-3">
+                  <p className="font-semibold text-gray-800 text-sm">
+                    {l.name || "—"}
+                  </p>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500 font-mono">
+                  {l.mobileNumber || "—"}
+                </td>
+                <td className="px-4 py-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
+                    {l.itemName || "—"}
+                  </span>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <span className="flex items-center gap-1 text-xs font-bold text-rose-500">
+                    <Heart size={12} className="fill-rose-500" />
+                    {l.totalLikeCount?.toLocaleString() || 0}
+                  </span>
+                </td>
+                <td className="px-4 py-3 max-w-[200px]">
+                  <p className="text-xs text-gray-400 italic truncate">
+                    {l.description || "—"}
+                  </p>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {filtered.length > PAGE_SIZE && (
+          <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+            <p className="text-[11px] text-gray-400">
+              Showing{" "}
+              <span className="font-bold text-gray-600">
+                {page * PAGE_SIZE + 1}–
+                {Math.min((page + 1) * PAGE_SIZE, filtered.length)}
+              </span>{" "}
+              of{" "}
+              <span className="font-bold text-gray-600">{filtered.length}</span>
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-white disabled:opacity-30 transition-all"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <div className="flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${i === page ? "bg-blue-600 text-white" : "text-gray-500 hover:bg-gray-100"}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page >= totalPages - 1}
+                className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-white disabled:opacity-30 transition-all"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MENU TAB — MAIN
@@ -877,6 +1061,7 @@ const MenuTab = ({
         {[
           { key: "header", label: "Header & Chef" },
           { key: "items", label: "Menu Items" },
+          { key: "likes", label: "Likes" },
         ].map((t) => (
           <button
             key={t.key}
@@ -894,6 +1079,7 @@ const MenuTab = ({
 
       {/* ── HEADER PANEL ─────────────────────────────────────────────────── */}
       {activePanel === "header" && <HeaderEditor propertyId={propertyId} />}
+      {activePanel === "likes" && <ItemLikesPanel propertyId={propertyId} />}
 
       {/* ── ITEMS PANEL ──────────────────────────────────────────────────── */}
       {activePanel === "items" && (
