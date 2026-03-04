@@ -171,3 +171,16 @@ export const updateGroupBookingEnquiryStatus = (id, enabled) =>API.put(`/api/v1/
 export const addItemLike = (menuItemId, data) =>API.post(`/api/v1/item-like/addLike/${menuItemId}`, data);
 export const getItemLikes = () =>API.get("/api/v1/item-like/getLikes");
 export const getItemLikesByMenuItemId = (menuItemId) =>API.get(`/api/v1/item-like/getLikesByMenuItemId/${menuItemId}`);
+
+// ─────────────────────────────
+// EVENTS HEADER
+// ─────────────────────────────
+
+// create events header
+export const createEventsHeader = (data) =>API.post("api/v1/events-header", data);
+export const updateEventsHeader = (id, data) =>API.put(`api/v1/events-header/${id}`, data);
+export const getEventsHeaderSection = () =>API.get("api/v1/events-header");
+export const getEventsHeaderByProperty = (propertyId) =>API.get(`api/v1/events-header/property/${propertyId}`);
+export const toggleEventsHeaderStatus = (id, isActive) =>API.patch(`api/v1/events-header/${id}/status`, null, {
+    params: { isActive },
+  });

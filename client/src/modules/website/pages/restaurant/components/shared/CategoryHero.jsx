@@ -46,11 +46,17 @@ export default function CategoryHero({
   propertyData,
 }) {
   const navigate = useNavigate();
-  console.log('propertyData->',propertyData)
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showShareReactions, setShowShareReactions] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
+  const [mobileIndex, setMobileIndex] = useState(0);
+  const touchStart = React.useRef(null);
+
+  const prevMobile = () =>
+    setMobileIndex((c) => (c - 1 + gridImages.length) % gridImages.length);
+
+  const nextMobile = () => setMobileIndex((c) => (c + 1) % gridImages.length);
 
   const restaurantPath = `/resturant/${propertyId || 27}`;
 
@@ -347,62 +353,130 @@ export default function CategoryHero({
         </div>
 
         {/* Photo grid */}
-        <motion.div
-          variants={fadeIn}
-          className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[320px] md:h-[440px] rounded-3xl overflow-hidden shadow-xl relative"
-        >
-          <div
-            className="md:col-span-2 relative group cursor-pointer overflow-hidden"
-            onClick={() => openGalleryAt(0)}
-          >
-            <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
-            <OptimizedImage
-              src={gridImages[0]}
-              alt={content.title}
-              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-          </div>
-
-          <div className="md:col-span-1 flex flex-col gap-3">
-            {[1, 2].map((idx) => (
-              <div
-                key={idx}
-                className="h-1/2 relative group cursor-pointer overflow-hidden"
-                onClick={() => openGalleryAt(idx)}
-              >
-                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
-                <OptimizedImage
-                  src={gridImages[idx]}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              </div>
-            ))}
-          </div>
-
-          <div
-            className="md:col-span-1 relative group cursor-pointer overflow-hidden"
-            onClick={() => openGalleryAt(3)}
-          >
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
-            <OptimizedImage
-              src={gridImages[3]}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 z-20 flex items-center justify-center">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsGalleryOpen(true);
+        {/* Photo section */}
+        <motion.div variants={fadeIn}>
+          {/* ── MOBILE SLIDER ───────────────── */}
+          <div className="relative w-full h-[420px] overflow-hidden rounded-3xl shadow-xl md:hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={mobileIndex}
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -40 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0 cursor-pointer"
+                onClick={() => openGalleryAt(mobileIndex)}
+                onTouchStart={(e) => {
+                  touchStart.current = e.touches[0].clientX;
                 }}
-                className="bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transform transition-transform group-hover:scale-110 hover:bg-white"
+                onTouchEnd={(e) => {
+                  if (touchStart.current === null) return;
+                  const diff = touchStart.current - e.changedTouches[0].clientX;
+                  if (Math.abs(diff) > 40)
+                    diff > 0 ? nextMobile() : prevMobile();
+                  touchStart.current = null;
+                }}
               >
-                <ImageIcon className="w-4 h-4 text-primary" />
-                <span>
+                {gridImages[mobileIndex] ? (
+                  <OptimizedImage
+                    src={gridImages[mobileIndex]}
+                    className="w-full h-full object-cover object-center"
+                  />
+                ) : (
+                  <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
+                    <ImageIcon className="w-8 h-8 text-white/40" />
+                  </div>
+                )}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+              </motion.div>
+            </AnimatePresence>
+
+            {/* arrows */}
+            <button
+              onClick={prevMobile}
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md"
+            >
+              <ChevronRight className="rotate-180 w-4 h-4 text-zinc-800" />
+            </button>
+
+            <button
+              onClick={nextMobile}
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md"
+            >
+              <ChevronRight className="w-4 h-4 text-zinc-800" />
+            </button>
+
+            {/* counter */}
+            <div className="absolute bottom-4 right-4 z-20 bg-black/50 text-white text-xs font-bold px-3 py-1 rounded-full">
+              {mobileIndex + 1} / {gridImages.length}
+            </div>
+          </div>
+
+          {/* ── DESKTOP GRID (UNCHANGED) ───────────────── */}
+          <div className="hidden md:grid grid-cols-4 gap-3 h-[440px] rounded-3xl overflow-hidden shadow-xl">
+            {/* MAIN IMAGE */}
+            <div
+              className="md:col-span-2 relative group cursor-pointer overflow-hidden rounded-2xl"
+              onClick={() => gridImages[0] && openGalleryAt(0)}
+            >
+              {!gridImages[0] && (
+                <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
+                  <ImageIcon className="w-8 h-8 text-white/40" />
+                </div>
+              )}
+
+              <OptimizedImage
+                src={gridImages[0]}
+                className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+
+            {/* STACK */}
+            <div className="md:col-span-1 flex flex-col gap-3">
+              {[1, 2].map((idx) => (
+                <div
+                  key={idx}
+                  className="flex-1 relative group cursor-pointer overflow-hidden rounded-2xl"
+                  onClick={() => gridImages[idx] && openGalleryAt(idx)}
+                >
+                  {gridImages[idx] ? (
+                    <OptimizedImage
+                      src={gridImages[idx]}
+                      className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
+                      <ImageIcon className="w-6 h-6 text-white/40" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* LAST IMAGE */}
+            <div
+              className="md:col-span-1 relative group cursor-pointer overflow-hidden rounded-2xl"
+              onClick={() => gridImages[3] && openGalleryAt(3)}
+            >
+              {gridImages[3] ? (
+                <OptimizedImage
+                  src={gridImages[3]}
+                  className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                />
+              ) : (
+                <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
+                  <ImageIcon className="w-8 h-8 text-white/40" />
+                </div>
+              )}
+
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-white/85 backdrop-blur-xl px-5 py-2 rounded-xl text-xs font-bold">
                   {gridImages.length > 4
                     ? `+${gridImages.length - 4} MORE`
                     : "VIEW GALLERY"}
-                </span>
-              </button>
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>

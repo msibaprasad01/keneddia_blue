@@ -12,7 +12,11 @@ import ResturantGallerypage from "./resturantpage/ResturantGallerypage";
 import ReservationForm from "./components/ReservationForm";
 import { siteContent } from "@/data/siteContent";
 import { useParams } from "react-router-dom";
-import { GetAllPropertyDetails, getAllGalleries } from "@/Api/Api";
+import {
+  GetAllPropertyDetails,
+  getAllGalleries,
+  getGalleryByPropertyId,
+} from "@/Api/Api";
 /* ===============================
    RESTAURANT NAVIGATION ITEMS
 ================================= */
@@ -103,21 +107,16 @@ export default function RestaurantHomepage() {
 
         setPropertyData(combinedProperty);
 
-        // 2️⃣ Fetch gallery separately
-        const galleryRes = await getAllGalleries({
-          page: 0,
-          size: 100,
-        });
+        // 2️⃣ Fetch gallery using propertyId
+        const galleryRes = await getGalleryByPropertyId(parent.id);
 
-        const allGallery = galleryRes?.data?.content || [];
+        const rawGallery =
+          galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
 
-        const filteredGallery = allGallery.filter(
-          (g) =>
-            Number(g.propertyId) === parent.id && g.isActive && g.media?.url,
-        );
-
-        console.log("Filtered Gallery:", filteredGallery);
-
+        const filteredGallery = (
+          Array.isArray(rawGallery) ? rawGallery : []
+        ).filter((g) => g.isActive && g.media?.url);
+        setGalleryData(filteredGallery);
         setGalleryData(filteredGallery);
       } catch (err) {
         console.error("Restaurant Fetch Error:", err);
@@ -146,7 +145,10 @@ export default function RestaurantHomepage() {
         </div>
 
         <div id="menu">
-          <ResturantSubCategories propertyId={numericPropertyId} propertyData={propertyData}/>
+          <ResturantSubCategories
+            propertyId={numericPropertyId}
+            propertyData={propertyData}
+          />
           <SignatureDishesAndBuffet propertyId={numericPropertyId} />
         </div>
 
@@ -164,7 +166,7 @@ export default function RestaurantHomepage() {
           <ResturantGallerypage propertyId={numericPropertyId} />
         </div>
 
-        <ReservationForm  propertyId={numericPropertyId} />
+        <ReservationForm propertyId={numericPropertyId} />
       </main>
 
       <div id="contact">

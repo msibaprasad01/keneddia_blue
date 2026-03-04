@@ -21,7 +21,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
 import { getEventsUpdated, getGroupBookings } from "@/Api/Api";
-import { createGroupBookingEnquiry } from "@/Api/RestaurantApi";
+import {
+  createGroupBookingEnquiry,
+  getEventsHeaderByProperty,
+} from "@/Api/RestaurantApi";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface PropertyProps {
@@ -110,6 +113,11 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [eventsHeader, setEventsHeader] = useState<{
+    header1: string;
+    header2: string;
+    description: string;
+  } | null>(null);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(0);
@@ -148,9 +156,10 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [eventRes, bookingRes] = await Promise.all([
+        const [eventRes, bookingRes, headerRes] = await Promise.all([
           getEventsUpdated(),
           getGroupBookings(),
+          getEventsHeaderByProperty(propertyId),
         ]);
 
         const allEvents: ApiEvent[] = Array.isArray(eventRes)
@@ -175,6 +184,9 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
             .filter((b) => (propertyId ? b.propertyId === propertyId : true))
             .sort((a, b) => b.id - a.id),
         );
+        const headerData = headerRes?.data;
+        const header = Array.isArray(headerData) ? headerData[0] : headerData;
+        if (header?.isActive) setEventsHeader(header);
       } catch {
         toast.error("Error loading events data");
       } finally {
@@ -254,10 +266,16 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
         <div className="flex flex-row items-end justify-between mb-8">
           <div className="flex flex-col">
             <h2 className="text-3xl md:text-4xl font-serif dark:text-white mb-2">
-              Events <span className="italic text-primary">& Celebrations</span>
+              {eventsHeader?.header1 || "Events"}{" "}
+              <span className="italic text-primary">
+                {eventsHeader?.header2
+                  ? ` ${eventsHeader.header2}`
+                  : " Celebrations"}
+              </span>
             </h2>
             <p className="text-zinc-500 dark:text-zinc-400 text-sm font-light tracking-wide">
-              Explore international delicacies curated for every event.
+              {eventsHeader?.description ||
+                "Explore international delicacies curated for every event."}
             </p>
           </div>
 

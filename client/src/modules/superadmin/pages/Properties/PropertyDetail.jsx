@@ -12,6 +12,7 @@ import { showError } from "@/lib/toasters/toastUtils";
 import {
   getRoomsByPropertyId,
   getAllGalleries,
+  getGalleryByPropertyId,
   getAllPropertyPolicies,
 } from "@/Api/Api";
 
@@ -133,10 +134,11 @@ const PropertyDetail = ({ property, onBack }) => {
     if (!propId) return;
 
     setIsSyncing(true);
+
     try {
       const [roomsRes, galleryRes, policiesRes] = await Promise.all([
         getRoomsByPropertyId(propId),
-        getAllGalleries(propId),
+        getGalleryByPropertyId(propId),
         getAllPropertyPolicies(propId),
       ]);
 
@@ -144,7 +146,10 @@ const PropertyDetail = ({ property, onBack }) => {
         ...prev,
         rooms: Array.isArray(roomsRes) ? roomsRes : [],
         gallery:
-          galleryRes?.content || (Array.isArray(galleryRes) ? galleryRes : []),
+          galleryRes?.data?.content ||
+          galleryRes?.content ||
+          galleryRes?.data ||
+          (Array.isArray(galleryRes) ? galleryRes : []),
         policies: policiesRes || {},
         amenities: extractAmenitiesFromProperty(property),
       }));
@@ -195,7 +200,7 @@ const PropertyDetail = ({ property, onBack }) => {
       "about",
       // "events",
       // "group bookings",
-      "3d gallery & testimonials",
+      "Header items",
       "enquiries",
     ],
   };
@@ -242,7 +247,9 @@ const PropertyDetail = ({ property, onBack }) => {
       case "amenities":
         return <AmenitiesTab {...commonProps} />;
       case "gallery":
-        return <GalleryTab {...commonProps} />;
+        return (
+          <GalleryTab {...commonProps} propertyData1={currentPropertyInfo} />
+        );
       case "events":
         return (
           <EventsTab
@@ -304,7 +311,7 @@ const PropertyDetail = ({ property, onBack }) => {
           />
         );
 
-      case "3d gallery & testimonials":
+      case "Header items":
         return (
           <Gallery3d
             propertyData={currentPropertyInfo}

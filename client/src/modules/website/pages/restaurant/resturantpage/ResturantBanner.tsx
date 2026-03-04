@@ -23,14 +23,6 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import { toast } from "react-hot-toast";
-
-import gallery5 from "@/assets/resturant_images/food1.jpg";
-import gallery6 from "@/assets/resturant_images/099A9549.jpg";
-import gallery7 from "@/assets/resturant_images/099A9570.jpg";
-import gallery8 from "@/assets/resturant_images/099A9580.jpg";
-import gallery9 from "@/assets/resturant_images/099A9595.jpg";
-import gallery10 from "@/assets/resturant_images/099A9691.jpg";
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface PropertyMedia {
@@ -77,26 +69,6 @@ interface ResturantBannerProps {
   galleryData: GalleryItem[];
   loading: boolean;
 }
-
-// ── Fallback static data ──────────────────────────────────────────────────────
-
-const FALLBACK_GALLERY_MEDIA: PropertyMedia[] = [
-  gallery5,
-  gallery6,
-  gallery7,
-  gallery8,
-  gallery9,
-  gallery10,
-].map((img, index) => ({
-  mediaId: index,
-  type: "IMAGE",
-  url: img,
-  fileName: null,
-  alt: `Restaurant Gallery ${index + 1}`,
-  width: null,
-  height: null,
-}));
-
 const FALLBACK_RESTAURANT: RestaurantData = {
   id: 1,
   propertyId: 1,
@@ -109,7 +81,7 @@ const FALLBACK_RESTAURANT: RestaurantData = {
   price: "₹₹₹",
   media: [
     {
-      url: gallery5,
+      url: "",
       type: "IMAGE",
       alt: "Kennedia Blu Restaurant",
       mediaId: null,
@@ -119,7 +91,7 @@ const FALLBACK_RESTAURANT: RestaurantData = {
     },
   ],
   coordinates: null,
-  image: { src: gallery5, alt: "Kennedia Blu Restaurant Ghaziabad" },
+  image: { src: "", alt: "Kennedia Blu Restaurant Ghaziabad" },
   nearbyPlaces: [{ nearbyLocationName: "300 meters from T&T Fragrance" }],
 };
 
@@ -182,7 +154,7 @@ function ResturantBanner({
           ? { lat: propertyData.latitude, lng: propertyData.longitude }
           : FALLBACK_RESTAURANT.coordinates),
       image: {
-        src: propertyData.media?.[0]?.url ?? gallery5,
+        src: propertyData.media?.[0]?.url ?? "",
         alt: propertyData.propertyName ?? FALLBACK_RESTAURANT.name,
       },
       nearbyPlaces:
@@ -197,39 +169,24 @@ function ResturantBanner({
     };
   }, [propertyData]);
 
-  // ── Gallery images — from galleryData API, fallback to static assets ──────
-  // Rule: NEVER use propertyData.media for the gallery grid.
   const galleryMedia: PropertyMedia[] = useMemo(() => {
-    if (galleryData && galleryData.length > 0) {
-      return galleryData
-        .filter(
-          (g) =>
-            g.isActive &&
-            g.media?.url &&
-            g.categoryName?.toLowerCase() !== "3d",
-        )
-        .map((g) => g.media);
-    }
-    return FALLBACK_GALLERY_MEDIA;
+    return (galleryData || [])
+      .filter(
+        (g) =>
+          g.isActive && g.media?.url && g.categoryName?.toLowerCase() !== "3d",
+      )
+      .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999))
+      .map((g) => g.media);
   }, [galleryData]);
 
   const galleryItems: GalleryItem[] = useMemo(() => {
-    if (galleryData && galleryData.length > 0) {
-      return galleryData.filter(
+    return (galleryData || [])
+      .filter(
         (g) =>
           g.isActive && g.media?.url && g.categoryName?.toLowerCase() !== "3d",
-      );
-    }
-    return FALLBACK_GALLERY_MEDIA.map((media, index) => ({
-      id: index,
-      category: "RESTAURANT",
-      propertyId: restaurant.propertyId,
-      propertyName: restaurant.name,
-      media,
-      isActive: true,
-    }));
-  }, [galleryData, restaurant.propertyId, restaurant.name]);
-
+      )
+      .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+  }, [galleryData]);
   // ── UI state ──────────────────────────────────────────────────────────────
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
@@ -467,8 +424,6 @@ function ResturantBanner({
           </div>
         </div>
 
-        {/* Photo grid — uses galleryMedia exclusively */}
-        {/* Photo grid — Mobile: HeroBanner-style carousel | Desktop: 4-col grid */}
         <motion.div variants={fadeIn}>
           {/* ── MOBILE CAROUSEL ── */}
           <div className="relative w-full h-[420px] overflow-hidden bg-black md:hidden">
@@ -547,48 +502,83 @@ function ResturantBanner({
 
           {/* ── DESKTOP GRID ── */}
           <div className="hidden md:grid grid-cols-4 gap-3 h-[440px] rounded-3xl overflow-hidden shadow-xl">
+            {/* MAIN IMAGE */}
             <div
-              className="md:col-span-2 relative group cursor-pointer overflow-hidden"
+              className="md:col-span-2 relative group cursor-pointer overflow-hidden rounded-2xl"
               onClick={() => openGalleryAt(0)}
             >
-              <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
+              {/* Glass overlay fallback */}
+              {!galleryMedia[0] && (
+                <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center z-10">
+                  <ImageIcon className="w-8 h-8 text-white/40" />
+                </div>
+              )}
+
+              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
+
               <OptimizedImage
                 src={galleryMedia[0]?.url ?? ""}
                 alt={restaurant.name}
-                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
               />
             </div>
+
+            {/* RIGHT COLUMN STACK */}
             <div className="md:col-span-1 flex flex-col gap-3">
               {[1, 2].map((idx) => (
                 <div
                   key={idx}
-                  className="h-1/2 relative group cursor-pointer overflow-hidden"
-                  onClick={() => openGalleryAt(idx)}
+                  className="relative group cursor-pointer overflow-hidden rounded-2xl flex-1"
+                  onClick={() => galleryMedia[idx] && openGalleryAt(idx)}
                 >
-                  <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
-                  <OptimizedImage
-                    src={galleryMedia[idx]?.url ?? ""}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
+                  {!galleryMedia[idx] && (
+                    <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
+                      <ImageIcon className="w-6 h-6 text-white/40" />
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
+
+                  {galleryMedia[idx] && (
+                    <OptimizedImage
+                      src={galleryMedia[idx]?.url}
+                      alt=""
+                      className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                    />
+                  )}
                 </div>
               ))}
             </div>
+
+            {/* LAST COLUMN */}
             <div
-              className="md:col-span-1 relative group cursor-pointer overflow-hidden"
-              onClick={() => openGalleryAt(3)}
+              className="md:col-span-1 relative group cursor-pointer overflow-hidden rounded-2xl"
+              onClick={() => galleryMedia[3] && openGalleryAt(3)}
             >
-              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
-              <OptimizedImage
-                src={galleryMedia[3]?.url ?? ""}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 z-20 flex items-center justify-center">
+              {!galleryMedia[3] && (
+                <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
+                  <ImageIcon className="w-8 h-8 text-white/40" />
+                </div>
+              )}
+
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors z-10" />
+
+              {galleryMedia[3] && (
+                <OptimizedImage
+                  src={galleryMedia[3]?.url}
+                  alt=""
+                  className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                />
+              )}
+
+              {/* VIEW GALLERY BUTTON */}
+              <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsGalleryOpen(true);
                   }}
-                  className="bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transform transition-transform group-hover:scale-110 hover:bg-white"
+                  className="pointer-events-auto bg-white/80 backdrop-blur-xl px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transition-all group-hover:scale-110 hover:bg-white"
                 >
                   <ImageIcon className="w-4 h-4 text-primary" />
                   <span>

@@ -11,7 +11,11 @@ import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
 import Testimonials from "./components/Testimonials";
 import ReservationForm from "./components/ReservationForm";
 import { getAllVerticalCards, getMenuItems } from "@/Api/RestaurantApi";
-import { getAllGalleries, GetAllPropertyDetails } from "@/Api/Api";
+import {
+  getAllGalleries,
+  GetAllPropertyDetails,
+  getGalleryByPropertyId,
+} from "@/Api/Api";
 
 /* Navigation for Category Page */
 const resturant_NAV_ITEMS = [
@@ -241,9 +245,7 @@ function ResturantCategoryPageTemplate() {
             description: card.description || "",
             image: card.media?.url || "",
             link: card.link || "",
-            ctaButtonText: card.showOrderButton
-              ? card.extraText || ""
-              : null,
+            ctaButtonText: card.showOrderButton ? card.extraText || "" : null,
             bgColor: card.cardBackgroundColor || "",
             hoverBg: "",
             isHexColor: !!card.cardBackgroundColor,
@@ -275,22 +277,26 @@ function ResturantCategoryPageTemplate() {
         setApiMenuItems(propItems);
 
         /* ─────────────────────────────────────────────
-         3️⃣ Gallery
-      ───────────────────────────────────────────── */
-        const galleryRes = await getAllGalleries({
-          page: 0,
-          size: 100,
-        });
+   3️⃣ Gallery
+───────────────────────────────────────────── */
+        const galleryRes = await getGalleryByPropertyId(propertyId);
 
-        const allGallery = galleryRes?.data?.content || [];
+        const rawGallery =
+          galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
 
-        const filteredGallery = allGallery.filter(
-          (g) =>
-            String(g.propertyId) === String(propertyId) &&
-            g.isActive &&
-            g.media?.url &&
-            g.categoryName?.toLowerCase() !== "3d",
-        );
+        /* Filter + Sort by displayOrder */
+        const filteredGallery = (Array.isArray(rawGallery) ? rawGallery : [])
+          .filter(
+            (g) =>
+              g.isActive &&
+              g.media?.url &&
+              g.categoryName?.toLowerCase() !== "3d",
+          )
+          .sort((a, b) => {
+            const orderA = a.displayOrder ?? Number.MAX_SAFE_INTEGER;
+            const orderB = b.displayOrder ?? Number.MAX_SAFE_INTEGER;
+            return orderA - orderB;
+          });
 
         setGalleryData(filteredGallery);
       } catch (err) {
@@ -341,7 +347,10 @@ function ResturantCategoryPageTemplate() {
   /* ── Page ── */
   return (
     <div className="min-h-screen bg-white dark:bg-[#080808] transition-colors duration-500">
-      <Navbar navItems={resturant_NAV_ITEMS} logo={siteContent.brand.logo_hotel} />
+      <Navbar
+        navItems={resturant_NAV_ITEMS}
+        logo={siteContent.brand.logo_hotel}
+      />
 
       <main>
         {/* Hero */}

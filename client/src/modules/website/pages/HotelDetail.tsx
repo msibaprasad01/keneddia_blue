@@ -34,6 +34,7 @@ import {
   getRoomsByPropertyId,
   getAllGalleries,
   getAllPropertyPolicies,
+  getGalleryByPropertyId,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import HotelGalleryGrid from "../components/hotel/Hotelgallerygrid";
@@ -397,23 +398,26 @@ export default function HotelDetail() {
 
   const fetchGallery = async (propId: number) => {
     try {
-      const res = await getAllGalleries({ page: 0, size: 100 });
-      const all = res?.data?.content || [];
+      const res = await getGalleryByPropertyId(propId);
 
-      const filtered = all.filter(
-        (i: any) =>
-          Number(i.propertyId) === Number(propId) && i.isActive && i.media?.url,
-      );
+      const raw = res?.data?.content || res?.data || res;
 
-      console.log("🎯 FINAL FILTERED GALLERY:", filtered);
+      const items = (Array.isArray(raw) ? raw : [])
+        .filter((i: any) => i.isActive && i.media?.url)
+        .sort((a: any, b: any) => {
+          const orderA = a.displayOrder ?? Number.MAX_SAFE_INTEGER;
+          const orderB = b.displayOrder ?? Number.MAX_SAFE_INTEGER;
+          return orderA - orderB;
+        });
 
-      setGalleryData(filtered);
+      console.log("🎯 SORTED PROPERTY GALLERY:", items);
+
+      setGalleryData(items);
     } catch (error) {
       console.error("❌ GALLERY FETCH ERROR:", error);
       setGalleryData([]);
     }
   };
-
   const fetchPolicies = async (propId: number) => {
     try {
       const res = await getAllPropertyPolicies(propId);
