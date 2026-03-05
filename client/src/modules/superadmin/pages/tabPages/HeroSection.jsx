@@ -109,13 +109,22 @@ function HeroSection() {
    * Sets the editData state with section details and opens the modal
    */
   const handleEdit = (section) => {
+    // Switch to correct tab based on propertyTypeId
+    if (section.propertyTypeId) {
+      setActiveTab("hotel");
+    } else {
+      setActiveTab("homepage");
+    }
+
     setEditData({
       id: section.id,
       mainTitle: section.mainTitle,
       subTitle: section.subTitle,
       ctaText: section.ctaText,
+      ctaLink: section.ctaLink, // ← was missing
       active: section.active,
       showOnHomepage: section.showOnHomepage,
+      propertyTypeId: section.propertyTypeId || null, // ← was missing
       backgroundMediaAll: section.backgroundAll || [],
       backgroundMediaLight: section.backgroundLight || [],
       backgroundMediaDark: section.backgroundDark || [],
@@ -329,7 +338,11 @@ function HeroSection() {
                   <div className="flex flex-col items-center gap-1">
                     <button
                       onClick={() =>
-                        handleToggleActive(section.id, section.active)
+                        handleToggleActive(
+                          section.id,
+                          section.active,
+                          section.showOnHomepage,
+                        )
                       }
                       disabled={isTogglingActive}
                       className="relative inline-flex items-center h-6 w-12 rounded-full transition-all cursor-pointer outline-none border-2"

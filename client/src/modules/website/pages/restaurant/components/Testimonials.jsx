@@ -5,6 +5,7 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
+import { showSuccess,showError } from "@/lib/toasters/toastUtils";
 import {
   Star,
   Sparkles,
@@ -448,6 +449,10 @@ export default function AutoTestimonials({ propertyId }) {
 
   // ── Submit (called from Step 3) ───────────────────────────────────────────
   const handleFinalSubmit = async () => {
+    if (!propertyId) {
+      showError("Property ID is missing. Cannot submit testimonial.");
+      return;
+    }
     setIsSubmitting(true);
     try {
       const fd = new FormData();
@@ -662,7 +667,7 @@ export default function AutoTestimonials({ propertyId }) {
                     <FeedbackCard key={`up-${item.id}-${i}`} item={item} />
                   ))}
                 </div>
-               <div className="flex flex-col gap-6 animate-marquee-down marquee-col">
+                <div className="flex flex-col gap-6 animate-marquee-down marquee-col">
                   {[...displayCol2, ...displayCol2].map((item, i) => (
                     <FeedbackCard key={`dn-${item.id}-${i}`} item={item} />
                   ))}
