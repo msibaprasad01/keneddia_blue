@@ -41,10 +41,14 @@ function buildMenuFromApi(allItems, verticalTitle) {
 
   matched.forEach((item) => {
     const typeName = item.type?.typeName || "Other";
+    const typeId = item.type?.id ?? null;
 
-    if (!groups[typeName]) groups[typeName] = [];
+    if (!groups[typeName]) {
+      groups[typeName] = { typeId, items: [] };
+    }
 
-    groups[typeName].push({
+    groups[typeName].items.push({
+      id: item.id,
       name: item.itemName || "",
       description: item.description || "",
       price: item.price ? `₹${item.price}` : "",
@@ -52,13 +56,20 @@ function buildMenuFromApi(allItems, verticalTitle) {
       isSpicy: item.foodType === "NON_VEG",
       foodType: item.foodType,
       likeCount: item.likeCount || 0,
+      categoryId: item.category?.id ?? null,
+      categoryName: item.category?.categoryName || "",
+      typeId: item.type?.id ?? null,
+      typeName: item.type?.typeName || "",
+      propertyId: item.propertyId,
+      status: item.status,
     });
   });
 
-  return Object.entries(groups).map(([typeName, items]) => ({
+  return Object.entries(groups).map(([typeName, group]) => ({
     category: typeName,
-    categoryImage: items[0]?.image || "",
-    items,
+    itemTypeId: group.typeId, // ← this is what CategoryMenu uses to match thumbnails
+    categoryImage: group.items[0]?.image || "",
+    items: group.items,
   }));
 }
 

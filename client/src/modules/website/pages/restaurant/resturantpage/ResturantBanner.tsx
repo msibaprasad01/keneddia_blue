@@ -62,13 +62,15 @@ interface GalleryItem {
   media: PropertyMedia;
   categoryId: number;
   isActive: boolean;
+  displayOrder?: number;
 }
 
 interface ResturantBannerProps {
-  propertyData: any | null; // raw API shape
+  propertyData: any | null;
   galleryData: GalleryItem[];
   loading: boolean;
 }
+
 const FALLBACK_RESTAURANT: RestaurantData = {
   id: 1,
   propertyId: 1,
@@ -104,6 +106,15 @@ const fadeIn = {
 };
 const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
 
+// ── Empty slot placeholder ────────────────────────────────────────────────────
+const EmptySlot = ({ className = "" }: { className?: string }) => (
+  <div
+    className={`w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${className}`}
+  >
+    <ImageIcon className="w-8 h-8 text-gray-300" />
+  </div>
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,7 +126,6 @@ function ResturantBanner({
 }: ResturantBannerProps) {
   // ── Derive restaurant fields from propertyData, fallback to static ────────
   const restaurant: RestaurantData = useMemo(() => {
-    console.log("propertyData", propertyData);
     if (!propertyData) return FALLBACK_RESTAURANT;
     return {
       id: propertyData.id ?? propertyData.propertyId ?? FALLBACK_RESTAURANT.id,
@@ -146,7 +156,6 @@ function ResturantBanner({
         FALLBACK_RESTAURANT.tagline,
       rating: propertyData.rating ?? FALLBACK_RESTAURANT.rating,
       price: propertyData.price ?? FALLBACK_RESTAURANT.price,
-      // media intentionally NOT used for gallery — kept for type completeness
       media: propertyData.media ?? FALLBACK_RESTAURANT.media,
       coordinates:
         propertyData.coordinates ??
@@ -169,24 +178,69 @@ function ResturantBanner({
     };
   }, [propertyData]);
 
-  const galleryMedia: PropertyMedia[] = useMemo(() => {
-    return (galleryData || [])
-      .filter(
-        (g) =>
-          g.isActive && g.media?.url && g.categoryName?.toLowerCase() !== "3d",
-      )
-      .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999))
-      .map((g) => g.media);
-  }, [galleryData]);
-
+  // Sorted active gallery items (excluding 3d), ordered by displayOrder
   const galleryItems: GalleryItem[] = useMemo(() => {
     return (galleryData || [])
       .filter(
         (g) =>
-          g.isActive && g.media?.url && g.categoryName?.toLowerCase() !== "3d",
+          g.isActive &&
+          g.media?.url &&
+          g.categoryName?.toLowerCase() !== "3d",
       )
       .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
   }, [galleryData]);
+
+  // Flat media array in sorted order (used for mobile carousel + gallery modal)
+  const galleryMedia: PropertyMedia[] = useMemo(
+    () => galleryItems.map((g) => g.media),
+    [galleryItems],
+  );
+
+  /**
+   * gridMedia: always a 4-element array for the desktop grid.
+   *
+   * Logic:
+   * 1. Place each item into slot (displayOrder - 1) if displayOrder is 1–4.
+   * 2. Items with displayOrder outside 1–4 (or missing) go into overflow queue.
+   * 3. Empty slots are backfilled sequentially from overflow.
+   * 4. Remaining unfilled slots stay null → rendered as EmptySlot.
+   *
+   * Example: one image with displayOrder=4 → slots=[null,null,null,img]
+   *          but after backfill → slots=[img,null,null,null]
+   *          (overflow fills from left)
+   *
+   * Actually we DON'T backfill from left — we place by order first,
+   * then only fill remaining nulls with overflow items sequentially.
+   */
+  const gridMedia: (PropertyMedia | null)[] = useMemo(() => {
+    const slots: (PropertyMedia | null)[] = [null, null, null, null];
+    const overflow: PropertyMedia[] = [];
+
+    galleryItems.forEach((item) => {
+      const order = item.displayOrder;
+      if (order && order >= 1 && order <= 4) {
+        if (!slots[order - 1]) {
+          slots[order - 1] = item.media;
+        } else {
+          // Collision on same slot → overflow
+          overflow.push(item.media);
+        }
+      } else {
+        // displayOrder missing or > 4 → overflow
+        overflow.push(item.media);
+      }
+    });
+
+    // Backfill empty slots from left using overflow items
+    for (let i = 0; i < 4; i++) {
+      if (!slots[i] && overflow.length > 0) {
+        slots[i] = overflow.shift()!;
+      }
+    }
+
+    return slots;
+  }, [galleryItems]);
+
   // ── UI state ──────────────────────────────────────────────────────────────
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
@@ -197,7 +251,8 @@ function ResturantBanner({
   const mobileTouchStart = useRef<number | null>(null);
   const mobilePrev = () =>
     setMobileIndex((c) => (c - 1 + galleryMedia.length) % galleryMedia.length);
-  const mobileNext = () => setMobileIndex((c) => (c + 1) % galleryMedia.length);
+  const mobileNext = () =>
+    setMobileIndex((c) => (c + 1) % galleryMedia.length);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
@@ -253,6 +308,46 @@ function ResturantBanner({
     );
 
   if (!restaurant) return null;
+
+  // ── Desktop grid layout helpers ───────────────────────────────────────────
+  // Determine layout based on how many images are available
+  const totalImages = galleryMedia.length;
+
+  // Render a grid slot: if media exists show image, else show empty placeholder
+  const GridSlot = ({
+    index,
+    className = "",
+    imgClassName = "",
+    onClick,
+  }: {
+    index: number;
+    className?: string;
+    imgClassName?: string;
+    onClick?: () => void;
+  }) => {
+    const media = galleryMedia[index];
+    return (
+      <div
+        className={`relative group overflow-hidden rounded-2xl ${className} ${
+          media ? "cursor-pointer" : "cursor-default"
+        }`}
+        onClick={media ? onClick : undefined}
+      >
+        {media ? (
+          <>
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
+            <OptimizedImage
+              src={media.url}
+              alt={media.alt ?? restaurant.name}
+              className={`absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105 ${imgClassName}`}
+            />
+          </>
+        ) : (
+          <EmptySlot />
+        )}
+      </div>
+    );
+  };
 
   return (
     <motion.div
@@ -349,7 +444,6 @@ function ResturantBanner({
                         className="flex items-center gap-1.5 text-xs text-muted-foreground/80"
                       >
                         <div className="w-1 h-1 rounded-full bg-primary/40" />
-
                         {place.googleMapLink ? (
                           <a
                             href={place.googleMapLink}
@@ -432,146 +526,145 @@ function ResturantBanner({
               GALLERY
             </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={mobileIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.5 }}
-                className="absolute inset-0 cursor-pointer"
-                onClick={() => openGalleryAt(mobileIndex)}
-                onTouchStart={(e) => {
-                  mobileTouchStart.current = e.touches[0].clientX;
-                }}
-                onTouchEnd={(e) => {
-                  if (mobileTouchStart.current === null) return;
-                  const diff =
-                    mobileTouchStart.current - e.changedTouches[0].clientX;
-                  if (Math.abs(diff) > 40)
-                    diff > 0 ? mobileNext() : mobilePrev();
-                  mobileTouchStart.current = null;
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
-                <img
-                  src={galleryMedia[mobileIndex]?.url || ""}
-                  alt=""
-                  className="h-full w-full object-cover scale-110"
-                />
-              </motion.div>
-            </AnimatePresence>
+            {galleryMedia.length === 0 ? (
+              <EmptySlot className="absolute inset-0" />
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mobileIndex}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.5 }}
+                  className="absolute inset-0 cursor-pointer"
+                  onClick={() => openGalleryAt(mobileIndex)}
+                  onTouchStart={(e) => {
+                    mobileTouchStart.current = e.touches[0].clientX;
+                  }}
+                  onTouchEnd={(e) => {
+                    if (mobileTouchStart.current === null) return;
+                    const diff =
+                      mobileTouchStart.current - e.changedTouches[0].clientX;
+                    if (Math.abs(diff) > 40)
+                      diff > 0 ? mobileNext() : mobilePrev();
+                    mobileTouchStart.current = null;
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
+                  <img
+                    src={galleryMedia[mobileIndex]?.url || ""}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover object-center scale-110"
+                  />
+                </motion.div>
+              </AnimatePresence>
+            )}
 
             {/* Counter + arrows */}
-            <div className="absolute bottom-8 right-5 z-30 flex items-center gap-6">
-              <div className="flex flex-col items-end">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-white text-4xl font-serif italic tracking-tighter">
-                    0{mobileIndex + 1}
-                  </span>
-                  <span className="text-white/20 text-lg font-serif">
-                    /{String(galleryMedia.length).padStart(2, "0")}
-                  </span>
+            {galleryMedia.length > 0 && (
+              <div className="absolute bottom-8 right-5 z-30 flex items-center gap-6">
+                <div className="flex flex-col items-end">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-white text-4xl font-serif italic tracking-tighter">
+                      0{mobileIndex + 1}
+                    </span>
+                    <span className="text-white/20 text-lg font-serif">
+                      /{String(galleryMedia.length).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <div className="w-24 h-[2px] bg-white/10 relative mt-1.5 overflow-hidden">
+                    <motion.div
+                      className="absolute h-full bg-primary top-0 left-0"
+                      animate={{
+                        width: `${((mobileIndex + 1) / galleryMedia.length) * 100}%`,
+                      }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  </div>
                 </div>
-                <div className="w-24 h-[2px] bg-white/10 relative mt-1.5 overflow-hidden">
-                  <motion.div
-                    className="absolute h-full bg-primary top-0 left-0"
-                    animate={{
-                      width: `${((mobileIndex + 1) / galleryMedia.length) * 100}%`,
-                    }}
-                    transition={{ duration: 0.5 }}
-                  />
+                <div className="flex gap-2">
+                  <button
+                    onClick={mobilePrev}
+                    className="p-3 border border-white/10 text-white hover:bg-white hover:text-black transition-all group active:scale-95"
+                  >
+                    <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                  </button>
+                  <button
+                    onClick={mobileNext}
+                    className="p-3 bg-white text-black hover:bg-primary hover:text-white transition-all group active:scale-95"
+                  >
+                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={mobilePrev}
-                  className="p-3 border border-white/10 text-white hover:bg-white hover:text-black transition-all group active:scale-95"
-                >
-                  <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                </button>
-                <button
-                  onClick={mobileNext}
-                  className="p-3 bg-white text-black hover:bg-primary hover:text-white transition-all group active:scale-95"
-                >
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* ── DESKTOP GRID ── */}
+          {/* gridMedia[0..3] are placed by displayOrder (1–4), gaps backfilled */}
           <div className="hidden md:grid grid-cols-4 gap-3 h-[440px] rounded-3xl overflow-hidden shadow-xl">
-            {/* MAIN IMAGE */}
+            {/* SLOT 0 — main image, col-span-2 */}
             <div
-              className="md:col-span-2 relative group cursor-pointer overflow-hidden rounded-2xl"
-              onClick={() => openGalleryAt(0)}
+              className={`md:col-span-2 relative group overflow-hidden rounded-2xl ${gridMedia[0] ? "cursor-pointer" : "cursor-default"}`}
+              onClick={() => gridMedia[0] && openGalleryAt(galleryMedia.indexOf(gridMedia[0]))}
             >
-              {/* Glass overlay fallback */}
-              {!galleryMedia[0] && (
-                <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center z-10">
-                  <ImageIcon className="w-8 h-8 text-white/40" />
-                </div>
+              {gridMedia[0] ? (
+                <>
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
+                  <OptimizedImage
+                    src={gridMedia[0].url}
+                    alt={gridMedia[0].alt ?? restaurant.name}
+                    className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                </>
+              ) : (
+                <EmptySlot />
               )}
-
-              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
-
-              <OptimizedImage
-                src={galleryMedia[0]?.url ?? ""}
-                alt={restaurant.name}
-                className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-              />
             </div>
 
-            {/* RIGHT COLUMN STACK */}
+            {/* SLOTS 1 & 2 — stacked right column */}
             <div className="md:col-span-1 flex flex-col gap-3">
-              {[1, 2].map((idx) => (
+              {([1, 2] as const).map((idx) => (
                 <div
                   key={idx}
-                  className="relative group cursor-pointer overflow-hidden rounded-2xl flex-1"
-                  onClick={() => galleryMedia[idx] && openGalleryAt(idx)}
+                  className={`relative group overflow-hidden rounded-2xl flex-1 ${gridMedia[idx] ? "cursor-pointer" : "cursor-default"}`}
+                  onClick={() => gridMedia[idx] && openGalleryAt(galleryMedia.indexOf(gridMedia[idx]!))}
                 >
-                  {!galleryMedia[idx] && (
-                    <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
-                      <ImageIcon className="w-6 h-6 text-white/40" />
-                    </div>
-                  )}
-
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
-
-                  {galleryMedia[idx] && (
-                    <OptimizedImage
-                      src={galleryMedia[idx]?.url}
-                      alt=""
-                      className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
-                    />
+                  {gridMedia[idx] ? (
+                    <>
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
+                      <OptimizedImage
+                        src={gridMedia[idx]!.url}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                      />
+                    </>
+                  ) : (
+                    <EmptySlot />
                   )}
                 </div>
               ))}
             </div>
 
-            {/* LAST COLUMN */}
+            {/* SLOT 3 — last column + view gallery button */}
             <div
-              className="md:col-span-1 relative group cursor-pointer overflow-hidden rounded-2xl"
-              onClick={() => galleryMedia[3] && openGalleryAt(3)}
+              className={`md:col-span-1 relative group overflow-hidden rounded-2xl ${gridMedia[3] ? "cursor-pointer" : "cursor-default"}`}
+              onClick={() => gridMedia[3] && openGalleryAt(galleryMedia.indexOf(gridMedia[3]))}
             >
-              {!galleryMedia[3] && (
-                <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
-                  <ImageIcon className="w-8 h-8 text-white/40" />
-                </div>
+              {gridMedia[3] ? (
+                <>
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors z-10" />
+                  <OptimizedImage
+                    src={gridMedia[3].url}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                  />
+                </>
+              ) : (
+                <EmptySlot />
               )}
 
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors z-10" />
-
-              {galleryMedia[3] && (
-                <OptimizedImage
-                  src={galleryMedia[3]?.url}
-                  alt=""
-                  className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
-                />
-              )}
-
-              {/* VIEW GALLERY BUTTON */}
+              {/* VIEW GALLERY BUTTON — always on last slot */}
               <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
                 <button
                   onClick={(e) => {
@@ -582,9 +675,7 @@ function ResturantBanner({
                 >
                   <ImageIcon className="w-4 h-4 text-primary" />
                   <span>
-                    {galleryMedia.length > 4
-                      ? `+${galleryMedia.length - 4} MORE`
-                      : "VIEW GALLERY"}
+                    {totalImages > 4 ? `+${totalImages - 4} MORE` : "VIEW GALLERY"}
                   </span>
                 </button>
               </div>

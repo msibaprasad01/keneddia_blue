@@ -39,6 +39,15 @@ const FALLBACK_TAGLINE = "PREMIUM EXPERIENCE";
 const FALLBACK_MAPS_LINK =
   "https://google.com/maps/place/kennedia+blu+restaurant+ghaziabad/data=!4m2!3m1!1s0x390cf1005bab4c6f:0xb455a48e012d76e7?sa=X&ved=1t:242&ictx=111";
 
+// ── Empty slot placeholder ────────────────────────────────────────────────────
+const EmptySlot = ({ className = "" }) => (
+  <div
+    className={`w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${className}`}
+  >
+    <ImageIcon className="w-8 h-8 text-gray-300" />
+  </div>
+);
+
 export default function CategoryHero({
   content,
   propertyId,
@@ -53,14 +62,9 @@ export default function CategoryHero({
   const [mobileIndex, setMobileIndex] = useState(0);
   const touchStart = React.useRef(null);
 
-  const prevMobile = () =>
-    setMobileIndex((c) => (c - 1 + gridImages.length) % gridImages.length);
-
-  const nextMobile = () => setMobileIndex((c) => (c + 1) % gridImages.length);
-
   const restaurantPath = `/resturant/${propertyId || 27}`;
 
-  // ── Derive fields from propertyData, fall back to statics ─────────────────
+  // ── Derive fields from propertyData ──────────────────────────────────────
   const location = useMemo(() => {
     if (!propertyData) return FALLBACK_LOCATION;
     return (
@@ -81,9 +85,7 @@ export default function CategoryHero({
     return propertyData.tagline ?? propertyData.subTitle ?? FALLBACK_TAGLINE;
   }, [propertyData]);
 
-  const rating = useMemo(() => {
-    return propertyData?.rating ?? null;
-  }, [propertyData]);
+  const rating = useMemo(() => propertyData?.rating ?? null, [propertyData]);
 
   const nearbyPlaces = useMemo(() => {
     if (propertyData?.nearbyLocations?.length > 0) {
@@ -92,7 +94,6 @@ export default function CategoryHero({
         googleMapLink: n.googleMapLink,
       }));
     }
-    // fallback from content prop (old static shape) or hardcoded
     if (content?.nearbyPlaces?.length > 0) {
       return content.nearbyPlaces.map((p) =>
         typeof p === "string" ? { nearbyLocationName: p } : p,
@@ -111,24 +112,85 @@ export default function CategoryHero({
     return FALLBACK_MAPS_LINK;
   }, [propertyData]);
 
-  // ── Gallery images ─────────────────────────────────────────────────────────
-  const gridImages =
-    galleryData.length > 0
-      ? galleryData.filter((g) => g.media?.url).map((g) => g.media.url)
-      : [content.heroImage];
+  // ── Gallery: sorted active items, excluding 3d category ──────────────────
+  const galleryItems = useMemo(() => {
+    return (galleryData || [])
+      .filter(
+        (g) =>
+          g.isActive !== false &&
+          g.media?.url &&
+          g.categoryName?.toLowerCase() !== "3d",
+      )
+      .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+  }, [galleryData]);
 
-  const galleryMedia =
-    galleryData.length > 0
-      ? galleryData
-          .filter((g) => g.media?.url)
-          .map((g) => ({
-            mediaId: g.media.mediaId,
-            url: g.media.url,
-            type: g.media.type,
-            fileName: g.media.fileName,
-            alt: g.media.alt,
-          }))
-      : [];
+  // Flat sorted media list — used for mobile carousel & GalleryModal
+  const galleryMedia = useMemo(
+    () =>
+      galleryItems.map((g) => ({
+        mediaId: g.media.mediaId,
+        url: g.media.url,
+        type: g.media.type,
+        fileName: g.media.fileName,
+        alt: g.media.alt,
+      })),
+    [galleryItems],
+  );
+
+  /**
+   * gridMedia: 4-element array for the desktop grid.
+   *
+   * Rules:
+   * 1. Items with displayOrder 1–4 go into that exact slot (0-indexed).
+   * 2. Items with displayOrder outside 1–4, missing, or colliding → overflow.
+   * 3. Empty slots are backfilled left-to-right from overflow.
+   * 4. Still-empty slots → null (EmptySlot rendered).
+   *
+   * Fallback: if galleryData is empty, use content.heroImage in slot 0.
+   */
+  const gridMedia = useMemo(() => {
+    // No gallery data — fall back to static hero image
+    if (galleryItems.length === 0) {
+      return [
+        content?.heroImage ? { url: content.heroImage, alt: content?.title } : null,
+        null,
+        null,
+        null,
+      ];
+    }
+
+    const slots = [null, null, null, null];
+    const overflow = [];
+
+    galleryItems.forEach((item) => {
+      const order = item.displayOrder;
+      if (order && order >= 1 && order <= 4) {
+        if (!slots[order - 1]) {
+          slots[order - 1] = item.media;
+        } else {
+          overflow.push(item.media);
+        }
+      } else {
+        overflow.push(item.media);
+      }
+    });
+
+    // Backfill empty slots from overflow
+    for (let i = 0; i < 4; i++) {
+      if (!slots[i] && overflow.length > 0) {
+        slots[i] = overflow.shift();
+      }
+    }
+
+    return slots;
+  }, [galleryItems, content]);
+
+  const totalImages = galleryMedia.length;
+
+  const prevMobile = () =>
+    setMobileIndex((c) => (c - 1 + Math.max(totalImages, 1)) % Math.max(totalImages, 1));
+  const nextMobile = () =>
+    setMobileIndex((c) => (c + 1) % Math.max(totalImages, 1));
 
   const openGalleryAt = (index) => {
     setInitialGalleryIndex(index);
@@ -230,7 +292,7 @@ export default function CategoryHero({
               )}
             </motion.div>
 
-            {/* ── TITLE — kept exactly as original ── */}
+            {/* Title */}
             <motion.h1
               variants={fadeIn}
               className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-balance leading-tight"
@@ -350,130 +412,155 @@ export default function CategoryHero({
           </div>
         </div>
 
-        {/* Photo grid */}
-        {/* Photo section */}
         <motion.div variants={fadeIn}>
-          {/* ── MOBILE SLIDER ───────────────── */}
+          {/* ── MOBILE SLIDER ── */}
           <div className="relative w-full h-[420px] overflow-hidden rounded-3xl shadow-xl md:hidden">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={mobileIndex}
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
-                transition={{ duration: 0.3 }}
-                className="absolute inset-0 cursor-pointer"
-                onClick={() => openGalleryAt(mobileIndex)}
-                onTouchStart={(e) => {
-                  touchStart.current = e.touches[0].clientX;
-                }}
-                onTouchEnd={(e) => {
-                  if (touchStart.current === null) return;
-                  const diff = touchStart.current - e.changedTouches[0].clientX;
-                  if (Math.abs(diff) > 40)
-                    diff > 0 ? nextMobile() : prevMobile();
-                  touchStart.current = null;
-                }}
-              >
-                {gridImages[mobileIndex] ? (
+            {galleryMedia.length === 0 ? (
+              <EmptySlot className="absolute inset-0 rounded-3xl" />
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mobileIndex}
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-0 cursor-pointer"
+                  onClick={() => openGalleryAt(mobileIndex)}
+                  onTouchStart={(e) => {
+                    touchStart.current = e.touches[0].clientX;
+                  }}
+                  onTouchEnd={(e) => {
+                    if (touchStart.current === null) return;
+                    const diff =
+                      touchStart.current - e.changedTouches[0].clientX;
+                    if (Math.abs(diff) > 40)
+                      diff > 0 ? nextMobile() : prevMobile();
+                    touchStart.current = null;
+                  }}
+                >
                   <OptimizedImage
-                    src={gridImages[mobileIndex]}
-                    className="w-full h-full object-cover object-center"
+                    src={galleryMedia[mobileIndex]?.url}
+                    className="absolute inset-0 w-full h-full object-cover object-center"
                   />
-                ) : (
-                  <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
-                    <ImageIcon className="w-8 h-8 text-white/40" />
-                  </div>
-                )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+                </motion.div>
+              </AnimatePresence>
+            )}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
-              </motion.div>
-            </AnimatePresence>
+            {/* Arrows */}
+            {galleryMedia.length > 1 && (
+              <>
+                <button
+                  onClick={prevMobile}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md"
+                >
+                  <ChevronRight className="rotate-180 w-4 h-4 text-zinc-800" />
+                </button>
+                <button
+                  onClick={nextMobile}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md"
+                >
+                  <ChevronRight className="w-4 h-4 text-zinc-800" />
+                </button>
+              </>
+            )}
 
-            {/* arrows */}
-            <button
-              onClick={prevMobile}
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md"
-            >
-              <ChevronRight className="rotate-180 w-4 h-4 text-zinc-800" />
-            </button>
-
-            <button
-              onClick={nextMobile}
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md"
-            >
-              <ChevronRight className="w-4 h-4 text-zinc-800" />
-            </button>
-
-            {/* counter */}
-            <div className="absolute bottom-4 right-4 z-20 bg-black/50 text-white text-xs font-bold px-3 py-1 rounded-full">
-              {mobileIndex + 1} / {gridImages.length}
-            </div>
+            {/* Counter */}
+            {galleryMedia.length > 0 && (
+              <div className="absolute bottom-4 right-4 z-20 bg-black/50 text-white text-xs font-bold px-3 py-1 rounded-full">
+                {mobileIndex + 1} / {galleryMedia.length}
+              </div>
+            )}
           </div>
 
-          {/* ── DESKTOP GRID (UNCHANGED) ───────────────── */}
+          {/* ── DESKTOP GRID ── */}
+          {/* gridMedia[0..3] placed by displayOrder (1–4), gaps backfilled left-to-right */}
           <div className="hidden md:grid grid-cols-4 gap-3 h-[440px] rounded-3xl overflow-hidden shadow-xl">
-            {/* MAIN IMAGE */}
+            {/* SLOT 0 — main image, col-span-2 */}
             <div
-              className="md:col-span-2 relative group cursor-pointer overflow-hidden rounded-2xl"
-              onClick={() => gridImages[0] && openGalleryAt(0)}
+              className={`md:col-span-2 relative group overflow-hidden rounded-2xl ${gridMedia[0] ? "cursor-pointer" : "cursor-default"}`}
+              onClick={() =>
+                gridMedia[0] &&
+                openGalleryAt(galleryMedia.findIndex((m) => m.url === gridMedia[0].url))
+              }
             >
-              {!gridImages[0] && (
-                <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
-                  <ImageIcon className="w-8 h-8 text-white/40" />
-                </div>
+              {gridMedia[0] ? (
+                <>
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
+                  <OptimizedImage
+                    src={gridMedia[0].url}
+                    alt={gridMedia[0].alt ?? content.title}
+                    className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                </>
+              ) : (
+                <EmptySlot />
               )}
-
-              <OptimizedImage
-                src={gridImages[0]}
-                className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-              />
             </div>
 
-            {/* STACK */}
+            {/* SLOTS 1 & 2 — stacked right column */}
             <div className="md:col-span-1 flex flex-col gap-3">
               {[1, 2].map((idx) => (
                 <div
                   key={idx}
-                  className="flex-1 relative group cursor-pointer overflow-hidden rounded-2xl"
-                  onClick={() => gridImages[idx] && openGalleryAt(idx)}
+                  className={`relative group overflow-hidden rounded-2xl flex-1 ${gridMedia[idx] ? "cursor-pointer" : "cursor-default"}`}
+                  onClick={() =>
+                    gridMedia[idx] &&
+                    openGalleryAt(galleryMedia.findIndex((m) => m.url === gridMedia[idx].url))
+                  }
                 >
-                  {gridImages[idx] ? (
-                    <OptimizedImage
-                      src={gridImages[idx]}
-                      className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
-                    />
+                  {gridMedia[idx] ? (
+                    <>
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
+                      <OptimizedImage
+                        src={gridMedia[idx].url}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                      />
+                    </>
                   ) : (
-                    <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
-                      <ImageIcon className="w-6 h-6 text-white/40" />
-                    </div>
+                    <EmptySlot />
                   )}
                 </div>
               ))}
             </div>
 
-            {/* LAST IMAGE */}
+            {/* SLOT 3 — last column + view gallery button */}
             <div
-              className="md:col-span-1 relative group cursor-pointer overflow-hidden rounded-2xl"
-              onClick={() => gridImages[3] && openGalleryAt(3)}
+              className={`md:col-span-1 relative group overflow-hidden rounded-2xl ${gridMedia[3] ? "cursor-pointer" : "cursor-default"}`}
+              onClick={() =>
+                gridMedia[3] &&
+                openGalleryAt(galleryMedia.findIndex((m) => m.url === gridMedia[3].url))
+              }
             >
-              {gridImages[3] ? (
-                <OptimizedImage
-                  src={gridImages[3]}
-                  className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
-                />
+              {gridMedia[3] ? (
+                <>
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors z-10" />
+                  <OptimizedImage
+                    src={gridMedia[3].url}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                  />
+                </>
               ) : (
-                <div className="absolute inset-0 backdrop-blur-xl bg-white/10 flex items-center justify-center">
-                  <ImageIcon className="w-8 h-8 text-white/40" />
-                </div>
+                <EmptySlot />
               )}
 
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white/85 backdrop-blur-xl px-5 py-2 rounded-xl text-xs font-bold">
-                  {gridImages.length > 4
-                    ? `+${gridImages.length - 4} MORE`
-                    : "VIEW GALLERY"}
-                </div>
+              {/* VIEW GALLERY — always on last slot */}
+              <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsGalleryOpen(true);
+                  }}
+                  className="pointer-events-auto bg-white/85 backdrop-blur-xl px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transition-all group-hover:scale-110 hover:bg-white"
+                >
+                  <ImageIcon className="w-4 h-4 text-primary" />
+                  <span>
+                    {totalImages > 4 ? `+${totalImages - 4} MORE` : "VIEW GALLERY"}
+                  </span>
+                </button>
               </div>
             </div>
           </div>

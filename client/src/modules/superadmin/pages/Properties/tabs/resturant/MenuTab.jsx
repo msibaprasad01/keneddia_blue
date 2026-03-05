@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { colors } from "@/lib/colors/colors";
 import AddMenuItemModal from "../../modals/AddMenuItemModal";
+import AddMenuthumnailModal from "../../modals/AddMenuthumnailModal";
 import {
   Heart,
   Save,
@@ -23,6 +24,7 @@ import {
   getItemLikes,
 } from "@/Api/RestaurantApi";
 import { getMenuItems, toggleMenuItemStatus } from "@/Api/RestaurantApi";
+import { getAllMenuThumbnails } from "@/Api/RestaurantApi";
 
 // ── Shared input style ────────────────────────────────────────────────────────
 const inp =
@@ -1001,6 +1003,155 @@ function ItemLikesPanel({ propertyId }) {
     </div>
   );
 }
+function MenuThumbnailsPanel({ propertyId, propertyData }) {
+  const [thumbnails, setThumbnails] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
+  const fetchThumbnails = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getAllMenuThumbnails(propertyId);
+      const data = res?.data || [];
+      const all = Array.isArray(data) ? data : [];
+      // Filter to only this property's thumbnails
+      setThumbnails(all.filter((t) => t.propertyId === propertyId));
+    } catch {
+      setError("Failed to load menu thumbnails.");
+    } finally {
+      setLoading(false);
+    }
+  }, [propertyId]);
+
+  useEffect(() => {
+    fetchThumbnails();
+  }, [fetchThumbnails]);
+
+  const handleModalClose = (didSave) => {
+    setModalOpen(false);
+    setEditingId(null);
+    if (didSave) fetchThumbnails();
+  };
+
+  const openCreate = () => {
+    setEditingId(null);
+    setModalOpen(true);
+  };
+  const openEdit = (id) => {
+    setEditingId(id);
+    setModalOpen(true);
+  };
+
+  if (loading)
+    return (
+      <div className="flex items-center justify-center py-16 text-gray-400 gap-2 text-sm">
+        <Loader2 size={16} className="animate-spin" /> Loading thumbnails…
+      </div>
+    );
+
+  return (
+    <div className="space-y-4">
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-gray-400">
+          {thumbnails.length} thumbnail{thumbnails.length !== 1 ? "s" : ""}
+        </p>
+        <button
+          onClick={openCreate}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg bg-purple-600 hover:bg-purple-700 transition-all"
+        >
+          <PlusIcon className="w-4 h-4" /> Add Thumbnail
+        </button>
+      </div>
+
+      {thumbnails.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 gap-2">
+          <ImageIcon size={28} className="text-gray-200" />
+          <p className="text-sm">No thumbnails yet. Add one to get started.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {thumbnails.map((thumb) => (
+            <div
+              key={thumb.id}
+              className="group relative rounded-xl overflow-hidden border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all"
+            >
+              {/* Media */}
+              <div className="aspect-video bg-gray-100 overflow-hidden">
+                {thumb.media?.type === "VIDEO" ? (
+                  <video
+                    src={thumb.media.url}
+                    className="w-full h-full object-cover"
+                    muted
+                    loop
+                    autoPlay
+                    playsInline
+                  />
+                ) : thumb.media?.url ? (
+                  <img
+                    src={thumb.media.url}
+                    alt={thumb.tag}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon size={20} className="text-gray-300" />
+                  </div>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="p-3 space-y-1.5">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-xs font-bold text-gray-800 truncate capitalize">
+                    {thumb.tag || "—"}
+                  </p>
+                  <span
+                    className={`shrink-0 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full ${
+                      thumb.active
+                        ? "bg-green-100 text-green-600"
+                        : "bg-gray-100 text-gray-400"
+                    }`}
+                  >
+                    {thumb.active ? "Active" : "Off"}
+                  </span>
+                </div>
+                {thumb.itemType?.typeName && (
+                  <span className="inline-block text-[9px] font-black uppercase tracking-wider text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
+                    {thumb.itemType.typeName}
+                  </span>
+                )}
+              </div>
+
+              {/* Edit overlay */}
+              <button
+                onClick={() => openEdit(thumb.id)}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-white rounded-lg shadow text-blue-600 hover:bg-blue-50"
+              >
+                <PencilSquareIcon className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <AddMenuthumnailModal
+        isOpen={modalOpen}
+        onClose={handleModalClose}
+        propertyData={propertyData}
+        thumbnailId={editingId}
+      />
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MENU TAB — MAIN
@@ -1019,7 +1170,6 @@ const MenuTab = ({
   // Modal state lives here — top-bar "Add Item" button opens it directly
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-
   const openCreate = () => {
     setEditingItem(null);
     setModalOpen(true);
@@ -1044,15 +1194,16 @@ const MenuTab = ({
           </p>
         </div>
 
-        {/* Always visible when on items panel */}
         {activePanel === "items" && (
-          <button
-            onClick={openCreate}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg transition-all hover:opacity-90"
-            style={{ backgroundColor: colors.primary }}
-          >
-            <PlusIcon className="w-4 h-4" /> Add Item
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openCreate}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg transition-all hover:opacity-90"
+              style={{ backgroundColor: colors.primary }}
+            >
+              <PlusIcon className="w-4 h-4" /> Add Item
+            </button>
+          </div>
         )}
       </div>
 
@@ -1061,6 +1212,7 @@ const MenuTab = ({
         {[
           { key: "header", label: "Header & Chef" },
           { key: "items", label: "Menu Items" },
+          { key: "thumbnails", label: "Menu Thumbnails" },
           { key: "likes", label: "Likes" },
         ].map((t) => (
           <button
@@ -1080,6 +1232,12 @@ const MenuTab = ({
       {/* ── HEADER PANEL ─────────────────────────────────────────────────── */}
       {activePanel === "header" && <HeaderEditor propertyId={propertyId} />}
       {activePanel === "likes" && <ItemLikesPanel propertyId={propertyId} />}
+      {activePanel === "thumbnails" && (
+        <MenuThumbnailsPanel
+          propertyId={propertyId}
+          propertyData={propertyData}
+        />
+      )}
 
       {/* ── ITEMS PANEL ──────────────────────────────────────────────────── */}
       {activePanel === "items" && (

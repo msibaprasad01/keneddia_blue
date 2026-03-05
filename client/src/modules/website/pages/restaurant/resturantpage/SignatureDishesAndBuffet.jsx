@@ -156,7 +156,7 @@ function BuffetCarousel({ items, onBook }) {
                 {activeItem.itemName}
               </h3>
               <p className="text-zinc-500 dark:text-zinc-400 text-sm italic font-light leading-relaxed">
-                "{activeItem.description}"
+                {activeItem.description}
               </p>
             </div>
 
@@ -722,18 +722,18 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                   </div>
                 )}
 
-                {/* <Input
+                <Input
                   placeholder={
                     bookingModal.type === "like"
-                      ? "Leave a comment (optional)"
-                      : "Special requests (optional)"
+                      ? "Leave a comment"
+                      : "Special requests"
                   }
                   value={likeForm.description}
                   onChange={(e) =>
                     setLikeForm((f) => ({ ...f, description: e.target.value }))
                   }
                   className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
-                /> */}
+                />
 
                 <Button
                   disabled={!likeForm.name || !likeForm.phone || likeSubmitting}

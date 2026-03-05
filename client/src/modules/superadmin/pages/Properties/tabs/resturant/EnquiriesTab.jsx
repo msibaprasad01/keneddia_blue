@@ -6,6 +6,7 @@ import {
   Calendar,
   Clock,
   Phone,
+  Mail,
   User,
   Inbox,
   MessageSquare,
@@ -474,6 +475,7 @@ function GroupBookingEnquiries({ propertyId }) {
                 { icon: <span className="text-gray-300">#</span>, label: "ID" },
                 { icon: <User size={11} />, label: "Name" },
                 { icon: <Phone size={11} />, label: "Phone" },
+                { icon: <Mail size={11} />, label: "Email" },
                 { icon: <Calendar size={11} />, label: "Enquiry Date" },
                 { icon: <MessageSquare size={11} />, label: "Queries" },
               ].map(({ icon, label }) => (
@@ -566,6 +568,12 @@ function GroupBookingEnquiries({ propertyId }) {
                           )}
                         </div>
                       </div>
+                    </td>
+                    {/* Email */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-xs text-blue-600 font-medium">
+                        {enquiry.emailAddress || "—"}
+                      </span>
                     </td>
 
                     {/* Phone */}

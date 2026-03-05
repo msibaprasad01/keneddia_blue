@@ -184,3 +184,13 @@ export const getEventsHeaderByProperty = (propertyId) =>API.get(`api/v1/events-h
 export const toggleEventsHeaderStatus = (id, isActive) =>API.patch(`api/v1/events-header/${id}/status`, null, {
     params: { isActive },
   });
+
+  // ─────────────────────────────
+// MENU THUMBNAILS
+// ─────────────────────────────
+
+export const addMenuThumbnail = (propertyId, formData) =>API.post(`api/v1/menu-thumbnails/addThumbnail/${propertyId}`, formData, {headers: { "Content-Type": "multipart/form-data" },});
+export const getAllMenuThumbnails = () =>API.get("api/v1/menu-thumbnails/getAllThumbnail");
+export const getAllActiveMenuThumbnails = () =>API.get("api/v1/menu-thumbnails/getAllActiveThumbnail");
+export const getMenuThumbnailById = (id) =>API.get(`api/v1/menu-thumbnails/getThumbnailById/${id}`);
+export const updateMenuThumbnail = (propertyId, thumbnailId, formData) =>API.patch(`api/v1/menu-thumbnails/updateThumbnail/${propertyId}/${thumbnailId}`,formData,{headers: { "Content-Type": "multipart/form-data" },});

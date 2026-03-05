@@ -28,7 +28,7 @@ const GalleryTab = ({ propertyData }) => {
   const [showDeleted, setShowDeleted] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   // Get property ID from propertyData
-  const propId=propertyData?.id ?? propertyData?.propertyId;
+  const propId = propertyData?.id ?? propertyData?.propertyId;
   const fetchGallery = useCallback(async () => {
     if (!propId) {
       console.error("❌ Property ID is MISSING!");
@@ -202,13 +202,6 @@ const GalleryTab = ({ propertyData }) => {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
 
-                {/* Category Badge */}
-                <div className="absolute top-2 left-2">
-                  <span className="bg-black/70 backdrop-blur-sm text-white text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider shadow-lg">
-                    {item.category}
-                  </span>
-                </div>
-
                 {/* Inactive Badge */}
                 {!item.isActive && (
                   <div className="absolute top-2 right-2 bg-red-600 text-white text-[9px] px-2 py-0.5 rounded-md font-black uppercase shadow-lg">
@@ -216,8 +209,16 @@ const GalleryTab = ({ propertyData }) => {
                   </div>
                 )}
 
+                {/* Display Order Bar — always visible at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 bg-black/65 backdrop-blur-sm px-2.5 py-1.5 flex items-center justify-between z-10">
+                  <span className="text-[10px] text-gray-300 font-medium">Order</span>
+                  <span className="text-xs font-bold text-white bg-white/20 border border-white/30 rounded px-2 py-0.5 min-w-[28px] text-center">
+                    {item.displayOrder ?? "—"}
+                  </span>
+                </div>
+
                 {/* Delete Button Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
                   <button
                     onClick={() => handleDelete(item.id)}
                     disabled={deletingId === item.id}
@@ -244,6 +245,7 @@ const GalleryTab = ({ propertyData }) => {
                   <th className="px-6 py-4">Category</th>
                   <th className="px-6 py-4">Property ID</th>
                   <th className="px-6 py-4">File Name</th>
+                  <th className="px-6 py-4 text-center">Display Order</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
@@ -276,6 +278,11 @@ const GalleryTab = ({ propertyData }) => {
                     </td>
                     <td className="px-6 py-3 text-xs text-gray-600 font-medium">
                       {item.media?.fileName || "Unknown"}
+                    </td>
+                    <td className="px-6 py-3 text-center">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold">
+                        {item.displayOrder ?? "—"}
+                      </span>
                     </td>
                     <td className="px-6 py-3">
                       <span
