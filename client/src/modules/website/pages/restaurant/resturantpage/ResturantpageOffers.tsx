@@ -118,7 +118,7 @@ export default function ResturantpageOffers({
 
   useEffect(() => {
     if (!propertyId) {
-      setOffers(FALLBACK_OFFERS);
+      setOffers([]);
       setLoading(false);
       return;
     }
@@ -129,18 +129,31 @@ export default function ResturantpageOffers({
 
         const now = Date.now();
 
+        const DAYS = [
+          "SUNDAY",
+          "MONDAY",
+          "TUESDAY",
+          "WEDNESDAY",
+          "THURSDAY",
+          "FRIDAY",
+          "SATURDAY",
+        ];
+        const todayName = DAYS[new Date().getDay()];
+
         const filtered = raw.filter((o) => {
           const notExpired =
             !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+          const isDayActive =
+            !o.activeDays?.length || o.activeDays.includes(todayName);
 
           return (
             o.propertyId === propertyId &&
             o.isActive === true &&
             o.image?.url &&
-            notExpired
+            notExpired &&
+            isDayActive
           );
         });
-
         if (filtered.length > 0) {
           const mapped = filtered.map((o) => ({
             id: o.id,
@@ -162,10 +175,10 @@ export default function ResturantpageOffers({
           }));
           setOffers(mapped);
         } else {
-          setOffers(FALLBACK_OFFERS);
+          setOffers([]);
         }
       })
-      .catch(() => setOffers(FALLBACK_OFFERS))
+      .catch(() => setOffers([]))
       .finally(() => setLoading(false));
   }, [propertyId]);
 
@@ -249,7 +262,7 @@ export default function ResturantpageOffers({
                         <img
                           src={offer.image.src}
                           alt={offer.image.alt}
-                          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-contain object-center bg-zinc-900 transition-transform duration-500 group-hover:scale-105"
                         />
                       )
                     ) : (

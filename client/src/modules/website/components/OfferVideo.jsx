@@ -14,11 +14,11 @@ function OfferVideo({ src }) {
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full flex items-center justify-center bg-zinc-900">
       <video
         ref={videoRef}
         src={src}
-        className="w-full h-full object-cover object-center"
+        className="max-w-full max-h-full object-contain"
         autoPlay
         loop
         playsInline
@@ -35,4 +35,5 @@ function OfferVideo({ src }) {
     </div>
   );
 }
+
 export default OfferVideo;

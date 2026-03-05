@@ -68,6 +68,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     propertyName: "",
     propertyType: "",
     expiresAt: "",
+    activeDays: [],
     availableHours: "",
     imageMediaId: null,
     isActive: false,
@@ -132,6 +133,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         isActive: editingOffer.isActive ?? false,
         ctaText: editingOffer.ctaText || "",
         ctaLink: editingOffer.ctaLink || "",
+        activeDays: Array.isArray(editingOffer.activeDays) ? editingOffer.activeDays : [],
         quickOfferActive: editingOffer.quickOfferActive ?? false,
       });
 
@@ -209,6 +211,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       propertyName: "",
       propertyType: "",
       expiresAt: "",
+      activeDays: [],  
       availableHours: "",
       imageMediaId: null,
       isActive: false,
@@ -383,6 +386,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         // ✅ force correct property type mapping
         propertyTypeId: resolvedType.propertyTypeId,
         propertyType: resolvedType.propertyType,
+        activeDays: formData.activeDays,
 
         title: formData.title.trim() || "",
         availableHours: timeString,
@@ -741,6 +745,81 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   }
                   className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm"
                 />
+              </div>
+              {/* Active Days */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2">
+                  <Clock size={12} /> Active Days
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "MONDAY",
+                    "TUESDAY",
+                    "WEDNESDAY",
+                    "THURSDAY",
+                    "FRIDAY",
+                    "SATURDAY",
+                    "SUNDAY",
+                  ].map((day) => {
+                    const active = formData.activeDays.includes(day);
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() =>
+                          setFormData((p) => ({
+                            ...p,
+                            activeDays: active
+                              ? p.activeDays.filter((d) => d !== day)
+                              : [...p.activeDays, day],
+                          }))
+                        }
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${
+                          active
+                            ? "text-white border-transparent"
+                            : "bg-[#F3F4F6] text-gray-500 border-gray-200 hover:border-primary"
+                        }`}
+                        style={
+                          active ? { backgroundColor: colors.primary } : {}
+                        }
+                      >
+                        {day.slice(0, 3)}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Select All / Clear shortcuts */}
+                <div className="flex gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((p) => ({
+                        ...p,
+                        activeDays: [
+                          "MONDAY",
+                          "TUESDAY",
+                          "WEDNESDAY",
+                          "THURSDAY",
+                          "FRIDAY",
+                          "SATURDAY",
+                          "SUNDAY",
+                        ],
+                      }))
+                    }
+                    className="text-[11px] font-bold text-primary hover:underline"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((p) => ({ ...p, activeDays: [] }))
+                    }
+                    className="text-[11px] font-bold text-gray-400 hover:underline"
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1.5">

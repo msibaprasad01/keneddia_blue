@@ -113,12 +113,27 @@ export default function DailyOffers() {
         const list = Array.isArray(rawData) ? rawData : rawData.content || [];
         const now = Date.now();
 
+        const DAYS = [
+          "SUNDAY",
+          "MONDAY",
+          "TUESDAY",
+          "WEDNESDAY",
+          "THURSDAY",
+          "FRIDAY",
+          "SATURDAY",
+        ];
+        const todayName = DAYS[new Date().getDay()];
+
         const active = list.filter((o: any) => {
           const notExpired =
             !o.expiresAt || new Date(o.expiresAt).getTime() > now;
 
+          // If activeDays is empty/null → show every day; otherwise check today
+          const isDayActive =
+            !o.activeDays?.length || o.activeDays.includes(todayName);
+
           return (
-            o.isActive && notExpired && o.showOnHomepage === true // ✅ ONLY homepage offers
+            o.isActive && notExpired && o.showOnHomepage === true && isDayActive
           );
         });
 

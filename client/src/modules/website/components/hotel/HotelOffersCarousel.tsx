@@ -145,14 +145,27 @@ export default function HotelOffersCarousel() {
             return null;
           }),
         );
-        // ───────────────────────────────────────────────────────────────────
+        // Add before the filtered.filter call:
+        const DAYS = [
+          "SUNDAY",
+          "MONDAY",
+          "TUESDAY",
+          "WEDNESDAY",
+          "THURSDAY",
+          "FRIDAY",
+          "SATURDAY",
+        ];
+        const todayName = DAYS[new Date().getDay()];
 
-        // Expiry filter (same as DailyOffers)
+        // Replace the existing active filter:
         const active = filtered.filter((o: any) => {
           if (!o) return false;
-          return !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+          const notExpired =
+            !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+          const isDayActive =
+            !o.activeDays?.length || o.activeDays.includes(todayName);
+          return notExpired && isDayActive;
         });
-
         // Image mapping identical to DailyOffers
         setOffers(
           active.map((o: any) => ({

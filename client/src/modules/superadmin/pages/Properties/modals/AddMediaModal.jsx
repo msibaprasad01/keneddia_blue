@@ -554,12 +554,13 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
                           </span>
                           <input
                             type="number"
-                            min={1}
-                            value={displayOrders[index] ?? index + 1}
+                            min={0}
+                            value={displayOrders[index] ?? ""}
                             onChange={(e) =>
                               setDisplayOrders((prev) => {
                                 const updated = [...prev];
-                                updated[index] = Number(e.target.value) || 1;
+                                const val = e.target.value;
+                                updated[index] = val === "" ? "" : Number(val);
                                 return updated;
                               })
                             }

@@ -267,6 +267,9 @@ function DailyOffers() {
                     Hours
                   </th>
                   <th className="text-left py-4 px-4 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                    Active Days
+                  </th>
+                  <th className="text-left py-4 px-4 text-[11px] font-bold uppercase tracking-wider text-gray-500">
                     Expires
                   </th>
                   <th className="text-center py-4 px-4 text-[11px] font-bold uppercase tracking-wider text-gray-500">
@@ -285,24 +288,22 @@ function DailyOffers() {
                     style={{ borderColor: colors.border }}
                   >
                     <td className="py-3 px-4">
-                      <td className="py-3 px-4">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-black flex items-center justify-center">
-                          {offer.image?.type === "VIDEO" ? (
-                            <video
-                              src={offer.image?.url}
-                              className="w-full h-full object-cover"
-                              muted
-                              playsInline
-                            />
-                          ) : (
-                            <img
-                              src={offer.image?.url || "/api/placeholder/80/80"}
-                              alt={offer.title}
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                        </div>
-                      </td>
+                      <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-black flex items-center justify-center">
+                        {offer.image?.type === "VIDEO" ? (
+                          <video
+                            src={offer.image?.url}
+                            className="w-full h-full object-cover"
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={offer.image?.url || "/api/placeholder/80/80"}
+                            alt={offer.title}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 px-4">
                       <div className="max-w-[200px]">
@@ -331,6 +332,22 @@ function DailyOffers() {
                       <div className="flex items-center gap-1.5">
                         <Clock size={12} /> {offer.availableHours}
                       </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      {offer.activeDays?.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {offer.activeDays.map((day) => (
+                            <span
+                              key={day}
+                              className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase"
+                            >
+                              {day.slice(0, 3)}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-gray-400">—</span>
+                      )}
                     </td>
                     <td className="py-3 px-4 text-xs font-medium text-orange-600">
                       {formatExpiryDate(offer.expiresAt)}
