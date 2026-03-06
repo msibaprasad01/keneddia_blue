@@ -27,9 +27,10 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
   const [types, setTypes] = useState([]);
   const [formData, setFormData] = useState({
     itemTypeId: "",
-    itemCategoryId: "", // ← add
+    itemCategoryId: "",
     tag: "",
     file: null,
+    active: true,
   });
   const [preview, setPreview] = useState("");
   const [mediaType, setMediaType] = useState("image");
@@ -39,7 +40,13 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
   useEffect(() => {
     if (!isOpen) return;
     setError(null);
-    setFormData({ itemTypeId: "", tag: "", file: null });
+    setFormData({
+      itemTypeId: "",
+      itemCategoryId: "",
+      tag: "",
+      file: null,
+      active: true,
+    });
     setPreview("");
     setMediaType("image");
     fetchTypes();
@@ -55,7 +62,7 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
       setTypes(typeRes?.data || []);
       setCategories(
         (catRes?.data || [])
-          .filter((c) => c.isActive !== false)
+          .filter((c) => c.active !== false)
           .map((c) => ({ id: c.id, name: c.categoryName })),
       );
     } catch {
@@ -69,9 +76,10 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
       const data = res?.data;
       setFormData({
         itemTypeId: data?.itemTypeId ? String(data.itemTypeId) : "",
-        itemCategoryId: data?.itemCategoryId ? String(data.itemCategoryId) : "", // ← add
+        itemCategoryId: data?.itemCategoryId ? String(data.itemCategoryId) : "",
         tag: data?.tag || "",
         file: null,
+        active: data?.active ?? true,
       });
       const url = data?.media?.url || "";
       const isVid =
@@ -92,15 +100,13 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
     setPreview(URL.createObjectURL(file));
     setMediaType(file.type.startsWith("video/") ? "video" : "image");
   };
+
   const handleSubmit = async () => {
     if (!formData.itemTypeId) {
       setError("Please select an item type.");
       return;
     }
-    if (!formData.tag.trim()) {
-      setError("Tag is required.");
-      return;
-    }
+
     if (!isEditing && !formData.file) {
       setError("Please upload an image or video.");
       return;
@@ -108,15 +114,32 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
 
     setSaving(true);
     setError(null);
+
     try {
       const fd = new FormData();
+
       fd.append("itemTypeId", formData.itemTypeId);
-      fd.append("itemCategoryId", formData.itemCategoryId); // ← add
-      fd.append("tag", formData.tag.trim());
-      if (formData.file) fd.append("file", formData.file);
+
+      if (formData.itemCategoryId) {
+        fd.append("itemCategoryId", formData.itemCategoryId);
+      }
+
+      // tag optional
+      if (formData.tag && formData.tag.trim()) {
+        fd.append("tag", formData.tag.trim());
+      }
+
+      // active status only for edit
+      if (isEditing) {
+        fd.append("active", formData.active);
+      }
+
+      if (formData.file) {
+        fd.append("file", formData.file);
+      }
 
       if (isEditing) {
-        await updateMenuThumbnail(propertyId, thumbnailId, fd); // ← fixed: 3 args
+        await updateMenuThumbnail(propertyId, thumbnailId, fd);
       } else {
         await addMenuThumbnail(propertyId, fd);
       }
@@ -135,9 +158,9 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[80vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b">
+        <div className="px-5 py-3 border-t bg-gray-50 flex justify-end gap-3">
           <h3 className="text-lg font-bold text-gray-800">
             {isEditing ? "Edit Menu Thumbnail" : "Add Menu Thumbnail"}
           </h3>
@@ -150,7 +173,7 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-5">
+        <div className="p-5 space-y-4 overflow-y-auto">
           {/* Error */}
           {error && (
             <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">
@@ -179,7 +202,7 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
             </label>
 
             {preview && (
-              <div className="relative mt-3 w-full h-44 rounded-xl overflow-hidden border shadow-sm bg-black">
+              <div className="relative mt-3 w-full h-32 rounded-xl overflow-hidden border shadow-sm bg-black">
                 {mediaType === "video" ? (
                   <video
                     src={preview}
@@ -254,7 +277,7 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
           {/* Tag */}
           <div>
             <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
-              Tag <span className="text-red-400">*</span>
+              Tag
             </label>
             <input
               className={inp}
@@ -263,6 +286,20 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
               placeholder="e.g. brunch, dinner, specials"
             />
           </div>
+          {/* Active Status (Edit Mode Only) */}
+          {isEditing && (
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                checked={formData.active}
+                onChange={(e) => handleChange("active", e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label className="text-sm font-medium text-gray-600">
+                Active
+              </label>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
