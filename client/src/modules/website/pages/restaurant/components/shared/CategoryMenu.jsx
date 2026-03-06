@@ -24,6 +24,7 @@ export default function CategoryMenu({
   propertyId,
   showOrderButton = false,
 }) {
+  console.log("menu", menu);
   const [activeTab, setActiveTab] = useState(0);
   const scrollContainerRef = useRef(null);
 
@@ -61,30 +62,40 @@ export default function CategoryMenu({
       }
     })();
   }, [propertyId]);
+  console.log("menu", menu);
+  console.log("thumbnails", thumbnails);
 
   const getThumbsForTab = (tabIndex) => {
     const section = menu[tabIndex];
     if (!section) return [];
 
     const sectionTypeId =
-      section.itemTypeId ??
-      section.items?.[0]?.typeId ??
-      section.items?.[0]?.type?.id ??
-      null;
+      section.itemTypeId ?? section.items?.[0]?.typeId ?? null;
+
+    const sectionCategoryId = section.items?.[0]?.categoryId ?? null;
+
+    const sectionCategoryName = section.items?.[0]?.categoryName ?? null;
 
     let matched = [];
-    if (sectionTypeId !== null && sectionTypeId !== undefined) {
+
+    if (
+      sectionTypeId !== null &&
+      sectionCategoryId !== null &&
+      sectionCategoryName
+    ) {
       matched = thumbnails.filter(
-        (t) => Number(t.itemTypeId) === Number(sectionTypeId),
+        (t) =>
+          Number(t.itemTypeId) === Number(sectionTypeId) &&
+          Number(t.itemCategoryId) === Number(sectionCategoryId) &&
+          t.itemCategoryName?.toLowerCase() ===
+            sectionCategoryName?.toLowerCase(),
       );
     }
 
     const itemCount = section.items?.length || 0;
-    // 1 thumbnail per 4 items — ceil(4/4)=1, ceil(5/4)=2, ceil(9/4)=3 etc.
     const thumbsNeeded = Math.ceil(itemCount / 4);
 
     if (matched.length > 0) {
-      // Repeat thumbnails cyclically if we need more than available
       const result = [];
       for (let i = 0; i < thumbsNeeded; i++) {
         result.push(matched[i % matched.length]);
@@ -92,7 +103,7 @@ export default function CategoryMenu({
       return result;
     }
 
-    // Fallback: one categoryImage block
+    // fallback
     return [
       {
         media: { url: section.categoryImage, type: "IMAGE" },
