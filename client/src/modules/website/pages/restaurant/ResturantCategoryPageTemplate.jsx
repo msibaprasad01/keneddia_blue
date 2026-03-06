@@ -11,6 +11,7 @@ import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
 import Testimonials from "./components/Testimonials";
 import ReservationForm from "./components/ReservationForm";
 import { getAllVerticalCards, getMenuItems } from "@/Api/RestaurantApi";
+import { createCitySlug } from "@/lib/HotelSlug";
 import {
   getAllGalleries,
   GetAllPropertyDetails,
@@ -74,7 +75,7 @@ function buildMenuFromApi(allItems, verticalTitle) {
 }
 
 /* ── Other Verticals Grid ─────────────────────────────────────────────────── */
-function OtherVerticalsSection({ experiences, propertyId }) {
+function OtherVerticalsSection({ experiences, propertyId, citySlug }) {
   const navigate = useNavigate();
 
   if (!experiences || experiences.length === 0) return null;
@@ -107,7 +108,9 @@ function OtherVerticalsSection({ experiences, propertyId }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              onClick={() => navigate(`/resturant/${propertyId}/${exp.slug}`)}
+              onClick={() =>
+                navigate(`/resturant/${citySlug}/${propertyId}/${exp.slug}`)
+              }
               style={exp.isHexColor ? { backgroundColor: exp.bgColor } : {}}
               className={`
                 group cursor-pointer relative flex transition-all duration-500 hover:shadow-2xl
@@ -168,7 +171,8 @@ function OtherVerticalsSection({ experiences, propertyId }) {
 
 /* ── Main Template ─────────────────────────────────────────────────────────── */
 function ResturantCategoryPageTemplate() {
-  const { propertyId: paramPropertyId, categoryType } = useParams();
+  const { propertyId: paramPropertyId, categoryType, citySlug: paramCitySlug } =
+    useParams();
   const propertyId = paramPropertyId ? Number(paramPropertyId) : null;
   const navigate = useNavigate();
   const [propertyData, setPropertyData] = useState(null);
@@ -179,6 +183,7 @@ function ResturantCategoryPageTemplate() {
   const [galleryData, setGalleryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [citySlug, setCitySlug] = useState(paramCitySlug || "hotel");
 
   const normalizedSlug = categoryType?.toLowerCase().trim();
 
@@ -232,6 +237,13 @@ function ResturantCategoryPageTemplate() {
           };
 
           setPropertyData(combinedProperty);
+          setCitySlug(
+            createCitySlug(
+              combinedProperty.city ||
+                combinedProperty.locationName ||
+                combinedProperty.propertyName,
+            ),
+          );
         }
 
         /* ─────────────────────────────────────────────
@@ -342,7 +354,7 @@ function ResturantCategoryPageTemplate() {
             The culinary vertical you are looking for is currently unavailable.
           </p>
           <button
-            onClick={() => navigate(`/resturant/${propertyId}`)}
+            onClick={() => navigate(`/resturant/${citySlug}/${propertyId}`)}
             className="px-8 py-3 bg-primary text-white rounded-full font-bold uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg"
           >
             Return to Restaurant
@@ -392,6 +404,7 @@ function ResturantCategoryPageTemplate() {
           <OtherVerticalsSection
             experiences={otherVerticals}
             propertyId={propertyId}
+            citySlug={citySlug}
           />
         </div>
 

@@ -117,7 +117,9 @@ const CarouselItem = ({
               e.stopPropagation();
               const type = property.propertyType?.toLowerCase();
               if (type === "resturant" || type === "restaurant") {
-                navigate(`/resturant/${property.propertyId}`);
+                navigate(
+                  `/resturant/${createCitySlug(property.city || property.propertyName)}/${property.propertyId}`,
+                );
               } else {
                 navigate(
                   `/hotels/${createCitySlug(property.city || property.propertyName)}/${property.propertyId}`,
@@ -419,7 +421,7 @@ export default function PropertiesSection() {
                         const type = active.propertyType?.toLowerCase();
                         navigate(
                           type === "resturant" || type === "restaurant"
-                            ? `/resturant/${active.propertyId}`
+                            ? `/resturant/${createCitySlug(active.city || active.propertyName)}/${active.propertyId}`
                             : `/hotels/${createCitySlug(active.city || active.propertyName)}/${active.propertyId}`,
                         );
                       }}

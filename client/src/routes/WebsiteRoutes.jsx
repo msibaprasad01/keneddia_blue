@@ -46,10 +46,11 @@ const WebsiteRoutes = [
   <Route key="login" path="/login" element={<Login />} />,
   <Route key="careers" path="/careers" element={<Careers />} />,
   <Route key="restaurant-homepage" path="/restaurant-homepage" element={<RestaurantHomepage />} />,
-  <Route key="resturant-detail" path="/resturant/:propertyId" element={<ResturantPage />} />,
+  <Route key="resturant-detail" path="/resturant/:citySlug/:propertyId" element={<ResturantPage />} />,
+  <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={<ResturantPage />} />,
 
   // Restaurant Sub-Verticals
-  <Route path="/resturant/:propertyId/:categoryType" element={<ResturantCategoryPageTemplate />}/>,
+  <Route path="/resturant/:citySlug/:propertyId/:categoryType" element={<ResturantCategoryPageTemplate />}/>,
 
   <Route key="restaurant-italian" path="/restaurant/italian" element={<Italian />} />,
   <Route key="restaurant-lounge" path="/restaurant/luxury-lounge" element={<LuxuryLounge />} />,

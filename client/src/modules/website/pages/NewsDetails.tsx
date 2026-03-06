@@ -83,7 +83,8 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
   const handleNavigate = () => {
     const type = currentProperty.type?.toLowerCase();
     if (type === "restaurant" || type === "cafe" || type === "wine & dine") {
-      navigate(`/resturant/${currentProperty.propertyId}`);
+      const citySlug = createCitySlug(currentProperty.location);
+      navigate(`/resturant/${citySlug}/${currentProperty.propertyId}`);
     } else {
       const citySlug = createCitySlug(currentProperty.location);
 

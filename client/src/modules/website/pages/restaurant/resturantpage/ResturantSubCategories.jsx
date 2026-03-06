@@ -6,6 +6,7 @@ import {
   getAllVerticalCards,
   getAllVerticalSectionsHeader,
 } from "@/Api/RestaurantApi";
+import { createCitySlug } from "@/lib/HotelSlug";
 
 const STATIC_EXPERIENCES = [
   {
@@ -163,6 +164,9 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
 
   const activeHeader = header || STATIC_HEADER;
   const activeExperiences = experiences || STATIC_EXPERIENCES;
+  const citySlug = createCitySlug(
+    propertyData?.city || propertyData?.locationName || propertyData?.propertyName,
+  );
 
   return (
     <section
@@ -256,7 +260,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
               onClick={() =>
-                navigate(`/resturant/${propertyId}/${exp.slug}`, {
+                navigate(`/resturant/${citySlug}/${propertyId}/${exp.slug}`, {
                   state: { propertyData },
                 })
               }

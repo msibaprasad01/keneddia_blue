@@ -56,6 +56,7 @@ interface GroupBooking {
   id: number;
   title: string;
   propertyId: number | string;
+  media?: { mediaId: number; type: string; url: string }[];
 }
 
 interface FormData {
@@ -121,7 +122,7 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 4;
+  const itemsPerPage = 3;
 
   // Modal / form state
   const [showModal, setShowModal] = useState(false);
@@ -349,39 +350,48 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                 )}
               </div>
               <div className="space-y-4 flex-grow">
-                {paginatedBookings.length > 0 ? (
-                  paginatedBookings.map((item, index) => {
-                    const style = COLOR_PALETTE[index % COLOR_PALETTE.length];
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => openInquiry(item.title, item.id)}
-                        className={`w-full flex items-center gap-4 p-5 rounded-2xl border ${style.border} ${style.color} transition-transform hover:scale-[1.02] text-left group`}
-                      >
-                        <div className="shrink-0">
-                          {getBookingIcon(item.title)}
-                        </div>
-                        <span className="font-bold text-sm md:text-base tracking-tight">
-                          {item.title}
-                        </span>
-                        <ArrowRight
-                          size={16}
-                          className="ml-auto opacity-40 group-hover:opacity-100 transition-opacity"
-                        />
-                      </button>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-10 text-muted-foreground text-sm italic">
-                    No group packages available.
-                  </div>
-                )}
+                {paginatedBookings.map((item, index) => {
+                  const style = COLOR_PALETTE[index % COLOR_PALETTE.length];
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => openInquiry(item.title, item.id)}
+                      className={`w-full flex items-center gap-4 p-5 rounded-2xl border ${style.border} ${style.color} transition-transform hover:scale-[1.02] text-left group`}
+                    >
+                      {/* IMAGE AVATAR */}
+                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/40 shrink-0">
+                        {item.media?.[0]?.url ? (
+                          <img
+                            src={item.media[0].url}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            {getBookingIcon(item.title)}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* TEXT */}
+                      <span className="font-bold text-sm md:text-base tracking-tight">
+                        {item.title}
+                      </span>
+
+                      <ArrowRight
+                        size={16}
+                        className="ml-auto opacity-40 group-hover:opacity-100 transition-opacity"
+                      />
+                    </button>
+                  );
+                })}
               </div>
               <div className="mt-8 pt-8 border-t border-dashed border-border text-center">
-                <p className="text-xs text-muted-foreground mb-4 italic">
+                {/* <p className="text-xs text-muted-foreground mb-4 italic">
                   Planning a large gathering? Let our experts handle the
                   details.
-                </p>
+                </p> */}
                 <button
                   onClick={() => openInquiry("General Celebration")}
                   className="w-full bg-primary text-white py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 active:scale-95 transition-all"

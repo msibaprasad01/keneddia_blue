@@ -351,7 +351,7 @@ export default function GroupBookingSection() {
                   onSwiper={setSwiper}
                   breakpoints={{
                     640: { slidesPerView: 2 },
-                    1024: { slidesPerView:2.4 }, // 👈 slightly wider cards
+                    1024: { slidesPerView: 2.4 }, // 👈 slightly wider cards
                   }}
                   className="!pb-10"
                 >
@@ -400,6 +400,7 @@ export default function GroupBookingSection() {
                 <div className="space-y-3 flex-1">
                   {paginatedBookings.map((booking, index) => {
                     const colorCls = CARD_COLORS[index % CARD_COLORS.length];
+
                     return (
                       <div
                         key={booking.id}
@@ -409,15 +410,31 @@ export default function GroupBookingSection() {
                         }}
                         className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all group ${colorCls}`}
                       >
+                        {/* IMAGE */}
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted shrink-0">
+                          {booking.media?.[0]?.url ? (
+                            <img
+                              src={booking.media[0].url}
+                              alt={booking.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <ImageIcon className="w-5 h-5 text-muted-foreground/40 m-auto" />
+                          )}
+                        </div>
+
+                        {/* TEXT */}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold line-clamp-1 group-hover:text-primary">
                             {booking.title}
                           </p>
+
                           {booking.description && (
                             <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
                               {booking.description}
                             </p>
                           )}
+
                           {booking.ctaLink && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-2 uppercase tracking-tight">
                               {booking.ctaText || "Details"}{" "}
@@ -425,6 +442,7 @@ export default function GroupBookingSection() {
                             </span>
                           )}
                         </div>
+
                         <ArrowRight
                           size={14}
                           className="text-muted-foreground/40 group-hover:text-primary transition-colors"
