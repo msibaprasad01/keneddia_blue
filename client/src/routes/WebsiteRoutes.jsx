@@ -1,5 +1,5 @@
 import { Route } from "react-router-dom";
-
+import { Navigate } from "react-router-dom";
 import Home from "@/modules/website/pages/Home";
 import Hotels from "@/modules/website/pages/Hotels";
 import HotelDetail from "@/modules/website/pages/HotelDetail";
@@ -32,10 +32,12 @@ import ResturantCategoryPageTemplate from "@/modules/website/pages/restaurant/Re
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
   // <Route key="home" path="/" element={<Hotels />} />,
+  // <Route path="/" element={<Navigate to="/resturant/ghaziabad/31" replace />}/>,
   <Route key="hotels" path="/hotels" element={<Hotels />} />,
   // <Route key="hotel-detail" path="/hotels/:city/:propertyId" element={<HotelDetail />} />,
   <Route path="/hotels/:citySlug/:propertyId" element={<HotelDetail />} />,
   // <Route key="hotel-detail" path="/hotels/:propertyId" element={<HotelDetail />} />,
+
   <Route key="room-selection" path="/hotels/:hotelId/rooms" element={<RoomSelection />} />,
   <Route key="cafes" path="/cafes" element={<Cafes />} />,
   <Route key="bars" path="/bars" element={<Bars />} />,

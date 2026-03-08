@@ -8,9 +8,10 @@ import { ThemeToggle } from "./ThemeToggle";
 
 // Business Dropdown Items
 const BUSINESS_ITEMS = [
-  { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },
-  // { label: "Hotels & Resorts", href: "/hotels", external: true },
-  { label: "Restaurants", href: "https://restaurants.kennediablu.com/resturant/ghaziabad/31",external: true },
+  // { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },
+  { label: "Hotels & Resorts", href: "/hotels", external: true },
+  { label: "Restaurants", href: "https://resturant/27",external: true },
+  // { label: "Restaurants", href: "https://restaurants.kennediablu.com/resturant/ghaziabad/31",external: true },
   // { label: "Cafes & Dining", href: "/cafes" },
   // { label: "Bars & Lounges", href: "/bars" },
   // { label: "Events & Conf.", href: "/events" },
