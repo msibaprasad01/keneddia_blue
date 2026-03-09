@@ -120,11 +120,11 @@ function OtherVerticalsSection({ experiences, propertyId, citySlug }) {
                 <img
                   src={exp.image}
                   alt={exp.title}
-                  className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all"
+                  className="w-full h-full object-cover grayscale-20 group-hover:grayscale-0 transition-all"
                 />
               </div>
 
-              <div className="flex flex-col flex-grow px-4 lg:px-0">
+              <div className="flex flex-col grow px-4 lg:px-0">
                 <h3 className="text-lg lg:text-3xl font-serif text-zinc-900 dark:text-zinc-100 group-hover:text-primary transition-colors tracking-tight">
                   {exp.title}
                 </h3>
@@ -155,7 +155,7 @@ function OtherVerticalsSection({ experiences, propertyId, citySlug }) {
                 </div>
               </div>
 
-              <span className="hidden lg:block absolute bottom-8 right-10 text-7xl font-black text-zinc-900/[0.03] dark:text-white/[0.02] italic select-none">
+              <span className="hidden lg:block absolute bottom-8 right-10 text-7xl font-black text-zinc-900/3 dark:text-white/2 italic select-none">
                 0{index + 1}
               </span>
             </motion.div>
