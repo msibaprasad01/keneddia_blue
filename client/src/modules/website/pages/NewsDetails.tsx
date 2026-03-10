@@ -21,7 +21,7 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { getAllNews, GetAllPropertyDetails } from "@/Api/Api";
 import { toast } from "react-hot-toast";
-import { createCitySlug } from "@/lib/HotelSlug";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 // Types
 interface NewsItem {
   id: number;
@@ -81,15 +81,12 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
   const currentProperty = properties[currentIndex];
 
   const handleNavigate = () => {
-    const type = currentProperty.type?.toLowerCase();
-    if (type === "restaurant" || type === "cafe" || type === "wine & dine") {
-      const citySlug = createCitySlug(currentProperty.location);
-      navigate(`/resturant/${citySlug}/${currentProperty.propertyId}`);
-    } else {
-      const citySlug = createCitySlug(currentProperty.location);
-
-      navigate(`/hotels/${citySlug}/${currentProperty.propertyId}`);
-    }
+    const citySlug = createCitySlug(currentProperty.location);
+    const propertySlug = createHotelSlug(
+      currentProperty.name || currentProperty.location || "property",
+      currentProperty.propertyId,
+    );
+    navigate(`/${citySlug}/${propertySlug}`);
   };
 
   return (

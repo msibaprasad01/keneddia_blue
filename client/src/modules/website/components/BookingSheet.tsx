@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command"
 import { ChevronRight, X, Loader2, ExternalLink } from "lucide-react"
 import { GetAllPropertyDetails } from "@/Api/Api"
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug"
 
 interface ApiProperty {
   propertyId: number
@@ -75,7 +76,8 @@ export function BookingSheet({ isOpen, onOpenChange }: BookingSheetProps) {
     if (property.bookingEngineUrl) {
       window.open(property.bookingEngineUrl, "_blank")
     } else {
-      navigate(`/hotels/${property.propertyId}`)
+      const propertyPath = `/${createCitySlug(property.city || property.propertyName)}/${createHotelSlug(property.propertyName || property.city || "property", property.propertyId)}`
+      navigate(propertyPath)
     }
   }
 

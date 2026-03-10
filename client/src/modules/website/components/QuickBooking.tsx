@@ -16,7 +16,7 @@ import {
   BedDouble,
   Maximize,
 } from "lucide-react";
-import { createCitySlug } from "@/lib/HotelSlug";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -277,7 +277,8 @@ export default function QuickBooking() {
 
       const citySlug = createCitySlug(cityName);
 
-      navigate(`/hotels/${citySlug}/${room.propertyId}`);
+      const propertyPath = `/${citySlug}/${createHotelSlug(room.propertyName || cityName || "property", room.propertyId)}`;
+      navigate(propertyPath);
       return;
     }
 

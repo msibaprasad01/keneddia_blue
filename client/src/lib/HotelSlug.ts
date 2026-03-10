@@ -1,10 +1,11 @@
-export const createHotelSlug = (city: string, id: number) => {
-  if (!city) return id.toString();
+export const createHotelSlug = (name: string, id: number | string) => {
+  const safeId = String(id).trim();
+  if (!name) return safeId;
 
-  return `${city
+  return `${name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")}-${id}`;
+    .replace(/(^-|-$)/g, "")}-${safeId}`;
 };
 export const createCitySlug = (city?: string) =>
   city

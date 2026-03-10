@@ -104,7 +104,7 @@ export const HOTEL_PROPERTIES: Property[] = [
     location: "North Malé Atoll, Maldives",
     image: { src: "/images/hotels/maldives.jpg", alt: "Kennedia Blu Maldives" },
     rating: 5,
-    link: "/hotels/kennedia-blu-maldives",
+    link: "/maldives/kennedia-blu-maldives-1",
     highlights: ["Overwater Villas", "Private Beach", "Spa & Wellness"]
   },
   {
@@ -113,7 +113,7 @@ export const HOTEL_PROPERTIES: Property[] = [
     location: "8th Arrondissement, Paris",
     image: { src: "/images/hotels/paris.jpg", alt: "Kennedia Grand Paris" },
     rating: 5,
-    link: "/hotels/kennedia-grand-paris",
+    link: "/paris/kennedia-grand-paris-2",
     highlights: ["Eiffel Tower Views", "Michelin Restaurant", "Art Collection"]
   },
   {
@@ -122,7 +122,7 @@ export const HOTEL_PROPERTIES: Property[] = [
     location: "Ubud, Bali, Indonesia",
     image: { src: "/images/hotels/bali.jpg", alt: "Kennedia Resort Bali" },
     rating: 5,
-    link: "/hotels/kennedia-resort-bali",
+    link: "/bali/kennedia-resort-bali-3",
     highlights: ["Rice Terrace Views", "Yoga Retreat", "Infinity Pool"]
   },
   {
@@ -131,7 +131,7 @@ export const HOTEL_PROPERTIES: Property[] = [
     location: "Palm Jumeirah, Dubai",
     image: { src: "/images/hotels/dubai.jpg", alt: "Kennedia Palace Dubai" },
     rating: 5,
-    link: "/hotels/kennedia-palace-dubai",
+    link: "/dubai/kennedia-palace-dubai-4",
     highlights: ["Private Beach", "Rooftop Bar", "Butler Service"]
   }
 ];

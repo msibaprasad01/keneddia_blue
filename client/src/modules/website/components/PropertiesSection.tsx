@@ -58,6 +58,7 @@ const CarouselItem = ({
   const [subTitleExpanded, setSubTitleExpanded] = useState(false);
   const imageUrl = property.media?.[0]?.url || property.media?.[0] || "";
   const subTitleLong = (property.subTitle?.length || 0) > 50;
+  const propertyPath = `/${createCitySlug(property.city || property.propertyName)}/${createHotelSlug(property.propertyName || property.city || "property", property.propertyId)}`;
 
   return (
     <div
@@ -187,16 +188,7 @@ const CarouselItem = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const type = property.propertyType?.toLowerCase();
-              if (type === "resturant" || type === "restaurant") {
-                navigate(
-                  `/resturant/${createCitySlug(property.city || property.propertyName)}/${property.propertyId}`,
-                );
-              } else {
-                navigate(
-                  `/hotels/${createCitySlug(property.city || property.propertyName)}/${property.propertyId}`,
-                );
-              }
+              navigate(propertyPath);
             }}
             className="inline-flex items-center gap-3 uppercase text-sm font-bold tracking-widest group cursor-pointer"
           >
@@ -507,12 +499,8 @@ export default function PropertiesSection() {
                   ) : (
                     <button
                       onClick={() => {
-                        const type = active.propertyType?.toLowerCase();
-                        navigate(
-                          type === "resturant" || type === "restaurant"
-                            ? `/resturant/${createCitySlug(active.city || active.propertyName)}/${active.propertyId}`
-                            : `/hotels/${createCitySlug(active.city || active.propertyName)}/${active.propertyId}`,
-                        );
+                        const propertyPath = `/${createCitySlug(active.city || active.propertyName)}/${createHotelSlug(active.propertyName || active.city || "property", active.propertyId)}`;
+                        navigate(propertyPath);
                       }}
                       className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
                     >

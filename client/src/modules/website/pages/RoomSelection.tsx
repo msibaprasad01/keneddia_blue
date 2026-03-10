@@ -9,6 +9,7 @@ import PricingBreakdown from "@/modules/website/components/PricingBreakdown";
 import TrustSection from "@/modules/website/components/TrustSection";
 import { getHotelById, getRoomById } from "@/data/hotelData";
 import { siteContent } from "@/data/siteContent";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 
 const ROOMS_PER_PAGE = 6;
 
@@ -41,6 +42,7 @@ export default function RoomSelection() {
 
   const selectedRoom =
     selectedRoomId && hotelId ? getRoomById(hotelId, selectedRoomId) : null;
+  const hotelDetailPath = `/${createCitySlug(hotel.city || hotel.location || hotel.name)}/${createHotelSlug(hotel.name || hotel.city || "hotel", hotel.id)}`;
 
   // Pagination logic
   const totalRooms = hotel.roomTypes.length;
@@ -97,7 +99,7 @@ export default function RoomSelection() {
             </Link>
             <ChevronRight className="w-3.5 md:w-4 h-3.5 md:h-4" />
             <Link
-              to={`/hotels/${hotel.id}`}
+              to={hotelDetailPath}
               className="hover:text-foreground transition-colors truncate max-w-[100px] md:max-w-none"
             >
               {hotel.name}
@@ -114,7 +116,7 @@ export default function RoomSelection() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
             <div className="flex-1">
               <button
-                onClick={() => navigate(`/hotels/${hotel.id}`)}
+                onClick={() => navigate(hotelDetailPath)}
                 className="flex items-center gap-1.5 text-xs md:text-sm text-muted-foreground hover:text-foreground transition-colors mb-2 md:mb-3 group"
               >
                 <ArrowLeft className="w-3.5 md:w-4 h-3.5 md:h-4 group-hover:-translate-x-1 transition-transform" />

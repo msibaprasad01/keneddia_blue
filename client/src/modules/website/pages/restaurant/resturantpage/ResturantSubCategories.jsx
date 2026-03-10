@@ -6,7 +6,7 @@ import {
   getAllVerticalCards,
   getAllVerticalSectionsHeader,
 } from "@/Api/RestaurantApi";
-import { createCitySlug } from "@/lib/HotelSlug";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 
 const STATIC_EXPERIENCES = [
   {
@@ -16,7 +16,7 @@ const STATIC_EXPERIENCES = [
       "Authentic Mediterranean soul in a sophisticated setting. Experience the rich heritage of Tuscany through our hand-picked ingredients.",
     image:
       "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
-    link: "/resturant/italian",
+    link: "/restaurant/italian",
     bgColor: "bg-orange-50 dark:bg-orange-950/10",
     hoverBg: "hover:bg-orange-50 dark:hover:bg-orange-900/20",
   },
@@ -27,7 +27,7 @@ const STATIC_EXPERIENCES = [
       "Premium comfort tailored for memorable family gatherings. A refined space where elegance meets contemporary dining.",
     image:
       "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=800",
-    link: "/resturant/luxury-lounge",
+    link: "/restaurant/luxury-lounge",
     bgColor: "bg-blue-50 dark:bg-blue-950/10",
     hoverBg: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
   },
@@ -38,7 +38,7 @@ const STATIC_EXPERIENCES = [
       "Bold, traditional Indian flavors with a fiery spirit. Royal curries and tandoori masterpieces prepared with authentic spices.",
     image:
       "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=800",
-    link: "/resturant/spicy-darbar",
+    link: "/restaurant/spicy-darbar",
     bgColor: "bg-red-50 dark:bg-red-950/10",
     hoverBg: "hover:bg-red-50 dark:hover:bg-red-900/20",
   },
@@ -49,7 +49,7 @@ const STATIC_EXPERIENCES = [
       "Gourmet quality on the go for your convenience. Perfectly packaged meals that bring the resturant experience to your home.",
     image:
       "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=800",
-    link: "/resturant/takeaway",
+    link: "/restaurant/takeaway",
     bgColor: "bg-emerald-50 dark:bg-emerald-950/10",
     hoverBg: "hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
   },
@@ -167,6 +167,10 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
   const citySlug = createCitySlug(
     propertyData?.city || propertyData?.locationName || propertyData?.propertyName,
   );
+  const propertySlug = createHotelSlug(
+    propertyData?.propertyName || propertyData?.name || "restaurant",
+    propertyId,
+  );
 
   return (
     <section
@@ -260,7 +264,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
               onClick={() =>
-                navigate(`/resturant/${citySlug}/${propertyId}/${exp.slug}`, {
+                navigate(`/${citySlug}/${propertySlug}/${exp.slug}`, {
                   state: { propertyData },
                 })
               }

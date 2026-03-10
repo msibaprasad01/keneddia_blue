@@ -15,7 +15,7 @@ import {
   Map,
   Tag,
 } from "lucide-react";
-import { createCitySlug } from "@/lib/HotelSlug";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 import { motion, AnimatePresence } from "framer-motion";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import L from "leaflet";
@@ -309,10 +309,8 @@ export default function HotelCarouselSection() {
     fetchHotels();
   }, []);
 
-  const getCitySlug = (city: string) => city.toLowerCase().replace(/\s+/g, "-");
-
   const getHotelDetailUrl = (hotel: any) =>
-    `/hotels/${getCitySlug(hotel.city)}/${hotel.propertyId}`;
+    `/${createCitySlug(hotel.city || hotel.name)}/${createHotelSlug(hotel.name || hotel.city || "property", hotel.propertyId)}`;
 
   useEffect(() => {
     if (viewMode !== "gallery" || isPaused || filteredHotels.length <= 1)
@@ -354,7 +352,7 @@ export default function HotelCarouselSection() {
     window.open(url.toString(), "_blank");
   };
   const goToHotelDetails = (hotel: any) => {
-    navigate(`/hotels/${createCitySlug(hotel.city)}/${hotel.propertyId}`);
+    navigate(getHotelDetailUrl(hotel));
   };
   const handlePrev = () => {
     setActiveIndex((prev) =>

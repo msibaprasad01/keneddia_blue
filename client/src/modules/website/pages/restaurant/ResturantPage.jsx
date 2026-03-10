@@ -31,8 +31,9 @@ const RESTAURANT_NAV_ITEMS = [
 ];
 
 export default function RestaurantHomepage() {
-  const { propertyId } = useParams();
-  const numericPropertyId = propertyId ? Number(propertyId) : null;
+  const { propertyId, propertySlug } = useParams();
+  const slugTail = propertySlug?.split("-").pop() || "";
+  const numericPropertyId = Number(propertyId || slugTail) || null;
 
   const [propertyData, setPropertyData] = useState(null);
   const [galleryData, setGalleryData] = useState([]);

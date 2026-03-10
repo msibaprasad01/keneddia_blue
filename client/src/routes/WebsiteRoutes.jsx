@@ -1,5 +1,5 @@
-import { Route } from "react-router-dom";
-import { Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Route, useParams } from "react-router-dom";
 import Home from "@/modules/website/pages/Home";
 import Hotels from "@/modules/website/pages/Hotels";
 import HotelDetail from "@/modules/website/pages/HotelDetail";
@@ -28,6 +28,79 @@ import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/Spic
 import TakeawayTreats from "@/modules/website/pages/restaurant/pages/verticals/TakeawayTreats";
 import ResturantPage from "@/modules/website/pages/restaurant/ResturantPage";
 import ResturantCategoryPageTemplate from "@/modules/website/pages/restaurant/ResturantCategoryPageTemplate";
+import { GetAllPropertyDetails } from "@/Api/Api";
+
+function PropertyDetailRoute() {
+  const { propertySlug, propertyId } = useParams();
+  const [resolvedType, setResolvedType] = useState(null);
+
+  const hostname =
+    typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
+  const isRestaurantHost = hostname.startsWith("restaurants.");
+  const slugTail = propertySlug?.split("-").pop() || "";
+  const resolvedPropertyId = Number(propertyId || slugTail) || null;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const resolvePropertyType = async () => {
+      if (isRestaurantHost) {
+        if (isMounted) setResolvedType("restaurant");
+        return;
+      }
+
+      if (!resolvedPropertyId) {
+        if (isMounted) setResolvedType("hotel");
+        return;
+      }
+
+      try {
+        const response = await GetAllPropertyDetails();
+        const rawData = response?.data?.data || response?.data || response || [];
+        const matched = (Array.isArray(rawData) ? rawData : []).find(
+          (item) => Number(item?.propertyResponseDTO?.id) === resolvedPropertyId,
+        );
+
+        if (!matched) {
+          if (isMounted) setResolvedType("hotel");
+          return;
+        }
+
+        const parentTypes = matched?.propertyResponseDTO?.propertyTypes || [];
+        const listingTypes = (matched?.propertyListingResponseDTOS || [])
+          .map((l) => l?.propertyType)
+          .filter(Boolean);
+
+        const allTypes = [...parentTypes, ...listingTypes]
+          .map((t) => String(t).toLowerCase().trim());
+
+        const isRestaurant = allTypes.some((t) =>
+          ["restaurant", "resturant", "cafe", "wine & dine", "winedine", "dining"].includes(t),
+        );
+
+        if (isMounted) setResolvedType(isRestaurant ? "restaurant" : "hotel");
+      } catch {
+        if (isMounted) setResolvedType("hotel");
+      }
+    };
+
+    setResolvedType(null);
+    resolvePropertyType();
+    return () => {
+      isMounted = false;
+    };
+  }, [isRestaurantHost, resolvedPropertyId]);
+
+  if (!resolvedType) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+        Loading property...
+      </div>
+    );
+  }
+
+  return resolvedType === "restaurant" ? <ResturantPage /> : <HotelDetail />;
+}
 
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
@@ -35,7 +108,7 @@ const WebsiteRoutes = [
   // <Route path="/" element={<Navigate to="/resturant/ghaziabad/31" replace />}/>,
   <Route key="hotels" path="/hotels" element={<Hotels />} />,
   // <Route key="hotel-detail" path="/hotels/:city/:propertyId" element={<HotelDetail />} />,
-  <Route path="/hotels/:citySlug/:propertyId" element={<HotelDetail />} />,
+  <Route key="property-detail" path="/:citySlug/:propertySlug" element={<PropertyDetailRoute />} />,
   // <Route key="hotel-detail" path="/hotels/:propertyId" element={<HotelDetail />} />,
 
   <Route key="room-selection" path="/hotels/:hotelId/rooms" element={<RoomSelection />} />,
@@ -48,11 +121,10 @@ const WebsiteRoutes = [
   <Route key="login" path="/login" element={<Login />} />,
   <Route key="careers" path="/careers" element={<Careers />} />,
   <Route key="restaurant-homepage" path="/restaurant-homepage" element={<RestaurantHomepage />} />,
-  <Route key="resturant-detail" path="/resturant/:citySlug/:propertyId" element={<ResturantPage />} />,
   <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={<ResturantPage />} />,
 
   // Restaurant Sub-Verticals
-  <Route path="/resturant/:citySlug/:propertyId/:categoryType" element={<ResturantCategoryPageTemplate />}/>,
+  <Route path="/:citySlug/:propertySlug/:categoryType" element={<ResturantCategoryPageTemplate />}/>,
 
   <Route key="restaurant-italian" path="/restaurant/italian" element={<Italian />} />,
   <Route key="restaurant-lounge" path="/restaurant/luxury-lounge" element={<LuxuryLounge />} />,

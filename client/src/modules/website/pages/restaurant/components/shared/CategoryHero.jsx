@@ -21,7 +21,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
-import { createCitySlug } from "@/lib/HotelSlug";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -63,9 +63,9 @@ export default function CategoryHero({
   const [mobileIndex, setMobileIndex] = useState(0);
   const touchStart = React.useRef(null);
 
-  const restaurantPath = `/resturant/${createCitySlug(
+  const restaurantPath = `/${createCitySlug(
     propertyData?.city || propertyData?.locationName || propertyData?.propertyName,
-  )}/${propertyId || 27}`;
+  )}/${createHotelSlug(propertyData?.propertyName || propertyData?.name || "restaurant", propertyId || 27)}`;
 
   // ── Derive fields from propertyData ──────────────────────────────────────
   const location = useMemo(() => {

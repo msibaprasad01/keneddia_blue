@@ -105,15 +105,13 @@ const fadeIn = {
 const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
 
 export default function HotelDetail() {
-  const params = useParams();
-  console.log(params);
-
-  const { citySlug, propertyId } = useParams<{
+  const { citySlug, propertySlug, propertyId } = useParams<{
     citySlug: string;
+    propertySlug: string;
     propertyId: string;
   }>();
-
-  const propertyIdFromUrl = propertyId ? Number(propertyId) : null;
+  const slugTail = propertySlug?.split("-").pop() || "";
+  const propertyIdFromUrl = Number(propertyId || slugTail) || null;
   const [hotel, setHotel] = useState<HotelData | null>(null);
   const [rooms, setRooms] = useState<any[]>([]);
   const [galleryData, setGalleryData] = useState<GalleryItem[]>([]);

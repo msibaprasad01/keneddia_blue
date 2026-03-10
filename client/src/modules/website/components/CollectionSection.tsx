@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { MapPin, Calendar, Search, Star, ArrowRight, ChevronLeft, ChevronRight, Home, Users, Wifi } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -123,6 +124,7 @@ export default function CollectionSection({
   }, [filteredHotels]);
 
   const currentHotel = filteredHotels[currentIndex];
+  const currentHotelPath = `/${createCitySlug(currentHotel.city || currentHotel.name)}/${createHotelSlug(currentHotel.name || currentHotel.city || "property", currentHotel.id)}`;
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + filteredHotels.length) % filteredHotels.length);
@@ -362,7 +364,7 @@ export default function CollectionSection({
                     </p>
                   </div>
                   <button
-                    onClick={() => navigate(`/hotels/${currentHotel.city}`, {
+                    onClick={() => navigate(currentHotelPath, {
                       state: {
                         hotelId: currentHotel.id,
                         hotelSlug: currentHotel.id,
@@ -466,7 +468,7 @@ export default function CollectionSection({
                           <button
                             onClick={() => {
                               setCurrentIndex(idx);
-                              navigate(`/hotels/${hotel.city}`, {
+                              navigate(`/${createCitySlug(hotel.city || hotel.name)}/${createHotelSlug(hotel.name || hotel.city || "property", hotel.id)}`, {
                                 state: {
                                   hotelId: hotel.id,
                                   hotelSlug: hotel.id,
