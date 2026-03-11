@@ -15,7 +15,7 @@ const BUSINESS_ITEMS = [
     external: true,
   },
   // { label: "Restaurants", href: "https://restaurants.kennediablu.com/ghaziabad/kennedia-blu-restaurant-ghaziabad-31",external: true }
-  
+
   // { label: "Cafes & Dining", href: "/cafes" },
   // { label: "Bars & Lounges", href: "/bars" },
   // { label: "Events & Conf.", href: "/events" },
@@ -246,14 +246,12 @@ export default function Navbar({
                   className="h-12 xl:h-14 w-auto object-contain dark:hidden"
                 />
 
-                {/* Dark Mode Logo */}
-                {brandLogo.darkImage && (
-                  <img
-                    src={brandLogo.darkImage.src}
-                    alt={brandLogo.darkImage.alt}
-                    className="h-12 xl:h-14 w-auto object-contain hidden dark:block"
-                  />
-                )}
+                {/* Dark Mode Logo (fallback to light if not provided) */}
+                <img
+                  src={(brandLogo as any).darkImage?.src || brandLogo.image.src}
+                  alt={(brandLogo as any).darkImage?.alt || brandLogo.image.alt}
+                  className="h-12 xl:h-14 w-auto object-contain hidden dark:block"
+                />
               </Link>
             </div>
           </div>

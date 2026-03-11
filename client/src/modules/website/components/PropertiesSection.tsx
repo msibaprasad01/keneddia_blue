@@ -61,10 +61,25 @@ const CarouselItem = ({
   const [expanded, setExpanded] = useState(false);
 
   const imageUrl = property.media?.[0]?.url || property.media?.[0] || "";
-  const propertyPath = `/${createCitySlug(property.city || property.propertyName)}/${createHotelSlug(
-    property.propertyName || property.city || "property",
+  const baseUrl =
+    property.propertyType?.toLowerCase() === "restaurant"
+      ? "https://restaurants.kennediablu.com"
+      : property.propertyType?.toLowerCase() === "hotel"
+        ? "https://hotels.kennediablu.com"
+        : "";
+
+  const propertyPath = `${createCitySlug(
+    property.city || property.propertyName,
+  )}/${createHotelSlug(
+    property.propertyName || property.city || "",
     property.propertyId,
   )}`;
+  // const propertyPath = `${baseUrl}/${createCitySlug(
+  //   property.city || property.propertyName,
+  // )}/${createHotelSlug(
+  //   property.propertyName || property.city || "",
+  //   property.propertyId,
+  // )}`;
 
   const subtitle = property.subTitle || "";
   const isLong = subtitle.length > SUBTITLE_LIMIT;
@@ -183,7 +198,7 @@ const CarouselItem = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              navigate(propertyPath);
+              window.open(propertyPath, "_blank", "noopener,noreferrer");
             }}
             className="inline-flex items-center gap-3 uppercase text-xs font-bold tracking-widest group cursor-pointer"
           >

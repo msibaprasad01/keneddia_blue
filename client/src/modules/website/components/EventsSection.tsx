@@ -196,13 +196,11 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
-      className="group h-[480px] bg-card border border-border/60 rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
+      className="group h-[520px] bg-card border border-border/60 rounded-[1rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
     >
       {/* Media Container */}
       <div
-        className={`relative overflow-hidden ${
-          isBanner ? "h-full" : "h-[280px]"
-        } flex items-start justify-center bg-card`}
+      className={`relative overflow-hidden transition-all duration-500 ${isBanner ? "h-full" : "h-[280px]"}`}
       >
         {event.image?.url ? (
           isVideo ? (
@@ -239,7 +237,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             <img
               src={event.image.url}
               alt={event.title}
-              className="w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
+              className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
               onLoad={(e) =>
                 analyzeMediaSize(
                   e.currentTarget.naturalWidth,

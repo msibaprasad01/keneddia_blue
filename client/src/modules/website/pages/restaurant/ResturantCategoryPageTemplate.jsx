@@ -25,7 +25,15 @@ const resturant_NAV_ITEMS = [
   { type: "link", label: "MENU", href: "#menu" },
   { type: "link", label: "CONTACT", href: "#contact" },
 ];
+
 const generateSlug = (name) => name?.toLowerCase().trim().replace(/\s+/g, "-");
+
+const CARD_BG_COLORS = [
+  { bgColor: "bg-orange-50", hoverBg: "hover:bg-orange-100" },
+  { bgColor: "bg-blue-50",   hoverBg: "hover:bg-blue-100"   },
+  { bgColor: "bg-red-50",    hoverBg: "hover:bg-red-100"    },
+  { bgColor: "bg-emerald-50",hoverBg: "hover:bg-emerald-100"},
+];
 
 function buildMenuFromApi(allItems, currentVerticalId) {
   if (!allItems?.length || !currentVerticalId) return [];
@@ -72,6 +80,46 @@ function buildMenuFromApi(allItems, currentVerticalId) {
   }));
 }
 
+/* ── Dark mode hook ───────────────────────────────────────────────────────── */
+function useIsDark() {
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const check = () =>
+      setIsDark(document.documentElement.classList.contains("dark"));
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+  return isDark;
+}
+
+/* ── Card style resolver ──────────────────────────────────────────────────── */
+function resolveCardStyle(exp, index, isDark) {
+  // Dark mode: always static zinc surface regardless of any hex color
+  if (isDark) {
+    return {
+      style: {},
+      className: `bg-zinc-800/80 hover:bg-zinc-700/90`,
+    };
+  }
+  // Light mode: use hex inline style if available
+  if (exp.isHexColor && exp.lightBgColor) {
+    return {
+      style: { backgroundColor: exp.lightBgColor },
+      className: "",
+    };
+  }
+  const fallback = CARD_BG_COLORS[index % CARD_BG_COLORS.length];
+  return {
+    style: {},
+    className: `${exp.bgColor || fallback.bgColor} ${exp.hoverBg || fallback.hoverBg}`,
+  };
+}
+
 /* ── Other Verticals Grid ─────────────────────────────────────────────────── */
 function OtherVerticalsSection({
   experiences,
@@ -80,10 +128,8 @@ function OtherVerticalsSection({
   propertyName,
 }) {
   const navigate = useNavigate();
-  const propertySlug = createHotelSlug(
-    propertyName || "restaurant",
-    propertyId,
-  );
+  const isDark = useIsDark();
+  const propertySlug = createHotelSlug(propertyName || "restaurant", propertyId);
 
   if (!experiences || experiences.length === 0) return null;
 
@@ -108,68 +154,73 @@ function OtherVerticalsSection({
         </motion.div>
 
         <div className="flex flex-wrap justify-center gap-4 lg:gap-8">
-          {experiences.map((exp, index) => (
-            <motion.div
-              key={exp.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              onClick={() =>
-                navigate(`/${citySlug}/${propertySlug}/${exp.slug}`)
-              }
-              style={exp.isHexColor ? { backgroundColor: exp.bgColor } : {}}
-              className={`
-                group cursor-pointer relative flex transition-all duration-500 hover:shadow-2xl
-                ${!exp.isHexColor ? exp.bgColor : ""} ${exp.hoverBg}
-                w-full p-4 rounded-2xl flex-row items-center border border-zinc-100 dark:border-white/5 shadow-sm
-                lg:flex-col lg:items-center lg:text-center lg:p-10 lg:rounded-[2.5rem] lg:w-[calc(25%-1.5rem)] lg:min-h-[420px] lg:hover:border-primary/20
-              `}
-            >
-              <div className="shrink-0 overflow-hidden rounded-full border-4 border-white dark:border-zinc-800 shadow-lg z-20 transition-transform duration-500 group-hover:scale-110 w-14 h-14 lg:w-28 lg:h-28 lg:mb-8">
-                <img
-                  src={exp.image}
-                  alt={exp.title}
-                  className="w-full h-full object-cover grayscale-20 group-hover:grayscale-0 transition-all"
-                />
-              </div>
+          {experiences.map((exp, index) => {
+            const { style, className } = resolveCardStyle(exp, index, isDark);
 
-              <div className="flex flex-col grow px-4 lg:px-0">
-                <h3 className="text-lg lg:text-3xl font-serif text-zinc-900 dark:text-zinc-100 group-hover:text-primary transition-colors tracking-tight">
-                  {exp.title}
-                </h3>
-                <p className="hidden lg:block text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed mt-4 mb-6 line-clamp-4 font-light">
-                  {exp.description}
-                </p>
-                <div className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 text-primary">
-                  <ChevronRight size={20} />
+            return (
+              <motion.div
+                key={exp.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                onClick={() =>
+                  navigate(`/${citySlug}/${propertySlug}/${exp.slug}`)
+                }
+                style={style}
+                className={`
+                  group cursor-pointer relative flex transition-all duration-500 hover:shadow-2xl
+                  ${className}
+                  w-full p-4 rounded-2xl flex-row items-center border border-zinc-100 dark:border-white/10 shadow-sm
+                  lg:flex-col lg:items-center lg:text-center lg:p-10 lg:rounded-[2.5rem] lg:w-[calc(25%-1.5rem)] lg:min-h-[420px] lg:hover:border-primary/20
+                `}
+              >
+                {/* Circular image */}
+                <div className="shrink-0 overflow-hidden rounded-full border-4 border-white dark:border-zinc-600 shadow-lg z-20 transition-transform duration-500 group-hover:scale-110 w-14 h-14 lg:w-28 lg:h-28 lg:mb-8">
+                  <img
+                    src={exp.image}
+                    alt={exp.title}
+                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all"
+                  />
                 </div>
-                <div className="hidden lg:flex mt-auto items-center justify-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500">
-                    <ChevronRight size={24} />
+
+                <div className="flex flex-col grow px-4 lg:px-0">
+                  <h3 className="text-lg lg:text-3xl font-serif text-zinc-950 dark:text-zinc-100 group-hover:text-primary transition-colors tracking-tight">
+                    {exp.title}
+                  </h3>
+                  <p className="hidden lg:block text-zinc-700 dark:text-zinc-400 text-sm leading-relaxed mt-4 mb-6 line-clamp-4 font-light">
+                    {exp.description}
+                  </p>
+                  <div className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 text-primary">
+                    <ChevronRight size={20} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                    Explore Vertical
-                  </span>
-                  {exp.ctaButtonText && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(exp.link || "#");
-                      }}
-                      className="px-3 py-2 text-[10px] font-light uppercase tracking-wider bg-primary text-white rounded-full shadow-lg hover:scale-105 transition-all"
-                    >
-                      {exp.ctaButtonText}
-                    </button>
-                  )}
+                  <div className="hidden lg:flex mt-auto items-center justify-center gap-4">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                      <ChevronRight size={24} />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                      Explore Vertical
+                    </span>
+                    {exp.ctaButtonText && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(exp.link || "#");
+                        }}
+                        className="px-3 py-2 text-[10px] font-light uppercase tracking-wider bg-primary text-white rounded-full shadow-lg hover:scale-105 transition-all"
+                      >
+                        {exp.ctaButtonText}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <span className="hidden lg:block absolute bottom-8 right-10 text-7xl font-black text-zinc-900/3 dark:text-white/2 italic select-none">
-                0{index + 1}
-              </span>
-            </motion.div>
-          ))}
+                <span className="hidden lg:block absolute bottom-8 right-10 text-7xl font-black text-zinc-900/[0.03] dark:text-white/[0.04] italic select-none">
+                  0{index + 1}
+                </span>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -274,8 +325,9 @@ function ResturantCategoryPageTemplate() {
           )
           .sort((a, b) => a.displayOrder - b.displayOrder);
 
-        const mapped = filtered.map((card) => {
+        const mapped = filtered.map((card, index) => {
           const slug = generateSlug(card.verticalName);
+          const fallback = CARD_BG_COLORS[index % CARD_BG_COLORS.length];
 
           return {
             slug,
@@ -285,8 +337,10 @@ function ResturantCategoryPageTemplate() {
             image: card.media?.url || "",
             link: card.link || "",
             ctaButtonText: card.showOrderButton ? card.extraText || "" : null,
-            bgColor: card.cardBackgroundColor || "",
-            hoverBg: "",
+            // Keep hex for light mode usage
+            lightBgColor: card.cardBackgroundColor || null,
+            bgColor: fallback.bgColor,
+            hoverBg: fallback.hoverBg,
             isHexColor: !!card.cardBackgroundColor,
             heroImage: card.media?.url || "",
             themeColor: card.cardBackgroundColor || null,
@@ -316,9 +370,7 @@ function ResturantCategoryPageTemplate() {
         setApiMenuItems(propItems);
 
         /* ─────────────────────────────────────────────
-         3️⃣ Gallery — normalize to shape CategoryHero expects:
-             { id, media: { mediaId, url, type, fileName, alt },
-               isActive, categoryName, displayOrder }
+         3️⃣ Gallery
         ───────────────────────────────────────────── */
         if (matched) {
           const galleryRes = await searchGallery({
@@ -335,7 +387,6 @@ function ResturantCategoryPageTemplate() {
             .filter((g) => g.isActive && g.media?.url)
             .map((g) => ({
               id: g.id,
-              // ── keep the full media object so CategoryHero can read g.media.url ──
               media: {
                 mediaId: g.media.mediaId,
                 url: g.media.url,
@@ -344,7 +395,6 @@ function ResturantCategoryPageTemplate() {
                 alt: g.media.alt ?? "",
               },
               isActive: g.isActive,
-              // categoryName drives the "3d" exclusion filter in CategoryHero
               categoryName: g.categoryName ?? null,
               displayOrder: g.displayOrder ?? 999,
             }));
@@ -414,7 +464,7 @@ function ResturantCategoryPageTemplate() {
           propertyData={propertyData}
         />
 
-        {/* Menu — API items matched by categoryName, grouped by typeName as tabs */}
+        {/* Menu */}
         <div id="menu">
           {resolvedMenu.length > 0 ? (
             <CategoryMenu
@@ -430,7 +480,7 @@ function ResturantCategoryPageTemplate() {
           )}
         </div>
 
-        {/* Other Verticals (excluding current) */}
+        {/* Other Verticals */}
         <div id="categories">
           <OtherVerticalsSection
             experiences={otherVerticals}

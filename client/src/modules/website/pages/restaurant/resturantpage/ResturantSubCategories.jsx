@@ -17,8 +17,8 @@ const STATIC_EXPERIENCES = [
     image:
       "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
     link: "/restaurant/italian",
-    bgColor: "bg-orange-50 dark:bg-orange-950/10",
-    hoverBg: "hover:bg-orange-50 dark:hover:bg-orange-900/20",
+    bgColor: "bg-orange-50",
+    hoverBg: "hover:bg-orange-50",
   },
   {
     id: "luxury-lounge",
@@ -28,8 +28,8 @@ const STATIC_EXPERIENCES = [
     image:
       "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=800",
     link: "/restaurant/luxury-lounge",
-    bgColor: "bg-blue-50 dark:bg-blue-950/10",
-    hoverBg: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
+    bgColor: "bg-blue-50",
+    hoverBg: "hover:bg-blue-50",
   },
   {
     id: "spicy-darbar",
@@ -39,38 +39,38 @@ const STATIC_EXPERIENCES = [
     image:
       "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=800",
     link: "/restaurant/spicy-darbar",
-    bgColor: "bg-red-50 dark:bg-red-950/10",
-    hoverBg: "hover:bg-red-50 dark:hover:bg-red-900/20",
+    bgColor: "bg-red-50",
+    hoverBg: "hover:bg-red-50",
   },
   {
     id: "takeaway",
     title: "Takeaway Treats",
     description:
-      "Gourmet quality on the go for your convenience. Perfectly packaged meals that bring the resturant experience to your home.",
+      "Gourmet quality on the go for your convenience. Perfectly packaged meals that bring the restaurant experience to your home.",
     image:
       "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=800",
     link: "/restaurant/takeaway",
-    bgColor: "bg-emerald-50 dark:bg-emerald-950/10",
-    hoverBg: "hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
+    bgColor: "bg-emerald-50",
+    hoverBg: "hover:bg-emerald-50",
   },
 ];
 
 const CARD_BG_COLORS = [
   {
-    bgColor: "bg-orange-50 dark:bg-orange-950/10",
-    hoverBg: "hover:bg-orange-50 dark:hover:bg-orange-900/20",
+    bgColor: "bg-orange-50",
+    hoverBg: "hover:bg-orange-100",
   },
   {
-    bgColor: "bg-blue-50 dark:bg-blue-950/10",
-    hoverBg: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
+    bgColor: "bg-blue-50",
+    hoverBg: "hover:bg-blue-100",
   },
   {
-    bgColor: "bg-red-50 dark:bg-red-950/10",
-    hoverBg: "hover:bg-red-50 dark:hover:bg-red-900/20",
+    bgColor: "bg-red-50",
+    hoverBg: "hover:bg-red-100",
   },
   {
-    bgColor: "bg-emerald-50 dark:bg-emerald-950/10",
-    hoverBg: "hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
+    bgColor: "bg-emerald-50",
+    hoverBg: "hover:bg-emerald-100",
   },
 ];
 
@@ -95,11 +95,13 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
 
   const [header, setHeader] = useState(null);
   const [experiences, setExperiences] = useState(null);
+  const [isDark, setIsDark] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
   });
+
   const generateSlug = (name) =>
     name?.toLowerCase().trim().replace(/\s+/g, "-");
 
@@ -107,17 +109,29 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
   const bgOpacity = useTransform(
     scrollYProgress,
     [0, 0.2, 0.8, 1],
-    [0, 0.04, 0.04, 0],
+    [0, 0.04, 0.04, 0]
   );
+
+  // Detect dark mode
+  useEffect(() => {
+    const checkDark = () =>
+      setIsDark(document.documentElement.classList.contains("dark"));
+    checkDark();
+    const observer = new MutationObserver(checkDark);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch header
         const headerRes = await getAllVerticalSectionsHeader();
         const headers = headerRes?.data || headerRes || [];
         const matchedHeader = headers.find(
-          (h) => h.propertyId === propertyId && h.isActive,
+          (h) => h.propertyId === propertyId && h.isActive
         );
         if (matchedHeader) setHeader(matchedHeader);
       } catch (err) {
@@ -125,18 +139,16 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
       }
 
       try {
-        // Fetch cards
         const cardsRes = await getAllVerticalCards();
         const cards = cardsRes?.data || cardsRes || [];
         const filtered = cards
           .filter((c) => c.propertyId === propertyId && c.isActive)
           .sort((a, b) => a.displayOrder - b.displayOrder);
-        console.log("filtered", filtered);
 
         if (filtered.length > 0) {
           const mapped = filtered.map((card, index) => ({
             slug: generateSlug(card.verticalName),
-            id: card.id, // keep ID if needed internally
+            id: card.id,
             title: card.verticalName || card.itemName,
             description: card.description || "",
             image:
@@ -146,8 +158,9 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
             ctaButtonText: card.showOrderButton
               ? card.extraText || "Order"
               : null,
+            // Only use dynamic hex color in light mode; dark mode uses static class
+            lightBgColor: card.cardBackgroundColor || null,
             bgColor:
-              card.cardBackgroundColor ||
               CARD_BG_COLORS[index % CARD_BG_COLORS.length].bgColor,
             hoverBg: CARD_BG_COLORS[index % CARD_BG_COLORS.length].hoverBg,
             isHexColor: !!card.cardBackgroundColor,
@@ -165,12 +178,45 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
   const activeHeader = header || STATIC_HEADER;
   const activeExperiences = experiences || STATIC_EXPERIENCES;
   const citySlug = createCitySlug(
-    propertyData?.city || propertyData?.locationName || propertyData?.propertyName,
+    propertyData?.city ||
+      propertyData?.locationName ||
+      propertyData?.propertyName
   );
   const propertySlug = createHotelSlug(
     propertyData?.propertyName || propertyData?.name || "restaurant",
-    propertyId,
+    propertyId
   );
+
+  // Resolve per-card inline style and className based on current mode
+  const resolveCardStyle = (exp, index) => {
+    // In dark mode: always use static zinc card bg (no inline style override)
+    if (isDark) {
+      return {
+        style: {},
+        bgClass: "dark:bg-zinc-800/80",
+        hoverClass: "dark:hover:bg-zinc-700/90",
+        lightBgClass: exp.bgColor,
+        lightHoverClass: exp.hoverBg,
+      };
+    }
+    // In light mode: use hex color if available, else Tailwind class
+    if (exp.isHexColor && exp.lightBgColor) {
+      return {
+        style: { backgroundColor: exp.lightBgColor },
+        bgClass: "",
+        hoverClass: "",
+        lightBgClass: "",
+        lightHoverClass: "",
+      };
+    }
+    return {
+      style: {},
+      bgClass: exp.bgColor,
+      hoverClass: exp.hoverBg,
+      lightBgClass: "",
+      lightHoverClass: "",
+    };
+  };
 
   return (
     <section
@@ -211,12 +257,12 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
               </span>
             </h2>
 
-            <p className="text-zinc-500 dark:text-zinc-400 text-base md:text-lg font-light leading-relaxed">
+            <p className="text-zinc-600 dark:text-zinc-400 text-base md:text-lg font-light leading-relaxed">
               {activeHeader.description}
             </p>
           </motion.div>
 
-          {/* ── BIG BYOB TAG SECTION (Right Side) ── */}
+          {/* ── BYOB TAG SECTION (Right Side) ── */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -237,7 +283,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <Quote className="w-3 h-3 text-primary fill-primary" />
-                <span className="text-[10px] font-bold dark:text-zinc-400 uppercase tracking-widest">
+                <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
                   {activeHeader.policyType}
                 </span>
               </div>
@@ -247,7 +293,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
                   {activeHeader.policyName.split(" ").slice(-1)}
                 </span>
               </h3>
-              <p className="text-sm italic dark:text-zinc-400 text-zinc-500 leading-snug">
+              <p className="text-sm italic dark:text-zinc-400 text-zinc-600 leading-snug">
                 "{activeHeader.policyDescription}"
               </p>
             </div>
@@ -256,76 +302,76 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
 
         {/* ── EXPERIENCE GRID ── */}
         <div className="flex flex-wrap justify-center gap-4 lg:gap-8">
-          {activeExperiences.map((exp, index) => (
-            <motion.div
-              key={exp.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              onClick={() =>
-                navigate(`/${citySlug}/${propertySlug}/${exp.slug}`, {
-                  state: { propertyData },
-                })
-              }
-              // onClick={() =>
-              //   navigate(`/resturant/${propertyId}/${exp.id}`, {
-              //     state: {
-              //       verticalTitle: exp.title,
-              //     },
-              //   })
-              // }
-              style={exp.isHexColor ? { backgroundColor: exp.bgColor } : {}}
-              className={`
-    group cursor-pointer relative flex transition-all duration-500 hover:shadow-2xl
-    ${!exp.isHexColor ? exp.bgColor : ""} ${exp.hoverBg}
-    w-full p-4 rounded-2xl flex-row items-center border border-zinc-100 dark:border-white/5 shadow-sm
-    lg:flex-col lg:items-center lg:text-center lg:p-10 lg:rounded-[2.5rem] lg:w-[calc(25%-1.5rem)] lg:min-h-[420px] lg:hover:border-primary/20
-  `}
-            >
-              <div className="shrink-0 overflow-hidden rounded-full border-4 border-white dark:border-zinc-800 shadow-lg z-20 transition-transform duration-500 group-hover:scale-110 w-14 h-14 lg:w-28 lg:h-28 lg:mb-8">
-                <img
-                  src={exp.image}
-                  alt={exp.title}
-                  className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all"
-                />
-              </div>
+          {activeExperiences.map((exp, index) => {
+            const { style, bgClass, hoverClass, lightBgClass, lightHoverClass } =
+              resolveCardStyle(exp, index);
 
-              <div className="flex flex-col flex-grow px-4 lg:px-0">
-                <h3 className="text-lg lg:text-3xl font-serif text-zinc-900 dark:text-zinc-100 group-hover:text-primary transition-colors tracking-tight">
-                  {exp.title}
-                </h3>
-                <p className="hidden lg:block text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed mt-4 mb-6 line-clamp-4 font-light">
-                  {exp.description}
-                </p>
-                <div className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 text-primary">
-                  <ChevronRight size={20} />
+            return (
+              <motion.div
+                key={exp.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                onClick={() =>
+                  navigate(`/${citySlug}/${propertySlug}/${exp.slug}`, {
+                    state: { propertyData },
+                  })
+                }
+                style={style}
+                className={`
+                  group cursor-pointer relative flex transition-all duration-500 hover:shadow-2xl
+                  ${lightBgClass} ${lightHoverClass} ${bgClass} ${hoverClass}
+                  w-full p-4 rounded-2xl flex-row items-center border border-zinc-100 dark:border-white/10 shadow-sm
+                  lg:flex-col lg:items-center lg:text-center lg:p-10 lg:rounded-[2.5rem] lg:w-[calc(25%-1.5rem)] lg:min-h-[420px] lg:hover:border-primary/20
+                `}
+              >
+                {/* Circular image */}
+                <div className="shrink-0 overflow-hidden rounded-full border-4 border-white dark:border-zinc-600 shadow-lg z-20 transition-transform duration-500 group-hover:scale-110 w-14 h-14 lg:w-28 lg:h-28 lg:mb-8">
+                  <img
+                    src={exp.image}
+                    alt={exp.title}
+                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all"
+                  />
                 </div>
-                <div className="hidden lg:flex mt-auto items-center justify-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500">
-                    <ChevronRight size={24} />
+
+                <div className="flex flex-col flex-grow px-4 lg:px-0">
+                  <h3 className="text-lg lg:text-3xl font-serif text-zinc-950 dark:text-zinc-100 group-hover:text-primary transition-colors tracking-tight">
+                    {exp.title}
+                  </h3>
+                  <p className="hidden lg:block text-zinc-700 dark:text-zinc-400 text-sm leading-relaxed mt-4 mb-6 line-clamp-4 font-light">
+                    {exp.description}
+                  </p>
+                  <div className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 text-primary">
+                    <ChevronRight size={20} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                    Explore Vertical
-                  </span>
-                  {exp.ctaButtonText && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(exp.link || "#");
-                      }}
-                      className="px-3 py-2 text-[10px] font-light uppercase tracking-wider bg-primary text-white rounded-full shadow-lg hover:scale-105 transition-all"
-                    >
-                      {exp.ctaButtonText}
-                    </button>
-                  )}
+                  <div className="hidden lg:flex mt-auto items-center justify-center gap-4">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                      <ChevronRight size={24} />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                      Explore Vertical
+                    </span>
+                    {exp.ctaButtonText && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(exp.link || "#");
+                        }}
+                        className="px-3 py-2 text-[10px] font-light uppercase tracking-wider bg-primary text-white rounded-full shadow-lg hover:scale-105 transition-all"
+                      >
+                        {exp.ctaButtonText}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <span className="hidden lg:block absolute bottom-8 right-10 text-7xl font-black text-zinc-900/[0.03] dark:text-white/[0.02] italic select-none">
-                0{index + 1}
-              </span>
-            </motion.div>
-          ))}
+
+                <span className="hidden lg:block absolute bottom-8 right-10 text-7xl font-black text-zinc-900/[0.03] dark:text-white/[0.04] italic select-none">
+                  0{index + 1}
+                </span>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

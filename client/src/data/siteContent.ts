@@ -5,7 +5,7 @@ import brandLogo_main from "@assets/logo/kb-logo-main.png";
 import brandLogo_red from "@assets/logo/kb-logo-red.jpg";
 import brandLogo_dark from "@assets/logo/kb-logo-dark.jpeg"
 import brandLogo_black from "@assets/logo/kb-logo-black2.png";
-import brandLogoHotel from "@assets/logo/kb-logo1.jpg";
+import brandLogoHotel from "@assets/logo/kb-logo2.jpg";
 import brandLogoCafe from "@assets/logo/kb-logo3.jpg";
 import brandLogoBar from "@assets/logo/kb-logo4.jpg";
 import heroExterior from "@assets/generated_images/luxury_hotel_exterior_at_twilight.png";

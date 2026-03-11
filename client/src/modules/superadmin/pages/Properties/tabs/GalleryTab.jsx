@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
   TrashIcon,
   PlusIcon,
@@ -20,10 +26,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { colors } from "@/lib/colors/colors";
-import {
-  deleteGalleryById,
-  getGalleryByPropertyId,
-} from "@/Api/Api";
+import { deleteGalleryById, getGalleryByPropertyId } from "@/Api/Api";
 import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 import AddMediaModal from "../modals/AddMediaModal";
 
@@ -87,7 +90,10 @@ const GalleryTab = ({ propertyData }) => {
 
   /* ── fetch ── */
   const fetchGallery = useCallback(async () => {
-    if (!propId) { showError("Property ID is missing"); return; }
+    if (!propId) {
+      showError("Property ID is missing");
+      return;
+    }
     setLoading(true);
     try {
       const response = await getGalleryByPropertyId(propId);
@@ -102,7 +108,9 @@ const GalleryTab = ({ propertyData }) => {
     }
   }, [propId]);
 
-  useEffect(() => { fetchGallery(); }, [fetchGallery]);
+  useEffect(() => {
+    fetchGallery();
+  }, [fetchGallery]);
 
   /* ── derived filter options ── */
   const verticals = useMemo(() => {
@@ -128,7 +136,8 @@ const GalleryTab = ({ propertyData }) => {
 
     // status filter
     if (filterStatus === "active") list = list.filter((i) => i.isActive);
-    else if (filterStatus === "inactive") list = list.filter((i) => !i.isActive);
+    else if (filterStatus === "inactive")
+      list = list.filter((i) => !i.isActive);
 
     // vertical filter
     if (filterVertical !== "all")
@@ -152,24 +161,46 @@ const GalleryTab = ({ propertyData }) => {
     // sort
     list.sort((a, b) => {
       let va, vb;
-      if (sortBy === "displayOrder") { va = a.displayOrder ?? 9999; vb = b.displayOrder ?? 9999; }
-      else if (sortBy === "id") { va = a.id; vb = b.id; }
-      else if (sortBy === "category") { va = a.categoryName ?? ""; vb = b.categoryName ?? ""; }
-      else { va = 0; vb = 0; }
+      if (sortBy === "displayOrder") {
+        va = a.displayOrder ?? 9999;
+        vb = b.displayOrder ?? 9999;
+      } else if (sortBy === "id") {
+        va = a.id;
+        vb = b.id;
+      } else if (sortBy === "category") {
+        va = a.categoryName ?? "";
+        vb = b.categoryName ?? "";
+      } else {
+        va = 0;
+        vb = 0;
+      }
       if (va < vb) return sortDir === "asc" ? -1 : 1;
       if (va > vb) return sortDir === "asc" ? 1 : -1;
       return 0;
     });
 
     return list;
-  }, [allItems, filterStatus, filterVertical, filterCategory, search, sortBy, sortDir]);
+  }, [
+    allItems,
+    filterStatus,
+    filterVertical,
+    filterCategory,
+    search,
+    sortBy,
+    sortDir,
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(processed.length / pageSize));
   const safePage = Math.min(page, totalPages - 1);
-  const paginated = processed.slice(safePage * pageSize, safePage * pageSize + pageSize);
+  const paginated = processed.slice(
+    safePage * pageSize,
+    safePage * pageSize + pageSize,
+  );
 
   // reset to page 0 on filter changes
-  useEffect(() => { setPage(0); }, [filterStatus, filterVertical, filterCategory, search, pageSize]);
+  useEffect(() => {
+    setPage(0);
+  }, [filterStatus, filterVertical, filterCategory, search, pageSize]);
 
   const scrollToTop = () =>
     topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -211,21 +242,25 @@ const GalleryTab = ({ propertyData }) => {
 
   const toggleSort = (field) => {
     if (sortBy === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortBy(field); setSortDir("asc"); }
+    else {
+      setSortBy(field);
+      setSortDir("asc");
+    }
   };
 
   /* ── vertical color map ── */
   const verticalColors = ["blue", "purple", "amber", "green"];
   const verticalColorMap = useMemo(() => {
     const m = {};
-    verticals.forEach((v, i) => { m[v.id] = verticalColors[i % verticalColors.length]; });
+    verticals.forEach((v, i) => {
+      m[v.id] = verticalColors[i % verticalColors.length];
+    });
     return m;
   }, [verticals]);
 
   /* ───────────────────────────── render ──────────────────────────────────── */
   return (
     <div className="space-y-5" ref={topRef}>
-
       {/* ── TOP BAR ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm">
         <div>
@@ -240,7 +275,10 @@ const GalleryTab = ({ propertyData }) => {
               </span>
             ) : (
               <>
-                <span className="font-bold text-blue-600">{processed.length}</span> filtered
+                <span className="font-bold text-blue-600">
+                  {processed.length}
+                </span>{" "}
+                filtered
                 {" · "}
                 <span className="font-bold">{allItems.length}</span> total
               </>
@@ -259,7 +297,10 @@ const GalleryTab = ({ propertyData }) => {
               className="pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 w-44"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2">
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+              >
                 <XMarkIcon className="w-3.5 h-3.5 text-gray-400 hover:text-gray-700" />
               </button>
             )}
@@ -285,24 +326,30 @@ const GalleryTab = ({ propertyData }) => {
 
           {/* View toggle */}
           <div className="flex bg-gray-100 rounded-lg p-0.5">
-            {[["grid", <Squares2X2Icon className="w-4 h-4" />], ["list", <ListBulletIcon className="w-4 h-4" />]].map(
-              ([mode, icon]) => (
-                <button
-                  key={mode}
-                  onClick={() => setViewMode(mode)}
-                  className={`p-1.5 rounded-md transition-all ${
-                    viewMode === mode ? "bg-white shadow text-blue-600" : "text-gray-400 hover:text-gray-600"
-                  }`}
-                >
-                  {icon}
-                </button>
-              )
-            )}
+            {[
+              ["grid", <Squares2X2Icon className="w-4 h-4" />],
+              ["list", <ListBulletIcon className="w-4 h-4" />],
+            ].map(([mode, icon]) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`p-1.5 rounded-md transition-all ${
+                  viewMode === mode
+                    ? "bg-white shadow text-blue-600"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                {icon}
+              </button>
+            ))}
           </div>
 
           {/* Upload */}
           <button
-            onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
+            onClick={() => {
+              setEditingItem(null);
+              setIsModalOpen(true);
+            }}
             className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all"
             style={{ backgroundColor: colors.primary }}
           >
@@ -318,13 +365,22 @@ const GalleryTab = ({ propertyData }) => {
         }`}
       >
         <div className="bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm space-y-4">
-
           {/* Status */}
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider w-20">Status</span>
+            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider w-20">
+              Status
+            </span>
             <div className="flex gap-2 flex-wrap">
-              {[["active", "Active"], ["inactive", "Inactive"], ["all", "All"]].map(([val, label]) => (
-                <Pill key={val} active={filterStatus === val} onClick={() => setFilterStatus(val)}>
+              {[
+                ["active", "Active"],
+                ["inactive", "Inactive"],
+                ["all", "All"],
+              ].map(([val, label]) => (
+                <Pill
+                  key={val}
+                  active={filterStatus === val}
+                  onClick={() => setFilterStatus(val)}
+                >
                   {label}
                 </Pill>
               ))}
@@ -338,9 +394,18 @@ const GalleryTab = ({ propertyData }) => {
                 <BuildingStorefrontIcon className="w-3.5 h-3.5" /> Vertical
               </span>
               <div className="flex gap-2 flex-wrap">
-                <Pill active={filterVertical === "all"} onClick={() => setFilterVertical("all")}>All</Pill>
+                <Pill
+                  active={filterVertical === "all"}
+                  onClick={() => setFilterVertical("all")}
+                >
+                  All
+                </Pill>
                 {verticals.map((v) => (
-                  <Pill key={v.id} active={filterVertical === String(v.id)} onClick={() => setFilterVertical(String(v.id))}>
+                  <Pill
+                    key={v.id}
+                    active={filterVertical === String(v.id)}
+                    onClick={() => setFilterVertical(String(v.id))}
+                  >
                     {v.name}
                   </Pill>
                 ))}
@@ -355,9 +420,18 @@ const GalleryTab = ({ propertyData }) => {
                 <TagIcon className="w-3.5 h-3.5" /> Category
               </span>
               <div className="flex gap-2 flex-wrap">
-                <Pill active={filterCategory === "all"} onClick={() => setFilterCategory("all")}>All</Pill>
+                <Pill
+                  active={filterCategory === "all"}
+                  onClick={() => setFilterCategory("all")}
+                >
+                  All
+                </Pill>
                 {categories.map((c) => (
-                  <Pill key={c} active={filterCategory === c} onClick={() => setFilterCategory(c)}>
+                  <Pill
+                    key={c}
+                    active={filterCategory === c}
+                    onClick={() => setFilterCategory(c)}
+                  >
                     {c}
                   </Pill>
                 ))}
@@ -371,7 +445,11 @@ const GalleryTab = ({ propertyData }) => {
               <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
                 <ArrowsUpDownIcon className="w-3.5 h-3.5" /> Sort
               </span>
-              {[["displayOrder", "Order"], ["id", "ID"], ["category", "Category"]].map(([val, label]) => (
+              {[
+                ["displayOrder", "Order"],
+                ["id", "ID"],
+                ["category", "Category"],
+              ].map(([val, label]) => (
                 <button
                   key={val}
                   onClick={() => toggleSort(val)}
@@ -383,7 +461,9 @@ const GalleryTab = ({ propertyData }) => {
                 >
                   {label}
                   {sortBy === val && (
-                    <span className="text-[10px]">{sortDir === "asc" ? "↑" : "↓"}</span>
+                    <span className="text-[10px]">
+                      {sortDir === "asc" ? "↑" : "↓"}
+                    </span>
                   )}
                 </button>
               ))}
@@ -403,28 +483,14 @@ const GalleryTab = ({ propertyData }) => {
       {/* ── PAGE SIZE ── */}
       <div className="flex items-center justify-between">
         <p className="text-[11px] text-gray-400">
-          {processed.length > 0
-            ? `Showing ${safePage * pageSize + 1}–${Math.min((safePage + 1) * pageSize, processed.length)} of ${processed.length}`
-            : "No items"}
+          {processed.length > 0 && (
+            <p className="text-[11px] text-gray-400">
+              Showing {safePage * pageSize + 1}–
+              {Math.min((safePage + 1) * pageSize, processed.length)} of{" "}
+              {processed.length}
+            </p>
+          )}
         </p>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-gray-500 font-medium">Per page:</span>
-          <div className="flex gap-1">
-            {PAGE_SIZE_OPTIONS.map((s) => (
-              <button
-                key={s}
-                onClick={() => setPageSize(s)}
-                className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-all ${
-                  pageSize === s
-                    ? "bg-blue-600 border-blue-600 text-white"
-                    : "bg-white border-gray-200 text-gray-500 hover:border-blue-300"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* ── CONTENT ── */}
@@ -490,7 +556,10 @@ const GalleryTab = ({ propertyData }) => {
                 {/* Hover actions */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 rounded-2xl">
                   <button
-                    onClick={() => { setEditingItem(item); setIsModalOpen(true); }}
+                    onClick={() => {
+                      setEditingItem(item);
+                      setIsModalOpen(true);
+                    }}
                     className="p-2.5 bg-white text-blue-600 rounded-full hover:bg-blue-600 hover:text-white shadow-lg transition-all hover:scale-110"
                   >
                     <PencilIcon className="w-4 h-4" />
@@ -518,20 +587,38 @@ const GalleryTab = ({ propertyData }) => {
                 <tr className="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                   <th className="px-4 py-3">Preview</th>
                   <th className="px-4 py-3">
-                    <button onClick={() => toggleSort("id")} className="flex items-center gap-1 hover:text-gray-800">
-                      ID {sortBy === "id" && <span>{sortDir === "asc" ? "↑" : "↓"}</span>}
+                    <button
+                      onClick={() => toggleSort("id")}
+                      className="flex items-center gap-1 hover:text-gray-800"
+                    >
+                      ID{" "}
+                      {sortBy === "id" && (
+                        <span>{sortDir === "asc" ? "↑" : "↓"}</span>
+                      )}
                     </button>
                   </th>
                   <th className="px-4 py-3">Vertical</th>
                   <th className="px-4 py-3">
-                    <button onClick={() => toggleSort("category")} className="flex items-center gap-1 hover:text-gray-800">
-                      Category {sortBy === "category" && <span>{sortDir === "asc" ? "↑" : "↓"}</span>}
+                    <button
+                      onClick={() => toggleSort("category")}
+                      className="flex items-center gap-1 hover:text-gray-800"
+                    >
+                      Category{" "}
+                      {sortBy === "category" && (
+                        <span>{sortDir === "asc" ? "↑" : "↓"}</span>
+                      )}
                     </button>
                   </th>
                   <th className="px-4 py-3">File</th>
                   <th className="px-4 py-3 text-center">
-                    <button onClick={() => toggleSort("displayOrder")} className="flex items-center gap-1 mx-auto hover:text-gray-800">
-                      Order {sortBy === "displayOrder" && <span>{sortDir === "asc" ? "↑" : "↓"}</span>}
+                    <button
+                      onClick={() => toggleSort("displayOrder")}
+                      className="flex items-center gap-1 mx-auto hover:text-gray-800"
+                    >
+                      Order{" "}
+                      {sortBy === "displayOrder" && (
+                        <span>{sortDir === "asc" ? "↑" : "↓"}</span>
+                      )}
                     </button>
                   </th>
                   <th className="px-4 py-3 text-center">Status</th>
@@ -553,7 +640,9 @@ const GalleryTab = ({ propertyData }) => {
                         />
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-mono text-[11px] text-gray-400">{item.id}</td>
+                    <td className="px-4 py-3 font-mono text-[11px] text-gray-400">
+                      {item.id}
+                    </td>
                     <td className="px-4 py-3">
                       {item.vertical?.verticalName ? (
                         <Badge
@@ -587,14 +676,19 @@ const GalleryTab = ({ propertyData }) => {
                             : "bg-red-50 text-red-600"
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${item.isActive ? "bg-green-500" : "bg-red-400"}`} />
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${item.isActive ? "bg-green-500" : "bg-red-400"}`}
+                        />
                         {item.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1.5">
                         <button
-                          onClick={() => { setEditingItem(item); setIsModalOpen(true); }}
+                          onClick={() => {
+                            setEditingItem(item);
+                            setIsModalOpen(true);
+                          }}
                           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Edit"
                         >
@@ -633,12 +727,18 @@ const GalleryTab = ({ propertyData }) => {
             </p>
           </div>
           {activeFilterCount > 0 ? (
-            <button onClick={clearAllFilters} className="text-xs text-blue-600 font-semibold hover:underline">
+            <button
+              onClick={clearAllFilters}
+              className="text-xs text-blue-600 font-semibold hover:underline"
+            >
               Clear filters
             </button>
           ) : (
             <button
-              onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
+              onClick={() => {
+                setEditingItem(null);
+                setIsModalOpen(true);
+              }}
               className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-sm hover:opacity-90"
               style={{ backgroundColor: colors.primary }}
             >
@@ -650,52 +750,26 @@ const GalleryTab = ({ propertyData }) => {
 
       {/* ── PAGINATION ── */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-2">
+        <div className="flex items-center justify-center gap-3 pt-2">
           <button
             onClick={() => goPage(safePage - 1)}
             disabled={safePage === 0}
-            className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:border-blue-300 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
-            <ChevronLeftIcon className="w-4 h-4" />
+            <ChevronLeftIcon className="w-3.5 h-3.5" /> Prev
           </button>
 
-          {/* Page numbers */}
-          {Array.from({ length: totalPages }, (_, i) => {
-            // show first, last, current ±1, and ellipsis
-            const show =
-              i === 0 ||
-              i === totalPages - 1 ||
-              Math.abs(i - safePage) <= 1;
-            const showEllipsisBefore = i === safePage - 2 && safePage > 3;
-            const showEllipsisAfter = i === safePage + 2 && safePage < totalPages - 4;
-
-            if (showEllipsisBefore || showEllipsisAfter) {
-              return (
-                <span key={i} className="px-1 text-gray-400 text-sm select-none">…</span>
-              );
-            }
-            if (!show) return null;
-            return (
-              <button
-                key={i}
-                onClick={() => goPage(i)}
-                className={`w-8 h-8 rounded-lg text-xs font-bold border transition-all ${
-                  safePage === i
-                    ? "bg-blue-600 border-blue-600 text-white shadow-sm"
-                    : "bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600"
-                }`}
-              >
-                {i + 1}
-              </button>
-            );
-          })}
+          <span className="text-xs text-gray-500 font-medium">
+            Page <span className="font-bold text-gray-800">{safePage + 1}</span>{" "}
+            of {totalPages}
+          </span>
 
           <button
             onClick={() => goPage(safePage + 1)}
             disabled={safePage === totalPages - 1}
-            className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:border-blue-300 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
-            <ChevronRightIcon className="w-4 h-4" />
+            Next <ChevronRightIcon className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
@@ -704,10 +778,17 @@ const GalleryTab = ({ propertyData }) => {
       {isModalOpen && (
         <AddMediaModal
           isOpen={isModalOpen}
-          onClose={() => { setIsModalOpen(false); setEditingItem(null); }}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingItem(null);
+          }}
           propertyData={propertyData}
           editingItem={editingItem}
-          onSuccess={() => { fetchGallery(); setIsModalOpen(false); setEditingItem(null); }}
+          onSuccess={() => {
+            fetchGallery();
+            setIsModalOpen(false);
+            setEditingItem(null);
+          }}
         />
       )}
     </div>

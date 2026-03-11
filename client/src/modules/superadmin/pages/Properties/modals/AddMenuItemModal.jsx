@@ -53,7 +53,11 @@ function ImageUpload({ value, onChange, onClear }) {
       </label>
       {value && (
         <div className="relative w-full h-44 rounded-xl overflow-hidden border shadow-sm">
-          <img src={value} alt="Preview" className="w-full h-full object-cover" />
+          <img
+            src={value}
+            alt="Preview"
+            className="w-full h-full object-cover"
+          />
           <button
             type="button"
             onClick={onClear}
@@ -146,7 +150,10 @@ function TagSelector({
         </select>
         <button
           type="button"
-          onClick={() => { setShowAdd((v) => !v); setEditingId(null); }}
+          onClick={() => {
+            setShowAdd((v) => !v);
+            setEditingId(null);
+          }}
           className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold transition-all"
         >
           <Plus size={13} /> New
@@ -169,10 +176,18 @@ function TagSelector({
             disabled={localAdding || !newName.trim()}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold disabled:opacity-50 hover:bg-blue-700 transition-all"
           >
-            {localAdding ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+            {localAdding ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <Check size={12} />
+            )}
             Add
           </button>
-          <button type="button" onClick={() => setShowAdd(false)} className="text-gray-400 hover:text-gray-600">
+          <button
+            type="button"
+            onClick={() => setShowAdd(false)}
+            className="text-gray-400 hover:text-gray-600"
+          >
             <X size={14} />
           </button>
         </div>
@@ -188,17 +203,23 @@ function TagSelector({
                     className="text-xs w-28 border border-amber-300 rounded-lg px-2 py-1 outline-none focus:border-amber-400 bg-white"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleUpdate(item.id)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && handleUpdate(item.id)
+                    }
                     autoFocus
                   />
                   <div className="flex items-center gap-1.5 border-l border-amber-200 pl-2">
-                    <span className="text-[9px] font-black uppercase text-amber-600 tracking-wider whitespace-nowrap">Active</span>
+                    <span className="text-[9px] font-black uppercase text-amber-600 tracking-wider whitespace-nowrap">
+                      Active
+                    </span>
                     <button
                       type="button"
                       onClick={() => setEditActive((v) => !v)}
                       className={`relative w-8 h-4 rounded-full transition-colors shrink-0 ${editActive ? "bg-green-500" : "bg-gray-300"}`}
                     >
-                      <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${editActive ? "translate-x-4" : "translate-x-0.5"}`} />
+                      <span
+                        className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${editActive ? "translate-x-4" : "translate-x-0.5"}`}
+                      />
                     </button>
                   </div>
                   <button
@@ -207,9 +228,17 @@ function TagSelector({
                     disabled={localUpdating || !editName.trim()}
                     className="text-amber-600 hover:text-amber-800 disabled:opacity-50"
                   >
-                    {localUpdating ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                    {localUpdating ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <Check size={12} />
+                    )}
                   </button>
-                  <button type="button" onClick={() => setEditingId(null)} className="text-gray-400 hover:text-gray-600">
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(null)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
                     <X size={12} />
                   </button>
                 </div>
@@ -223,25 +252,39 @@ function TagSelector({
                         : "bg-gray-100 text-gray-600 border-gray-200"
                   }`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.isActive === false ? "bg-gray-400" : "bg-green-400"}`} />
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.isActive === false ? "bg-gray-400" : "bg-green-400"}`}
+                  />
                   {item.name}
                   <button
                     type="button"
                     onClick={(e) => handleToggle(item, e)}
                     disabled={togglingId === item.id}
-                    title={item.isActive === false ? "Set Active" : "Set Inactive"}
+                    title={
+                      item.isActive === false ? "Set Active" : "Set Inactive"
+                    }
                     className={`opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 disabled:opacity-50 ${
-                      String(value) === String(item.id) ? "text-blue-200 hover:text-white" : "text-gray-400 hover:text-red-500"
+                      String(value) === String(item.id)
+                        ? "text-blue-200 hover:text-white"
+                        : "text-gray-400 hover:text-red-500"
                     }`}
                   >
-                    {togglingId === item.id ? <Loader2 size={9} className="animate-spin" /> : item.isActive === false ? <Check size={9} /> : <X size={9} />}
+                    {togglingId === item.id ? (
+                      <Loader2 size={9} className="animate-spin" />
+                    ) : item.isActive === false ? (
+                      <Check size={9} />
+                    ) : (
+                      <X size={9} />
+                    )}
                   </button>
                   <button
                     type="button"
                     onClick={(e) => startEdit(item, e)}
                     title={`Edit ${item.name}`}
                     className={`opacity-0 group-hover:opacity-100 transition-opacity ${
-                      String(value) === String(item.id) ? "text-blue-200 hover:text-white" : "text-gray-400 hover:text-gray-700"
+                      String(value) === String(item.id)
+                        ? "text-blue-200 hover:text-white"
+                        : "text-gray-400 hover:text-gray-700"
                     }`}
                   >
                     <Pencil size={9} />
@@ -259,7 +302,7 @@ function TagSelector({
 // ── Empty form ────────────────────────────────────────────────────────────────
 const EMPTY = {
   itemName: "",
-  verticalCardId: "",   // replaces category_id
+  verticalCardId: "", // replaces category_id
   type_id: "",
   description: "",
   likeCount: 0,
@@ -273,12 +316,18 @@ const EMPTY = {
 // ─────────────────────────────────────────────────────────────────────────────
 // MODAL
 // ─────────────────────────────────────────────────────────────────────────────
-function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }) {
+function AddMenuItemModal({
+  isOpen,
+  onClose,
+  initialData,
+  propertyData,
+  onSave,
+}) {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  const [verticals, setVerticals] = useState([]);   // filtered vertical cards
+  const [verticals, setVerticals] = useState([]); // filtered vertical cards
   const [types, setTypes] = useState([]);
   const [loadingMeta, setLoadingMeta] = useState(false);
 
@@ -298,7 +347,7 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
       setVerticals(
         (Array.isArray(allVerticals) ? allVerticals : [])
           .filter((v) => v.propertyId === propertyId && v.isActive !== false)
-          .map((v) => ({ id: v.id, name: v.verticalName }))
+          .map((v) => ({ id: v.id, name: v.verticalName })),
       );
 
       setTypes(
@@ -306,7 +355,7 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
           id: t.id,
           name: t.typeName,
           isActive: t.isActive,
-        }))
+        })),
       );
     } catch {
       // non-fatal
@@ -325,8 +374,8 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
           // support both verticalCardId and legacy category mapping
           verticalCardId: initialData.verticalCardId
             ? String(initialData.verticalCardId)
-            : initialData.verticalCard?.id
-              ? String(initialData.verticalCard.id)
+            : initialData.verticalCardResponseDTO?.id
+              ? String(initialData.verticalCardResponseDTO.id)
               : "",
           type_id: initialData.type?.id ? String(initialData.type.id) : "",
           description: initialData.description || "",
@@ -334,11 +383,7 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
           foodType: initialData.foodType || "VEG",
           signatureItem: initialData.signatureItem ?? false,
           status: initialData.status ?? true,
-          image:
-            initialData.media?.url ||
-            initialData.image?.url ||
-            initialData.image ||
-            "",
+          image: initialData.image?.url || initialData.media?.url || "",
           imageFile: null,
         });
       } else {
@@ -355,7 +400,11 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
     const res = await createItemType({ typeName: name, isActive: true });
     const created = res?.data;
     if (created) {
-      const newType = { id: created.id, name: created.typeName, isActive: created.isActive ?? true };
+      const newType = {
+        id: created.id,
+        name: created.typeName,
+        isActive: created.isActive ?? true,
+      };
       setTypes((prev) => [...prev, newType]);
       set("type_id", String(created.id));
     }
@@ -363,19 +412,32 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
 
   const handleUpdateType = async (id, name, isActive) => {
     await updateItemType(id, { typeName: name, isActive });
-    setTypes((prev) => prev.map((t) => (t.id === id ? { ...t, name, isActive } : t)));
+    setTypes((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, name, isActive } : t)),
+    );
   };
 
   const handleToggleTypeStatus = async (id, newStatus) => {
     await toggleItemTypeStatus(id, { isActive: newStatus });
-    setTypes((prev) => prev.map((t) => (t.id === id ? { ...t, isActive: newStatus } : t)));
+    setTypes((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, isActive: newStatus } : t)),
+    );
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    if (!form.itemName.trim()) { setError("Item name is required."); return; }
-    if (!form.verticalCardId) { setError("Please select a vertical."); return; }
-    if (!form.type_id) { setError("Please select an item type."); return; }
+    if (!form.itemName.trim()) {
+      setError("Item name is required.");
+      return;
+    }
+    if (!form.verticalCardId) {
+      setError("Please select a vertical.");
+      return;
+    }
+    if (!form.type_id) {
+      setError("Please select an item type.");
+      return;
+    }
 
     setSaving(true);
     setError(null);
@@ -383,7 +445,7 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
       const fd = new FormData();
       fd.append("itemName", form.itemName.trim());
       fd.append("description", form.description);
-      fd.append("verticalCardId", form.verticalCardId);   // ← verticalCardId:4
+      fd.append("verticalCardId", form.verticalCardId); // ← verticalCardId:4
       fd.append("type_id", form.type_id);
       fd.append("foodType", form.foodType);
       fd.append("signatureItem", String(form.signatureItem));
@@ -402,7 +464,10 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
       onSave?.();
       onClose(true);
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to save item. Please try again.");
+      setError(
+        err?.response?.data?.message ||
+          "Failed to save item. Please try again.",
+      );
     } finally {
       setSaving(false);
     }
@@ -418,7 +483,10 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
           <h3 className="text-lg font-bold text-gray-800">
             {isEditing ? "Edit Menu Item" : "Add Menu Item"}
           </h3>
-          <button onClick={() => onClose(false)} className="p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors">
+          <button
+            onClick={() => onClose(false)}
+            className="p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
+          >
             <X size={20} />
           </button>
         </div>
@@ -436,8 +504,14 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
           <Field label="Item Image">
             <ImageUpload
               value={form.image}
-              onChange={(url, file) => { set("image", url); set("imageFile", file); }}
-              onClear={() => { set("image", ""); set("imageFile", null); }}
+              onChange={(url, file) => {
+                set("image", url);
+                set("imageFile", file);
+              }}
+              onClear={() => {
+                set("image", "");
+                set("imageFile", null);
+              }}
             />
           </Field>
 
@@ -478,7 +552,9 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
             <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
               Item Type
               {loadingMeta && (
-                <span className="ml-2 text-[9px] font-normal text-gray-400 normal-case tracking-normal">Loading…</span>
+                <span className="ml-2 text-[9px] font-normal text-gray-400 normal-case tracking-normal">
+                  Loading…
+                </span>
               )}
             </label>
             <TagSelector
@@ -506,13 +582,21 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
           {/* Like Count */}
           <Field label="Like Count">
             <div className="relative max-w-[160px]">
-              <Heart size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 fill-rose-400" />
+              <Heart
+                size={13}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 fill-rose-400"
+              />
               <input
                 type="number"
                 className={`${inp} pl-8`}
                 value={form.likeCount}
                 min={0}
-                onChange={(e) => set("likeCount", e.target.value === "" ? "" : Number(e.target.value))}
+                onChange={(e) =>
+                  set(
+                    "likeCount",
+                    e.target.value === "" ? "" : Number(e.target.value),
+                  )
+                }
                 placeholder="0"
               />
             </div>
@@ -522,7 +606,9 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
           <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
             {/* Food Type */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Food Type</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                Food Type
+              </span>
               <div className="flex rounded-lg overflow-hidden border border-gray-200">
                 {["VEG", "NON_VEG", "EGG"].map((ft, i) => (
                   <button
@@ -531,11 +617,19 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
                     onClick={() => set("foodType", ft)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all ${i > 0 ? "border-l border-gray-200" : ""} ${
                       form.foodType === ft
-                        ? ft === "VEG" ? "bg-green-500 text-white" : ft === "NON_VEG" ? "bg-red-500 text-white" : "bg-yellow-500 text-white"
+                        ? ft === "VEG"
+                          ? "bg-green-500 text-white"
+                          : ft === "NON_VEG"
+                            ? "bg-red-500 text-white"
+                            : "bg-yellow-500 text-white"
                         : "bg-white text-gray-500 hover:bg-gray-50"
                     }`}
                   >
-                    {ft === "VEG" ? "Veg" : ft === "NON_VEG" ? "Non-Veg" : "Egg"}
+                    {ft === "VEG"
+                      ? "Veg"
+                      : ft === "NON_VEG"
+                        ? "Non-Veg"
+                        : "Egg"}
                   </button>
                 ))}
               </div>
@@ -543,29 +637,41 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
 
             {/* Signature */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Signature Dish</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                Signature Dish
+              </span>
               <label className="flex items-center gap-2 cursor-pointer h-[34px]">
                 <div
                   onClick={() => set("signatureItem", !form.signatureItem)}
                   className={`relative w-9 h-5 rounded-full transition-colors ${form.signatureItem ? "bg-amber-400" : "bg-gray-300"}`}
                 >
-                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.signatureItem ? "translate-x-4" : "translate-x-0.5"}`} />
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.signatureItem ? "translate-x-4" : "translate-x-0.5"}`}
+                  />
                 </div>
-                <span className="text-xs font-semibold text-gray-600">{form.signatureItem ? "⭐ Yes" : "No"}</span>
+                <span className="text-xs font-semibold text-gray-600">
+                  {form.signatureItem ? "⭐ Yes" : "No"}
+                </span>
               </label>
             </div>
 
             {/* Status */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Status</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                Status
+              </span>
               <label className="flex items-center gap-2 cursor-pointer h-[34px]">
                 <div
                   onClick={() => set("status", !form.status)}
                   className={`relative w-9 h-5 rounded-full transition-colors ${form.status ? "bg-blue-500" : "bg-gray-300"}`}
                 >
-                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.status ? "translate-x-4" : "translate-x-0.5"}`} />
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.status ? "translate-x-4" : "translate-x-0.5"}`}
+                  />
                 </div>
-                <span className="text-xs font-semibold text-gray-600">{form.status ? "Active" : "Inactive"}</span>
+                <span className="text-xs font-semibold text-gray-600">
+                  {form.status ? "Active" : "Inactive"}
+                </span>
               </label>
             </div>
           </div>
@@ -573,7 +679,10 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
 
         {/* ── Footer ── */}
         <div className="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3 shrink-0">
-          <button onClick={() => onClose(false)} className="px-5 py-2.5 rounded-lg border text-sm font-bold text-gray-600 hover:bg-white transition-all">
+          <button
+            onClick={() => onClose(false)}
+            className="px-5 py-2.5 rounded-lg border text-sm font-bold text-gray-600 hover:bg-white transition-all"
+          >
             Cancel
           </button>
           <button
@@ -582,9 +691,13 @@ function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }
             className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-all disabled:opacity-50"
           >
             {saving ? (
-              <><Loader2 size={15} className="animate-spin" /> Saving…</>
+              <>
+                <Loader2 size={15} className="animate-spin" /> Saving…
+              </>
             ) : (
-              <><Save size={15} /> {isEditing ? "Update Item" : "Add Item"}</>
+              <>
+                <Save size={15} /> {isEditing ? "Update Item" : "Add Item"}
+              </>
             )}
           </button>
         </div>
