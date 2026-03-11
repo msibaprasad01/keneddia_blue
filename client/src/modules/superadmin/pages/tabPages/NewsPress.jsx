@@ -14,6 +14,7 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  MessageSquare,
 } from "lucide-react";
 import { getAllNews, updateNewsStatus } from "@/Api/Api";
 import {
@@ -23,13 +24,16 @@ import {
   showWarning,
 } from "@/lib/toasters/toastUtils";
 import CreateNewsModal from "../../modals/CreateNewsModal";
-
+import CommentReviewModal from "../../modals/CommentReviewModal";
 function NewsPress() {
   const [newsItems, setNewsItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingNews, setEditingNews] = useState(null);
   const [statusLoading, setStatusLoading] = useState(null);
+
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [selectedNews, setSelectedNews] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -167,6 +171,15 @@ function NewsPress() {
     if (shouldRefresh) {
       fetchNews();
     }
+  };
+  const handleOpenComments = (news) => {
+    setSelectedNews(news);
+    setShowCommentModal(true);
+  };
+
+  const handleCloseComments = () => {
+    setShowCommentModal(false);
+    setSelectedNews(null);
   };
 
   const formatDate = (dateString) => {
@@ -504,6 +517,19 @@ function NewsPress() {
                           >
                             <Edit size={16} />
                           </button>
+
+                          {/* Comment Button */}
+                          <button
+                            onClick={() => handleOpenComments(news)}
+                            className="p-2 rounded border transition-colors hover:bg-gray-100"
+                            style={{
+                              borderColor: colors.border,
+                              color: colors.warning,
+                            }}
+                            title="View Comments"
+                          >
+                            <MessageSquare size={16} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -610,6 +636,17 @@ function NewsPress() {
                     </div>
                     <div className="flex items-center gap-2">
                       {/* Toggle Button */}
+                      <button
+                        onClick={() => handleOpenComments(news)}
+                        className="p-2 rounded-lg border transition-all bg-white"
+                        style={{
+                          borderColor: colors.border,
+                          color: colors.warning,
+                        }}
+                        title="Comments"
+                      >
+                        <MessageSquare size={14} />
+                      </button>
                       <button
                         onClick={() => handleStatusToggle(news.id, news.active)}
                         disabled={statusLoading === news.id}
@@ -745,6 +782,13 @@ function NewsPress() {
           isOpen={showModal}
           onClose={handleCloseModal}
           editingNews={editingNews}
+        />
+      )}
+      {showCommentModal && (
+        <CommentReviewModal
+          isOpen={showCommentModal}
+          onClose={handleCloseComments}
+          news={selectedNews}
         />
       )}
     </div>

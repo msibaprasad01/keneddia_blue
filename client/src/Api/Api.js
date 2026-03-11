@@ -403,4 +403,27 @@ export const updateAboutUsByPropertyTypeId = (aboutUsId, payload) => {
   return API.put(`api/v1/admin/about-us/${aboutUsId}`, formData);
 };
 
+// ─────────────────────────────
+// COMMENTS
+// ─────────────────────────────
+
+// create main comment
+export const createComment = (data) =>API.post("api/v1/comments/create", data);
+// add admin reply to comment
+export const addCommentReply = (data) =>API.post("api/v1/comments/admin/reply", data);
+// get entire comment thread by comment id
+export const getCommentThread = (commentId) =>API.get(`api/v1/comments/${commentId}`);
+// get comments by property id
+export const getCommentsByProperty = (propertyId) =>API.get(`api/v1/comments/property/${propertyId}`);
+// get comments by property type id
+export const getCommentsByPropertyType = (propertyTypeId) =>API.get(`api/v1/comments/property-type/${propertyTypeId}`);
+// get comments by news id
+export const getCommentsByNews = (newsId) =>API.get(`api/v1/comments/news/${newsId}`);
+// delete comment (hard delete with replies)
+export const deleteComment = (commentId) =>API.delete(`api/v1/comments/${commentId}`);
+// toggle main comment enable/disable
+export const toggleCommentStatus = (data) =>API.put("api/v1/comments/admin/toggle-status", data);
+// toggle reply enable/disable
+export const toggleCommentReplyStatus = (replyId) =>API.put(`api/v1/comments/admin/toggle-reply-status/${replyId}`);
+
 export default API;

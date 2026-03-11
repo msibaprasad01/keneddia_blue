@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
+import NewsComment from "../components/newsDetail/NewsComment";
 import { getAllNews, GetAllPropertyDetails } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
@@ -520,7 +521,9 @@ export default function NewsDetails() {
                 </div>
               )}
             </aside>
+             <NewsComment newsId={newsItem.id} />
           </div>
+         
         </div>
       </main>
       <Footer />
