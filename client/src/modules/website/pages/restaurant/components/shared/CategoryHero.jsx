@@ -64,8 +64,13 @@ export default function CategoryHero({
   const touchStart = React.useRef(null);
 
   const restaurantPath = `/${createCitySlug(
-    propertyData?.city || propertyData?.locationName || propertyData?.propertyName,
-  )}/${createHotelSlug(propertyData?.propertyName || propertyData?.name || "restaurant", propertyId || 27)}`;
+    propertyData?.city ||
+      propertyData?.locationName ||
+      propertyData?.propertyName,
+  )}/${createHotelSlug(
+    propertyData?.propertyName || propertyData?.name || "restaurant",
+    propertyId || 27,
+  )}`;
 
   // ── Derive fields from propertyData ──────────────────────────────────────
   const location = useMemo(() => {
@@ -115,7 +120,9 @@ export default function CategoryHero({
     return FALLBACK_MAPS_LINK;
   }, [propertyData]);
 
-  // ── Gallery: sorted active items, excluding 3d category ──────────────────
+  // ── galleryItems: active, non-3d, sorted by displayOrder ─────────────────
+  // galleryData shape (after template normalization):
+  //   { id, media: { mediaId, url, type, fileName, alt }, isActive, categoryName, displayOrder }
   const galleryItems = useMemo(() => {
     return (galleryData || [])
       .filter(
@@ -127,7 +134,7 @@ export default function CategoryHero({
       .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
   }, [galleryData]);
 
-  // Flat sorted media list — used for mobile carousel & GalleryModal
+  // ── galleryMedia: flat list for mobile carousel & GalleryModal ───────────
   const galleryMedia = useMemo(
     () =>
       galleryItems.map((g) => ({
@@ -145,21 +152,16 @@ export default function CategoryHero({
    *
    * Rules:
    * 1. Items with displayOrder 1–4 go into that exact slot (0-indexed).
-   * 2. Items with displayOrder outside 1–4, missing, or colliding → overflow.
+   * 2. displayOrder outside 1–4 / missing / collision → overflow list.
    * 3. Empty slots are backfilled left-to-right from overflow.
    * 4. Still-empty slots → null (EmptySlot rendered).
    *
-   * Fallback: if galleryData is empty, use content.heroImage in slot 0.
+   * Each slot holds the media object { url, alt, ... } (not the full gallery item).
+   * Fallback: if galleryData is empty, heroImage goes to slot 0.
    */
   const gridMedia = useMemo(() => {
-    // No gallery data — fall back to static hero image
     if (galleryItems.length === 0) {
-      return [
-        content?.heroImage ? { url: content.heroImage, alt: content?.title } : null,
-        null,
-        null,
-        null,
-      ];
+     return [null, null, null, null];
     }
 
     const slots = [null, null, null, null];
@@ -167,18 +169,18 @@ export default function CategoryHero({
 
     galleryItems.forEach((item) => {
       const order = item.displayOrder;
-      if (order && order >= 1 && order <= 4) {
+      if (order >= 1 && order <= 4) {
         if (!slots[order - 1]) {
-          slots[order - 1] = item.media;
+          slots[order - 1] = item.media; // store the media object
         } else {
-          overflow.push(item.media);
+          overflow.push(item.media); // collision → overflow
         }
       } else {
-        overflow.push(item.media);
+        overflow.push(item.media); // out of range → overflow
       }
     });
 
-    // Backfill empty slots from overflow
+    // Backfill empty slots from overflow left-to-right
     for (let i = 0; i < 4; i++) {
       if (!slots[i] && overflow.length > 0) {
         slots[i] = overflow.shift();
@@ -191,7 +193,10 @@ export default function CategoryHero({
   const totalImages = galleryMedia.length;
 
   const prevMobile = () =>
-    setMobileIndex((c) => (c - 1 + Math.max(totalImages, 1)) % Math.max(totalImages, 1));
+    setMobileIndex(
+      (c) =>
+        (c - 1 + Math.max(totalImages, 1)) % Math.max(totalImages, 1),
+    );
   const nextMobile = () =>
     setMobileIndex((c) => (c + 1) % Math.max(totalImages, 1));
 
@@ -404,11 +409,17 @@ export default function CategoryHero({
 
             <Button
               variant="outline"
-              className={`rounded-full active:scale-95 transition-all ${isBookmarked ? "bg-destructive/10 border-destructive text-destructive" : ""}`}
+              className={`rounded-full active:scale-95 transition-all ${
+                isBookmarked
+                  ? "bg-destructive/10 border-destructive text-destructive"
+                  : ""
+              }`}
               onClick={handleBookmark}
             >
               <Heart
-                className={`w-4 h-4 mr-2 ${isBookmarked ? "fill-current text-destructive" : ""}`}
+                className={`w-4 h-4 mr-2 ${
+                  isBookmarked ? "fill-current text-destructive" : ""
+                }`}
               />
               {isBookmarked ? "Saved" : "Save"}
             </Button>
@@ -478,22 +489,33 @@ export default function CategoryHero({
           </div>
 
           {/* ── DESKTOP GRID ── */}
-          {/* gridMedia[0..3] placed by displayOrder (1–4), gaps backfilled left-to-right */}
+          {/*
+            gridMedia[0] → col-span-2 main image  (displayOrder 1)
+            gridMedia[1] → top of right stack     (displayOrder 2)
+            gridMedia[2] → bottom of right stack  (displayOrder 3)
+            gridMedia[3] → last column            (displayOrder 4 or overflow)
+            Any slot without an image renders EmptySlot.
+          */}
           <div className="hidden md:grid grid-cols-4 gap-3 h-[440px] rounded-3xl overflow-hidden shadow-xl">
             {/* SLOT 0 — main image, col-span-2 */}
             <div
-              className={`md:col-span-2 relative group overflow-hidden rounded-2xl ${gridMedia[0] ? "cursor-pointer" : "cursor-default"}`}
-              onClick={() =>
-                gridMedia[0] &&
-                openGalleryAt(galleryMedia.findIndex((m) => m.url === gridMedia[0].url))
-              }
+              className={`md:col-span-2 relative group overflow-hidden rounded-2xl ${
+                gridMedia[0] ? "cursor-pointer" : "cursor-default"
+              }`}
+              onClick={() => {
+                if (!gridMedia[0]) return;
+                const idx = galleryMedia.findIndex(
+                  (m) => m.url === gridMedia[0].url,
+                );
+                openGalleryAt(idx >= 0 ? idx : 0);
+              }}
             >
               {gridMedia[0] ? (
                 <>
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
                   <OptimizedImage
                     src={gridMedia[0].url}
-                    alt={gridMedia[0].alt ?? content.title}
+                    alt={gridMedia[0].alt || content.title}
                     className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                   />
                 </>
@@ -502,23 +524,28 @@ export default function CategoryHero({
               )}
             </div>
 
-            {/* SLOTS 1 & 2 — stacked right column */}
+            {/* SLOTS 1 & 2 — stacked middle column */}
             <div className="md:col-span-1 flex flex-col gap-3">
               {[1, 2].map((idx) => (
                 <div
                   key={idx}
-                  className={`relative group overflow-hidden rounded-2xl flex-1 ${gridMedia[idx] ? "cursor-pointer" : "cursor-default"}`}
-                  onClick={() =>
-                    gridMedia[idx] &&
-                    openGalleryAt(galleryMedia.findIndex((m) => m.url === gridMedia[idx].url))
-                  }
+                  className={`relative group overflow-hidden rounded-2xl flex-1 ${
+                    gridMedia[idx] ? "cursor-pointer" : "cursor-default"
+                  }`}
+                  onClick={() => {
+                    if (!gridMedia[idx]) return;
+                    const gi = galleryMedia.findIndex(
+                      (m) => m.url === gridMedia[idx].url,
+                    );
+                    openGalleryAt(gi >= 0 ? gi : 0);
+                  }}
                 >
                   {gridMedia[idx] ? (
                     <>
                       <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
                       <OptimizedImage
                         src={gridMedia[idx].url}
-                        alt=""
+                        alt={gridMedia[idx].alt || ""}
                         className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
                       />
                     </>
@@ -529,20 +556,25 @@ export default function CategoryHero({
               ))}
             </div>
 
-            {/* SLOT 3 — last column + view gallery button */}
+            {/* SLOT 3 — last column + "View Gallery" button */}
             <div
-              className={`md:col-span-1 relative group overflow-hidden rounded-2xl ${gridMedia[3] ? "cursor-pointer" : "cursor-default"}`}
-              onClick={() =>
-                gridMedia[3] &&
-                openGalleryAt(galleryMedia.findIndex((m) => m.url === gridMedia[3].url))
-              }
+              className={`md:col-span-1 relative group overflow-hidden rounded-2xl ${
+                gridMedia[3] ? "cursor-pointer" : "cursor-default"
+              }`}
+              onClick={() => {
+                if (!gridMedia[3]) return;
+                const gi = galleryMedia.findIndex(
+                  (m) => m.url === gridMedia[3].url,
+                );
+                openGalleryAt(gi >= 0 ? gi : 0);
+              }}
             >
               {gridMedia[3] ? (
                 <>
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors z-10" />
                   <OptimizedImage
                     src={gridMedia[3].url}
-                    alt=""
+                    alt={gridMedia[3].alt || ""}
                     className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
                   />
                 </>
@@ -550,7 +582,7 @@ export default function CategoryHero({
                 <EmptySlot />
               )}
 
-              {/* VIEW GALLERY — always on last slot */}
+              {/* VIEW GALLERY — always rendered on last slot */}
               <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
                 <button
                   onClick={(e) => {
@@ -561,7 +593,9 @@ export default function CategoryHero({
                 >
                   <ImageIcon className="w-4 h-4 text-primary" />
                   <span>
-                    {totalImages > 4 ? `+${totalImages - 4} MORE` : "VIEW GALLERY"}
+                    {totalImages > 4
+                      ? `+${totalImages - 4} MORE`
+                      : "VIEW GALLERY"}
                   </span>
                 </button>
               </div>
