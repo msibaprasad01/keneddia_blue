@@ -34,6 +34,7 @@ import ResturantAbout from "./tabs/resturant/ResturantAbout";
 import GroupBookingSection from "./tabs/resturant/GroupBookingSection";
 import Gallery3d from "./tabs/resturant/Gallery3d";
 import EnquiriesTab from "./tabs/resturant/EnquiriesTab";
+import CommentReviewsTab from "./tabs/CommentReviewsTab";
 // Import Modals
 import AddEditOverviewModal from "./modals/AddEditOverviewModal";
 import AddRoomModal from "./modals/AddRoomModal";
@@ -188,8 +189,15 @@ const PropertyDetail = ({ property, onBack }) => {
   const propertyType = data.overview.propertyType;
   // AFTER
   const tabsByPropertyType = {
-    Hotel: ["overview", "rooms", "amenities", "gallery", "policies"],
-    Cafe: ["overview", "menu", "tables", "gallery"],
+    Hotel: [
+      "overview",
+      "rooms",
+      "amenities",
+      "gallery",
+      "policies",
+      "comment reviews",
+    ],
+    Cafe: ["overview", "menu", "tables", "gallery", "comment reviews"],
     Restaurant: [
       "overview",
       "gallery",
@@ -202,6 +210,7 @@ const PropertyDetail = ({ property, onBack }) => {
       // "group bookings",
       "Header items",
       "enquiries",
+      "comment reviews",
     ],
   };
 
@@ -323,6 +332,14 @@ const PropertyDetail = ({ property, onBack }) => {
         return (
           <EnquiriesTab
             propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
+        );
+      case "comment reviews":
+        return (
+          <CommentReviewsTab
+            propertyData={currentPropertyInfo}
+            propertyId={currentPropertyInfo?.id}
             refreshData={fetchAllData}
           />
         );

@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
   Volume2,
   VolumeX,
+  Clock,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { getEventsUpdated } from "@/Api/Api";
@@ -46,7 +47,7 @@ interface EventSectionPropertySpecificProps {
   locationName?: string;
 }
 
-/* ================= EVENT CARD — matches EventsSection frame exactly ================= */
+/* ================= EVENT CARD — matches EventsSection exactly ================= */
 function EventCard({ event, index }: { event: Event; index: number }) {
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -78,13 +79,13 @@ function EventCard({ event, index }: { event: Event; index: number }) {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.08 }}
-      className="group h-[440px] bg-card border rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl"
+      transition={{ delay: index * 0.1 }}
+      className="group h-[520px] bg-card border border-border/60 rounded-[1rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
     >
-      {/* Media */}
+      {/* Media Container */}
       <div
         className={`relative overflow-hidden transition-all duration-500 ${
-          isBanner ? "h-full" : "h-[220px]"
+          isBanner ? "h-full" : "h-[280px]"
         }`}
       >
         {event.image?.url ? (
@@ -93,7 +94,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
               <video
                 ref={videoRef}
                 src={event.image.url}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
                 autoPlay
                 loop
                 muted
@@ -121,7 +122,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
             <img
               src={event.image.url}
               alt={event.image.alt || event.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
               onLoad={(e) =>
                 analyzeMediaSize(
                   e.currentTarget.naturalWidth,
@@ -156,50 +157,49 @@ function EventCard({ event, index }: { event: Event; index: number }) {
             <p className="text-white/80 text-xs mb-6 line-clamp-2 italic drop-shadow-sm">
               {event.description}
             </p>
-            {event.ctaText?.trim() && (
-              <a
-                href={event.ctaLink || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
-              >
-                {event.ctaText} <ArrowRight size={14} />
-              </a>
-            )}
+            <div className="flex gap-2">
+              {event.ctaText?.trim() && (
+                <a
+                  href={event.ctaLink || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
+                >
+                  {event.ctaText} <ArrowRight size={14} />
+                </a>
+              )}
+            </div>
           </div>
         )}
       </div>
 
       {/* Standard Mode Content */}
       {!isBanner && (
-        <div className="p-5 flex flex-col flex-1 bg-card">
-          <h3 className="text-base font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
+        <div className="p-6 flex flex-col flex-1 bg-card">
+          <h3 className="text-lg font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
             {event.title}
           </h3>
-          <div className="flex items-center gap-1.5 text-muted-foreground mt-2 mb-2">
-            <MapPin size={11} className="text-primary shrink-0" />
-            <span className="text-[11px] font-medium italic uppercase truncate">
-              {event.locationName}
+          <div className="flex items-center gap-1.5 text-muted-foreground mt-2 mb-3">
+            <Clock size={12} className="text-primary" />
+            <span className="text-[11px] font-medium italic uppercase">
+              {format(parseISO(event.eventDate), "EEE, dd MMM yyyy")}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed mb-3">
+          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed mb-4">
             {event.description}
           </p>
-          <div className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wide mb-3">
-            {format(parseISO(event.eventDate), "EEE, dd MMM yyyy")}
-          </div>
-          {event.ctaText?.trim() && (
-            <div className="mt-auto pt-3 border-t border-dashed border-border">
+          <div className="mt-auto pt-4 border-t border-dashed border-border flex gap-2">
+            {event.ctaText?.trim() && (
               <a
                 href={event.ctaLink || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-primary text-white py-2.5 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform hover:opacity-90"
+                className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform hover:opacity-90"
               >
-                {event.ctaText} <ArrowRight size={13} />
+                {event.ctaText} <ArrowRight size={14} />
               </a>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </motion.div>

@@ -42,6 +42,7 @@ import HotelGalleryGrid from "../components/hotel/Hotelgallerygrid";
 import RightSidebar from "@/modules/website/components/hotel-detail/RightSidebar";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import MobileBookingBar from "@/modules/website/components/Mobilebookingbar";
+import ReviewsSection from "../components/hotel-detail/ReviewsSection";
 
 // Interfaces
 interface PropertyMedia {
@@ -837,6 +838,9 @@ export default function HotelDetail() {
                     </div>
                   </div>
                 </div>
+              </section>
+              <section id="reviews" className="scroll-mt-32 border-t pt-10">
+                <ReviewsSection propertyId={propertyIdFromUrl} />
               </section>
             </div>
             <aside className="hidden lg:block">
