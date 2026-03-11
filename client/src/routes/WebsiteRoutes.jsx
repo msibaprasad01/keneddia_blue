@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Route, useParams } from "react-router-dom";
+import { Route, useParams,Navigate} from "react-router-dom";
 import Home from "@/modules/website/pages/Home";
 import Hotels from "@/modules/website/pages/Hotels";
 import HotelDetail from "@/modules/website/pages/HotelDetail";
@@ -105,7 +105,7 @@ function PropertyDetailRoute() {
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
   // <Route key="home" path="/" element={<Hotels />} />,
-  // <Route path="/" element={<Navigate to="/resturant/ghaziabad/31" replace />}/>,
+  // <Route path="/" element={<Navigate to="/ghaziabad/kennedia-blu-restaurant-ghaziabad-31" replace />}/>,
   <Route key="hotels" path="/hotels" element={<Hotels />} />,
   // <Route key="hotel-detail" path="/hotels/:city/:propertyId" element={<HotelDetail />} />,
   <Route key="property-detail" path="/:citySlug/:propertySlug" element={<PropertyDetailRoute />} />,
