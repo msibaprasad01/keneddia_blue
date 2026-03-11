@@ -658,12 +658,6 @@ function VerticalRow({
         >
           <Pencil size={14} />
         </button>
-        <button
-          onClick={onDelete}
-          className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 transition-all"
-        >
-          <Trash2 size={14} />
-        </button>
       </div>
     </div>
   );

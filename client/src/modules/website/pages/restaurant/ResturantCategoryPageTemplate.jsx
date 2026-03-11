@@ -72,7 +72,12 @@ function buildMenuFromApi(allItems, currentVerticalId) {
   }));
 }
 /* ── Other Verticals Grid ─────────────────────────────────────────────────── */
-function OtherVerticalsSection({ experiences, propertyId, citySlug, propertyName }) {
+function OtherVerticalsSection({
+  experiences,
+  propertyId,
+  citySlug,
+  propertyName,
+}) {
   const navigate = useNavigate();
   const propertySlug = createHotelSlug(
     propertyName || "restaurant",
@@ -320,21 +325,8 @@ function ResturantCategoryPageTemplate() {
         const rawGallery =
           galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
 
-        /* Filter + Sort by displayOrder */
-        const filteredGallery = (Array.isArray(rawGallery) ? rawGallery : [])
-          .filter(
-            (g) =>
-              g.isActive &&
-              g.media?.url &&
-              g.categoryName?.toLowerCase() !== "3d",
-          )
-          .sort((a, b) => {
-            const orderA = a.displayOrder ?? Number.MAX_SAFE_INTEGER;
-            const orderB = b.displayOrder ?? Number.MAX_SAFE_INTEGER;
-            return orderA - orderB;
-          });
-
-        setGalleryData(filteredGallery);
+        // Pass the raw items as-is — CategoryHero handles filtering/sorting internally
+        setGalleryData(Array.isArray(rawGallery) ? rawGallery : []);
       } catch (err) {
         console.error("[CategoryPage] Error:", err);
         setNotFound(true);
@@ -404,7 +396,7 @@ function ResturantCategoryPageTemplate() {
               menu={resolvedMenu}
               themeColor={currentCategory.themeColor}
               propertyId={propertyId}
-              verticalId={currentCategory.id}   
+              verticalId={currentCategory.id}
             />
           ) : (
             <div className="py-20 text-center text-muted-foreground">
