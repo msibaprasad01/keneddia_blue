@@ -429,13 +429,13 @@ export const toggleCommentReplyStatus = (replyId) =>API.put(`api/v1/comments/adm
 //Event-extra data and post event images api's
 export const uploadEventGallery = (formData) =>API.post("api/v1/event-gallery-upload/upload", formData, {headers: {"Content-Type": "multipart/form-data",},});
 export const getAllUploadedEventFiles = (formData) =>API.get("api/v1/event-gallery-upload/getAllUploadedFiles", {data: formData,});
-export const getEventFilesByUploadedId = (id) =>API.get(`api/v1/event-gallery-upload/getFilesByUploadedId/${id}`);
+export const getEventFilesByUploadedId = (id) =>API.get(`api/v1/event-gallery-upload/getGalleryEventUploadsByEventId/${id}`);
 // ─────────────────────────────
 // EVENT DETAIL CARD INFO
 // ─────────────────────────────
 export const addEventDetailInfo = (formData) =>API.post("api/v1/event-card/addCard", formData, {headers: {"Content-Type": "multipart/form-data",},});
 export const getEventDetailInfo = () =>API.get("api/v1/event-card/getCards");
-export const getEventDetailInfoById = (id) =>API.get(`api/v1/event-card/getCardById/${id}`);
+export const getEventDetailInfoById = (id) =>API.get(`api/v1/event-card/getCardsByEventId/${id}`);
 export const updateEventDetailInfo = (id, formData) =>API.patch(`api/v1/event-card/updateCard/${id}`, formData, {headers: {"Content-Type": "multipart/form-data",},});
 
 export default API;

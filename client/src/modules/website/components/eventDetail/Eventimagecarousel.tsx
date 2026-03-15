@@ -6,9 +6,8 @@ import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 // TYPES
 // ============================================================================
 export interface CarouselSlide {
-  id: number;
-  src: string;
-  label: string;
+  url: string;
+  alt?: string;
 }
 
 interface EventImageCarouselProps {
@@ -26,27 +25,25 @@ const FALLBACK_IMAGE =
 // ============================================================================
 // HELPERS
 // ============================================================================
-const CAROUSEL_SEEDS = [10, 20, 30, 40, 50];
 
+/**
+ * Builds carousel slides from real API media.
+ * Only includes the mainUrl (event.image) — no picsum seeds.
+ * Returns an empty array if mainUrl is falsy so callers can decide the fallback.
+ */
 export function buildCarouselSlides(
-  eventId: string | number,
-  mainUrl: string
+  _eventId: string | number,
+  mainUrl: string,
 ): CarouselSlide[] {
-  return [
-    { id: 0, src: mainUrl, label: "Main Visual" },
-    ...CAROUSEL_SEEDS.map((s, i) => ({
-      id: i + 1,
-      src: `https://picsum.photos/seed/${eventId}${s}/900/600`,
-      label: `Moment ${i + 1}`,
-    })),
-  ];
+  if (!mainUrl) return [];
+  return [{ id: 0, src: mainUrl, label: "Main Visual" }];
 }
 
 const cardPos = {
-  center: { zIndex: 30, scale: 1,    x: "0%",   opacity: 1    },
-  left:   { zIndex: 10, scale: 0.82, x: "-32%", opacity: 0.35 },
-  right:  { zIndex: 10, scale: 0.82, x: "32%",  opacity: 0.35 },
-  hidden: { zIndex: 0,  scale: 0.65,             opacity: 0    },
+  center: { zIndex: 30, scale: 1, x: "0%", opacity: 1 },
+  left: { zIndex: 10, scale: 0.82, x: "-32%", opacity: 0.35 },
+  right: { zIndex: 10, scale: 0.82, x: "32%", opacity: 0.35 },
+  hidden: { zIndex: 0, scale: 0.65, opacity: 0 },
 };
 
 // ============================================================================
@@ -103,11 +100,13 @@ function MobileCarousel({
         <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
 
         {/* Slide counter badge */}
-        <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-black px-2.5 py-1 rounded-full">
-          {active + 1} / {total}
-        </div>
+        {total > 1 && (
+          <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-black px-2.5 py-1 rounded-full">
+            {active + 1} / {total}
+          </div>
+        )}
 
-        {/* Arrow buttons — visible on mobile */}
+        {/* Arrow buttons */}
         {total > 1 && (
           <>
             <button
@@ -128,26 +127,30 @@ function MobileCarousel({
         )}
       </div>
 
-      {/* Pill dots */}
-      <div className="flex justify-center gap-1.5 mt-3">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setActive(i)}
-            aria-label={`Go to slide ${i + 1}`}
-            className={`h-1 rounded-full transition-all duration-300 ${
-              i === active
-                ? "w-6 bg-[#E33E33]"
-                : "w-2 bg-zinc-300 dark:bg-zinc-600"
-            }`}
-          />
-        ))}
-      </div>
+      {/* Pill dots — only when multiple slides */}
+      {total > 1 && (
+        <div className="flex justify-center gap-1.5 mt-3">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-1 rounded-full transition-all duration-300 ${
+                i === active
+                  ? "w-6 bg-[#E33E33]"
+                  : "w-2 bg-zinc-300 dark:bg-zinc-600"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-
+// ============================================================================
+// MAIN CAROUSEL
+// ============================================================================
 export default function EventImageCarousel({
   slides,
   active: externalActive,
@@ -162,6 +165,18 @@ export default function EventImageCarousel({
   };
 
   const total = slides.length;
+
+  // Nothing to render
+  if (total === 0) {
+    return (
+      <div className="w-full h-[240px] md:h-[420px] rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
+        <span className="text-xs text-muted-foreground">
+          No images available
+        </span>
+      </div>
+    );
+  }
+
   const next = () => setActive((active + 1) % total);
   const prev = () => setActive((active - 1 + total) % total);
 
@@ -172,17 +187,17 @@ export default function EventImageCarousel({
         {/* Ambient glow — desktop only */}
         <div className="hidden md:block absolute inset-x-0 top-1/2 -translate-y-1/2 h-48 bg-[#E33E33]/10 blur-[100px] pointer-events-none" />
 
-        {/* Desktop 3-card */}
+        {/* Desktop 3-card layout */}
         <div className="hidden md:block relative w-full h-full">
           {slides.map((slide, idx) => {
             const pos =
               idx === active
                 ? "center"
                 : idx === (active - 1 + total) % total
-                ? "left"
-                : idx === (active + 1) % total
-                ? "right"
-                : "hidden";
+                  ? "left"
+                  : idx === (active + 1) % total
+                    ? "right"
+                    : "hidden";
 
             return (
               <motion.div
@@ -197,8 +212,8 @@ export default function EventImageCarousel({
                 onClick={() => pos !== "center" && setActive(idx)}
               >
                 <img
-                  src={slide.src}
-                  alt={slide.label}
+                  src={slide.url}
+                  alt={slide.alt || "event-image"}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
@@ -207,7 +222,6 @@ export default function EventImageCarousel({
                 {pos === "center" && (
                   <>
                     <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
-                    {/* Maximize hint */}
                     <div className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm p-1.5 rounded-full border border-white/20 opacity-60">
                       <Maximize2 size={12} className="text-white" />
                     </div>
@@ -218,7 +232,7 @@ export default function EventImageCarousel({
           })}
         </div>
 
-        {/* Mobile single card */}
+        {/* Mobile single-card slider */}
         <MobileCarousel
           slides={slides}
           active={active}
@@ -226,7 +240,7 @@ export default function EventImageCarousel({
           total={total}
         />
 
-        {/* Desktop arrow buttons */}
+        {/* Desktop arrow buttons — only when multiple slides */}
         {total > 1 && (
           <>
             <button
@@ -247,44 +261,44 @@ export default function EventImageCarousel({
         )}
       </div>
 
-      {/* ── Animated caption strip — desktop only ── */}
-      <div className="hidden md:block w-full mt-3 px-4">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={active}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="flex items-center justify-center gap-3 text-center"
-          >
-            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[#E33E33]">
-              {slides[active].label}
-            </span>
-            <span className="text-[10px] text-muted-foreground">
-              {active === 0
-                ? "Official event banner"
-                : `${active} of ${slides.length - 1}`}
-            </span>
-          </motion.div>
-        </AnimatePresence>
+      {/* ── Caption strip + dots — desktop, only when multiple slides ── */}
+      {total > 1 && (
+        <div className="hidden md:block w-full mt-3 px-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center justify-center gap-3 text-center"
+            >
+              <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[#E33E33]">
+                {slides[active].label}
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                {active + 1} of {total}
+              </span>
+            </motion.div>
+          </AnimatePresence>
 
-        {/* Pill dots */}
-        <div className="flex justify-center gap-1.5 mt-3">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActive(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className={`h-1 rounded-full transition-all duration-300 ${
-                i === active
-                  ? "w-7 bg-[#E33E33]"
-                  : "w-2 bg-zinc-200 dark:bg-zinc-700"
-              }`}
-            />
-          ))}
+          {/* Pill dots */}
+          <div className="flex justify-center gap-1.5 mt-3">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActive(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`h-1 rounded-full transition-all duration-300 ${
+                  i === active
+                    ? "w-7 bg-[#E33E33]"
+                    : "w-2 bg-zinc-200 dark:bg-zinc-700"
+                }`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

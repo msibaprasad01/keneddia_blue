@@ -26,7 +26,7 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { getEventsUpdated } from "@/Api/Api";
 import NotFound from "./not-found";
-
+import { getEventDetailInfoById, getEventFilesByUploadedId } from "@/Api/Api";
 // ── Split components ──
 import EventImageCarousel, {
   buildCarouselSlides,
@@ -42,6 +42,46 @@ import {
 // ============================================================================
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=1200";
+
+// ── API response shapes ──
+interface MediaItem {
+  mediaId: number;
+  type: "IMAGE" | "VIDEO";
+  url: string;
+  fileName: string | null;
+  alt: string | null;
+  width: number | null;
+  height: number | null;
+}
+
+interface EventFileGroup {
+  id: number;
+  propertyId: number;
+  propertyTypeId: number;
+  eventId: number;
+  eventName: string;
+  category: "hero_slider" | "past_event" | null;
+  medias: MediaItem[];
+}
+
+interface EventDetailInfo {
+  id: number;
+  propertyId: number;
+  propertyTypeId: number;
+  eventId: number;
+  card1Title: string;
+  card2Title: string;
+  card1textField1: string;
+  card1textField2: string;
+  card2textField1: string;
+  card2textField2: string;
+  startTime: string; // "HH:MM:SS"
+  endTime: string; // "HH:MM:SS"
+  locationName: string;
+  locationUrl: string;
+  price: number;
+  textField: string;
+}
 
 interface ApiEvent {
   id: number | string;
@@ -76,52 +116,23 @@ const GLOBAL_FALLBACK_EVENT: ApiEvent = {
   time: "10:00 AM - 6:00 PM",
 };
 
-const STATIC_EVENTS: ApiEvent[] = [
-  {
-    id: "1",
-    title: "Sunday Brunch Extravaganza",
-    propertyName: "Kennedia Grand",
-    propertyId: "1",
-    locationName: "Bengaluru",
-    eventDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    description:
-      "A lavish brunch experience featuring live stations, gourmet desserts, and premium beverages.",
-    longDesc: null,
-    image: {
-      url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200",
-    },
-    ctaText: "Reserve Now",
-    ctaLink: "#",
-    typeName: "Restaurant Event",
-    time: "11:00 AM - 3:00 PM",
-    price: 999,
-  },
-  {
-    id: "2",
-    title: "Live Jazz & Cocktail Night",
-    propertyName: "Kennedia Skybar",
-    propertyId: "1",
-    locationName: "Bengaluru",
-    eventDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
-    description:
-      "Enjoy a soulful jazz evening paired with signature cocktails and rooftop city views.",
-    longDesc: null,
-    image: {
-      url: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=1200",
-    },
-    ctaText: "Book Seats",
-    ctaLink: "#",
-    typeName: "Music Night",
-    time: "7:30 PM onwards",
-    price: 499,
-  },
-];
+// ── Time formatter: "HH:MM:SS" → "12:17 PM" ──
+function formatTime(timeStr: string): string {
+  if (!timeStr) return "";
+  const [hourStr, minStr] = timeStr.split(":");
+  const hour = parseInt(hourStr, 10);
+  const min = minStr || "00";
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+  return `${displayHour}:${min} ${ampm}`;
+}
 
 // ============================================================================
-// SIDEBAR BOOKING CARD — extracted to avoid duplication
+// SIDEBAR BOOKING CARD
 // ============================================================================
 interface SidebarBookingCardProps {
   event: ApiEvent;
+  detailInfo: EventDetailInfo | null;
   displayPropertyName: string;
   formattedDay: string;
   formattedDate: string;
@@ -138,6 +149,7 @@ interface SidebarBookingCardProps {
 
 function SidebarBookingCard({
   event,
+  detailInfo,
   displayPropertyName,
   formattedDay,
   formattedDate,
@@ -146,6 +158,19 @@ function SidebarBookingCard({
   socialPlatforms,
   setBookingModal,
 }: SidebarBookingCardProps) {
+  const locationName = detailInfo?.locationName || event.locationName;
+  const locationUrl =
+    detailInfo?.locationUrl ||
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationName)}`;
+
+  const timeDisplay =
+    detailInfo?.startTime && detailInfo?.endTime
+      ? `${formatTime(detailInfo.startTime)} – ${formatTime(detailInfo.endTime)}`
+      : event.time || "7:00 PM onwards";
+
+  const price = detailInfo?.price ?? event.price;
+  const priceLabel = detailInfo?.textField || "onwards";
+
   return (
     <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xl space-y-6">
       {/* Property name + type badge */}
@@ -155,9 +180,12 @@ function SidebarBookingCard({
             {event.typeName}
           </span>
         )}
-        <p className="text-base font-bold leading-snug">{displayPropertyName}</p>
+        <p className="text-base font-bold leading-snug">
+          {displayPropertyName}
+        </p>
       </div>
 
+      {/* Event info */}
       <div className="space-y-4 pt-1 border-t border-border/50">
         <div className="flex items-start gap-3">
           <Calendar className="w-5 h-5 text-[#E33E33] shrink-0" />
@@ -166,27 +194,28 @@ function SidebarBookingCard({
             <p className="text-xs text-muted-foreground">{formattedDate}</p>
           </div>
         </div>
+
         <div className="flex items-start gap-3">
           <Clock className="w-5 h-5 text-[#E33E33] shrink-0" />
-          <p className="text-sm font-bold">{event.time || "7:00 PM onwards"}</p>
+          <p className="text-sm font-bold">{timeDisplay}</p>
         </div>
+
         <div className="flex items-start gap-3">
           <MapPin className="w-5 h-5 text-[#E33E33] shrink-0 mt-0.5" />
           <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-              event.locationName,
-            )}`}
+            href={locationUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm font-bold hover:text-[#E33E33] hover:underline underline-offset-2 transition-colors leading-snug"
           >
-            {event.locationName}
+            {locationName}
           </a>
         </div>
       </div>
 
+      {/* Price */}
       <div className="pt-4 border-t border-border/50 space-y-2">
-        {!event.price || Number(event.price) === 0 ? (
+        {!price || Number(price) === 0 ? (
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-black tracking-tighter text-green-600">
               Free Entry
@@ -196,15 +225,16 @@ function SidebarBookingCard({
           <div className="flex items-baseline gap-1.5">
             <IndianRupee className="w-4 h-4" />
             <span className="text-3xl font-black tracking-tighter">
-              {event.price}
+              {price}
             </span>
             <span className="text-xs text-muted-foreground font-bold uppercase tracking-tighter">
-              onwards
+              {priceLabel}
             </span>
           </div>
         )}
       </div>
 
+      {/* Actions */}
       <div className="space-y-3">
         <button
           onClick={() => setBookingModal(true)}
@@ -255,13 +285,19 @@ function SidebarBookingCard({
     </div>
   );
 }
-
 // ============================================================================
 // MAIN PAGE
 // ============================================================================
 export default function EventDetails() {
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<ApiEvent | null>(null);
+  const [detailInfo, setDetailInfo] = useState<EventDetailInfo | null>(null);
+  const [heroSlides, setHeroSlides] = useState<{ url: string; alt?: string }[]>(
+    [],
+  );
+  const [pastEventImages, setPastEventImages] = useState<
+    { url: string; alt?: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [interestedCount, setInterestedCount] = useState(2847);
@@ -299,35 +335,114 @@ export default function EventDetails() {
     });
   };
 
+  // ── Fetch event base info (from events list) ──
   useEffect(() => {
-    setLoading(true);
-    const foundEvent =
-      STATIC_EVENTS.find((e) => e.id.toString() === id) ||
-      STATIC_EVENTS[0] ||
-      GLOBAL_FALLBACK_EVENT;
-    setEvent(foundEvent);
-    setLoading(false);
+    const fetchEventBase = async () => {
+      try {
+        const response = await getEventsUpdated({});
+        const rawEvents: ApiEvent[] = response?.data || response || [];
+        const foundEvent =
+          rawEvents.find((e) => e.id.toString() === id) ||
+          rawEvents[0] ||
+          GLOBAL_FALLBACK_EVENT;
+        setEvent(foundEvent);
+      } catch {
+        setEvent(GLOBAL_FALLBACK_EVENT);
+      }
+    };
+    fetchEventBase();
   }, [id]);
 
-  // useEffect(() => {
-  //   const fetchSingleEvent = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const response = await getEventsUpdated({});
-  //       const rawEvents: ApiEvent[] = response?.data || response || [];
-  //       const foundEvent =
-  //         rawEvents.find((e) => e.id.toString() === id) ||
-  //         rawEvents[0] ||
-  //         GLOBAL_FALLBACK_EVENT;
-  //       setEvent(foundEvent);
-  //     } catch {
-  //       setEvent(GLOBAL_FALLBACK_EVENT);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchSingleEvent();
-  // }, [id]);
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchDetails = async () => {
+      setLoading(true);
+
+      try {
+        let detailRes: any = null;
+        let filesRes: any = null;
+
+        try {
+          detailRes = await getEventDetailInfoById(id);
+        } catch (err) {
+          console.warn("Event card API failed:", err);
+        }
+
+        try {
+          filesRes = await getEventFilesByUploadedId(id);
+        } catch (err) {
+          console.error("Media API failed:", err);
+        }
+
+        // -------------------------------
+        // DETAIL INFO
+        // -------------------------------
+        const detail: EventDetailInfo | null =
+          detailRes?.data?.data || detailRes?.data || detailRes || null;
+
+        setDetailInfo(detail);
+
+        // -------------------------------
+        // MEDIA FILE GROUPS
+        // -------------------------------
+        const fileGroups: EventFileGroup[] =
+          filesRes?.data?.data || filesRes?.data || filesRes || [];
+
+        console.log("MEDIA RAW RESPONSE:", filesRes);
+        console.log("FILE GROUPS:", fileGroups);
+
+        const heroMedias: MediaItem[] = [];
+        const pastMedias: MediaItem[] = [];
+
+        fileGroups.forEach((group) => {
+          if (!group?.category) return;
+
+          const category = group.category.trim().toLowerCase();
+
+          console.log("CATEGORY FOUND:", category);
+
+          if (category === "hero_slider") {
+            heroMedias.push(...(group.medias || []));
+          }
+
+          if (category === "past_event") {
+            pastMedias.push(...(group.medias || []));
+          }
+        });
+
+        console.log("HERO MEDIAS:", heroMedias);
+        console.log("PAST MEDIAS:", pastMedias);
+
+        const heroSlidesFormatted = heroMedias
+          .filter((m) => m.type === "IMAGE" && m.url)
+          .map((m) => ({
+            url: m.url,
+            alt: m.alt || "event-image",
+          }));
+
+        const pastSlidesFormatted = pastMedias
+          .filter((m) => m.type === "IMAGE" && m.url)
+          .map((m) => ({
+            url: m.url,
+            alt: m.alt || "past-event",
+          }));
+
+        console.log("HERO SLIDES FINAL:", heroSlidesFormatted);
+        console.log("PAST SLIDES FINAL:", pastSlidesFormatted);
+
+        setHeroSlides(heroSlidesFormatted);
+        setPastEventImages(pastSlidesFormatted);
+      } catch (err) {
+        console.error("Failed to fetch event details:", err);
+        setDetailInfo(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetails();
+  }, [id]);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
@@ -367,8 +482,10 @@ export default function EventDetails() {
 
   if (!event) return <NotFound />;
 
-  const imgUrl = event.image?.url || FALLBACK_IMAGE;
-  const slides = buildCarouselSlides(event.id, imgUrl);
+  // ── Build carousel slides from API; fallback to event.image if empty ──
+  const fallbackImgUrl = event.image?.url || FALLBACK_IMAGE;
+  const carouselSlides =
+    heroSlides.length > 0 ? heroSlides : [{ url: fallbackImgUrl }];
 
   const eventDate = new Date(event.eventDate || Date.now());
   const formattedDate = eventDate.toLocaleDateString("en-US", {
@@ -389,6 +506,7 @@ export default function EventDetails() {
 
   const sidebarProps: SidebarBookingCardProps = {
     event,
+    detailInfo,
     displayPropertyName,
     formattedDay,
     formattedDate,
@@ -397,6 +515,19 @@ export default function EventDetails() {
     socialPlatforms,
     setBookingModal,
   };
+
+  // ── Info card content from detailInfo ──
+  const card1Title = detailInfo?.card1Title || "You Should Know";
+  const card1Points = [
+    detailInfo?.card1textField1,
+    detailInfo?.card1textField2,
+  ].filter(Boolean) as string[];
+
+  const card2Title = detailInfo?.card2Title || "Contactless M-Ticket";
+  const card2Points = [
+    detailInfo?.card2textField1,
+    detailInfo?.card2textField2,
+  ].filter(Boolean) as string[];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -422,10 +553,10 @@ export default function EventDetails() {
                 </h1>
               </div>
 
-              {/* ── 2. IMAGE CAROUSEL ── */}
+              {/* ── 2. IMAGE CAROUSEL — uses hero_slider media ── */}
               <div className="rounded-2xl overflow-hidden bg-zinc-50 dark:bg-zinc-900/50 border border-border/50 py-4 px-2">
                 <EventImageCarousel
-                  slides={slides}
+                  slides={carouselSlides}
                   active={activeSlide}
                   onActiveChange={setActiveSlide}
                 />
@@ -459,8 +590,8 @@ export default function EventDetails() {
                 </span>
               </div>
 
-              {/* ── 3. PAST EVENT GALLERY ── */}
-              <PastEventGallery eventId={event.id} />
+              {/* ── 3. PAST EVENT GALLERY — uses past_event media ── */}
+              <PastEventGallery eventId={event.id} images={pastEventImages} />
 
               {/* ── 4. ABOUT ── */}
               <section className="space-y-3">
@@ -486,40 +617,60 @@ export default function EventDetails() {
                 )}
               </section>
 
-              {/* ── 5. INFO CARDS — responsive fix ── */}
+              {/* ── 5. INFO CARDS — driven by detailInfo ── */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Card 1 */}
                 <section className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
                   <div className="flex items-start gap-3">
                     <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                     <div className="min-w-0">
-                      <h3 className="text-sm font-bold mb-2">
-                        You Should Know
-                      </h3>
-                      <ul className="space-y-1.5 text-xs text-muted-foreground">
-                        <li className="flex items-start gap-2">
-                          <span className="shrink-0">•</span>
-                          <span>Arrive 30 minutes before start</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="shrink-0">•</span>
-                          <span>Valid ID proof required</span>
-                        </li>
-                      </ul>
+                      <h3 className="text-sm font-bold mb-2">{card1Title}</h3>
+                      {card1Points.length > 0 ? (
+                        <ul className="space-y-1.5 text-xs text-muted-foreground">
+                          {card1Points.map((point, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="shrink-0">•</span>
+                              <span>{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <ul className="space-y-1.5 text-xs text-muted-foreground">
+                          <li className="flex items-start gap-2">
+                            <span className="shrink-0">•</span>
+                            <span>Arrive 30 minutes before start</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="shrink-0">•</span>
+                            <span>Valid ID proof required</span>
+                          </li>
+                        </ul>
+                      )}
                     </div>
                   </div>
                 </section>
 
+                {/* Card 2 */}
                 <section className="p-4 bg-green-500/5 border border-green-500/20 rounded-xl">
                   <div className="flex items-start gap-3">
                     <Ticket className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
                     <div className="min-w-0">
-                      <h3 className="text-sm font-bold mb-2">
-                        Contactless M-Ticket
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        Instant delivery via SMS and email. Simply show your
-                        phone at the gate.
-                      </p>
+                      <h3 className="text-sm font-bold mb-2">{card2Title}</h3>
+                      {card2Points.length > 0 ? (
+                        <ul className="space-y-1.5 text-xs text-muted-foreground">
+                          {card2Points.map((point, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="shrink-0">•</span>
+                              <span>{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          Instant delivery via SMS and email. Simply show your
+                          phone at the gate.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -570,7 +721,6 @@ export default function EventDetails() {
               </p>
 
               <div className="space-y-4">
-                {/* Name */}
                 <Input
                   placeholder="Your Name"
                   value={bookingForm.name}
@@ -579,8 +729,6 @@ export default function EventDetails() {
                   }
                   className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                 />
-
-                {/* Phone */}
                 <Input
                   placeholder="Phone Number"
                   value={bookingForm.phone}
@@ -589,8 +737,6 @@ export default function EventDetails() {
                   }
                   className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                 />
-
-                {/* Email */}
                 <Input
                   type="email"
                   placeholder="Email Address"
@@ -600,8 +746,6 @@ export default function EventDetails() {
                   }
                   className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                 />
-
-                {/* Guests */}
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase font-bold text-[#E33E33] px-1">
                     Number of Guests
@@ -620,15 +764,11 @@ export default function EventDetails() {
                     className="h-12 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                   />
                 </div>
-
-                {/* Couples note */}
                 <p className="text-[11px] text-[#E33E33] font-semibold flex items-center gap-1.5 px-1">
                   <span>🎟️</span>
                   10% off for couples — use code{" "}
                   <span className="font-black tracking-wide">COUPLE10</span>
                 </p>
-
-                {/* Submit */}
                 <button
                   disabled={
                     !bookingForm.name || !bookingForm.phone || bookingSubmitting

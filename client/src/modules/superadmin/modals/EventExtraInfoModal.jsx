@@ -37,17 +37,26 @@ function StatusBanner({ status, message }) {
       ) : (
         <AlertCircle className="w-4 h-4 shrink-0" />
       )}
-      {message || (status === "success" ? "Saved successfully." : "Something went wrong.")}
+      {message ||
+        (status === "success"
+          ? "Saved successfully."
+          : "Something went wrong.")}
     </div>
   );
 }
 
 // ─── Gallery Tab ─────────────────────────────────────────────────────────────
 
+const CATEGORY_OPTIONS = [
+  { value: "hero_slider", label: "Hero Slider" },
+  { value: "past_event", label: "Past Event" },
+];
+
 function GalleryTab({ eventId }) {
   const [existing, setExisting] = useState([]);
   const [stagedFiles, setStagedFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("hero_slider");
   const [fetchStatus, setFetchStatus] = useState("loading");
   const [uploadStatus, setUploadStatus] = useState("idle");
   const [uploadMsg, setUploadMsg] = useState("");
@@ -59,7 +68,13 @@ function GalleryTab({ eventId }) {
         setFetchStatus("loading");
         const res = await getEventFilesByUploadedId(eventId);
         const data = res?.data?.data ?? res?.data ?? {};
-        setExisting(data.medias || []);
+        // support both array and object with medias
+        const mediaList = Array.isArray(data)
+          ? data.flatMap((d) =>
+              (d.medias || []).map((m) => ({ ...m, category: d.category })),
+            )
+          : data.medias || [];
+        setExisting(mediaList);
         setFetchStatus("idle");
       } catch {
         setFetchStatus("idle");
@@ -89,41 +104,73 @@ function GalleryTab({ eventId }) {
       setUploadStatus("loading");
       const fd = new FormData();
       fd.append("eventId", String(eventId));
+      fd.append("category", selectedCategory);
       stagedFiles.forEach((f) => fd.append("files", f));
       const res = await uploadEventGallery(fd);
       const data = res?.data?.data ?? res?.data ?? {};
-      setExisting((prev) => [...prev, ...(data.medias || [])]);
+      const uploaded = (data.medias || []).map((m) => ({
+        ...m,
+        category: selectedCategory,
+      }));
+      setExisting((prev) => [...prev, ...uploaded]);
       setStagedFiles([]);
       previewUrls.forEach((u) => URL.revokeObjectURL(u));
       setPreviewUrls([]);
       setUploadStatus("success");
-      setUploadMsg(`${data.medias?.length || stagedFiles.length} image(s) uploaded.`);
+      setUploadMsg(
+        `${uploaded.length || stagedFiles.length} image(s) uploaded as "${CATEGORY_OPTIONS.find((c) => c.value === selectedCategory)?.label}".`,
+      );
     } catch {
       setUploadStatus("error");
       setUploadMsg("Upload failed. Please try again.");
     }
   };
 
+  // Group existing by category for display
+  const grouped = existing.reduce((acc, m) => {
+    const cat = m.category || "uncategorized";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(m);
+    return acc;
+  }, {});
+
   return (
     <div className="space-y-6">
       <StatusBanner status={uploadStatus} message={uploadMsg} />
 
+      {/* Existing gallery grouped by category */}
       {fetchStatus === "loading" ? (
         <div className="flex justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
         </div>
       ) : existing.length > 0 ? (
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-            Uploaded ({existing.length})
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {existing.map((m) => (
-              <div key={m.mediaId} className="relative rounded-xl overflow-hidden aspect-square bg-muted">
-                <img src={m.url} alt="" className="w-full h-full object-cover" />
+        <div className="space-y-5">
+          {Object.entries(grouped).map(([cat, medias]) => (
+            <div key={cat}>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md bg-secondary text-foreground normal-case font-semibold text-[11px]">
+                  {CATEGORY_OPTIONS.find((c) => c.value === cat)?.label || cat}
+                </span>
+                <span className="text-muted-foreground font-normal">
+                  ({medias.length})
+                </span>
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {medias.map((m) => (
+                  <div
+                    key={m.mediaId}
+                    className="relative rounded-xl overflow-hidden aspect-square bg-muted"
+                  >
+                    <img
+                      src={m.url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground text-center py-4">
@@ -131,6 +178,7 @@ function GalleryTab({ eventId }) {
         </p>
       )}
 
+      {/* Staged preview */}
       {stagedFiles.length > 0 && (
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
@@ -138,7 +186,10 @@ function GalleryTab({ eventId }) {
           </p>
           <div className="grid grid-cols-3 gap-2">
             {previewUrls.map((url, i) => (
-              <div key={i} className="relative rounded-xl overflow-hidden aspect-square bg-muted group">
+              <div
+                key={i}
+                className="relative rounded-xl overflow-hidden aspect-square bg-muted group"
+              >
                 <img src={url} alt="" className="w-full h-full object-cover" />
                 <button
                   onClick={() => removeStaged(i)}
@@ -152,22 +203,42 @@ function GalleryTab({ eventId }) {
         </div>
       )}
 
-      <button
-        onClick={() => inputRef.current?.click()}
-        className="w-full border-2 border-dashed border-border hover:border-primary rounded-2xl py-8 flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-      >
-        <ImagePlus className="w-7 h-7" />
-        <span className="text-sm font-semibold">Click to add images</span>
-        <span className="text-xs">JPG, PNG, WebP accepted</span>
-      </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={handleFilePick}
-      />
+      {/* Category selector + upload area */}
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Upload Category
+          </label>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            {CATEGORY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          onClick={() => inputRef.current?.click()}
+          className="w-full border-2 border-dashed border-border hover:border-primary rounded-2xl py-7 flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+        >
+          <ImagePlus className="w-7 h-7" />
+          <span className="text-sm font-semibold">Click to add images</span>
+          <span className="text-xs">JPG, PNG, WebP accepted</span>
+        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleFilePick}
+        />
+      </div>
 
       {stagedFiles.length > 0 && (
         <button
@@ -180,7 +251,8 @@ function GalleryTab({ eventId }) {
           ) : (
             <Upload className="w-4 h-4" />
           )}
-          Upload {stagedFiles.length} Image{stagedFiles.length > 1 ? "s" : ""}
+          Upload {stagedFiles.length} Image{stagedFiles.length > 1 ? "s" : ""}{" "}
+          as {CATEGORY_OPTIONS.find((c) => c.value === selectedCategory)?.label}
         </button>
       )}
     </div>
@@ -194,10 +266,6 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
   const [fetchStatus, setFetchStatus] = useState("loading");
   const [saveStatus, setSaveStatus] = useState("idle");
   const [saveMsg, setSaveMsg] = useState("");
-  const [cardImage, setCardImage] = useState(null);
-  const [cardImagePreview, setCardImagePreview] = useState("");
-  const [existingImageUrl, setExistingImageUrl] = useState("");
-  const imgInputRef = useRef(null);
 
   const [form, setForm] = useState({
     card1Title: "",
@@ -206,6 +274,12 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
     card1textField2: "",
     card2textField1: "",
     card2textField2: "",
+    startTime: "",
+    endTime: "",
+    locationName: "",
+    locationUrl: "",
+    price: "",
+    textField: "",
   });
 
   useEffect(() => {
@@ -217,19 +291,22 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
         if (data?.id) {
           setCardId(data.id);
           setForm({
-            card1Title: data.card1Title || "You Should Know",
-            card2Title: data.card2Title || "Contactless M-Ticket",
+            card1Title: data.card1Title || "",
+            card2Title: data.card2Title || "",
             card1textField1: data.card1textField1 || "",
             card1textField2: data.card1textField2 || "",
             card2textField1: data.card2textField1 || "",
             card2textField2: data.card2textField2 || "",
+            startTime: data.startTime || "",
+            endTime: data.endTime || "",
+            locationName: data.locationName || "",
+            locationUrl: data.locationUrl || "",
+            price: data.price || "",
+            textField: data.textField || "",
           });
-          if (data.mediaResponseDTO?.url) {
-            setExistingImageUrl(data.mediaResponseDTO.url);
-          }
         }
       } catch {
-        // no existing card — fresh form
+        // fresh form
       } finally {
         setFetchStatus("idle");
       }
@@ -240,33 +317,31 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
   const setField = (key) => (e) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleImagePick = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCardImage(file);
-    setCardImagePreview(URL.createObjectURL(file));
-    e.target.value = "";
-  };
-
   const handleSave = async () => {
     try {
       setSaveStatus("loading");
-      const fd = new FormData();
-      fd.append("propertyId", String(propertyId));
-      fd.append("propertyTypeId", String(propertyTypeId ?? 1));
-      fd.append("eventId", String(eventId));
-      fd.append("card1Title", form.card1Title);
-      fd.append("card2Title", form.card2Title);
-      fd.append("card1textField1", form.card1textField1);
-      fd.append("card1textField2", form.card1textField2);
-      fd.append("card2textField1", form.card2textField1);
-      fd.append("card2textField2", form.card2textField2);
-      if (cardImage) fd.append("image", cardImage);
+      const payload = {
+        propertyId: String(propertyId),
+        propertyTypeId: String(propertyTypeId ?? 1),
+        eventId: String(eventId),
+        card1Title: form.card1Title,
+        card2Title: form.card2Title,
+        card1textField1: form.card1textField1,
+        card1textField2: form.card1textField2,
+        card2textField1: form.card2textField1,
+        card2textField2: form.card2textField2,
+        startTime: form.startTime,
+        endTime: form.endTime,
+        locationName: form.locationName,
+        locationUrl: form.locationUrl,
+        price: form.price,
+        textField: form.textField,
+      };
 
       if (cardId) {
-        await updateEventDetailInfo(cardId, fd);
+        await updateEventDetailInfo(cardId, payload);
       } else {
-        const res = await addEventDetailInfo(fd);
+        const res = await addEventDetailInfo(payload);
         const data = res?.data?.data ?? res?.data ?? {};
         if (data?.id) setCardId(data.id);
       }
@@ -287,80 +362,147 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
     );
   }
 
+  const inputCls =
+    "w-full h-10 px-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30";
+  const labelCls =
+    "text-[10px] font-bold uppercase tracking-widest text-muted-foreground";
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <StatusBanner status={saveStatus} message={saveMsg} />
 
-      {/* Card 1 */}
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 dark:border-amber-800/30 p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-            <Info className="w-4 h-4 text-amber-600" />
-          </div>
-          <span className="text-sm font-bold text-amber-800 dark:text-amber-400">Card 1 — Info</span>
-        </div>
+      {/* Event Meta */}
+      <div className="rounded-2xl border border-blue-200 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-800/30 p-5 space-y-4">
+        <p className="text-sm font-bold text-blue-800 dark:text-blue-400">
+          Event Details
+        </p>
 
-        <div className="space-y-1">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Card Title
-          </label>
-          <input
-            value={form.card1Title}
-            onChange={setField("card1Title")}
-            className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Bullet Point 1
-            </label>
+            <label className={labelCls}>Start Time</label>
             <input
-              value={form.card1textField1}
-              onChange={setField("card1textField1")}
-              placeholder="e.g. Arrive 30 minutes before start"
-              className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
+              type="time"
+              value={form.startTime}
+              onChange={setField("startTime")}
+              className={inputCls}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Bullet Point 2
-            </label>
+            <label className={labelCls}>End Time</label>
             <input
-              value={form.card1textField2}
-              onChange={setField("card1textField2")}
-              placeholder="e.g. Valid ID proof required"
-              className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
+              type="time"
+              value={form.endTime}
+              onChange={setField("endTime")}
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className={labelCls}>Location Name</label>
+          <input
+            value={form.locationName}
+            onChange={setField("locationName")}
+            placeholder="e.g. Ironberg"
+            className={inputCls}
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className={labelCls}>Location URL</label>
+          <input
+            value={form.locationUrl}
+            onChange={setField("locationUrl")}
+            placeholder="e.g. www.whosme.com"
+            className={inputCls}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className={labelCls}>Price</label>
+            <input
+              type="number"
+              value={form.price}
+              onChange={setField("price")}
+              placeholder="e.g. 9999"
+              className={inputCls}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Price Label</label>
+            <input
+              value={form.textField}
+              onChange={setField("textField")}
+              placeholder="e.g. onwards"
+              className={inputCls}
             />
           </div>
         </div>
       </div>
 
-      {/* Card 2 */}
-      <div className="rounded-2xl border border-green-200 bg-green-50/50 dark:bg-green-900/10 dark:border-green-800/30 p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30">
-            <Ticket className="w-4 h-4 text-green-600" />
+      {/* Card 1 */}
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 dark:border-amber-800/30 p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+            <Info className="w-4 h-4 text-amber-600" />
           </div>
-          <span className="text-sm font-bold text-green-800 dark:text-green-400">Card 2 — Ticket Info</span>
+          <span className="text-sm font-bold text-amber-800 dark:text-amber-400">
+            Card 1 — Info
+          </span>
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Card Title
-          </label>
+          <label className={labelCls}>Card Title</label>
           <input
-            value={form.card2Title}
-            onChange={setField("card2Title")}
-            className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
+            value={form.card1Title}
+            onChange={setField("card1Title")}
+            className={inputCls}
           />
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Description Line 1
-          </label>
+          <label className={labelCls}>Bullet Point 1</label>
+          <input
+            value={form.card1textField1}
+            onChange={setField("card1textField1")}
+            placeholder="e.g. Arrive 30 minutes before start"
+            className={inputCls}
+          />
+        </div>
+        <div className="space-y-1">
+          <label className={labelCls}>Bullet Point 2</label>
+          <input
+            value={form.card1textField2}
+            onChange={setField("card1textField2")}
+            placeholder="e.g. Valid ID proof required"
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      {/* Card 2 */}
+      <div className="rounded-2xl border border-green-200 bg-green-50/50 dark:bg-green-900/10 dark:border-green-800/30 p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30">
+            <Ticket className="w-4 h-4 text-green-600" />
+          </div>
+          <span className="text-sm font-bold text-green-800 dark:text-green-400">
+            Card 2 — Ticket Info
+          </span>
+        </div>
+
+        <div className="space-y-1">
+          <label className={labelCls}>Card Title</label>
+          <input
+            value={form.card2Title}
+            onChange={setField("card2Title")}
+            className={inputCls}
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className={labelCls}>Description Line 1</label>
           <textarea
             value={form.card2textField1}
             onChange={setField("card2textField1")}
@@ -371,65 +513,17 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <label className={labelCls}>
             Description Line 2{" "}
-            <span className="normal-case text-muted-foreground font-normal">(optional)</span>
+            <span className="normal-case font-normal">(optional)</span>
           </label>
           <input
             value={form.card2textField2}
             onChange={setField("card2textField2")}
             placeholder="Additional info..."
-            className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
+            className={inputCls}
           />
         </div>
-      </div>
-
-      {/* Optional image */}
-      <div className="space-y-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Supplementary Image{" "}
-          {/* <span className="normal-case font-normal">(optional)</span> */}
-        </p>
-
-        {(cardImagePreview || existingImageUrl) && (
-          <div
-            className="relative w-full rounded-xl overflow-hidden border border-border"
-            style={{ height: 160 }}
-          >
-            <img
-              src={cardImagePreview || existingImageUrl}
-              alt="Card image"
-              className="w-full h-full object-cover"
-            />
-            <button
-              onClick={() => {
-                if (cardImagePreview) URL.revokeObjectURL(cardImagePreview);
-                setCardImage(null);
-                setCardImagePreview("");
-              }}
-              className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition-colors"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-
-        <button
-          onClick={() => imgInputRef.current?.click()}
-          className="w-full border-2 border-dashed border-border hover:border-primary rounded-xl py-5 flex flex-col items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
-        >
-          <ImagePlus className="w-5 h-5" />
-          <span className="text-xs font-semibold">
-            {cardImagePreview || existingImageUrl ? "Replace image" : "Upload image"}
-          </span>
-        </button>
-        <input
-          ref={imgInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleImagePick}
-        />
       </div>
 
       {/* Save */}
@@ -449,9 +543,15 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
   );
 }
 
-// ─── Main Modal ───────────────────────────────────────────────────────────────
+// ─── Main Modal (Popup) ───────────────────────────────────────────────────────
 
-function EventExtraInfoModal({ isOpen, onClose, eventId, propertyId, propertyTypeId }) {
+function EventExtraInfoModal({
+  isOpen,
+  onClose,
+  eventId,
+  propertyId,
+  propertyTypeId,
+}) {
   const [activeTab, setActiveTab] = useState("gallery");
 
   useEffect(() => {
@@ -461,24 +561,27 @@ function EventExtraInfoModal({ isOpen, onClose, eventId, propertyId, propertyTyp
   if (!isOpen) return null;
 
   const tabs = [
-    { key: "gallery", label: "Event Gallery", icon: <Images className="w-4 h-4" /> },
-    { key: "cards", label: "Info Cards", icon: <FileEdit className="w-4 h-4" /> },
+    {
+      key: "gallery",
+      label: "Event Gallery",
+      icon: <Images className="w-4 h-4" />,
+    },
+    {
+      key: "cards",
+      label: "Info Cards",
+      icon: <FileEdit className="w-4 h-4" />,
+    },
   ];
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Slide-in panel */}
-      <div className="fixed inset-y-0 right-0 z-[160] w-full max-w-lg flex flex-col bg-background shadow-2xl border-l border-border">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="relative w-full max-w-4xl max-h-[95vh] flex flex-col bg-background rounded-2xl shadow-2xl border border-border">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
           <div>
-            <h2 className="text-base font-bold text-foreground">Event Extra Info</h2>
+            <h2 className="text-base font-bold text-foreground">
+              Event Extra Info
+            </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Manage gallery &amp; info cards for this event
             </p>
@@ -522,7 +625,7 @@ function EventExtraInfoModal({ isOpen, onClose, eventId, propertyId, propertyTyp
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

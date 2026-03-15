@@ -36,6 +36,7 @@ export const updateOfferHeader = (id, data) =>API.patch(`api/v1/offer-sections/u
 export const toggleOfferHeaderActive = (id, data) =>API.patch(`api/v1/offer-sections/toggleActive/${id}`, data);
 
 // restaurant about us content
+export const createRestaurantAbout = (data) =>API.post("api/v1/restaurant-about", data);
 export const updateRestaurantAbout = (id, data) =>API.put(`api/v1/restaurant-about/${id}`, data);
 export const getAllRestaurantAbout = () =>API.get("api/v1/restaurant-about/showAll");
 export const getRestaurantAboutById = (id) =>API.get(`api/v1/restaurant-about/${id}`);

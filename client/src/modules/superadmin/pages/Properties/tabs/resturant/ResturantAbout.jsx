@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import {
   updateRestaurantAbout,
+  createRestaurantAbout,
   getAllRestaurantAbout,
   getRestaurantAboutById,
   toggleRestaurantAboutStatus,
@@ -34,7 +35,7 @@ import {
   toggleRestaurantSocialLinkStatus,
 } from "@/Api/RestaurantApi";
 import { uploadMedia } from "@/Api/Api";
-
+import { showSuccess,showError,showWarning } from "@/lib/toasters/toastUtils";
 // ── Shared styles ─────────────────────────────────────────────────────────────
 const inp =
   "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 outline-none bg-white transition-all";
@@ -250,6 +251,7 @@ function ContentPanel({ propertyId, sharedImage, sharedConnectForm }) {
 
   const handleSave = async () => {
     setSaving(true);
+
     try {
       const payload = {
         badgeLabel: form.badgeLabel,
@@ -262,15 +264,33 @@ function ContentPanel({ propertyId, sharedImage, sharedConnectForm }) {
         propertyId,
         isActive: form.isActive,
       };
-      await updateRestaurantAbout(form.id, payload);
+
+      let res;
+
+      if (!form.id) {
+        res = await createRestaurantAbout(payload);
+
+        const created = res.data?.data ?? res.data;
+
+        setForm((prev) => ({
+          ...prev,
+          id: created.id,
+        }));
+
+        showSuccess("Restaurant About created successfully");
+      } else {
+        await updateRestaurantAbout(form.id, payload);
+
+        showSuccess("Restaurant About updated successfully");
+      }
     } catch (e) {
       console.error("Failed to save about content", e);
-      alert("Failed to save content. Please try again.");
+
+      showError("Failed to save content. Please try again.");
     } finally {
       setSaving(false);
     }
   };
-
   if (loading)
     return (
       <div className="py-10 text-center text-sm text-gray-400">
