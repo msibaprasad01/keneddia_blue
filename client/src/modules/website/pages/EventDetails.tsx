@@ -64,6 +64,18 @@ interface EventFileGroup {
   medias: MediaItem[];
 }
 
+// ── Media DTO attached to each detail info entry ──
+interface MediaResponseDTO {
+  mediaId: number;
+  type: "IMAGE" | "VIDEO";
+  url: string;
+  fileName: string | null;
+  alt: string | null;
+  width: number | null;
+  height: number | null;
+}
+
+// ── Updated: all nullable fields + mediaResponseDTO ──
 interface EventDetailInfo {
   id: number;
   propertyId: number;
@@ -75,12 +87,14 @@ interface EventDetailInfo {
   card1textField2: string;
   card2textField1: string;
   card2textField2: string;
-  startTime: string; // "HH:MM:SS"
-  endTime: string; // "HH:MM:SS"
-  locationName: string;
-  locationUrl: string;
-  price: number;
-  textField: string;
+  startTime: string | null;
+  endTime: string | null;
+  locationName: string | null;
+  locationUrl: string | null;
+  price: number | null;
+  textField: string | null;
+  mediaId: number | null;
+  mediaResponseDTO: MediaResponseDTO | null;
 }
 
 interface ApiEvent {
@@ -117,7 +131,7 @@ const GLOBAL_FALLBACK_EVENT: ApiEvent = {
 };
 
 // ── Time formatter: "HH:MM:SS" → "12:17 PM" ──
-function formatTime(timeStr: string): string {
+function formatTime(timeStr: string | null): string {
   if (!timeStr) return "";
   const [hourStr, minStr] = timeStr.split(":");
   const hour = parseInt(hourStr, 10);
@@ -285,13 +299,17 @@ function SidebarBookingCard({
     </div>
   );
 }
+
 // ============================================================================
 // MAIN PAGE
 // ============================================================================
 export default function EventDetails() {
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<ApiEvent | null>(null);
-  const [detailInfo, setDetailInfo] = useState<EventDetailInfo | null>(null);
+
+  // ── Changed: array of detail info entries ──
+  const [detailInfoList, setDetailInfoList] = useState<EventDetailInfo[]>([]);
+
   const [heroSlides, setHeroSlides] = useState<{ url: string; alt?: string }[]>(
     [],
   );
@@ -376,12 +394,21 @@ export default function EventDetails() {
         }
 
         // -------------------------------
-        // DETAIL INFO
+        // DETAIL INFO — API returns array
         // -------------------------------
-        const detail: EventDetailInfo | null =
-          detailRes?.data?.data || detailRes?.data || detailRes || null;
+        const rawList =
+          detailRes?.data?.data ?? detailRes?.data ?? detailRes ?? [];
 
-        setDetailInfo(detail);
+        const list: EventDetailInfo[] = Array.isArray(rawList)
+          ? rawList
+          : rawList
+          ? [rawList]
+          : [];
+
+        // Sort descending by id → latest (highest id) first
+        const sorted = [...list].sort((a, b) => b.id - a.id);
+
+        setDetailInfoList(sorted);
 
         // -------------------------------
         // MEDIA FILE GROUPS
@@ -435,7 +462,7 @@ export default function EventDetails() {
         setPastEventImages(pastSlidesFormatted);
       } catch (err) {
         console.error("Failed to fetch event details:", err);
-        setDetailInfo(null);
+        setDetailInfoList([]);
       } finally {
         setLoading(false);
       }
@@ -482,6 +509,9 @@ export default function EventDetails() {
 
   if (!event) return <NotFound />;
 
+  // ── Latest detail entry (highest id) drives the sidebar ──
+  const latestDetail = detailInfoList[0] ?? null;
+
   // ── Build carousel slides from API; fallback to event.image if empty ──
   const fallbackImgUrl = event.image?.url || FALLBACK_IMAGE;
   const carouselSlides =
@@ -506,7 +536,7 @@ export default function EventDetails() {
 
   const sidebarProps: SidebarBookingCardProps = {
     event,
-    detailInfo,
+    detailInfo: latestDetail, // ← always the latest entry
     displayPropertyName,
     formattedDay,
     formattedDate,
@@ -515,19 +545,6 @@ export default function EventDetails() {
     socialPlatforms,
     setBookingModal,
   };
-
-  // ── Info card content from detailInfo ──
-  const card1Title = detailInfo?.card1Title || "You Should Know";
-  const card1Points = [
-    detailInfo?.card1textField1,
-    detailInfo?.card1textField2,
-  ].filter(Boolean) as string[];
-
-  const card2Title = detailInfo?.card2Title || "Contactless M-Ticket";
-  const card2Points = [
-    detailInfo?.card2textField1,
-    detailInfo?.card2textField2,
-  ].filter(Boolean) as string[];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -617,24 +634,76 @@ export default function EventDetails() {
                 )}
               </section>
 
-              {/* ── 5. INFO CARDS — driven by detailInfo ── */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Card 1 */}
-                <section className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
-                  <div className="flex items-start gap-3">
-                    <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-bold mb-2">{card1Title}</h3>
-                      {card1Points.length > 0 ? (
-                        <ul className="space-y-1.5 text-xs text-muted-foreground">
-                          {card1Points.map((point, i) => (
-                            <li key={i} className="flex items-start gap-2">
-                              <span className="shrink-0">•</span>
-                              <span>{point}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
+              {/* ── 5. INFO CARDS — only the latest entry (highest id) ── */}
+              {latestDetail ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Card 1 */}
+                  <section className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold mb-2">
+                          {latestDetail.card1Title || "You Should Know"}
+                        </h3>
+                        {[latestDetail.card1textField1, latestDetail.card1textField2]
+                          .filter(Boolean)
+                          .length > 0 ? (
+                          <ul className="space-y-1.5 text-xs text-muted-foreground">
+                            {([latestDetail.card1textField1, latestDetail.card1textField2]
+                              .filter(Boolean) as string[]).map((point, i) => (
+                              <li key={i} className="flex items-start gap-2">
+                                <span className="shrink-0">•</span>
+                                <span>{point}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            No additional info.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Card 2 */}
+                  <section className="p-4 bg-green-500/5 border border-green-500/20 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <Ticket className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold mb-2">
+                          {latestDetail.card2Title || "Contactless M-Ticket"}
+                        </h3>
+                        {([latestDetail.card2textField1, latestDetail.card2textField2]
+                          .filter(Boolean) as string[]).length > 0 ? (
+                          <ul className="space-y-1.5 text-xs text-muted-foreground">
+                            {([latestDetail.card2textField1, latestDetail.card2textField2]
+                              .filter(Boolean) as string[]).map((point, i) => (
+                              <li key={i} className="flex items-start gap-2">
+                                <span className="shrink-0">•</span>
+                                <span>{point}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            No ticket info available.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              ) : (
+                // ── Fallback when API returns no detail info at all ──
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <section className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold mb-2">
+                          You Should Know
+                        </h3>
                         <ul className="space-y-1.5 text-xs text-muted-foreground">
                           <li className="flex items-start gap-2">
                             <span className="shrink-0">•</span>
@@ -645,36 +714,25 @@ export default function EventDetails() {
                             <span>Valid ID proof required</span>
                           </li>
                         </ul>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </section>
-
-                {/* Card 2 */}
-                <section className="p-4 bg-green-500/5 border border-green-500/20 rounded-xl">
-                  <div className="flex items-start gap-3">
-                    <Ticket className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-bold mb-2">{card2Title}</h3>
-                      {card2Points.length > 0 ? (
-                        <ul className="space-y-1.5 text-xs text-muted-foreground">
-                          {card2Points.map((point, i) => (
-                            <li key={i} className="flex items-start gap-2">
-                              <span className="shrink-0">•</span>
-                              <span>{point}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
+                  </section>
+                  <section className="p-4 bg-green-500/5 border border-green-500/20 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <Ticket className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold mb-2">
+                          Contactless M-Ticket
+                        </h3>
                         <p className="text-xs text-muted-foreground">
                           Instant delivery via SMS and email. Simply show your
                           phone at the gate.
                         </p>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </section>
-              </div>
+                  </section>
+                </div>
+              )}
 
               {/* ── 6. UPCOMING EVENTS ── */}
               <UpcomingPropertyEvents

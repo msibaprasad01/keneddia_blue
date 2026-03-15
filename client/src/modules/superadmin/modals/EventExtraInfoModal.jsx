@@ -287,26 +287,39 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
       try {
         setFetchStatus("loading");
         const res = await getEventDetailInfoById(eventId);
-        const data = res?.data?.data ?? res?.data ?? {};
-        if (data?.id) {
-          setCardId(data.id);
+
+        // ── API returns an array — pick the latest entry (highest id) ──
+        const rawList = res?.data?.data ?? res?.data ?? res ?? [];
+        const list = Array.isArray(rawList)
+          ? rawList
+          : rawList
+          ? [rawList]
+          : [];
+
+        // Sort descending by id → first item is the latest
+        const sorted = [...list].sort((a, b) => b.id - a.id);
+        const latest = sorted[0] ?? null;
+
+        if (latest?.id) {
+          setCardId(latest.id);
           setForm({
-            card1Title: data.card1Title || "",
-            card2Title: data.card2Title || "",
-            card1textField1: data.card1textField1 || "",
-            card1textField2: data.card1textField2 || "",
-            card2textField1: data.card2textField1 || "",
-            card2textField2: data.card2textField2 || "",
-            startTime: data.startTime || "",
-            endTime: data.endTime || "",
-            locationName: data.locationName || "",
-            locationUrl: data.locationUrl || "",
-            price: data.price || "",
-            textField: data.textField || "",
+            card1Title: latest.card1Title || "",
+            card2Title: latest.card2Title || "",
+            card1textField1: latest.card1textField1 || "",
+            card1textField2: latest.card1textField2 || "",
+            card2textField1: latest.card2textField1 || "",
+            card2textField2: latest.card2textField2 || "",
+            // strip seconds from "HH:MM:SS" → "HH:MM" for <input type="time">
+            startTime: latest.startTime?.slice(0, 5) || "",
+            endTime: latest.endTime?.slice(0, 5) || "",
+            locationName: latest.locationName || "",
+            locationUrl: latest.locationUrl || "",
+            price: latest.price != null ? String(latest.price) : "",
+            textField: latest.textField || "",
           });
         }
       } catch {
-        // fresh form
+        // fresh form — leave defaults
       } finally {
         setFetchStatus("idle");
       }
