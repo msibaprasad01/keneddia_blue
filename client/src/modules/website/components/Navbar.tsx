@@ -5,6 +5,9 @@ import { ChevronDown, LogIn, Calendar } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { BookingSheet } from "./BookingSheet";
 import { ThemeToggle } from "./ThemeToggle";
+
+// import logoHotelDark from "@assets/logo/kb-hotel-dark.png";
+// import logoHotelLight from "@assets/logo/kb-hotel-light.png";
 // Business Dropdown Items
 const BUSINESS_ITEMS = [
   // { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },

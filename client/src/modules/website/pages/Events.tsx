@@ -38,6 +38,7 @@ const EventMedia = ({
   event: any;
   isListView: boolean;
 }) => {
+  const navigate=useNavigate();
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -70,6 +71,7 @@ const EventMedia = ({
             ? "h-full"
             : "h-64"
       }`}
+      onClick={() => navigate(`/events/${event.id}`)}
     >
       {event.image?.url ? (
         isVideo ? (
@@ -406,7 +408,7 @@ export default function EventsListing() {
                           </div>
                           {event.ctaText && (
                             <Link
-                              to={event.ctaLink || "#"}
+                              to={`/events/${event.id}`}
                               className="mt-6 flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all"
                             >
                               {event.ctaText} <ArrowRight size={14} />

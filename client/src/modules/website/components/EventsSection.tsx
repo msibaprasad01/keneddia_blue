@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   MapPin,
   Loader2,
@@ -16,6 +17,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
@@ -136,6 +138,7 @@ export default function EventsSection() {
 // ── EVENT CARD ───────────────────────────────────────────────────────────────
 
 function EventCard({ event, index }: { event: ApiEvent; index: number }) {
+  const navigate=useNavigate();
   const [isMuted, setIsMuted] = useState(true);
   const [naturalRatio, setNaturalRatio] = useState<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -186,6 +189,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
+       onClick={() => navigate(`/events/${event.id}`)}
       className="group h-[520px] border border-border/60 rounded-[1rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer bg-black"
     >
       {isFullFrame ? (
@@ -262,7 +266,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             )}
             {event.ctaText?.trim() && (
               <Link
-                to={event.ctaLink || "#"}
+                to={`/events/${event.id}`}
                 className="w-full bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
               >
                 {event.ctaText} <ArrowRight size={14} />
@@ -351,7 +355,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             <div className="mt-auto pt-3 border-t border-dashed border-border">
               {event.ctaText?.trim() && (
                 <Link
-                  to={event.ctaLink || "#"}
+                  to={`/events/${event.id}`}
                   className="w-full bg-primary text-white py-2.5 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
                 >
                   {event.ctaText} <ArrowRight size={14} />

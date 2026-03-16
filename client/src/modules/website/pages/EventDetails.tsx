@@ -114,22 +114,6 @@ interface ApiEvent {
   price?: number | string | null;
 }
 
-const GLOBAL_FALLBACK_EVENT: ApiEvent = {
-  id: "featured-fallback",
-  title: "Exclusive Property Showcase 2026",
-  locationName: "Premium Corporate Hub, Delhi NCR",
-  eventDate: new Date().toISOString(),
-  description:
-    "Join us for an exclusive walkthrough of our latest luxury residential projects. This featured event offers a unique opportunity to interact with architects and claim limited-time spot booking benefits.",
-  longDesc:
-    "This is a premium showcase event designed for serious investors and homebuyers. Attendees will get first-row access to floor plans, virtual reality tours, and one-on-one consultations with our financial advisory team.",
-  image: { url: FALLBACK_IMAGE },
-  ctaText: "Book Your Slot",
-  ctaLink: "/contact",
-  typeName: "Premium Showcase",
-  time: "10:00 AM - 6:00 PM",
-};
-
 // ── Time formatter: "HH:MM:SS" → "12:17 PM" ──
 function formatTime(timeStr: string | null): string {
   if (!timeStr) return "";
@@ -359,13 +343,11 @@ export default function EventDetails() {
       try {
         const response = await getEventsUpdated({});
         const rawEvents: ApiEvent[] = response?.data || response || [];
-        const foundEvent =
-          rawEvents.find((e) => e.id.toString() === id) ||
-          rawEvents[0] ||
-          GLOBAL_FALLBACK_EVENT;
-        setEvent(foundEvent);
+        const foundEvent = rawEvents.find((e) => e.id.toString() === id);
+
+        setEvent(foundEvent || null);
       } catch {
-        setEvent(GLOBAL_FALLBACK_EVENT);
+        setEvent(null);
       }
     };
     fetchEventBase();
@@ -402,8 +384,8 @@ export default function EventDetails() {
         const list: EventDetailInfo[] = Array.isArray(rawList)
           ? rawList
           : rawList
-          ? [rawList]
-          : [];
+            ? [rawList]
+            : [];
 
         // Sort descending by id → latest (highest id) first
         const sorted = [...list].sort((a, b) => b.id - a.id);
@@ -512,11 +494,7 @@ export default function EventDetails() {
   // ── Latest detail entry (highest id) drives the sidebar ──
   const latestDetail = detailInfoList[0] ?? null;
 
-  // ── Build carousel slides from API; fallback to event.image if empty ──
-  const fallbackImgUrl = event.image?.url || FALLBACK_IMAGE;
-  const carouselSlides =
-    heroSlides.length > 0 ? heroSlides : [{ url: fallbackImgUrl }];
-
+  const carouselSlides = heroSlides;
   const eventDate = new Date(event.eventDate || Date.now());
   const formattedDate = eventDate.toLocaleDateString("en-US", {
     day: "numeric",
@@ -531,8 +509,7 @@ export default function EventDetails() {
     event.description?.slice(0, 150) || "Event description details.";
   const shouldShowReadMore = (event.description?.length || 0) > 150;
 
-  const displayPropertyName =
-    event.propertyName?.trim() || FALLBACK_PROPERTY_NAME;
+  const displayPropertyName = event.propertyName?.trim() || "";
 
   const sidebarProps: SidebarBookingCardProps = {
     event,
@@ -645,12 +622,17 @@ export default function EventDetails() {
                         <h3 className="text-sm font-bold mb-2">
                           {latestDetail.card1Title || "You Should Know"}
                         </h3>
-                        {[latestDetail.card1textField1, latestDetail.card1textField2]
-                          .filter(Boolean)
-                          .length > 0 ? (
+                        {[
+                          latestDetail.card1textField1,
+                          latestDetail.card1textField2,
+                        ].filter(Boolean).length > 0 ? (
                           <ul className="space-y-1.5 text-xs text-muted-foreground">
-                            {([latestDetail.card1textField1, latestDetail.card1textField2]
-                              .filter(Boolean) as string[]).map((point, i) => (
+                            {(
+                              [
+                                latestDetail.card1textField1,
+                                latestDetail.card1textField2,
+                              ].filter(Boolean) as string[]
+                            ).map((point, i) => (
                               <li key={i} className="flex items-start gap-2">
                                 <span className="shrink-0">•</span>
                                 <span>{point}</span>
@@ -674,11 +656,19 @@ export default function EventDetails() {
                         <h3 className="text-sm font-bold mb-2">
                           {latestDetail.card2Title || "Contactless M-Ticket"}
                         </h3>
-                        {([latestDetail.card2textField1, latestDetail.card2textField2]
-                          .filter(Boolean) as string[]).length > 0 ? (
+                        {(
+                          [
+                            latestDetail.card2textField1,
+                            latestDetail.card2textField2,
+                          ].filter(Boolean) as string[]
+                        ).length > 0 ? (
                           <ul className="space-y-1.5 text-xs text-muted-foreground">
-                            {([latestDetail.card2textField1, latestDetail.card2textField2]
-                              .filter(Boolean) as string[]).map((point, i) => (
+                            {(
+                              [
+                                latestDetail.card2textField1,
+                                latestDetail.card2textField2,
+                              ].filter(Boolean) as string[]
+                            ).map((point, i) => (
                               <li key={i} className="flex items-start gap-2">
                                 <span className="shrink-0">•</span>
                                 <span>{point}</span>

@@ -26,7 +26,7 @@ export interface ApiEvent {
   id: number | string;
   title: string;
   propertyName?: string;
-  propertyId?: number | string;
+  propertyId?: number | string | null;
   locationName: string;
   eventDate: string;
   description: string;
@@ -36,67 +36,18 @@ export interface ApiEvent {
   ctaLink: string | null;
   typeName?: string;
   time?: string;
+  active?: boolean;
+  status?: string;
 }
 
 // ============================================================================
-// FALLBACKS
+// FALLBACK CONSTANTS
 // ============================================================================
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=1200";
 
 // Static property name used when propertyName is absent
 const FALLBACK_PROPERTY_NAME = "Kennedia Hotels & Restaurants";
-
-const STATIC_UPCOMING_EVENTS: ApiEvent[] = [
-  {
-    id: "static-1",
-    title: "Sunday Brunch Extravaganza",
-    locationName: "Kennedia Grand, Bengaluru",
-    eventDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    description:
-      "A lavish spread of live stations, artisanal pastries, and free-flow beverages in an elegant setting.",
-    longDesc: null,
-    image: {
-      url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=900",
-    },
-    ctaText: "Reserve Now",
-    ctaLink: null,
-    typeName: "Restaurant",
-    time: "11:00 AM – 3:00 PM",
-  },
-  {
-    id: "static-2",
-    title: "Live Jazz & Cocktail Night",
-    locationName: "Kennedia Skybar, Bengaluru",
-    eventDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-    description:
-      "An intimate evening with live jazz performances, signature cocktails, and rooftop city views.",
-    longDesc: null,
-    image: {
-      url: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=900",
-    },
-    ctaText: "Book Seats",
-    ctaLink: null,
-    typeName: "Hotel",
-    time: "7:30 PM onwards",
-  },
-  {
-    id: "static-3",
-    title: "Chef's Table: Farm to Fork",
-    locationName: "Kennedia Bistro, Bengaluru",
-    eventDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
-    description:
-      "A curated 7-course tasting menu crafted from locally sourced seasonal produce by our executive chef.",
-    longDesc: null,
-    image: {
-      url: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=900",
-    },
-    ctaText: "Reserve Table",
-    ctaLink: null,
-    typeName: "Restaurant",
-    time: "7:00 PM – 10:00 PM",
-  },
-];
 
 // ============================================================================
 // UPCOMING EVENT CARD
@@ -161,7 +112,7 @@ export function UpcomingEventCard({
                 onLoadedMetadata={(e) =>
                   analyzeMediaSize(
                     e.currentTarget.videoWidth,
-                    e.currentTarget.videoHeight
+                    e.currentTarget.videoHeight,
                   )
                 }
               />
@@ -180,7 +131,7 @@ export function UpcomingEventCard({
               onLoad={(e) =>
                 analyzeMediaSize(
                   e.currentTarget.naturalWidth,
-                  e.currentTarget.naturalHeight
+                  e.currentTarget.naturalHeight,
                 )
               }
               onError={(e) => {
@@ -270,7 +221,6 @@ export function UpcomingPropertyEvents({
 }: UpcomingPropertyEventsProps) {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isStatic, setIsStatic] = useState(false);
   const [swiper, setSwiper] = useState<any>(null);
 
   useEffect(() => {
@@ -279,27 +229,26 @@ export function UpcomingPropertyEvents({
         setLoading(true);
         const response = await getEventsUpdated({});
         const all: ApiEvent[] = response?.data || response || [];
-        const now = Date.now();
 
         const filtered = all.filter((e) => {
-          const isSameProperty = propertyId
-            ? e.propertyId?.toString() === propertyId.toString()
-            : true;
-          const isUpcoming = new Date(e.eventDate).getTime() >= now;
-          const isNotCurrent = e.id.toString() !== currentEventId.toString();
-          return isSameProperty && isUpcoming && isNotCurrent;
+          // Must be active
+          if (!e.active) return false;
+
+          // Must not be the current event
+          if (e.id.toString() === currentEventId.toString()) return false;
+
+          // Must match propertyId (if current event has one)
+          if (propertyId != null) {
+            if (e.propertyId == null) return false;
+            if (e.propertyId.toString() !== propertyId.toString()) return false;
+          }
+
+          return true;
         });
 
-        if (filtered.length > 0) {
-          setEvents(filtered.slice(0, 8));
-          setIsStatic(false);
-        } else {
-          setEvents(STATIC_UPCOMING_EVENTS);
-          setIsStatic(true);
-        }
+        setEvents(filtered.slice(0, 8));
       } catch {
-        setEvents(STATIC_UPCOMING_EVENTS);
-        setIsStatic(true);
+        setEvents([]);
       } finally {
         setLoading(false);
       }
@@ -314,19 +263,15 @@ export function UpcomingPropertyEvents({
       </div>
     );
 
+  // Don't render the section at all if no matching events
+  if (events.length === 0) return null;
+
   return (
     <section className="space-y-5 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-serif font-bold">Upcoming Events</h2>
-            {isStatic && (
-              <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-muted border border-border/60 text-muted-foreground">
-                Suggested
-              </span>
-            )}
-          </div>
+          <h2 className="text-xl font-serif font-bold">Upcoming Events</h2>
           <div className="h-0.5 w-8 bg-[#E33E33] mt-1 rounded-full" />
         </div>
 

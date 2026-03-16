@@ -14,6 +14,9 @@ import heroLobby from "@assets/generated_images/luxury_hotel_lobby_interior.png"
 import heroLounge from "@assets/generated_images/exclusive_rooftop_lounge_at_night.png";
 import aboutMain from "@assets/generated_images/architectural_detail_of_hotel.png";
 import aboutLeader from "@assets/generated_images/luxury_hotel_awards_trophy.png";
+import logoHotelDark from "@assets/logo/kb-hotel-dark.png";
+import logoHotelLight from "@assets/logo/kb-hotel-light.png";
+
 
 // Hotel Images (Mapping generic luxury to cities)
 import hotelMumbai from "@assets/generated_images/opulent_hotel_lobby_in_dubai.png"; // Generic Opulence
@@ -66,7 +69,16 @@ export const siteContent = {
     },
     logo_hotel: {
       text: "Kennedia Blu Hotels",
-      image: { src: hotelLogo, alt: "Kennedia Blu Hotels Logo", priority: false },
+      image: {
+        src: logoHotelLight,   // light mode
+        alt: "Kennedia Blu Hotels Logo",
+        priority: false
+      },
+      darkImage: {
+        src: logoHotelDark,    // dark mode
+        alt: "Kennedia Blu Hotels Dark Logo",
+        priority: false
+      },
       fallbackText: "KENNEDIA BLU HOTELS"
     },
     logo_cafe: {
