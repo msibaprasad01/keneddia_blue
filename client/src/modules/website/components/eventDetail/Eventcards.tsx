@@ -38,6 +38,7 @@ export interface ApiEvent {
   time?: string;
   active?: boolean;
   status?: string;
+  propertyTypeId?: number | string | null;
 }
 
 // ============================================================================
@@ -63,8 +64,7 @@ export function UpcomingEventCard({
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const isVideo =
-    ev.image?.type === "VIDEO" || ev.image?.url?.includes(".mp4");
+  const isVideo = ev.image?.type === "VIDEO" || ev.image?.url?.includes(".mp4");
 
   const analyzeMediaSize = (w: number, h: number) => {
     if (w / h <= 0.85) setIsBanner(true);
@@ -227,34 +227,55 @@ export function UpcomingPropertyEvents({
     const fetchUpcoming = async () => {
       try {
         setLoading(true);
+
         const response = await getEventsUpdated({});
         const all: ApiEvent[] = response?.data || response || [];
 
+        // Find the currently opened event
+        const currentEvent = all.find(
+          (e) => e.id.toString() === currentEventId.toString(),
+        );
+
+        if (!currentEvent) {
+          setEvents([]);
+          return;
+        }
+
+        const propertyTypeId = currentEvent.propertyTypeId;
+
+        // Filter events with same propertyTypeId
         const filtered = all.filter((e) => {
-          // Must be active
           if (!e.active) return false;
 
-          // Must not be the current event
           if (e.id.toString() === currentEventId.toString()) return false;
 
-          // Must match propertyId (if current event has one)
-          if (propertyId != null) {
-            if (e.propertyId == null) return false;
-            if (e.propertyId.toString() !== propertyId.toString()) return false;
+          if (propertyTypeId != null) {
+            if (e.propertyTypeId == null) return false;
+            if (e.propertyTypeId.toString() !== propertyTypeId.toString())
+              return false;
           }
 
           return true;
         });
 
-        setEvents(filtered.slice(0, 8));
+        setEvents(
+          filtered
+            .sort(
+              (a, b) =>
+                new Date(a.eventDate).getTime() -
+                new Date(b.eventDate).getTime(),
+            )
+            .slice(0, 8),
+        );
       } catch {
         setEvents([]);
       } finally {
         setLoading(false);
       }
     };
+
     fetchUpcoming();
-  }, [propertyId, currentEventId]);
+  }, [currentEventId]);
 
   if (loading)
     return (

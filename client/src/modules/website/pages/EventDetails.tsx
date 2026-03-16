@@ -100,7 +100,7 @@ interface ApiEvent {
   title: string;
   propertyName?: string;
   propertyId?: number | string;
-  propertyTypeId?: number | string;
+   propertyTypeId?: number | string | null;
   locationName: string;
   eventDate: string;
   description: string;
@@ -457,14 +457,6 @@ function BookingModal({
                   />
                 </div>
               )}
-
-              {/* {isBook && (
-                <p className="text-[11px] text-[#E33E33] font-semibold flex items-center gap-1.5 px-1">
-                  <span>🎟️</span>
-                  10% off for couples — use code{" "}
-                  <span className="font-black tracking-wide">COUPLE10</span>
-                </p>
-              )} */}
 
               <button
                 disabled={!form.name || !form.phone || submitting}
