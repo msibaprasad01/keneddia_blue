@@ -95,6 +95,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
 
   const [header, setHeader] = useState(null);
   const [experiences, setExperiences] = useState(null);
+  const [experiencesFetched, setExperiencesFetched] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
   const { scrollYProgress } = useScroll({
@@ -109,7 +110,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
   const bgOpacity = useTransform(
     scrollYProgress,
     [0, 0.2, 0.8, 1],
-    [0, 0.04, 0.04, 0]
+    [0, 0.04, 0.04, 0],
   );
 
   // Detect dark mode
@@ -131,7 +132,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
         const headerRes = await getAllVerticalSectionsHeader();
         const headers = headerRes?.data || headerRes || [];
         const matchedHeader = headers.find(
-          (h) => h.propertyId === propertyId && h.isActive
+          (h) => h.propertyId === propertyId && h.isActive,
         );
         if (matchedHeader) setHeader(matchedHeader);
       } catch (err) {
@@ -160,8 +161,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
               : null,
             // Only use dynamic hex color in light mode; dark mode uses static class
             lightBgColor: card.cardBackgroundColor || null,
-            bgColor:
-              CARD_BG_COLORS[index % CARD_BG_COLORS.length].bgColor,
+            bgColor: CARD_BG_COLORS[index % CARD_BG_COLORS.length].bgColor,
             hoverBg: CARD_BG_COLORS[index % CARD_BG_COLORS.length].hoverBg,
             isHexColor: !!card.cardBackgroundColor,
           }));
@@ -169,6 +169,8 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
         }
       } catch (err) {
         console.error("Failed to fetch vertical cards:", err);
+      } finally {
+        setExperiencesFetched(true); // ← add this (runs whether success or error)
       }
     };
 
@@ -177,14 +179,15 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
 
   const activeHeader = header || STATIC_HEADER;
   const activeExperiences = experiences || STATIC_EXPERIENCES;
+
   const citySlug = createCitySlug(
     propertyData?.city ||
       propertyData?.locationName ||
-      propertyData?.propertyName
+      propertyData?.propertyName,
   );
   const propertySlug = createHotelSlug(
     propertyData?.propertyName || propertyData?.name || "restaurant",
-    propertyId
+    propertyId,
   );
 
   // Resolve per-card inline style and className based on current mode
@@ -217,7 +220,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
       lightHoverClass: "",
     };
   };
-
+  if (experiencesFetched && !experiences) return null;
   return (
     <section
       ref={containerRef}
@@ -303,8 +306,13 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
         {/* ── EXPERIENCE GRID ── */}
         <div className="flex flex-wrap justify-center gap-4 lg:gap-8">
           {activeExperiences.map((exp, index) => {
-            const { style, bgClass, hoverClass, lightBgClass, lightHoverClass } =
-              resolveCardStyle(exp, index);
+            const {
+              style,
+              bgClass,
+              hoverClass,
+              lightBgClass,
+              lightHoverClass,
+            } = resolveCardStyle(exp, index);
 
             return (
               <motion.div
