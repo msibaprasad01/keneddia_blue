@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -530,6 +531,10 @@ export default function EventDetails() {
       setInterestList([]);
     }
   };
+  const boostedInterestedCount = useMemo(() => {
+    const randomBoost = Math.floor(Math.random() * 150) + 200; // 100–199
+    return interestedCount + randomBoost;
+  }, [event?.id, interestedCount]);
 
   // ── Fetch event base info ──
   useEffect(() => {
@@ -762,7 +767,7 @@ export default function EventDetails() {
                   {interestedCount > 0 && (
                     <span>
                       <span className="font-bold text-foreground">
-                        {interestedCount.toLocaleString()}
+                        {boostedInterestedCount.toLocaleString()}
                       </span>{" "}
                       interested
                     </span>

@@ -304,6 +304,7 @@ export default function NewsDetails() {
         currentIndex < allNews.length - 1 ? allNews[currentIndex + 1] : null,
     };
   }, [newsItem, allNews]);
+  
 
   const formatDate = (date: string | null) =>
     date
