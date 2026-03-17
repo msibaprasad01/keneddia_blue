@@ -126,6 +126,7 @@ export default function ResturantpageOffers({
     getDailyOffers({ page: 0, size: 100 })
       .then((res) => {
         const raw: any[] = res?.data?.content ?? res?.data ?? [];
+        console.log("raw", raw);
 
         const now = Date.now();
 
@@ -141,13 +142,16 @@ export default function ResturantpageOffers({
         const todayName = DAYS[new Date().getDay()];
 
         const filtered = raw.filter((o) => {
-          const notExpired =
-            !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+          const expiry = o.expiresAt
+            ? new Date(o.expiresAt + "T23:59:59")
+            : null;
+
+          const notExpired = !expiry || expiry.getTime() >= now;
           const isDayActive =
             !o.activeDays?.length || o.activeDays.includes(todayName);
 
           return (
-            o.propertyId === propertyId &&
+            Number(o.propertyId) === Number(propertyId) &&
             o.isActive === true &&
             o.image?.url &&
             notExpired &&
@@ -181,6 +185,7 @@ export default function ResturantpageOffers({
       .catch(() => setOffers([]))
       .finally(() => setLoading(false));
   }, [propertyId]);
+  console.log(offers);
 
   if (loading)
     return (

@@ -379,7 +379,7 @@ function KennediaGroup() {
         logoText: centerLogoSettings.logoText,
         logoSubText: centerLogoSettings.logoSubText,
         // Include header icon mediaId only if set
-        iconMediaId: headerIcon.mediaId ?? null,
+        iconMediaId: headerIcon.mediaId || 0,
         divisions: businessDivisions.map((div) => ({
           icon: div.icon,
           title: div.title,
@@ -387,7 +387,7 @@ function KennediaGroup() {
           ctaLink: div.ctaLink,
           displayOrder: div.displayOrder,
           // Include division icon mediaId only if set
-          iconMediaId: div.iconMediaId ?? null,
+          iconMediaId: div.iconMediaId || 0,
         })),
       };
       await createOrUpdateKennediaGroup(payload);

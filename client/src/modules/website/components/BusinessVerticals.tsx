@@ -120,12 +120,12 @@ function DesktopTree({ divisions, logoText, logoSubText, logoIcon }: any) {
     <div className="relative w-full max-w-6xl mx-auto min-h-[500px] flex flex-col items-center justify-center py-10">
       {/* Center Logo */}
       <div className="relative z-20 mb-16">
-        <div className="bg-card shadow-xl border border-primary/20 flex items-center justify-center relative z-20 px-6 py-4 rounded-xl">
+        <div className="w-32 h-32 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20 overflow-hidden">
           {logoIcon?.url ? (
             <img
               src={logoIcon.url}
               alt={logoIcon.alt || logoText || "Group Logo"}
-              className="max-h-20 w-auto object-contain"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="text-center px-2">
