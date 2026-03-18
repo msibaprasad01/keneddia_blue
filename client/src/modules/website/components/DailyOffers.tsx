@@ -7,6 +7,8 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
@@ -192,10 +194,22 @@ export default function DailyOffers() {
     <section className="bg-muted py-10">
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-serif">
-            {dailyOffers?.title || "Daily Offers"}
-          </h2>
-          <div className="flex gap-2">
+          <div>
+            <h2 className="text-2xl font-serif">
+              {dailyOffers?.title || "Daily Offers"}
+            </h2>
+            <div className="h-1 w-10 bg-primary mt-1 rounded-full" />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              to="/offers"
+              className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all"
+            >
+              View All <ArrowUpRight className="w-4 h-4" />
+            </Link>
+
+            {/* NAV BUTTONS */}
             <button
               onClick={() => swiper?.slidePrev()}
               className="p-2 rounded-full hover:bg-white/50 transition-colors"

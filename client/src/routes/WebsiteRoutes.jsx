@@ -12,6 +12,7 @@ import About from "@/modules/website/pages/About";
 import Reviews from "@/modules/website/pages/Reviews";
 import Login from "@/modules/auth/login";
 import NotFound from "@/modules/website/pages/not-found";
+import OfferListing from "@/modules/website/pages/OfferListing";
 import OfferDetails from "@/modules/website/pages/OfferDetails";
 import PropertyDetails from "@/modules/website/pages/PropertyDetails";
 import EventDetails from "@/modules/website/pages/EventDetails";
@@ -115,6 +116,8 @@ const WebsiteRoutes = [
   <Route key="cafes" path="/cafes" element={<Cafes />} />,
   <Route key="bars" path="/bars" element={<Bars />} />,
   <Route key="events" path="/events" element={<Events />} />,
+  <Route key="offers" path="/offers" element={<OfferListing />} />,
+  // OfferListing
   <Route key="entertainment" path="/entertainment" element={<Entertainment />} />,
   <Route key="about" path="/about" element={<About />} />,
   <Route key="reviews" path="/reviews" element={<Reviews />} />,
