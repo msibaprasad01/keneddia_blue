@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowUpRight, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
@@ -17,7 +17,6 @@ const ROUTES = {
 } as const;
 
 const STYLE_CONFIG = {
-  aspectRatio: "4/3" as const,
   navigation: {
     buttonSize: "w-8 h-8",
     iconSize: "w-4 h-4",
@@ -57,16 +56,11 @@ export default function NewsPress() {
     const fetchNews = async () => {
       try {
         setLoading(true);
-        // Call API with required params
         const res = await getAllNews({ category: "", page: 0, size: 10 });
-
-        // 1. Extract data from response
         const data = res?.data?.content || res?.content || [];
-
-        // 2. Sort by date (descending) and Slice to latest 6
         const processedData = Array.isArray(data)
           ? data
-              .filter((item) => item.active) // 🔥 only active items
+              .filter((item) => item.active)
               .sort(
                 (a, b) =>
                   new Date(b.dateBadge).getTime() -
@@ -74,7 +68,6 @@ export default function NewsPress() {
               )
               .slice(0, 6)
           : [];
-
         setNewsItems(processedData);
       } catch (error) {
         console.error("Error fetching news:", error);
@@ -109,7 +102,6 @@ export default function NewsPress() {
           onPrev={handlePrev}
           onNext={handleNext}
         />
-
         <NewsCarousel items={newsItems} swiperRef={swiperRef} />
       </div>
     </section>
@@ -196,7 +188,6 @@ function NewsCarousel({
       modules={[Autoplay, Navigation]}
       spaceBetween={24}
       slidesPerView={1}
-      // Loop only if we have more items than shown slides
       loop={items.length > 3}
       autoplay={{ delay: 5000, disableOnInteraction: false }}
       breakpoints={{
@@ -217,27 +208,38 @@ function NewsCarousel({
 
 function NewsCard({ item }: { item: NewsItem }) {
   const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
+
   const date = new Date(item.dateBadge).toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
-  const handleCardClick = () => {
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking the expand toggle
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-expand-toggle]")) return;
     navigate(`/news/${item.id}`);
   };
 
   return (
     <div
       onClick={handleCardClick}
-      className="cursor-pointer group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300 "
+      className="cursor-pointer group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300"
     >
-      <div
-        className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] overflow-hidden`}
-      >
-        <OptimizedImage
+      {/* ── Image frame: natural height, no crop ── */}
+      {/* bg-black so letterboxing is clean; object-contain shows full image */}
+      <div className="relative w-full bg-black overflow-hidden">
+        <img
           src={item.imageUrl}
           alt={item.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-auto object-contain block transition-transform duration-700 group-hover:scale-105"
+          style={{ maxHeight: "280px", minHeight: "140px" }}
+          onError={(e) => {
+            // hide broken images gracefully
+            (e.currentTarget as HTMLImageElement).style.display = "none";
+          }}
         />
         <div className="absolute top-3 left-3">
           <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] uppercase font-bold tracking-wider rounded">
@@ -246,6 +248,7 @@ function NewsCard({ item }: { item: NewsItem }) {
         </div>
       </div>
 
+      {/* ── Text content ── */}
       <div className="p-5 flex flex-col flex-grow">
         <div className="mb-2 text-xs font-bold text-primary tracking-wider uppercase">
           {item.category} • {item.badgeType}
@@ -255,14 +258,40 @@ function NewsCard({ item }: { item: NewsItem }) {
           {item.title}
         </h3>
 
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed flex-grow">
-          {item.description}
-        </p>
+        {/* Description with show more / show less */}
+        <div className="flex-grow">
+          <p
+            className={`text-sm text-muted-foreground leading-relaxed transition-all duration-300 ${
+              expanded ? "" : "line-clamp-2"
+            }`}
+          >
+            {item.description}
+          </p>
 
-        <div className="mt-auto pt-2 border-t border-border/50">
+          {/* Only show toggle if description is long enough to be clamped */}
+          {item.description && item.description.length > 100 && (
+            <button
+              data-expand-toggle
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded((prev) => !prev);
+              }}
+              className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+            >
+              {expanded ? (
+                <>Show less <ChevronUp className="w-3 h-3" /></>
+              ) : (
+                <>Show more <ChevronDown className="w-3 h-3" /></>
+              )}
+            </button>
+          )}
+        </div>
+
+        <div className="mt-3 pt-2 border-t border-border/50">
           <Link
             to={`/news/${item.id}`}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-2"
+            onClick={(e) => e.stopPropagation()}
           >
             {item.ctaText}
             <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />

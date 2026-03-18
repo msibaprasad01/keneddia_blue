@@ -334,7 +334,7 @@ export default function NewsListing() {
                         <img
                           src={item.imageUrl}
                           alt={item.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-contain bg-black/5 transition-transform duration-500 group-hover:scale-105"
                         />
                         <div className="absolute top-2 left-2">
                           <span className={`px-2 py-0.5 ${getCategoryBadgeColor(item.badgeType)} text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow`}>

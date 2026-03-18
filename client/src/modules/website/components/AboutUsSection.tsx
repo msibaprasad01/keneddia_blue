@@ -78,7 +78,6 @@ export default function AboutUsSection() {
   const [ventures, setVentures] = useState<Venture[]>([]);
   const [recognitions, setRecognitions] = useState<Recognition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  // State to track hover for pausing
   const [isPaused, setIsPaused] = useState(false);
 
   const fetchAboutUs = async () => {
@@ -156,13 +155,12 @@ export default function AboutUsSection() {
     mediaItems.push({ type: "image", src: siteContent.images.about.main.src });
   }
 
-  // --- Updated: Auto Carousel Scroll with Pause and Slower Speed ---
   useEffect(() => {
     if (mediaItems.length <= 1 || isPaused) return;
 
     const interval = setInterval(() => {
       setCurrentMediaIndex((prev) => (prev + 1) % mediaItems.length);
-    }, 8000); // Increased to 8 seconds for slower movement
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [mediaItems.length, isPaused]);
@@ -193,7 +191,7 @@ export default function AboutUsSection() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.8 }} // Slower transition animation
+                  transition={{ duration: 0.8 }}
                   className="w-full h-full absolute inset-0 cursor-pointer"
                 >
                   {mediaItems[currentMediaIndex].type === "video" ? (
@@ -262,13 +260,14 @@ export default function AboutUsSection() {
               </p>
             </div>
 
-            {/* Dynamic Ventures Section */}
+            {/* Ventures Section */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-widest mb-6 opacity-70 text-muted-foreground">
                 Our Ventures
               </h4>
 
-              <div className="flex flex-wrap gap-16">
+              {/* ── Desktop: original icon + label columns layout ── */}
+              <div className="hidden md:flex flex-wrap gap-16">
                 {ventures.map((venture) => (
                   <div
                     key={venture.id}
@@ -281,8 +280,30 @@ export default function AboutUsSection() {
                         className="w-full h-full object-scale-down"
                       />
                     </div>
-
                     <span className="text-[10px] uppercase tracking-widest font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                      {venture.ventureName}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Mobile: horizontal logo + name list rows ── */}
+              <div className="flex md:hidden flex-col gap-3">
+                {ventures.map((venture) => (
+                  <div
+                    key={venture.id}
+                    className="flex items-center gap-4 group cursor-pointer"
+                  >
+                    {/* Logo */}
+                    <div className="w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center bg-slate-900/90 border border-white/10 overflow-hidden p-1.5">
+                      <img
+                        src={venture.logoUrl}
+                        alt={venture.ventureName}
+                        className="w-full h-full object-scale-down"
+                      />
+                    </div>
+                    {/* Name */}
+                    <span className="text-xs uppercase tracking-widest font-medium text-foreground opacity-70 group-hover:opacity-100 transition-opacity">
                       {venture.ventureName}
                     </span>
                   </div>
