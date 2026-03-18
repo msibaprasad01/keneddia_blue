@@ -9,9 +9,8 @@ import "swiper/css/effect-fade";
 import "swiper/css/navigation";
 import { getHeroSectionsPaginated } from "@/Api/Api";
 
-// Cache configuration
 const CACHE_KEY = "hero_sections_cache";
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
 
 interface CachedData {
   data: HeroSlide[];
@@ -46,7 +45,8 @@ interface ApiHeroItem {
 }
 
 interface HeroSlide {
-  type: "video" | "image";
+  type: "video" | "image";         // background media type (desktop)
+  mobileMediaType: "video" | "image"; // FIX: actual type of mobileMedia url
   media: string;
   mobileMedia: string;
   thumbnail: string;
@@ -75,29 +75,18 @@ const getCachedData = (): CachedData | null => {
     const cached = sessionStorage.getItem(CACHE_KEY);
     if (!cached) return null;
     const parsedCache: CachedData = JSON.parse(cached);
-    const now = Date.now();
-    if (now - parsedCache.timestamp < CACHE_DURATION) {
-      return parsedCache;
-    }
+    if (Date.now() - parsedCache.timestamp < CACHE_DURATION) return parsedCache;
     sessionStorage.removeItem(CACHE_KEY);
     return null;
-  } catch (error) {
-    console.warn("Error reading cache:", error);
+  } catch {
     return null;
   }
 };
 
 const setCachedData = (slides: HeroSlide[], hash: string): void => {
   try {
-    const cacheData: CachedData = {
-      data: slides,
-      timestamp: Date.now(),
-      hash,
-    };
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-  } catch (error) {
-    console.warn("Error saving to cache:", error);
-  }
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: slides, timestamp: Date.now(), hash }));
+  } catch {}
 };
 
 const selectMediaByTheme = (
@@ -106,11 +95,11 @@ const selectMediaByTheme = (
   light: MediaItem[],
   dark: MediaItem[],
 ): MediaItem | null => {
-  if (theme === "dark" && dark && dark.length > 0) return dark[0];
-  if (theme === "light" && light && light.length > 0) return light[0];
-  if (all && all.length > 0) return all[0];
-  if (light && light.length > 0) return light[0];
-  if (dark && dark.length > 0) return dark[0];
+  if (theme === "dark" && dark?.length > 0) return dark[0];
+  if (theme === "light" && light?.length > 0) return light[0];
+  if (all?.length > 0) return all[0];
+  if (light?.length > 0) return light[0];
+  if (dark?.length > 0) return dark[0];
   return null;
 };
 
@@ -118,14 +107,12 @@ const transformApiDataToSlides = (
   content: ApiHeroItem[],
   theme: "light" | "dark",
 ): HeroSlide[] => {
-  // CRITICAL FIX: Only show if BOTH conditions are true
-  const filteredContent = content.filter((item) => {
-    const shouldShow = item.active === true && item.showOnHomepage === true;
-    return shouldShow;
-  });
+  const filteredContent = content.filter(
+    (item) => item.active === true && item.showOnHomepage === true,
+  );
   const latestThree = filteredContent.sort((a, b) => b.id - a.id).slice(0, 3);
 
-  return latestThree.map((item, index) => {
+  return latestThree.map((item) => {
     const backgroundMedia = selectMediaByTheme(
       theme,
       item.backgroundAll,
@@ -140,21 +127,36 @@ const transformApiDataToSlides = (
       item.subDark,
     );
 
-    const isVideo = backgroundMedia?.type === "VIDEO";
+    const isBackgroundVideo = backgroundMedia?.type === "VIDEO";
 
-    let thumbnailUrl = backgroundMedia?.url || "";
-    if (subMedia && subMedia.type === "IMAGE") {
+    // ── FIX 1: thumbnail ────────────────────────────────────────────────────
+    // Always prefer a sub IMAGE for the thumbnail, regardless of background type.
+    // Fall back to background url only if no sub media exists.
+    let thumbnailUrl = "";
+    if (subMedia?.type === "IMAGE") {
       thumbnailUrl = subMedia.url;
+    } else if (subMedia?.type === "VIDEO") {
+      // sub is also a video — thumbnail falls back to background image if available
+      thumbnailUrl = isBackgroundVideo ? "" : (backgroundMedia?.url ?? "");
+    } else {
+      thumbnailUrl = backgroundMedia?.url ?? "";
     }
 
+    // ── mobileMedia always uses the BACKGROUND (main) media ────────────────
+    // Sub media is only ever used for the thumbnail card.
+    // Mobile should show the same main image/video as desktop.
+    const mobileMediaUrl = backgroundMedia?.url || "";
+    const mobileMediaType: "video" | "image" = isBackgroundVideo ? "video" : "image";
+
     return {
-      type: isVideo ? "video" : "image",
+      type: isBackgroundVideo ? "video" : "image",
+      mobileMediaType,                           // NEW field
       media: backgroundMedia?.url || "",
-      mobileMedia: subMedia?.url || backgroundMedia?.url || "",
+      mobileMedia: mobileMediaUrl,
       thumbnail: thumbnailUrl,
-      title: item.mainTitle || ``,
+      title: item.mainTitle || "",
       subtitle: item.subTitle || "",
-      cta: item.ctaText,
+      cta: item.ctaText ?? undefined,
       ctaLink: item.ctaLink ?? null,
     };
   });
@@ -163,12 +165,8 @@ const transformApiDataToSlides = (
 export default function Hero() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<"light" | "dark">(
-    getCurrentTheme(),
-  );
-
+  const [currentTheme, setCurrentTheme] = useState<"light" | "dark">(getCurrentTheme());
   const [slides, setSlides] = useState<HeroSlide[]>([]);
-
   const [isFetching, setIsFetching] = useState(true);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const isFetchingRef = useRef(false);
@@ -193,7 +191,7 @@ export default function Hero() {
       setIsFetching(true);
 
       try {
-        const response = await getHeroSectionsPaginated({ page: 0, size: 100 }); // Increased to get all sections
+        const response = await getHeroSectionsPaginated({ page: 0, size: 100 });
         const pageData = response.data?.data || response.data || response;
 
         if (pageData?.content && Array.isArray(pageData.content)) {
@@ -201,11 +199,7 @@ export default function Hero() {
           apiDataRef.current = apiContent;
           const newHash = generateDataHash(apiContent);
 
-          if (
-            newHash === currentHashRef.current &&
-            slides.length > 0 &&
-            !forceRefresh
-          ) {
+          if (newHash === currentHashRef.current && slides.length > 0 && !forceRefresh) {
             setIsFetching(false);
             isFetchingRef.current = false;
             return;
@@ -217,12 +211,12 @@ export default function Hero() {
             currentHashRef.current = newHash;
             setCachedData(apiSlides, newHash);
           } else {
-            setSlides([]); // no fallback
+            setSlides([]);
           }
         }
       } catch (error) {
         console.error("Hero fetch failed:", error);
-        setSlides([]); // no fallback
+        setSlides([]);
       } finally {
         setIsFetching(false);
         isFetchingRef.current = false;
@@ -234,12 +228,8 @@ export default function Hero() {
   const updateSlidesForTheme = useCallback((newTheme: "light" | "dark") => {
     if (apiDataRef.current.length > 0) {
       const newSlides = transformApiDataToSlides(apiDataRef.current, newTheme);
-      if (newSlides.length > 0) {
-        setSlides(newSlides);
-        setCachedData(newSlides, currentHashRef.current);
-      } else {
-        setSlides([]);
-      }
+      setSlides(newSlides.length > 0 ? newSlides : []);
+      if (newSlides.length > 0) setCachedData(newSlides, currentHashRef.current);
     }
   }, []);
 
@@ -251,12 +241,7 @@ export default function Hero() {
         updateSlidesForTheme(newTheme);
       }
     });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     return () => observer.disconnect();
   }, [currentTheme, updateSlidesForTheme]);
 
@@ -276,25 +261,15 @@ export default function Hero() {
     [swiperInstance],
   );
 
-  const handleScrollToBusiness = useCallback(() => {
-    const section = document.getElementById("business");
-    if (section) section.scrollIntoView({ behavior: "smooth" });
-  }, []);
-
-  const renderMedia = useCallback(
-    (slide: HeroSlide, isMobile: boolean = false) => {
-      const mediaUrl = isMobile ? slide.mobileMedia : slide.media;
-
+  // ── Desktop media (object-cover, full bleed) — UNCHANGED ──────────────────
+  const renderDesktopMedia = useCallback(
+    (slide: HeroSlide) => {
+      const mediaUrl = slide.media;
       if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
-
       if (slide.type === "video") {
         return (
           <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
+            autoPlay loop muted playsInline preload="metadata"
             className="w-full h-full object-cover"
             key={mediaUrl}
             onError={() => handleImageError(mediaUrl)}
@@ -303,7 +278,6 @@ export default function Hero() {
           </video>
         );
       }
-
       return (
         <img
           src={mediaUrl}
@@ -316,16 +290,48 @@ export default function Hero() {
     [imageErrors, handleImageError],
   );
 
+  // ── FIX 3: Mobile media — uses mobileMediaType (not slide.type) ───────────
+  // Previously this checked `slide.type` which is the BACKGROUND type.
+  // When background=VIDEO but mobileMedia points to a sub IMAGE, it would try
+  // to render a <video> tag for an image URL → black screen.
+  const renderMobileMedia = useCallback(
+    (slide: HeroSlide) => {
+      const mediaUrl = slide.mobileMedia;
+      if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
+
+      if (slide.mobileMediaType === "video") {
+        return (
+          <video
+            autoPlay loop muted playsInline preload="metadata"
+            className="w-full h-full object-contain"
+            key={mediaUrl}
+            onError={() => handleImageError(mediaUrl)}
+          >
+            <source src={mediaUrl} type="video/mp4" />
+          </video>
+        );
+      }
+      return (
+        <img
+          src={mediaUrl}
+          alt={slide.title}
+          className="w-full h-full object-contain"
+          onError={() => handleImageError(mediaUrl)}
+        />
+      );
+    },
+    [imageErrors, handleImageError],
+  );
+
+  // ── Thumbnail — always an image ────────────────────────────────────────────
   const renderThumbnail = useCallback(
     (slide: HeroSlide) => {
       const thumbnailUrl = slide.thumbnail;
-
       if (!thumbnailUrl || imageErrors.has(thumbnailUrl)) return null;
-
       return (
         <img
           src={thumbnailUrl}
-          alt={slide.subtitle}
+          alt={slide.subtitle || slide.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           onError={() => handleImageError(thumbnailUrl)}
         />
@@ -335,7 +341,7 @@ export default function Hero() {
   );
 
   return (
-    <section className="relative w-full h-screen overflow-hidden bg-background">
+    <section className="relative w-full h-auto md:h-screen overflow-hidden bg-background">
       {isFetching && (
         <div className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full">
           <Loader2 size={16} className="animate-spin text-white/80" />
@@ -358,14 +364,12 @@ export default function Hero() {
             key={`slide-${index}-${currentTheme}`}
             className="relative w-full h-full"
           >
+            {/* ══════════════ DESKTOP (unchanged) ══════════════ */}
             <div className="hidden md:block absolute inset-0 w-full h-full overflow-hidden">
-              {renderMedia(slide, false)}
+              {renderDesktopMedia(slide)}
             </div>
-            <div className="block md:hidden absolute inset-0 w-full h-full overflow-hidden">
-              {renderMedia(slide, true)}
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
-            <div className="absolute inset-0 z-10 pointer-events-none">
+            <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+            <div className="hidden md:block absolute inset-0 z-10 pointer-events-none">
               <div className="container mx-auto h-full px-8 md:px-16 lg:px-24 flex items-center">
                 <div className="w-full md:w-[70%] xl:w-[75%] pointer-events-auto">
                   <motion.h1
@@ -392,47 +396,129 @@ export default function Hero() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.7, duration: 0.8 }}
-                      disabled={!slide.ctaLink} // Disable if link is missing
-                      onClick={() => {
-                        if (!slide.ctaLink) return;
-                        window.location.href = slide.ctaLink;
-                      }}
-                      className={`group relative px-6 py-2.5 font-semibold text-sm rounded-full overflow-hidden transition-all duration-500 ease-out flex items-center gap-2 border 
-      ${
-        !slide.ctaLink
-          ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
-          : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] hover:scale-105 hover:-translate-y-0.5 cursor-pointer border-amber-300/40"
-      }`}
+                      disabled={!slide.ctaLink}
+                      onClick={() => { if (slide.ctaLink) window.location.href = slide.ctaLink; }}
+                      className={`group relative px-6 py-2.5 font-semibold text-sm rounded-full overflow-hidden transition-all duration-500 ease-out flex items-center gap-2 border
+                        ${!slide.ctaLink
+                          ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+                          : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] hover:scale-105 hover:-translate-y-0.5 cursor-pointer border-amber-300/40"
+                        }`}
                     >
-                      {/* Shine effect only for active buttons */}
                       {slide.ctaLink && (
                         <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
                       )}
-
                       <span className="relative z-10">{slide.cta}</span>
                     </motion.button>
                   )}
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 w-full h-32 md:h-48 z-10 pointer-events-none">
-              <svg
-                viewBox="0 0 1440 320"
-                className="w-full h-full drop-shadow-lg"
-                preserveAspectRatio="none"
-              >
+            {/* Desktop wave */}
+            <div className="hidden md:block absolute bottom-0 left-0 w-full h-32 md:h-48 z-10 pointer-events-none">
+              <svg viewBox="0 0 1440 320" className="w-full h-full drop-shadow-lg" preserveAspectRatio="none">
                 <path
                   className="fill-background"
                   d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,128C1248,117,1344,107,1392,101.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                 />
               </svg>
             </div>
+
+            {/* ══════════════ MOBILE ══════════════ */}
+            <div
+              className="block md:hidden relative w-full bg-black overflow-hidden"
+              style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
+            >
+              <div className="absolute inset-x-0 bottom-0 overflow-hidden" style={{ top: "64px" }}>
+                {renderMobileMedia(slide)}
+              </div>
+              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ top: "64px" }}>
+                <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+              </div>
+              <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10" />
+
+              <div className="absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center" style={{ top: "64px", bottom: "2.5rem" }}>
+                <motion.h1
+                  key={`m-title-${index}-${slide.title}`}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="text-xl font-serif font-semibold text-white leading-snug mb-1 drop-shadow-md"
+                >
+                  {slide.title}
+                </motion.h1>
+                {slide.subtitle && (
+                  <motion.p
+                    key={`m-sub-${index}-${slide.subtitle}`}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.45, duration: 0.6 }}
+                    className="text-[11px] text-white/75 font-light tracking-widest uppercase mb-3"
+                  >
+                    {slide.subtitle}
+                  </motion.p>
+                )}
+                {slide.cta && (
+                  <motion.button
+                    key={`m-cta-${index}-${slide.cta}`}
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.6, duration: 0.6 }}
+                    disabled={!slide.ctaLink}
+                    onClick={() => { if (slide.ctaLink) window.location.href = slide.ctaLink; }}
+                    className={`group relative px-5 py-2 font-semibold text-xs rounded-full overflow-hidden transition-all duration-500 ease-out inline-flex items-center gap-2 border
+                      ${!slide.ctaLink
+                        ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+                        : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40"
+                      }`}
+                  >
+                    {slide.ctaLink && (
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                    )}
+                    <span className="relative z-10">{slide.cta}</span>
+                  </motion.button>
+                )}
+              </div>
+
+              <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
+                <button
+                  onClick={(e) => { e.stopPropagation(); swiperInstance?.slidePrev(); }}
+                  className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <div className="flex items-center gap-1.5">
+                  {slides.map((_, i) => (
+                    <div
+                      key={`mob-dot-${i}`}
+                      onClick={(e) => { e.stopPropagation(); handleThumbnailClick(i); }}
+                      className={`h-[3px] rounded-full transition-all duration-500 cursor-pointer
+                        ${activeIndex === i
+                          ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                          : "w-4 bg-white/40 hover:bg-white/70"
+                        }`}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); swiperInstance?.slideNext(); }}
+                  className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>
 
-      <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4">
-        <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4">
+      {/* ══════════════ DESKTOP thumbnails + nav (unchanged) ══════════════ */}
+      {/*
+        FIX 4: Thumbnail panel — changed from absolute right-positioned to use
+        max-w so thumbnails don't overflow off-screen on smaller desktops.
+        Also capped thumbnail count rendering to what fits.
+      */}
+      <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4 max-w-[calc(100vw-2rem)]">
+        <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4 overflow-hidden">
           {slides.map((slide, index) => (
             <motion.div
               key={`thumbnail-${index}-${currentTheme}`}
@@ -440,12 +526,16 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.15 + 0.5 }}
               onClick={() => handleThumbnailClick(index)}
-              className={`relative w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${activeIndex === index ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0" : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"}`}
+              className={`relative flex-shrink-0 w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${
+                activeIndex === index
+                  ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
+                  : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+              }`}
             >
               {renderThumbnail(slide)}
               <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-gradient-to-t from-black/90 to-transparent">
                 <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
-                  {slide.subtitle}
+                  {slide.subtitle || slide.title}
                 </p>
               </div>
             </motion.div>
@@ -457,7 +547,11 @@ export default function Hero() {
               <div
                 key={`indicator-${index}`}
                 onClick={() => handleThumbnailClick(index)}
-                className={`cursor-pointer h-[3px] transition-all duration-500 rounded-full ${activeIndex === index ? "w-8 md:w-10 lg:w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]" : "w-4 md:w-5 lg:w-6 bg-white/30 hover:bg-white/60"}`}
+                className={`cursor-pointer h-[3px] transition-all duration-500 rounded-full ${
+                  activeIndex === index
+                    ? "w-8 md:w-10 lg:w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                    : "w-4 md:w-5 lg:w-6 bg-white/30 hover:bg-white/60"
+                }`}
               />
             ))}
           </div>
@@ -476,30 +570,6 @@ export default function Hero() {
             </button>
           </div>
         </div>
-      </div>
-
-      <div className="md:hidden absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
-        <button
-          onClick={() => swiperInstance?.slidePrev()}
-          className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] transition-all duration-300 rounded-full backdrop-blur-md cursor-pointer"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <div className="flex items-center gap-2">
-          {slides.map((_, index) => (
-            <div
-              key={`mobile-indicator-${index}`}
-              onClick={() => handleThumbnailClick(index)}
-              className={`h-0.5 transition-all duration-500 cursor-pointer ${activeIndex === index ? "w-10 bg-[#FDFBF7]" : "w-5 bg-[#FDFBF7]/40"}`}
-            />
-          ))}
-        </div>
-        <button
-          onClick={() => swiperInstance?.slideNext()}
-          className="w-10 h-10 flex items-center justify-center border border-[#FDFBF7]/40 text-[#FDFBF7] transition-all duration-300 rounded-full backdrop-blur-md cursor-pointer"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
       </div>
     </section>
   );

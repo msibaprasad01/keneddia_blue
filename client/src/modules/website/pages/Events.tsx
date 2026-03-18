@@ -38,7 +38,7 @@ const EventMedia = ({
   event: any;
   isListView: boolean;
 }) => {
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -132,9 +132,7 @@ export default function EventsListing() {
   const [eventList, setEventList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
-  const [activeTab, setActiveTab] = useState<"upcoming" | "past">(
-    "upcoming",
-  );
+  const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(false);
   const [filters, setFilters] = useState({
     dateFilter: "",
@@ -162,42 +160,81 @@ export default function EventsListing() {
   };
 
   const filteredEvents = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
+    const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    
+
     return eventList.filter((event) => {
-      const eventDate = new Date(event.eventDate);
-      const isUpcoming = eventDate >= now;
+      if (!event.active) return false;
+
+      const eventDateStr = event.eventDate; // already YYYY-MM-DD
+
+      const isUpcoming = eventDateStr >= todayStr;
+
+      // ✅ Tab logic
       if (activeTab === "upcoming" && !isUpcoming) return false;
       if (activeTab === "past" && isUpcoming) return false;
 
+      // ======================
+      // DATE FILTERS
+      // ======================
+      if (filters.dateFilter) {
+        const today = todayStr;
+
+        if (filters.dateFilter === "today") {
+          if (eventDateStr !== today) return false;
+        }
+
+        if (filters.dateFilter === "tomorrow") {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+          if (eventDateStr !== tomorrowStr) return false;
+        }
+
+        if (filters.dateFilter === "weekend") {
+          const day = new Date(eventDateStr).getDay();
+          if (day !== 0 && day !== 6) return false;
+        }
+
+        if (filters.dateFilter === "month") {
+          const now = new Date();
+          const eventDate = new Date(eventDateStr);
+
+          if (
+            eventDate.getMonth() !== now.getMonth() ||
+            eventDate.getFullYear() !== now.getFullYear()
+          )
+            return false;
+        }
+      }
+
+      // ======================
+      // OTHER FILTERS
+      // ======================
       if (
         filters.locations.length > 0 &&
         !filters.locations.includes(event.locationName as never)
       )
         return false;
+
       if (
         filters.eventTypes.length > 0 &&
         !filters.eventTypes.includes(event.typeName as never)
       )
         return false;
+
       if (
         filters.statuses.length > 0 &&
         !filters.statuses.includes(event.status as never)
       )
         return false;
+
       if (
         filters.categories.length > 0 &&
         !filters.categories.includes(event.typeName as never)
       )
         return false;
-
-      if (filters.dateFilter) {
-        if (
-          filters.dateFilter === "today" &&
-          eventDate.toDateString() !== now.toDateString()
-        )
-          return false;
-      }
 
       return true;
     });

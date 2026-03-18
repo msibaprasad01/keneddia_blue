@@ -250,9 +250,21 @@ export function UpcomingPropertyEvents({
 
         const propertyTypeId = currentEvent.propertyTypeId;
 
-        // Filter events with same propertyTypeId
+        const now = new Date();
+
+        // normalize today to start of day (00:00:00)
+        now.setHours(0, 0, 0, 0);
+
         const filtered = all.filter((e) => {
           if (!e.active) return false;
+
+          const eventDate = new Date(e.eventDate);
+
+          // normalize event date also
+          eventDate.setHours(0, 0, 0, 0);
+
+          // ❗ keep today + future, remove only past days
+          if (eventDate < now) return false;
 
           if (e.id.toString() === currentEventId.toString()) return false;
 

@@ -236,11 +236,11 @@ export default function Navbar({
         <div className="flex items-center justify-between h-16">
           {/* Logo Section */}
           <div className="flex items-center gap-2 xl:gap-4">
-            <div className="flex items-center justify-start flex-shrink-0">
+            <div className="flex items-center justify-start flex-shrink-0 bg-transparent">
               <Link
                 to="/"
                 onClick={() => window.scrollTo(0, 0)}
-                className="block rounded-lg p-2 bg-transparent"
+                className="block rounded-lg p-2 !bg-transparent"
               >
                 {/* Light Mode Logo */}
                 <img

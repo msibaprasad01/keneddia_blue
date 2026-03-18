@@ -58,39 +58,41 @@ export default function HotelNewsUpdates() {
   const swiperRef = useRef<SwiperType | null>(null);
 
   useEffect(() => {
-  const fetchHotelNews = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetching 20 items to ensure we have enough "Hotel" items after filtering
-      const res = await getAllNews({ category: "", page: 0, size: 20 });
-      
-      // Get the array from 'content' based on your JSON structure
-      const data = res?.content || res?.data?.content || [];
-      
-      const processedItems = Array.isArray(data) 
-        ? data
-            .filter((item: NewsItem) => 
-              item.active === true && 
-              // Filter by badgeType instead of category
-              item.badgeType?.toLowerCase() === "hotel"
-            )
-            // Sort by newsDate or dateBadge (Newest first)
-            .sort((a, b) => new Date(b.newsDate).getTime() - new Date(a.newsDate).getTime())
-            // Limit to exactly 6
-            .slice(0, 6)
-        : [];
-      
-      setNewsItems(processedItems);
-    } catch (error) {
-      console.error("Error fetching hotel news:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchHotelNews = async () => {
+      try {
+        setLoading(true);
 
-  fetchHotelNews();
-}, []);
+        // Fetching 20 items to ensure we have enough "Hotel" items after filtering
+        const res = await getAllNews({ category: "", page: 0, size: 20 });
+
+        // Get the array from 'content' based on your JSON structure
+        const data = res?.content || res?.data?.content || [];
+
+        const processedItems = Array.isArray(data)
+          ? data
+              .filter(
+                (item: NewsItem) =>
+                  item.active === true &&
+                  item.badgeType?.toLowerCase() === "hotel",
+              )
+              .sort((a, b) => {
+                const dateA = new Date(a.newsDate || a.dateBadge).getTime();
+                const dateB = new Date(b.newsDate || b.dateBadge).getTime();
+                return dateB - dateA;
+              })
+              .slice(0, 6)
+          : [];
+
+        setNewsItems(processedItems);
+      } catch (error) {
+        console.error("Error fetching hotel news:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHotelNews();
+  }, []);
 
   const handlePrev = () => swiperRef.current?.slidePrev();
   const handleNext = () => swiperRef.current?.slideNext();
@@ -241,7 +243,9 @@ function NewsCard({ item }: { item: NewsItem }) {
 
   return (
     <div className="group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300">
-      <div className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] overflow-hidden`}>
+      <div
+        className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] overflow-hidden`}
+      >
         <OptimizedImage
           src={item.imageUrl}
           alt={item.title}

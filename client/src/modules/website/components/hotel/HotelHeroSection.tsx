@@ -81,6 +81,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
     if (swiperInstance) swiperInstance.slideToLoop(index);
   }, [swiperInstance]);
 
+  // ── Desktop media (object-cover, full bleed) — UNCHANGED ──────────────────
   const renderMedia = useCallback((slide: HeroSlide) => {
     const media = selectMediaByTheme(currentTheme, slide.backgroundAll, slide.backgroundLight, slide.backgroundDark);
     const mediaUrl = media?.url || "";
@@ -110,8 +111,39 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
     );
   }, [currentTheme, imageErrors, handleImageError]);
 
+  // ── Mobile media (object-contain, no crop) ────────────────────────────────
+  const renderMobileMedia = useCallback((slide: HeroSlide) => {
+    const media = selectMediaByTheme(currentTheme, slide.backgroundAll, slide.backgroundLight, slide.backgroundDark);
+    const mediaUrl = media?.url || "";
+
+    if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
+
+    if (media?.type === "VIDEO") {
+      return (
+        <video
+          autoPlay loop muted playsInline preload="metadata"
+          className="w-full h-full object-contain"
+          key={mediaUrl}
+          onError={() => handleImageError(mediaUrl)}
+        >
+          <source src={mediaUrl} type="video/mp4" />
+        </video>
+      );
+    }
+
+    return (
+      <img
+        src={mediaUrl}
+        alt={slide.title}
+        className="w-full h-full object-contain"
+        onError={() => handleImageError(mediaUrl)}
+      />
+    );
+  }, [currentTheme, imageErrors, handleImageError]);
+
   return (
-    <section className="relative w-full h-screen overflow-hidden bg-background">
+    // Desktop: h-screen (unchanged) | Mobile: h-auto, frame drives height
+    <section className="relative w-full h-auto md:h-screen overflow-hidden bg-background">
       {loading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm">
           <Loader2 size={48} className="animate-spin text-primary" />
@@ -130,16 +162,13 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={`${slide.id}-${currentTheme}`} className="relative w-full h-full">
-            {/* Background Media */}
-            <div className="absolute inset-0 w-full h-full overflow-hidden">
+
+            {/* ══════════════ DESKTOP (unchanged) ══════════════ */}
+            <div className="hidden md:block absolute inset-0 w-full h-full overflow-hidden">
               {renderMedia(slide)}
             </div>
-            
-            {/* Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-            
-            {/* Content */}
-            <div className="absolute inset-0 z-10 pointer-events-none">
+            <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+            <div className="hidden md:block absolute inset-0 z-10 pointer-events-none">
               <div className="container mx-auto h-full px-8 md:px-16 lg:px-24 flex items-center">
                 <div className="w-full md:w-[70%] xl:w-[60%] pointer-events-auto">
                   <motion.h1
@@ -160,7 +189,6 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                   >
                     {slide.subtitle}
                   </motion.p>
-                  
                   {slide.ctaText && (
                     <motion.button
                       initial={{ opacity: 0, scale: 0.9 }}
@@ -175,9 +203,8 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                 </div>
               </div>
             </div>
-
-            {/* Bottom Curve SVG */}
-            <div className="absolute bottom-0 left-0 w-full h-32 md:h-40 z-10 pointer-events-none">
+            {/* Desktop bottom curve */}
+            <div className="hidden md:block absolute bottom-0 left-0 w-full h-32 md:h-40 z-10 pointer-events-none">
               <svg viewBox="0 0 1440 320" className="w-full h-full" preserveAspectRatio="none">
                 <path
                   className="fill-background"
@@ -185,11 +212,111 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                 />
               </svg>
             </div>
+
+            {/* ══════════════ MOBILE ══════════════
+                Self-contained frame:
+                • top 64px offset clears the navbar
+                • media fills via object-contain (no crop)
+                • text + CTA centered both axes inside the frame
+                • pagination pinned to bottom edge
+            */}
+            <div
+              className="block md:hidden relative w-full bg-black overflow-hidden"
+              style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
+            >
+              {/* Media layer — starts below navbar */}
+              <div className="absolute inset-x-0 bottom-0 overflow-hidden" style={{ top: "64px" }}>
+                {renderMobileMedia(slide)}
+              </div>
+
+              {/* Bottom gradient scrim for text legibility */}
+              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ top: "64px" }}>
+                <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+              </div>
+
+              {/* Top scrim behind transparent navbar */}
+              <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10" />
+
+              {/* Text + CTA — centered horizontally & vertically inside frame */}
+              <div
+                className="absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center"
+                style={{ top: "64px", bottom: "2.5rem" }}
+              >
+                <motion.h1
+                  key={`m-title-${index}-${activeIndex}`}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="text-xl font-serif font-semibold text-white leading-snug mb-1 drop-shadow-md"
+                >
+                  {slide.title}
+                </motion.h1>
+
+                {slide.subtitle && (
+                  <motion.p
+                    key={`m-sub-${index}-${activeIndex}`}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.45, duration: 0.6 }}
+                    className="text-[11px] text-white/75 font-light tracking-widest uppercase mb-3"
+                  >
+                    {slide.subtitle}
+                  </motion.p>
+                )}
+
+                {slide.ctaText && (
+                  <motion.button
+                    key={`m-cta-${index}-${activeIndex}`}
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.6, duration: 0.6 }}
+                    onClick={() => slide.ctaLink && (window.location.href = slide.ctaLink)}
+                    className="group relative px-5 py-2 font-semibold text-xs rounded-full overflow-hidden inline-flex items-center gap-2 border bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40 transition-all duration-500"
+                  >
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                    <span className="relative z-10">{slide.ctaText}</span>
+                  </motion.button>
+                )}
+              </div>
+
+              {/* Pagination — arrows + dots pinned to bottom edge */}
+              <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
+                <button
+                  onClick={(e) => { e.stopPropagation(); swiperInstance?.slidePrev(); }}
+                  className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+
+                <div className="flex items-center gap-1.5">
+                  {slides.map((_, i) => (
+                    <div
+                      key={`mob-dot-${i}`}
+                      onClick={(e) => { e.stopPropagation(); handleThumbnailClick(i); }}
+                      className={`h-[3px] rounded-full transition-all duration-500 cursor-pointer
+                        ${activeIndex === i
+                          ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                          : "w-4 bg-white/40 hover:bg-white/70"
+                        }`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={(e) => { e.stopPropagation(); swiperInstance?.slideNext(); }}
+                  className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+            {/* ══════════════ END MOBILE ══════════════ */}
+
           </SwiperSlide>
         ))}
       </Swiper>
 
-      {/* Desktop Navigation & Thumbnails */}
+      {/* ══════════════ DESKTOP Navigation & Thumbnails (unchanged) ══════════════ */}
       <div className="hidden md:flex absolute right-8 lg:right-12 bottom-40 z-20 flex-col items-end gap-6">
         <div className="flex flex-row items-end gap-4">
           {slides.map((slide, index) => (

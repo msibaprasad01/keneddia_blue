@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link,useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowUpRight, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -59,15 +59,20 @@ export default function NewsPress() {
         setLoading(true);
         // Call API with required params
         const res = await getAllNews({ category: "", page: 0, size: 10 });
-        
+
         // 1. Extract data from response
         const data = res?.data?.content || res?.content || [];
-        
+
         // 2. Sort by date (descending) and Slice to latest 6
-        const processedData = Array.isArray(data) 
-          ? [...data]
-              .sort((a, b) => new Date(b.dateBadge).getTime() - new Date(a.dateBadge).getTime())
-              .slice(0, 6) 
+        const processedData = Array.isArray(data)
+          ? data
+              .filter((item) => item.active) // 🔥 only active items
+              .sort(
+                (a, b) =>
+                  new Date(b.dateBadge).getTime() -
+                  new Date(a.dateBadge).getTime(),
+              )
+              .slice(0, 6)
           : [];
 
         setNewsItems(processedData);
@@ -94,7 +99,10 @@ export default function NewsPress() {
   const handleNext = () => swiperRef.current?.slideNext();
 
   return (
-    <section id="news" className="py-12 md:py-16 bg-background relative overflow-hidden">
+    <section
+      id="news"
+      className="py-12 md:py-16 bg-background relative overflow-hidden"
+    >
       <div className="container mx-auto px-6 lg:px-12">
         <SectionHeader
           title="News & Press"
@@ -112,32 +120,59 @@ export default function NewsPress() {
 // SUB-COMPONENTS
 // ============================================================================
 
-function SectionHeader({ title, onPrev, onNext }: { title: string; onPrev: () => void; onNext: () => void }) {
+function SectionHeader({
+  title,
+  onPrev,
+  onNext,
+}: {
+  title: string;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
   return (
     <div className="flex items-center justify-between mb-8">
       <div>
         <span className="text-xs font-bold text-primary tracking-[0.25em] uppercase block mb-2">
           {TEXT_CONTENT.header.badge}
         </span>
-        <h2 className="text-2xl md:text-3xl font-serif text-foreground">{title}</h2>
+        <h2 className="text-2xl md:text-3xl font-serif text-foreground">
+          {title}
+        </h2>
       </div>
 
       <div className="flex items-center gap-4">
-        <Link 
-          to="/news" 
-          className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">
+        <Link
+          to="/news"
+          className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all"
+        >
           View All <ArrowUpRight className="w-4 h-4" />
         </Link>
         <div className="flex gap-2">
-          <NavBtn onClick={onPrev} icon={<ChevronLeft className={STYLE_CONFIG.navigation.iconSize} />} label={TEXT_CONTENT.aria.previous} />
-          <NavBtn onClick={onNext} icon={<ChevronRight className={STYLE_CONFIG.navigation.iconSize} />} label={TEXT_CONTENT.aria.next} />
+          <NavBtn
+            onClick={onPrev}
+            icon={<ChevronLeft className={STYLE_CONFIG.navigation.iconSize} />}
+            label={TEXT_CONTENT.aria.previous}
+          />
+          <NavBtn
+            onClick={onNext}
+            icon={<ChevronRight className={STYLE_CONFIG.navigation.iconSize} />}
+            label={TEXT_CONTENT.aria.next}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-function NavBtn({ onClick, icon, label }: { onClick: () => void; icon: React.ReactNode; label: string }) {
+function NavBtn({
+  onClick,
+  icon,
+  label,
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
   return (
     <button
       onClick={onClick}
@@ -149,7 +184,13 @@ function NavBtn({ onClick, icon, label }: { onClick: () => void; icon: React.Rea
   );
 }
 
-function NewsCarousel({ items, swiperRef }: { items: NewsItem[]; swiperRef: any }) {
+function NewsCarousel({
+  items,
+  swiperRef,
+}: {
+  items: NewsItem[];
+  swiperRef: any;
+}) {
   return (
     <Swiper
       modules={[Autoplay, Navigation]}
@@ -175,11 +216,11 @@ function NewsCarousel({ items, swiperRef }: { items: NewsItem[]; swiperRef: any 
 }
 
 function NewsCard({ item }: { item: NewsItem }) {
-  const navigate=useNavigate();
-  const date = new Date(item.dateBadge).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
+  const navigate = useNavigate();
+  const date = new Date(item.dateBadge).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
   const handleCardClick = () => {
     navigate(`/news/${item.id}`);
@@ -187,9 +228,12 @@ function NewsCard({ item }: { item: NewsItem }) {
 
   return (
     <div
-     onClick={handleCardClick}
-    className="cursor-pointer group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300 ">
-      <div className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] overflow-hidden`}>
+      onClick={handleCardClick}
+      className="cursor-pointer group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300 "
+    >
+      <div
+        className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] overflow-hidden`}
+      >
         <OptimizedImage
           src={item.imageUrl}
           alt={item.title}

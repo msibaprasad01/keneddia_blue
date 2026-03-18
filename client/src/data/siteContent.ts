@@ -2,7 +2,7 @@ import placeholderImg from "@assets/placeholder.svg";
 import brandLogo from "@assets/logo/kb-logo1.png";
 import hotelLogo from "@assets/logo/hotel-kennedia-transparent.png";
 import brandLogo_main from "@assets/logo/kb-logo-main.png";
-import brandLogo_red from "@assets/logo/kb-logo-red.jpg";
+import brandLogo_red from "@assets/logo/kb-logo-red.png";
 // import brandLogo_dark from "@assets/logo/kb-logo-dark.jpeg"
 import brandLogo_dark from "@assets/logo/kb-home-dark.png"
 import brandLogo_black from "@assets/logo/kb-logo-black2.png";
