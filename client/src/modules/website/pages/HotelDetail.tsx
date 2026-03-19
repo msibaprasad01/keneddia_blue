@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
   Facebook,
   Twitter,
+  UtensilsCrossed,
   Linkedin,
   MessageCircle,
 } from "lucide-react";
@@ -83,6 +84,7 @@ interface HotelData {
   rating: number | null;
   price: string;
   media: PropertyMedia[];
+  restaurants?: Restaurant[];
   coordinates: { lat: number; lng: number } | null;
   amenities: string[];
   image: { src: string; alt: string };
@@ -104,7 +106,35 @@ const fadeIn = {
   transition: { duration: 0.5 },
 };
 const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
+interface Restaurant {
+  id: number;
+  name: string;
+  cuisine: string;
+  timings: string;
+  image?: string;
+}
 
+interface FoodDiningSectionProps {
+  restaurants?: Restaurant[];
+}
+
+// Sample data — replace with API data when available
+const sampleRestaurants: Restaurant[] = [
+  {
+    id: 1,
+    name: "The Royal Durbbar",
+    cuisine: "Awadhi",
+    timings: "7:00 PM - 11:30 PM",
+    image: undefined,
+  },
+  {
+    id: 2,
+    name: "24/7 Pavilion",
+    cuisine: "Multi-Cuisine",
+    timings: "24 Hours",
+    image: undefined,
+  },
+];
 export default function HotelDetail() {
   const { citySlug, propertySlug, propertyId } = useParams<{
     citySlug: string;
@@ -268,6 +298,15 @@ export default function HotelDetail() {
     } catch (error) {
       console.error("❌ OSM Fetch Error:", error);
       return [];
+    }
+  };
+  const scrollToLocation = () => {
+    const el = document.getElementById("location");
+    if (el) {
+      window.scrollTo({
+        top: el.getBoundingClientRect().top + window.pageYOffset - 120,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -618,7 +657,10 @@ export default function HotelDetail() {
                       <Navigation className="w-3 h-3 text-primary" />
 
                       {/* TEXT */}
-                      <span>
+                      <span
+                        onClick={scrollToLocation}
+                        className="cursor-pointer hover:text-primary hover:underline transition"
+                      >
                         {place.distance
                           ? `${place.distance} from ${place.name}`
                           : place.name}
@@ -639,10 +681,10 @@ export default function HotelDetail() {
                     {hotel.rating} <Star className="w-3 h-3 fill-white" />
                   </div>
 
-                  {/* REVIEWS (static for now, matches UI) */}
-                  <span className="text-sm text-foreground underline cursor-pointer">
+                  {/* {/* REVIEWS (static for now, matches UI) */}
+                  {/* <span className="text-sm text-foreground underline cursor-pointer">
                     2156 Verified Reviews
-                  </span>
+                  </span> */}
                 </motion.div>
               )}
             </motion.div>
@@ -802,21 +844,67 @@ export default function HotelDetail() {
                   </div>
                 )}
               </section>
-              <section id="food-dining" className="scroll-mt-32 border-t pt-10">
+              {/* <section id="food-dining" className="scroll-mt-32 border-t pt-10">
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
                   Food & Dining
                 </h2>
 
-                <div className="text-muted-foreground text-sm">
-                  {/* Replace this later with real API data */}
-                  Dining options and restaurant details will be available soon.
-                </div>
-              </section>
+                {(() => {
+                  const displayRestaurants = hotel.restaurants?.length
+                    ? hotel.restaurants
+                    : sampleRestaurants; // ✅ fallback to sample data
+
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {displayRestaurants.map((restaurant) => (
+                        <div
+                          key={restaurant.id}
+                          className="rounded-xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
+                        >
+                          <div className="relative w-full h-44 bg-muted flex items-center justify-center">
+                            {restaurant.image ? (
+                              <img
+                                src={restaurant.image}
+                                alt={restaurant.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <UtensilsCrossed
+                                className="w-10 h-10 text-muted-foreground/50"
+                                strokeWidth={1.5}
+                              />
+                            )}
+                          </div>
+                          <div className="p-4 space-y-1">
+                            <p className="text-base font-semibold text-foreground leading-snug">
+                              {restaurant.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {restaurant.cuisine}
+                            </p>
+                            <div className="pt-2 flex items-center gap-1 text-sm">
+                              <span className="text-red-600 font-semibold">
+                                Open:
+                              </span>
+                              <span className="text-muted-foreground">
+                                {restaurant.timings}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </section> */}
               <section id="location" className="scroll-mt-32 border-t pt-10">
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
                   Location
                 </h2>
-                <PropertyMap property={hotel} />
+                <PropertyMap
+                  property={hotel}
+                  nearbyPlaces={hotel.nearbyPlaces || []}
+                />
               </section>
 
               <section id="policies" className="scroll-mt-32 border-t pt-10">

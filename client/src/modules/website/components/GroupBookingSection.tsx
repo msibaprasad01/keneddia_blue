@@ -10,6 +10,7 @@ import {
   VolumeX,
   Loader2,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -83,6 +84,7 @@ const CARD_COLORS = [
 
 /* ================= EVENT CARD ================= */
 function EventCard({ event, index }: { event: Event; index: number }) {
+  const navigate = useNavigate();
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -108,6 +110,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
+      onClick={() => navigate(`/events/${event.id}`)}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
@@ -184,14 +187,22 @@ function EventCard({ event, index }: { event: Event; index: number }) {
               {event.description}
             </p>
             {event.ctaText?.trim() && (
-              <a
-                href={event.ctaLink || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  // If external link exists → open it
+                  if (event.ctaLink) {
+                    window.open(event.ctaLink, "_blank");
+                  } else {
+                    // Otherwise navigate internally
+                    navigate(`/events/${event.id}`);
+                  }
+                }}
+                className="w-full bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform hover:opacity-90"
               >
                 {event.ctaText} <ArrowRight size={14} />
-              </a>
+              </button>
             )}
           </div>
         )}

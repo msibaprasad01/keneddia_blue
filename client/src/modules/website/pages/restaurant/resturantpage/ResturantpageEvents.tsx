@@ -17,6 +17,7 @@ import {
   Send,
   Calendar,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
@@ -592,6 +593,7 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
 
 // ── EVENT CARD COMPONENT ──────────────────────────────────────────────────
 function EventCard({ event }: { event: ApiEvent }) {
+  const navigate = useNavigate();
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -623,10 +625,11 @@ function EventCard({ event }: { event: ApiEvent }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
+      onClick={() => navigate(`/events/${event.id}`)}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5 }}
-      className="group h-[520px] bg-card border rounded-[2.5rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
+      className="group h-[520px] bg-card border rounded-[2.5rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 cursor-pointer"
     >
       <div
         className={`relative overflow-hidden transition-all duration-500 ${isBanner ? "h-full" : "h-[280px]"}`}
@@ -694,7 +697,15 @@ function EventCard({ event }: { event: ApiEvent }) {
             </p>
             {event.ctaText && (
               <button
-                onClick={() => window.open(event.ctaLink, "_blank")}
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  if (event.ctaLink) {
+                    window.open(event.ctaLink, "_blank");
+                  } else {
+                    navigate(`/events/${event.id}`);
+                  }
+                }}
                 className="mt-4 py-3 rounded-xl text-[10px] font-bold uppercase bg-primary text-white"
               >
                 {event.ctaText}

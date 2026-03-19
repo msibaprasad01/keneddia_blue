@@ -9,6 +9,7 @@ import {
   Info,
   MessageSquare,
   Calendar,
+  Navigation,
   ExternalLink,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -85,10 +86,10 @@ const OTA_LINKS: Record<
 
 // All possible OTA platforms - shown for all cities, but only clickable where links exist
 const ALL_OTAS = [
-  { key: 'mmt', name: 'MakeMyTrip', shortName: 'MMT', color: '#df1f26' },
-  { key: 'goibibo', name: 'Goibibo', shortName: 'GO', color: '#2276e3' },
-  { key: 'agoda', name: 'Agoda', shortName: '', color: '' },
-  { key: 'hotels', name: 'Hotels.com', shortName: '', color: '#d32f2f' },
+  { key: "mmt", name: "MakeMyTrip", shortName: "MMT", color: "#df1f26" },
+  { key: "goibibo", name: "Goibibo", shortName: "GO", color: "#2276e3" },
+  { key: "agoda", name: "Agoda", shortName: "", color: "" },
+  { key: "hotels", name: "Hotels.com", shortName: "", color: "#d32f2f" },
 ] as const;
 
 export default function RightSidebar({
@@ -141,14 +142,14 @@ export default function RightSidebar({
   // Get dynamic links based on normalized city name
   const cityKey = hotel.city?.toLowerCase().trim() || "";
   const availableLinks = OTA_LINKS[cityKey];
-  
+
   // Debug - remove after testing
-  console.log('🏨 OTA Links Debug:', {
+  console.log("🏨 OTA Links Debug:", {
     rawCity: hotel.city,
     cityKey,
     availableLinks,
     hasLinks: !!availableLinks,
-    availableKeys: Object.keys(OTA_LINKS)
+    availableKeys: Object.keys(OTA_LINKS),
   });
 
   return (
@@ -272,96 +273,115 @@ export default function RightSidebar({
         </h4>
         <div className="flex flex-wrap items-center justify-center gap-2">
           {ALL_OTAS.map((ota) => {
-            const link = availableLinks?.[ota.key as keyof typeof availableLinks];
+            const link =
+              availableLinks?.[ota.key as keyof typeof availableLinks];
             const isAvailable = !!link;
-            
-            const Component = isAvailable ? 'a' : 'div';
-            const componentProps = isAvailable 
-              ? { href: link, target: "_blank", rel: "noopener noreferrer" } 
+
+            const Component = isAvailable ? "a" : "div";
+            const componentProps = isAvailable
+              ? { href: link, target: "_blank", rel: "noopener noreferrer" }
               : {};
 
-            if (ota.key === 'mmt') {
+            if (ota.key === "mmt") {
               return (
                 <Component
                   key={ota.key}
                   {...componentProps}
                   className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
                     isAvailable
-                      ? 'border-[#df1f26]/20 bg-[#df1f26]/5 hover:bg-[#df1f26]/10 cursor-pointer'
-                      : 'border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed'
+                      ? "border-[#df1f26]/20 bg-[#df1f26]/5 hover:bg-[#df1f26]/10 cursor-pointer"
+                      : "border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed"
                   } group`}
                 >
-                  <span className={`text-[10px] font-black tracking-tighter uppercase ${isAvailable ? 'text-[#df1f26]' : 'text-muted-foreground'}`}>
+                  <span
+                    className={`text-[10px] font-black tracking-tighter uppercase ${isAvailable ? "text-[#df1f26]" : "text-muted-foreground"}`}
+                  >
                     MMT
                   </span>
                   <span className="text-[11px] font-bold text-foreground">
                     MakeMyTrip
                   </span>
-                  {isAvailable && <ExternalLink className="w-3 h-3 text-[#df1f26] opacity-50 group-hover:opacity-100" />}
+                  {isAvailable && (
+                    <ExternalLink className="w-3 h-3 text-[#df1f26] opacity-50 group-hover:opacity-100" />
+                  )}
                 </Component>
               );
             }
 
-            if (ota.key === 'goibibo') {
+            if (ota.key === "goibibo") {
               return (
                 <Component
                   key={ota.key}
                   {...componentProps}
                   className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
                     isAvailable
-                      ? 'border-[#2276e3]/20 bg-[#2276e3]/5 hover:bg-[#2276e3]/10 cursor-pointer'
-                      : 'border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed'
+                      ? "border-[#2276e3]/20 bg-[#2276e3]/5 hover:bg-[#2276e3]/10 cursor-pointer"
+                      : "border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed"
                   } group`}
                 >
-                  <span className={`text-[10px] font-black tracking-tighter uppercase ${isAvailable ? 'text-[#2276e3]' : 'text-muted-foreground'}`}>
+                  <span
+                    className={`text-[10px] font-black tracking-tighter uppercase ${isAvailable ? "text-[#2276e3]" : "text-muted-foreground"}`}
+                  >
                     GO
                   </span>
                   <span className="text-[11px] font-bold text-foreground">
                     Goibibo
                   </span>
-                  {isAvailable && <ExternalLink className="w-3 h-3 text-[#2276e3] opacity-50 group-hover:opacity-100" />}
+                  {isAvailable && (
+                    <ExternalLink className="w-3 h-3 text-[#2276e3] opacity-50 group-hover:opacity-100" />
+                  )}
                 </Component>
               );
             }
 
-            if (ota.key === 'agoda') {
+            if (ota.key === "agoda") {
               return (
                 <Component
                   key={ota.key}
                   {...componentProps}
                   className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
                     isAvailable
-                      ? 'border-border bg-secondary/30 hover:bg-secondary/50 cursor-pointer'
-                      : 'border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed'
+                      ? "border-border bg-secondary/30 hover:bg-secondary/50 cursor-pointer"
+                      : "border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed"
                   } group`}
                 >
                   <div className="flex gap-0.5">
-                    <div className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-[#5e96d2]' : 'bg-muted-foreground'}`} />
-                    <div className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-[#f34f36]' : 'bg-muted-foreground'}`} />
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${isAvailable ? "bg-[#5e96d2]" : "bg-muted-foreground"}`}
+                    />
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${isAvailable ? "bg-[#f34f36]" : "bg-muted-foreground"}`}
+                    />
                   </div>
                   <span className="text-[11px] font-bold text-foreground">
                     Agoda
                   </span>
-                  {isAvailable && <ExternalLink className="w-3 h-3 text-muted-foreground opacity-50 group-hover:opacity-100" />}
+                  {isAvailable && (
+                    <ExternalLink className="w-3 h-3 text-muted-foreground opacity-50 group-hover:opacity-100" />
+                  )}
                 </Component>
               );
             }
 
-            if (ota.key === 'hotels') {
+            if (ota.key === "hotels") {
               return (
                 <Component
                   key={ota.key}
                   {...componentProps}
                   className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
                     isAvailable
-                      ? 'border-[#d32f2f]/20 bg-[#d32f2f]/5 hover:bg-[#d32f2f]/10 cursor-pointer'
-                      : 'border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed'
+                      ? "border-[#d32f2f]/20 bg-[#d32f2f]/5 hover:bg-[#d32f2f]/10 cursor-pointer"
+                      : "border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed"
                   } group`}
                 >
-                  <span className={`text-[11px] font-bold ${isAvailable ? 'text-[#d32f2f]' : 'text-muted-foreground'}`}>
+                  <span
+                    className={`text-[11px] font-bold ${isAvailable ? "text-[#d32f2f]" : "text-muted-foreground"}`}
+                  >
                     Hotels.com
                   </span>
-                  {isAvailable && <ExternalLink className="w-3 h-3 text-[#d32f2f] opacity-50 group-hover:opacity-100" />}
+                  {isAvailable && (
+                    <ExternalLink className="w-3 h-3 text-[#d32f2f] opacity-50 group-hover:opacity-100" />
+                  )}
                 </Component>
               );
             }
@@ -369,39 +389,68 @@ export default function RightSidebar({
         </div>
       </div>
 
-      {/* Mini Map Card */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm group">
-        <div className="h-40 relative w-full bg-secondary/20">
+      {/* MAP PREVIEW CARD */}
+      <div className="rounded-2xl overflow-hidden border border-border shadow-md group">
+        {/* MAP IFRAME PREVIEW */}
+        <div className="h-44 relative w-full overflow-hidden">
           <iframe
             width="100%"
             height="100%"
             frameBorder="0"
             scrolling="no"
             src={getMapEmbedUrl()}
-            className="opacity-60 grayscale hover:grayscale-0 transition-all duration-500 pointer-events-none"
-          ></iframe>
-          <div className="absolute inset-0 bg-transparent flex items-center justify-center pointer-events-none">
-            <div className="bg-primary text-primary-foreground p-2 rounded-full shadow-lg animate-bounce">
-              <MapPin className="w-4 h-4" />
+            className="w-full h-full scale-110 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 pointer-events-none"
+          />
+
+          {/* Dim overlay */}
+          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none" />
+
+          {/* Bouncing pin */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="flex flex-col items-center gap-1">
+              <div className="bg-white text-primary p-2.5 rounded-full shadow-xl animate-bounce ring-4 ring-white/30">
+                <MapPin className="w-4 h-4" />
+              </div>
+              {/* Pin shadow */}
+              <div className="w-2 h-1 bg-black/20 rounded-full blur-sm" />
             </div>
           </div>
-          <div className="absolute inset-0 p-4 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
-            <div className="text-white">
-              <p className="text-xs font-semibold flex items-center gap-1">
-                {hotel.location}, {hotel.city}
-              </p>
-            </div>
+
+          {/* Bottom gradient with location text */}
+          <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+            <p className="text-white text-xs font-semibold flex items-center gap-1.5 truncate">
+              <MapPin className="w-3 h-3 flex-shrink-0 text-red-400" />
+              {hotel.location}, {hotel.city}
+            </p>
           </div>
         </div>
-        <div className="p-3 bg-card border-t border-border">
+
+        {/* FOOTER BUTTON */}
+        <div className="p-3 bg-card border-t border-border flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="w-full text-xs"
+            className="flex-1 text-xs font-semibold"
             onClick={() => scrollToSection("location")}
           >
+            <MapPin className="w-3 h-3 mr-1.5" />
             View Full Map
           </Button>
+
+          {/* Open in Google Maps externally */}
+          <a
+            href={
+              hotel.coordinates
+                ? `https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`
+                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name} ${hotel.location}`)}`
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-border text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title="Open in Google Maps"
+          >
+            <Navigation className="w-3 h-3" />
+          </a>
         </div>
       </div>
 
