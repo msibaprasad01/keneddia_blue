@@ -304,7 +304,6 @@ export default function NewsDetails() {
         currentIndex < allNews.length - 1 ? allNews[currentIndex + 1] : null,
     };
   }, [newsItem, allNews]);
-  
 
   const formatDate = (date: string | null) =>
     date
@@ -370,7 +369,6 @@ export default function NewsDetails() {
               </li>
             </ol>
           </nav>
-
           <header className="mb-10 max-w-5xl">
             <h1 className="text-3xl md:text-5xl font-serif font-bold mb-6 leading-tight">
               {newsItem.title}
@@ -444,7 +442,6 @@ export default function NewsDetails() {
               </div>
             </div>
           </header>
-
           {/* Main Layout Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-12 items-start">
             {/* LEFT COLUMN: SCROLLABLE CONTENT */}
@@ -676,6 +673,10 @@ export default function NewsDetails() {
                 </div>
               )}
             </aside>
+          </div>{" "}
+          {/* ← closes grid */}
+          {/* Comments — full width, below the grid */}
+          <div className="mt-12 max-w-3xl">
             <NewsComment newsId={newsItem.id} />
           </div>
         </div>
