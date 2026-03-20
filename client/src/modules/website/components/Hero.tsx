@@ -50,6 +50,7 @@ interface HeroSlide {
   media: string;
   mobileMedia: string;
   thumbnail: string;
+  thumbnailType: "video" | "image";
   title: string;
   subtitle: string;
   cta?: string;
@@ -141,6 +142,9 @@ const transformApiDataToSlides = (
     } else {
       thumbnailUrl = backgroundMedia?.url ?? "";
     }
+    const resolvedThumbnailUrl = subMedia?.url || thumbnailUrl;
+    const thumbnailType: "video" | "image" =
+      subMedia?.type === "VIDEO" ? "video" : "image";
 
     // ── mobileMedia always uses the BACKGROUND (main) media ────────────────
     // Sub media is only ever used for the thumbnail card.
@@ -153,7 +157,8 @@ const transformApiDataToSlides = (
       mobileMediaType,                           // NEW field
       media: backgroundMedia?.url || "",
       mobileMedia: mobileMediaUrl,
-      thumbnail: thumbnailUrl,
+      thumbnail: resolvedThumbnailUrl,
+      thumbnailType,
       title: item.mainTitle || "",
       subtitle: item.subTitle || "",
       cta: item.ctaText ?? undefined,
@@ -169,6 +174,7 @@ export default function Hero() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [loadedSlides, setLoadedSlides] = useState<Set<number>>(new Set());
   const isFetchingRef = useRef(false);
   const currentHashRef = useRef<string>("");
   const apiDataRef = useRef<ApiHeroItem[]>([]);
@@ -208,15 +214,18 @@ export default function Hero() {
           const apiSlides = transformApiDataToSlides(apiContent, currentTheme);
           if (apiSlides.length > 0) {
             setSlides(apiSlides);
+            setLoadedSlides(new Set());
             currentHashRef.current = newHash;
             setCachedData(apiSlides, newHash);
           } else {
             setSlides([]);
+            setLoadedSlides(new Set());
           }
         }
       } catch (error) {
         console.error("Hero fetch failed:", error);
         setSlides([]);
+        setLoadedSlides(new Set());
       } finally {
         setIsFetching(false);
         isFetchingRef.current = false;
@@ -229,6 +238,7 @@ export default function Hero() {
     if (apiDataRef.current.length > 0) {
       const newSlides = transformApiDataToSlides(apiDataRef.current, newTheme);
       setSlides(newSlides.length > 0 ? newSlides : []);
+      setLoadedSlides(new Set());
       if (newSlides.length > 0) setCachedData(newSlides, currentHashRef.current);
     }
   }, []);
@@ -261,9 +271,29 @@ export default function Hero() {
     [swiperInstance],
   );
 
+  const markSlideLoaded = useCallback((index: number) => {
+    setLoadedSlides((prev) => {
+      if (prev.has(index)) return prev;
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!swiperInstance || slides.length === 0) return;
+
+    if (loadedSlides.has(activeIndex)) {
+      swiperInstance.autoplay?.start();
+      return;
+    }
+
+    swiperInstance.autoplay?.stop();
+  }, [activeIndex, loadedSlides, slides.length, swiperInstance]);
+
   // ── Desktop media (object-cover, full bleed) — UNCHANGED ──────────────────
   const renderDesktopMedia = useCallback(
-    (slide: HeroSlide) => {
+    (slide: HeroSlide, index: number) => {
       const mediaUrl = slide.media;
       if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
       if (slide.type === "video") {
@@ -272,7 +302,11 @@ export default function Hero() {
             autoPlay loop muted playsInline preload="metadata"
             className="w-full h-full object-cover"
             key={mediaUrl}
-            onError={() => handleImageError(mediaUrl)}
+            onLoadedData={() => markSlideLoaded(index)}
+            onError={() => {
+              handleImageError(mediaUrl);
+              markSlideLoaded(index);
+            }}
           >
             <source src={mediaUrl} type="video/mp4" />
           </video>
@@ -283,11 +317,15 @@ export default function Hero() {
           src={mediaUrl}
           alt={slide.title}
           className="w-full h-full object-cover"
-          onError={() => handleImageError(mediaUrl)}
+          onLoad={() => markSlideLoaded(index)}
+          onError={() => {
+            handleImageError(mediaUrl);
+            markSlideLoaded(index);
+          }}
         />
       );
     },
-    [imageErrors, handleImageError],
+    [imageErrors, handleImageError, markSlideLoaded],
   );
 
   // ── FIX 3: Mobile media — uses mobileMediaType (not slide.type) ───────────
@@ -295,7 +333,7 @@ export default function Hero() {
   // When background=VIDEO but mobileMedia points to a sub IMAGE, it would try
   // to render a <video> tag for an image URL → black screen.
   const renderMobileMedia = useCallback(
-    (slide: HeroSlide) => {
+    (slide: HeroSlide, index: number) => {
       const mediaUrl = slide.mobileMedia;
       if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
 
@@ -305,7 +343,11 @@ export default function Hero() {
             autoPlay loop muted playsInline preload="metadata"
             className="w-full h-full object-contain"
             key={mediaUrl}
-            onError={() => handleImageError(mediaUrl)}
+            onLoadedData={() => markSlideLoaded(index)}
+            onError={() => {
+              handleImageError(mediaUrl);
+              markSlideLoaded(index);
+            }}
           >
             <source src={mediaUrl} type="video/mp4" />
           </video>
@@ -316,11 +358,15 @@ export default function Hero() {
           src={mediaUrl}
           alt={slide.title}
           className="w-full h-full object-contain"
-          onError={() => handleImageError(mediaUrl)}
+          onLoad={() => markSlideLoaded(index)}
+          onError={() => {
+            handleImageError(mediaUrl);
+            markSlideLoaded(index);
+          }}
         />
       );
     },
-    [imageErrors, handleImageError],
+    [imageErrors, handleImageError, markSlideLoaded],
   );
 
   // ── Thumbnail — always an image ────────────────────────────────────────────
@@ -328,6 +374,22 @@ export default function Hero() {
     (slide: HeroSlide) => {
       const thumbnailUrl = slide.thumbnail;
       if (!thumbnailUrl || imageErrors.has(thumbnailUrl)) return null;
+
+      if (slide.thumbnailType === "video") {
+        return (
+          <video
+            src={thumbnailUrl}
+            muted
+            playsInline
+            autoPlay
+            loop
+            preload="metadata"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={() => handleImageError(thumbnailUrl)}
+          />
+        );
+      }
+
       return (
         <img
           src={thumbnailUrl}
@@ -366,7 +428,7 @@ export default function Hero() {
           >
             {/* ══════════════ DESKTOP (unchanged) ══════════════ */}
             <div className="hidden md:block absolute inset-0 w-full h-full overflow-hidden">
-              {renderDesktopMedia(slide)}
+              {renderDesktopMedia(slide, index)}
             </div>
             <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
             <div className="hidden md:block absolute inset-0 z-10 pointer-events-none">
@@ -429,7 +491,7 @@ export default function Hero() {
               style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
             >
               <div className="absolute inset-x-0 bottom-0 overflow-hidden" style={{ top: "64px" }}>
-                {renderMobileMedia(slide)}
+                {renderMobileMedia(slide, index)}
               </div>
               <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ top: "64px" }}>
                 <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
