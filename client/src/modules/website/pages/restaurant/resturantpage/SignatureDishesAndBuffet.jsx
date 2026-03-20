@@ -241,6 +241,8 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
   const [chefRemark, setChefRemark] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [menuLoading, setMenuLoading] = useState(true);
+  const [isMenuDescriptionExpanded, setIsMenuDescriptionExpanded] =
+    useState(false);
 
   const [bookingModal, setBookingModal] = useState({
     isOpen: false,
@@ -257,6 +259,13 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
     totalGuest: "2",
   });
   const [likeSubmitting, setLikeSubmitting] = useState(false);
+
+  const formatChefRemarkText = (text) => {
+    if (!text) return "";
+    const trimmed = text.trim();
+    const normalized = trimmed.replace(/^"+|"+$/g, "");
+    return `"${normalized}"`;
+  };
 
   useEffect(() => {
     if (!propertyId) return;
@@ -486,7 +495,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
       <section className="pt-16 pb-2">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-left">
           <div className="flex flex-col lg:flex-row justify-between items-start gap-8 mb-20">
-            <div>
+            <div className="flex-1 min-w-0 lg:max-w-[80%]">
               {menuLoading ? (
                 <div className="flex items-center gap-2 text-zinc-400 text-sm">
                   <Loader2 size={16} className="animate-spin" /> Loading…
@@ -500,9 +509,26 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                     </span>
                   </h2>
                   {menuHeader.description && (
-                    <p className="text-zinc-500 dark:text-zinc-400 text-sm font-light">
-                      {menuHeader.description}
-                    </p>
+                    <div className="max-w-[80%]">
+                      <div
+                        className={`text-zinc-500 dark:text-zinc-400 text-sm font-light leading-relaxed break-words ${
+                          isMenuDescriptionExpanded
+                            ? "max-h-32 overflow-y-auto pr-2"
+                            : "line-clamp-2"
+                        }`}
+                      >
+                        {menuHeader.description}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsMenuDescriptionExpanded((prev) => !prev)
+                        }
+                        className="mt-2 text-xs font-semibold text-primary hover:underline"
+                      >
+                        {isMenuDescriptionExpanded ? "Show less" : "Show more .."}
+                      </button>
+                    </div>
                   )}
                 </>
               ) : (
@@ -517,7 +543,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-5 bg-zinc-50 dark:bg-zinc-900/40 p-5 rounded-2xl border border-primary/10 max-w-lg shadow-sm"
+                className="w-full lg:w-[368px] shrink-0 flex items-center gap-4 bg-zinc-50 dark:bg-zinc-900/40 p-5 rounded-2xl border border-primary/10 shadow-sm overflow-hidden"
               >
                 <div className="relative shrink-0">
                   {chefRemark.imageUrl ? (
@@ -538,15 +564,15 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                     <ChefHat className="w-4 h-4 text-white" />
                   </div>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <Quote className="w-3 h-3 text-primary fill-primary" />
                     <span className="text-[10px] font-bold dark:text-zinc-400 uppercase tracking-widest">
                       {chefRemark.remark}
                     </span>
                   </div>
-                  <p className="text-sm italic dark:text-zinc-200 leading-snug">
-                    "{chefRemark.description}"
+                  <p className="text-sm italic dark:text-zinc-200 leading-snug line-clamp-6 break-words overflow-hidden">
+                    {formatChefRemarkText(chefRemark.description)}
                   </p>
                 </div>
               </motion.div>
