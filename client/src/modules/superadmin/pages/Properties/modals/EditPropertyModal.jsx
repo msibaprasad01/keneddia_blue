@@ -244,7 +244,7 @@ function EditPropertyModal({
         amenitiesAndFeaturesIds: form.amenitiesAndFeaturesIds.length
           ? form.amenitiesAndFeaturesIds
           : null,
-        mobileNumber: form.mobileNumber ? Number(form.mobileNumber) : "",
+        mobileNumber: form.mobileNumber ? Number(form.mobileNumber) : null,
         email: form.email || "",
 
         // ✅ CLEAN EMPTY ROWS
