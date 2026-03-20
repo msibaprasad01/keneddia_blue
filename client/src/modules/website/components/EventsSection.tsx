@@ -55,14 +55,16 @@ export default function EventsSection() {
       const rawEvents = Array.isArray(response?.data)
         ? response.data
         : Array.isArray(response) ? response : [];
-      const now = Date.now();
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       const activeEvents = rawEvents.filter((event: any) => {
-        const eventTime = new Date(event.eventDate).getTime();
-        return event.active === true && eventTime >= now;
+        const eventDate = new Date(event.eventDate);
+        eventDate.setHours(0, 0, 0, 0);
+        return event.active === true && eventDate >= today;
       });
       setApiEvents(
         activeEvents.sort((a: any, b: any) =>
-          new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+          new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
         )
       );
     } catch (error) {
