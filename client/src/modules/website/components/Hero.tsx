@@ -111,9 +111,9 @@ const transformApiDataToSlides = (
   const filteredContent = content.filter(
     (item) => item.active === true && item.showOnHomepage === true,
   );
-  const latestThree = filteredContent.sort((a, b) => b.id - a.id).slice(0, 3);
+  const homepageItems = filteredContent.sort((a, b) => b.id - a.id);
 
-  return latestThree.map((item) => {
+  return homepageItems.map((item) => {
     const backgroundMedia = selectMediaByTheme(
       theme,
       item.backgroundAll,
@@ -264,6 +264,17 @@ export default function Hero() {
     setImageErrors((prev) => new Set(prev).add(url));
   }, []);
 
+  const logMediaError = useCallback(
+    (mediaRole: string, url: string, title: string) => {
+      console.error(`[Hero] Failed to load ${mediaRole}`, {
+        title,
+        url,
+      });
+      handleImageError(url);
+    },
+    [handleImageError],
+  );
+
   const handleThumbnailClick = useCallback(
     (index: number) => {
       if (swiperInstance) swiperInstance.slideToLoop(index);
@@ -304,7 +315,7 @@ export default function Hero() {
             key={mediaUrl}
             onLoadedData={() => markSlideLoaded(index)}
             onError={() => {
-              handleImageError(mediaUrl);
+              logMediaError("desktop video", mediaUrl, slide.title);
               markSlideLoaded(index);
             }}
           >
@@ -319,13 +330,13 @@ export default function Hero() {
           className="w-full h-full object-cover"
           onLoad={() => markSlideLoaded(index)}
           onError={() => {
-            handleImageError(mediaUrl);
+            logMediaError("desktop image", mediaUrl, slide.title);
             markSlideLoaded(index);
           }}
         />
       );
     },
-    [imageErrors, handleImageError, markSlideLoaded],
+    [imageErrors, logMediaError, markSlideLoaded],
   );
 
   // ── FIX 3: Mobile media — uses mobileMediaType (not slide.type) ───────────
@@ -345,7 +356,7 @@ export default function Hero() {
             key={mediaUrl}
             onLoadedData={() => markSlideLoaded(index)}
             onError={() => {
-              handleImageError(mediaUrl);
+              logMediaError("mobile video", mediaUrl, slide.title);
               markSlideLoaded(index);
             }}
           >
@@ -360,13 +371,13 @@ export default function Hero() {
           className="w-full h-full object-contain"
           onLoad={() => markSlideLoaded(index)}
           onError={() => {
-            handleImageError(mediaUrl);
+            logMediaError("mobile image", mediaUrl, slide.title);
             markSlideLoaded(index);
           }}
         />
       );
     },
-    [imageErrors, handleImageError, markSlideLoaded],
+    [imageErrors, logMediaError, markSlideLoaded],
   );
 
   // ── Thumbnail — always an image ────────────────────────────────────────────
@@ -385,7 +396,7 @@ export default function Hero() {
             loop
             preload="metadata"
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            onError={() => handleImageError(thumbnailUrl)}
+            onError={() => logMediaError("thumbnail video", thumbnailUrl, slide.title)}
           />
         );
       }
@@ -395,11 +406,11 @@ export default function Hero() {
           src={thumbnailUrl}
           alt={slide.subtitle || slide.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          onError={() => handleImageError(thumbnailUrl)}
+          onError={() => logMediaError("thumbnail image", thumbnailUrl, slide.title)}
         />
       );
     },
-    [imageErrors, handleImageError],
+    [imageErrors, logMediaError],
   );
 
   return (

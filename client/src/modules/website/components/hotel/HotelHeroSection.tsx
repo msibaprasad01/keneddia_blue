@@ -1,16 +1,14 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Navigation } from "swiper/modules";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { Swiper as SwiperType } from "swiper";
 
-// Swiper Styles
 import "swiper/css";
 import "swiper/css/effect-fade";
 import "swiper/css/navigation";
 
-// ── Types ──────────────────────────────────────────────────────────────────
 interface MediaItem {
   mediaId: number;
   type: "IMAGE" | "VIDEO";
@@ -32,6 +30,9 @@ export interface HeroSlide {
   backgroundAll: MediaItem[];
   backgroundLight: MediaItem[];
   backgroundDark: MediaItem[];
+  subAll?: MediaItem[];
+  subLight?: MediaItem[];
+  subDark?: MediaItem[];
 }
 
 interface HotelHeroSectionProps {
@@ -39,7 +40,6 @@ interface HotelHeroSectionProps {
   loading: boolean;
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
 const getCurrentTheme = (): "light" | "dark" => {
   if (typeof window === "undefined") return "light";
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
@@ -49,100 +49,241 @@ const selectMediaByTheme = (
   theme: "light" | "dark",
   all: MediaItem[],
   light: MediaItem[],
-  dark: MediaItem[]
+  dark: MediaItem[],
 ): MediaItem | null => {
   if (theme === "dark" && dark?.length > 0) return dark[0];
   if (theme === "light" && light?.length > 0) return light[0];
-  return all?.[0] || light?.[0] || dark?.[0] || null;
+  if (all?.length > 0) return all[0];
+  if (light?.length > 0) return light[0];
+  if (dark?.length > 0) return dark[0];
+  return null;
 };
 
-// ── Component ──────────────────────────────────────────────────────────────
 export default function HotelHeroSection({ slides, loading }: HotelHeroSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark">(getCurrentTheme());
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [loadedSlides, setLoadedSlides] = useState<Set<number>>(new Set());
 
-  // Theme observer
   useEffect(() => {
     const observer = new MutationObserver(() => {
       const newTheme = getCurrentTheme();
       if (newTheme !== currentTheme) setCurrentTheme(newTheme);
     });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
     return () => observer.disconnect();
   }, [currentTheme]);
+
+  useEffect(() => {
+    setLoadedSlides(new Set());
+  }, [slides, currentTheme]);
 
   const handleImageError = useCallback((url: string) => {
     setImageErrors((prev) => new Set(prev).add(url));
   }, []);
 
-  const handleThumbnailClick = useCallback((index: number) => {
-    if (swiperInstance) swiperInstance.slideToLoop(index);
-  }, [swiperInstance]);
+  const logMediaError = useCallback(
+    (mediaRole: string, url: string, title: string) => {
+      console.error(`[HotelHero] Failed to load ${mediaRole}`, {
+        title,
+        url,
+      });
+      handleImageError(url);
+    },
+    [handleImageError],
+  );
 
-  // ── Desktop media (object-cover, full bleed) — UNCHANGED ──────────────────
-  const renderMedia = useCallback((slide: HeroSlide) => {
-    const media = selectMediaByTheme(currentTheme, slide.backgroundAll, slide.backgroundLight, slide.backgroundDark);
-    const mediaUrl = media?.url || "";
+  const handleThumbnailClick = useCallback(
+    (index: number) => {
+      if (swiperInstance) swiperInstance.slideToLoop(index);
+    },
+    [swiperInstance],
+  );
 
-    if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
+  const markSlideLoaded = useCallback((index: number) => {
+    setLoadedSlides((prev) => {
+      if (prev.has(index)) return prev;
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
+  }, []);
 
-    if (media?.type === "VIDEO") {
+  useEffect(() => {
+    if (!swiperInstance || slides.length === 0) return;
+
+    if (loadedSlides.has(activeIndex)) {
+      swiperInstance.autoplay?.start();
+      return;
+    }
+
+    swiperInstance.autoplay?.stop();
+  }, [activeIndex, loadedSlides, slides.length, swiperInstance]);
+
+  const getBackgroundMedia = useCallback(
+    (slide: HeroSlide) => {
+      const media = selectMediaByTheme(
+        currentTheme,
+        slide.backgroundAll,
+        slide.backgroundLight,
+        slide.backgroundDark,
+      );
+
+      return {
+        mediaUrl: media?.url || "",
+        mediaType: media?.type === "VIDEO" ? "video" as const : "image" as const,
+      };
+    },
+    [currentTheme],
+  );
+
+  const getThumbnailMedia = useCallback(
+    (slide: HeroSlide) => {
+      const subMedia = selectMediaByTheme(
+        currentTheme,
+        slide.subAll || [],
+        slide.subLight || [],
+        slide.subDark || [],
+      );
+      const backgroundMedia = selectMediaByTheme(
+        currentTheme,
+        slide.backgroundAll,
+        slide.backgroundLight,
+        slide.backgroundDark,
+      );
+      const previewMedia = subMedia || backgroundMedia;
+
+      return {
+        mediaUrl: previewMedia?.url || "",
+        mediaType: previewMedia?.type === "VIDEO" ? "video" as const : "image" as const,
+      };
+    },
+    [currentTheme],
+  );
+
+  const renderDesktopMedia = useCallback(
+    (slide: HeroSlide, index: number) => {
+      const { mediaUrl, mediaType } = getBackgroundMedia(slide);
+      if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
+
+      if (mediaType === "video") {
+        return (
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="w-full h-full object-cover"
+            key={mediaUrl}
+            onLoadedData={() => markSlideLoaded(index)}
+            onError={() => {
+              logMediaError("desktop video", mediaUrl, slide.title);
+              markSlideLoaded(index);
+            }}
+          >
+            <source src={mediaUrl} type="video/mp4" />
+          </video>
+        );
+      }
+
       return (
-        <video
-          autoPlay loop muted playsInline preload="metadata"
+        <img
+          src={mediaUrl}
+          alt={slide.title}
           className="w-full h-full object-cover"
-          key={mediaUrl}
-          onError={() => handleImageError(mediaUrl)}
-        >
-          <source src={mediaUrl} type="video/mp4" />
-        </video>
+          onLoad={() => markSlideLoaded(index)}
+          onError={() => {
+            logMediaError("desktop image", mediaUrl, slide.title);
+            markSlideLoaded(index);
+          }}
+        />
       );
-    }
+    },
+    [getBackgroundMedia, imageErrors, logMediaError, markSlideLoaded],
+  );
 
-    return (
-      <img
-        src={mediaUrl}
-        alt={slide.title}
-        className="w-full h-full object-cover"
-        onError={() => handleImageError(mediaUrl)}
-      />
-    );
-  }, [currentTheme, imageErrors, handleImageError]);
+  const renderMobileMedia = useCallback(
+    (slide: HeroSlide, index: number) => {
+      const { mediaUrl, mediaType } = getBackgroundMedia(slide);
+      if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
 
-  // ── Mobile media (object-contain, no crop) ────────────────────────────────
-  const renderMobileMedia = useCallback((slide: HeroSlide) => {
-    const media = selectMediaByTheme(currentTheme, slide.backgroundAll, slide.backgroundLight, slide.backgroundDark);
-    const mediaUrl = media?.url || "";
+      if (mediaType === "video") {
+        return (
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="w-full h-full object-contain"
+            key={mediaUrl}
+            onLoadedData={() => markSlideLoaded(index)}
+            onError={() => {
+              logMediaError("mobile video", mediaUrl, slide.title);
+              markSlideLoaded(index);
+            }}
+          >
+            <source src={mediaUrl} type="video/mp4" />
+          </video>
+        );
+      }
 
-    if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
-
-    if (media?.type === "VIDEO") {
       return (
-        <video
-          autoPlay loop muted playsInline preload="metadata"
+        <img
+          src={mediaUrl}
+          alt={slide.title}
           className="w-full h-full object-contain"
-          key={mediaUrl}
-          onError={() => handleImageError(mediaUrl)}
-        >
-          <source src={mediaUrl} type="video/mp4" />
-        </video>
+          onLoad={() => markSlideLoaded(index)}
+          onError={() => {
+            logMediaError("mobile image", mediaUrl, slide.title);
+            markSlideLoaded(index);
+          }}
+        />
       );
-    }
+    },
+    [getBackgroundMedia, imageErrors, logMediaError, markSlideLoaded],
+  );
 
-    return (
-      <img
-        src={mediaUrl}
-        alt={slide.title}
-        className="w-full h-full object-contain"
-        onError={() => handleImageError(mediaUrl)}
-      />
-    );
-  }, [currentTheme, imageErrors, handleImageError]);
+  const renderThumbnail = useCallback(
+    (slide: HeroSlide) => {
+      const { mediaUrl, mediaType } = getThumbnailMedia(slide);
+      if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
+
+      if (mediaType === "video") {
+        return (
+          <video
+            src={mediaUrl}
+            muted
+            playsInline
+            autoPlay
+            loop
+            preload="metadata"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={() => logMediaError("thumbnail video", mediaUrl, slide.title)}
+          />
+        );
+      }
+
+      return (
+        <img
+          src={mediaUrl}
+          alt={slide.subtitle || slide.title}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          onError={() => logMediaError("thumbnail image", mediaUrl, slide.title)}
+        />
+      );
+    },
+    [getThumbnailMedia, imageErrors, logMediaError],
+  );
 
   return (
-    // Desktop: h-screen (unchanged) | Mobile: h-auto, frame drives height
     <section className="relative w-full h-auto md:h-screen overflow-hidden bg-background">
       {loading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm">
@@ -162,10 +303,8 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={`${slide.id}-${currentTheme}`} className="relative w-full h-full">
-
-            {/* ══════════════ DESKTOP (unchanged) ══════════════ */}
             <div className="hidden md:block absolute inset-0 w-full h-full overflow-hidden">
-              {renderMedia(slide)}
+              {renderDesktopMedia(slide, index)}
             </div>
             <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
             <div className="hidden md:block absolute inset-0 z-10 pointer-events-none">
@@ -194,16 +333,26 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.7, duration: 0.8 }}
-                      onClick={() => slide.ctaLink && (window.location.href = slide.ctaLink)}
-                      className="px-8 py-3 bg-white text-black rounded-full font-semibold hover:bg-amber-400 transition-colors duration-300"
+                      disabled={!slide.ctaLink}
+                      onClick={() => {
+                        if (slide.ctaLink) window.location.href = slide.ctaLink;
+                      }}
+                      className={`group relative px-6 py-2.5 font-semibold text-sm rounded-full overflow-hidden transition-all duration-500 ease-out flex items-center gap-2 border ${
+                        !slide.ctaLink
+                          ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+                          : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] hover:scale-105 hover:-translate-y-0.5 cursor-pointer border-amber-300/40"
+                      }`}
                     >
-                      {slide.ctaText}
+                      {slide.ctaLink && (
+                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                      )}
+                      <span className="relative z-10">{slide.ctaText}</span>
                     </motion.button>
                   )}
                 </div>
               </div>
             </div>
-            {/* Desktop bottom curve */}
+
             <div className="hidden md:block absolute bottom-0 left-0 w-full h-32 md:h-40 z-10 pointer-events-none">
               <svg viewBox="0 0 1440 320" className="w-full h-full" preserveAspectRatio="none">
                 <path
@@ -213,31 +362,20 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
               </svg>
             </div>
 
-            {/* ══════════════ MOBILE ══════════════
-                Self-contained frame:
-                • top 64px offset clears the navbar
-                • media fills via object-contain (no crop)
-                • text + CTA centered both axes inside the frame
-                • pagination pinned to bottom edge
-            */}
             <div
               className="block md:hidden relative w-full bg-black overflow-hidden"
               style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
             >
-              {/* Media layer — starts below navbar */}
               <div className="absolute inset-x-0 bottom-0 overflow-hidden" style={{ top: "64px" }}>
-                {renderMobileMedia(slide)}
+                {renderMobileMedia(slide, index)}
               </div>
 
-              {/* Bottom gradient scrim for text legibility */}
               <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ top: "64px" }}>
                 <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
               </div>
 
-              {/* Top scrim behind transparent navbar */}
               <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10" />
 
-              {/* Text + CTA — centered horizontally & vertically inside frame */}
               <div
                 className="absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center"
                 style={{ top: "64px", bottom: "2.5rem" }}
@@ -270,19 +408,30 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                     initial={{ opacity: 0, scale: 0.92 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.6, duration: 0.6 }}
-                    onClick={() => slide.ctaLink && (window.location.href = slide.ctaLink)}
-                    className="group relative px-5 py-2 font-semibold text-xs rounded-full overflow-hidden inline-flex items-center gap-2 border bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40 transition-all duration-500"
+                    disabled={!slide.ctaLink}
+                    onClick={() => {
+                      if (slide.ctaLink) window.location.href = slide.ctaLink;
+                    }}
+                    className={`group relative px-5 py-2 font-semibold text-xs rounded-full overflow-hidden transition-all duration-500 ease-out inline-flex items-center gap-2 border ${
+                      !slide.ctaLink
+                        ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+                        : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40"
+                    }`}
                   >
-                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                    {slide.ctaLink && (
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                    )}
                     <span className="relative z-10">{slide.ctaText}</span>
                   </motion.button>
                 )}
               </div>
 
-              {/* Pagination — arrows + dots pinned to bottom edge */}
               <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
                 <button
-                  onClick={(e) => { e.stopPropagation(); swiperInstance?.slidePrev(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    swiperInstance?.slidePrev();
+                  }}
                   className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
@@ -292,63 +441,86 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                   {slides.map((_, i) => (
                     <div
                       key={`mob-dot-${i}`}
-                      onClick={(e) => { e.stopPropagation(); handleThumbnailClick(i); }}
-                      className={`h-[3px] rounded-full transition-all duration-500 cursor-pointer
-                        ${activeIndex === i
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleThumbnailClick(i);
+                      }}
+                      className={`h-[3px] rounded-full transition-all duration-500 cursor-pointer ${
+                        activeIndex === i
                           ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
                           : "w-4 bg-white/40 hover:bg-white/70"
-                        }`}
+                      }`}
                     />
                   ))}
                 </div>
 
                 <button
-                  onClick={(e) => { e.stopPropagation(); swiperInstance?.slideNext(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    swiperInstance?.slideNext();
+                  }}
                   className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
-            {/* ══════════════ END MOBILE ══════════════ */}
-
           </SwiperSlide>
         ))}
       </Swiper>
 
-      {/* ══════════════ DESKTOP Navigation & Thumbnails (unchanged) ══════════════ */}
-      <div className="hidden md:flex absolute right-8 lg:right-12 bottom-40 z-20 flex-col items-end gap-6">
-        <div className="flex flex-row items-end gap-4">
+      <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4 max-w-[calc(100vw-2rem)]">
+        <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4 overflow-hidden">
           {slides.map((slide, index) => (
-            <div
-              key={`thumb-${slide.id}`}
+            <motion.div
+              key={`thumbnail-${index}-${currentTheme}`}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.15 + 0.5 }}
               onClick={() => handleThumbnailClick(index)}
-              className={`relative w-24 h-32 cursor-pointer overflow-hidden transition-all duration-500 border-2 ${
-                activeIndex === index ? "border-white scale-110 shadow-2xl" : "border-transparent opacity-50 grayscale hover:opacity-100 hover:grayscale-0"
+              className={`relative flex-shrink-0 w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${
+                activeIndex === index
+                  ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
+                  : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
               }`}
             >
-              {renderMedia(slide)}
-              <div className="absolute inset-0 bg-black/20" />
-            </div>
+              {renderThumbnail(slide)}
+              <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-gradient-to-t from-black/90 to-transparent">
+                <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
+                  {slide.subtitle || slide.title}
+                </p>
+              </div>
+            </motion.div>
           ))}
         </div>
 
-        {/* Indicators & Buttons */}
-        <div className="flex items-center gap-6">
-          <div className="flex gap-2">
+        <div className="flex items-center gap-3 md:gap-4 lg:gap-6 pr-2">
+          <div className="flex items-center gap-1.5 md:gap-2">
             {slides.map((_, index) => (
               <div
-                key={index}
-                className={`h-1 rounded-full transition-all duration-500 ${activeIndex === index ? "w-12 bg-white" : "w-6 bg-white/30"}`}
+                key={`indicator-${index}`}
+                onClick={() => handleThumbnailClick(index)}
+                className={`cursor-pointer h-[3px] transition-all duration-500 rounded-full ${
+                  activeIndex === index
+                    ? "w-8 md:w-10 lg:w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                    : "w-4 md:w-5 lg:w-6 bg-white/30 hover:bg-white/60"
+                }`}
               />
             ))}
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => swiperInstance?.slidePrev()} className="p-2 rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all">
-              <ChevronLeft size={20} />
+
+          <div className="flex gap-2 md:gap-3">
+            <button
+              onClick={() => swiperInstance?.slidePrev()}
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md hover:bg-white hover:text-black transition-all duration-300 cursor-pointer"
+            >
+              <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
             </button>
-            <button onClick={() => swiperInstance?.slideNext()} className="p-2 rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all">
-              <ChevronRight size={20} />
+            <button
+              onClick={() => swiperInstance?.slideNext()}
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md hover:bg-white hover:text-black transition-all duration-300 cursor-pointer"
+            >
+              <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
             </button>
           </div>
         </div>
