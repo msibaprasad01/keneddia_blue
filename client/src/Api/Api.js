@@ -247,6 +247,10 @@ export const deletePropertyListing = (propertyListingId) =>API.delete(`api/v1/pr
 
 export const createAmenityFeature = (data) =>API.post("api/v1/admin/amenities-features", data);
 export const updateAmenityFeature = (id, data) =>API.put(`/api/v1/admin/amenities-features/${id}`, data);
+export const amenitiesHighlight = (id, showHighlight) =>
+  API.patch(`/api/v1/admin/amenities-features/${id}/highlight`, null, {
+    params: { showHighlight },
+  });
 export const getAllAmenityFeatures = () =>API.get("api/v1/admin/amenities-features");
 export const insertAmenitiesByPropertyId = (propertyId, amenityIds) => {
   return API.put(

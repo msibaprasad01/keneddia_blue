@@ -54,6 +54,16 @@ interface RoomAmenity {
   isActive: boolean;
 }
 
+interface RoomMedia {
+  mediaId: number;
+  type: string;
+  url: string;
+  fileName?: string | null;
+  alt?: string | null;
+  width?: number | null;
+  height?: number | null;
+}
+
 interface Room {
   roomId: number;
   propertyId: number;
@@ -70,12 +80,19 @@ interface Room {
   bookable: boolean;
   active: boolean;
   amenitiesAndFeatures: RoomAmenity[];
+  media?: RoomMedia[];
   // Optional fields that might come from API
   propertyName?: string;
   locationName?: string;
   coordinates?: { lat: number; lng: number };
   image?: string;
 }
+
+const getRoomImage = (room: Room) =>
+  room.image ||
+  room.media?.find((item) => item?.type === "IMAGE" && item?.url)?.url ||
+  room.media?.find((item) => item?.url)?.url ||
+  "";
 
 // Leaflet Icon Fix
 const markerIcon = new L.Icon({
@@ -788,16 +805,19 @@ export default function QuickBooking() {
               </h4>
 
               <div className="space-y-3">
-                {paginatedRooms.map((room) => (
+                {paginatedRooms.map((room) => {
+                  const roomImage = getRoomImage(room);
+
+                  return (
                   <div
                     key={`room-${room.roomId}`}
                     className="bg-background border border-border/50 rounded-lg overflow-hidden flex flex-col md:flex-row hover:shadow-md hover:border-primary/30 transition-all"
                   >
                     {/* Room Image or Placeholder */}
                     <div className="w-full md:w-48 h-40 md:h-auto bg-muted flex items-center justify-center flex-shrink-0">
-                      {room.image ? (
+                      {roomImage ? (
                         <img
-                          src={room.image}
+                          src={roomImage}
                           alt={room.roomName}
                           className="w-full h-full object-cover"
                         />
@@ -912,7 +932,7 @@ export default function QuickBooking() {
                       </div>
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
 
               {/* Pagination */}
