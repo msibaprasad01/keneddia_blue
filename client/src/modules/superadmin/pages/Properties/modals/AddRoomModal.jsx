@@ -616,6 +616,49 @@ const AddRoomModal = ({
                     </button>
                   </div>
                 </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                    Room Size
+                  </label>
+                  <input
+                    type="number"
+                    name="roomSize"
+                    value={formData.roomSize}
+                    onChange={handleNumberChange}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                    placeholder="e.g. 420"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                    Room Size Unit
+                  </label>
+                  <select
+                    name="roomSizeUnit"
+                    value={formData.roomSizeUnit}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                  >
+                    {sizeUnits.map((unit) => (
+                      <option key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                    Floor Number
+                  </label>
+                  <input
+                    type="number"
+                    name="floorNumber"
+                    value={formData.floorNumber}
+                    onChange={handleNumberChange}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                    placeholder="e.g. 1"
+                  />
+                </div>
               </div>
             </section>
 

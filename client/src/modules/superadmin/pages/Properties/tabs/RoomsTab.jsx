@@ -137,6 +137,10 @@ const RoomsTab = ({ propertyData }) => {
 
   // Filter logic: Only show active rooms unless showDeleted is true
   const filteredRooms = rooms.filter(room => showDeleted || room.active);
+  const getRoomPreviewImage = (room) =>
+    room?.media?.find((item) => item?.type === "IMAGE" && item?.url)?.url ||
+    room?.media?.find((item) => item?.url)?.url ||
+    "";
 
   return (
     <div className="space-y-4">
@@ -184,6 +188,7 @@ const RoomsTab = ({ propertyData }) => {
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Price</th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Capacity</th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Settings</th>
               <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
@@ -191,7 +196,7 @@ const RoomsTab = ({ propertyData }) => {
           <tbody className="bg-white divide-y divide-gray-100">
             {loading && filteredRooms.length === 0 ? (
                <tr>
-                <td colSpan="6" className="px-6 py-10 text-center">
+                <td colSpan="7" className="px-6 py-10 text-center">
                   <ArrowPathIcon className="w-8 h-8 animate-spin mx-auto text-blue-500" />
                 </td>
                </tr>
@@ -201,30 +206,62 @@ const RoomsTab = ({ propertyData }) => {
                 className={`hover:bg-gray-50 transition-colors ${!room.active ? "bg-red-50/30 opacity-70 grayscale-[0.5]" : ""}`}
               >
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <div className="text-sm font-bold text-gray-900">
-                      {room.roomName || "Unnamed Room"}
+                  <div className="flex gap-4 items-start">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 shrink-0">
+                      {getRoomPreviewImage(room) ? (
+                        <img
+                          src={getRoomPreviewImage(room)}
+                          alt={room.roomName || "Room"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold uppercase text-gray-400">
+                          No Image
+                        </div>
+                      )}
                     </div>
-                    {!room.active && (
-                      <span className="bg-red-100 text-red-700 text-[8px] px-1.5 py-0.5 rounded font-black uppercase">Deactivated</span>
-                    )}
-                  </div>
-                  <div className="text-[10px] text-gray-400 font-medium">#{room.roomNumber} | {room.roomSize} {room.roomSizeUnit}</div>
-                  
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {room.amenitiesAndFeatures?.slice(0, 3).map((amenity) => (
-                      <span key={amenity.id} className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                        {amenity.name}
-                      </span>
-                    ))}
-                    {room.amenitiesAndFeatures?.length > 3 && (
-                      <span className="text-[10px] text-gray-400 self-center">+{room.amenitiesAndFeatures.length - 3}</span>
-                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="text-sm font-bold text-gray-900">
+                          {room.roomName || "Unnamed Room"}
+                        </div>
+                        {!room.active && (
+                          <span className="bg-red-100 text-red-700 text-[8px] px-1.5 py-0.5 rounded font-black uppercase">Deactivated</span>
+                        )}
+                      </div>
+
+                      <div className="text-[10px] text-gray-400 font-medium mt-1">
+                        Room ID: {room.roomId} | Property ID: {room.propertyId}
+                      </div>
+                      <div className="text-[10px] text-gray-400 font-medium">
+                        #{room.roomNumber} | Floor {room.floorNumber} | {room.roomSize ?? "N/A"} {room.roomSizeUnit || "SQ_FT"}
+                      </div>
+
+                      {room.description && (
+                        <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                          {room.description}
+                        </p>
+                      )}
+
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {room.amenitiesAndFeatures?.map((amenity) => (
+                          <span key={amenity.id} className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                            {amenity.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </td>
 
                 <td className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">
-                  {room.roomType}
+                  <div className="space-y-1">
+                    <div>{room.roomType}</div>
+                    {room.roomTypeName && (
+                      <div className="text-[10px] text-gray-400">{room.roomTypeName}</div>
+                    )}
+                  </div>
                 </td>
 
                 <td className="px-6 py-4 text-sm font-bold text-gray-900">
@@ -241,6 +278,21 @@ const RoomsTab = ({ propertyData }) => {
                   }`}>
                     {room.status}
                   </span>
+                </td>
+
+                <td className="px-6 py-4">
+                  <div className="flex flex-col gap-1">
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider w-fit ${
+                      room.bookable ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"
+                    }`}>
+                      {room.bookable ? "Bookable" : "Not Bookable"}
+                    </span>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider w-fit ${
+                      room.active ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-700"
+                    }`}>
+                      {room.active ? "Active" : "Inactive"}
+                    </span>
+                  </div>
                 </td>
 
                 <td className="px-6 py-4 text-right">
@@ -269,7 +321,7 @@ const RoomsTab = ({ propertyData }) => {
 
             {!loading && filteredRooms.length === 0 && (
               <tr>
-                <td colSpan="6" className="px-6 py-20 text-center text-gray-500">
+                <td colSpan="7" className="px-6 py-20 text-center text-gray-500">
                    No rooms available.
                 </td>
               </tr>
