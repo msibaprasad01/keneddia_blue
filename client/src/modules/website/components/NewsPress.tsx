@@ -6,6 +6,7 @@ import { Autoplay, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getAllNews } from "@/Api/Api";
+import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 import "swiper/css";
 
 // ============================================================================
@@ -13,7 +14,7 @@ import "swiper/css";
 // ============================================================================
 
 const ROUTES = {
-  newsDetail: (id: number | string) => `/news/${id}`,
+  newsDetail: buildNewsDetailPath,
 } as const;
 
 const STYLE_CONFIG = {
@@ -220,7 +221,7 @@ function NewsCard({ item }: { item: NewsItem }) {
     // Don't navigate if clicking the expand toggle
     const target = e.target as HTMLElement;
     if (target.closest("[data-expand-toggle]")) return;
-    navigate(`/news/${item.id}`);
+    navigate(ROUTES.newsDetail(item));
   };
 
   return (
@@ -289,7 +290,7 @@ function NewsCard({ item }: { item: NewsItem }) {
 
         <div className="mt-3 pt-2 border-t border-border/50">
           <Link
-            to={`/news/${item.id}`}
+            to={ROUTES.newsDetail(item)}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-2"
             onClick={(e) => e.stopPropagation()}
           >

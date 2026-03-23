@@ -9,6 +9,7 @@ import Footer from "@/modules/website/components/Footer";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getAllNews } from "@/Api/Api";
 import { toast } from "react-hot-toast";
+import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -325,7 +326,7 @@ export default function NewsListing() {
                 <div className="space-y-4">
                   {currentItems.map((item) => (
                     <Link
-                      to={`/news/${item.id}`} key={item.id}
+                      to={buildNewsDetailPath(item)} key={item.id}
                       // to={`#`} key={item.id}
                       className="group flex flex-col sm:flex-row bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300"
                     >
@@ -410,7 +411,7 @@ export default function NewsListing() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                   {currentItems.map((item) => (
                     <Link
-                       to={`/news/${item.id}`} key={item.id}
+                       to={buildNewsDetailPath(item)} key={item.id}
                       // to={`#`}
                       // key={item.id}
                       className="group flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300"

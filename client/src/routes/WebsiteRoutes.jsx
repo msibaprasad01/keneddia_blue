@@ -142,7 +142,7 @@ const WebsiteRoutes = [
 
   // News
   <Route key="news-listing" path="/news" element={<NewsListing />} />,
-  <Route key="news-details" path="/news/:id" element={<NewsDetails />} />,
+  <Route key="news-details" path="/news/:newsSlug" element={<NewsDetails />} />,
 
   // Hotel Detail Pages
   <Route key="hotel-news-details" path="/hotel/news/:slug" element={<HotelNewsDetails />} />,

@@ -23,6 +23,10 @@ import NewsComment from "../components/newsDetail/NewsComment";
 import { getAllNews, GetAllPropertyDetails } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
+import {
+  buildNewsDetailPath,
+  getNewsIdFromSlug,
+} from "@/modules/website/utils/newsSlug";
 // Types
 interface NewsItem {
   id: number;
@@ -217,7 +221,9 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
 // ============================================
 
 export default function NewsDetails() {
-  const { id } = useParams();
+  const { newsSlug } = useParams();
+  const navigate = useNavigate();
+  const id = getNewsIdFromSlug(newsSlug);
   const [newsItem, setNewsItem] = useState<NewsItem | null>(null);
   const [allNews, setAllNews] = useState<NewsItem[]>([]);
   const [dynamicProperties, setDynamicProperties] = useState<Property[]>([]);
@@ -233,9 +239,7 @@ export default function NewsDetails() {
         const activeNews = newsList.filter((n: NewsItem) => n.active);
         setAllNews(activeNews);
 
-        const foundNews = activeNews.find(
-          (n: NewsItem) => n.slug === id || n.id.toString() === id,
-        );
+        const foundNews = activeNews.find((n: NewsItem) => n.id.toString() === id);
 
         if (foundNews) {
           setNewsItem(foundNews);
@@ -294,6 +298,14 @@ export default function NewsDetails() {
     };
     fetchEverything();
   }, [id]);
+
+  useEffect(() => {
+    if (!newsItem || !newsSlug) return;
+    const canonicalPath = buildNewsDetailPath(newsItem);
+    if (canonicalPath !== `/news/${newsSlug}`) {
+      navigate(canonicalPath, { replace: true });
+    }
+  }, [newsItem, newsSlug, navigate]);
 
   const pagination = useMemo(() => {
     if (!newsItem || allNews.length === 0) return { prev: null, next: null };
@@ -548,7 +560,7 @@ export default function NewsDetails() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 max-w-3xl">
                 {pagination.prev ? (
                   <Link
-                    to={`/news/${pagination.prev.slug || pagination.prev.id}`}
+                    to={buildNewsDetailPath(pagination.prev)}
                     className="group flex items-center gap-5 p-6 border border-border rounded-3xl hover:border-primary/50 transition-all hover:shadow-lg"
                   >
                     <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors">
@@ -569,7 +581,7 @@ export default function NewsDetails() {
 
                 {pagination.next ? (
                   <Link
-                    to={`/news/${pagination.next.slug || pagination.next.id}`}
+                    to={buildNewsDetailPath(pagination.next)}
                     className="group flex items-center justify-between gap-5 p-6 border border-border rounded-3xl hover:border-primary/50 transition-all hover:shadow-lg text-right"
                   >
                     <div>
@@ -649,7 +661,7 @@ export default function NewsDetails() {
                     {relatedNews.map((item) => (
                       <Link
                         key={item.id}
-                        to={`/news/${item.slug || item.id}`}
+                        to={buildNewsDetailPath(item)}
                         className="flex gap-4 group"
                       >
                         <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm border border-border">
