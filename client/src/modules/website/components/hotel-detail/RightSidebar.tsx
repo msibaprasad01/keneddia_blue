@@ -163,7 +163,7 @@ export default function RightSidebar({
         </div>
 
         <div className="relative z-10 text-left">
-          {checkInDate && checkOutDate && (
+          {/* {checkInDate && checkOutDate && (
             <div className="mb-4 pb-4 border-b border-border">
               <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
                 <div className="text-left">
@@ -203,7 +203,7 @@ export default function RightSidebar({
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           <div className="flex justify-between items-end mb-4 text-left">
             <div className="text-left w-full">
@@ -259,10 +259,10 @@ export default function RightSidebar({
             {selectedRoom ? "Proceed to Book" : "Select Room"}
           </Button>
 
-          {/* <p className="text-[10px] text-center text-muted-foreground mt-3 flex items-center justify-center gap-1">
-            <Check className="w-3 h-3 text-green-500" /> Best Price Guarantee •
-            Instant Confirmation
-          </p> */}
+          <p className="mt-3 flex items-center justify-center gap-1 text-center text-[11px] text-muted-foreground">
+            <Check className="h-3 w-3 text-green-500" />
+            <span>Best Price Guarantee • Instant Confirmation</span>
+          </p>
         </div>
       </div>
 

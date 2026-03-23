@@ -11,6 +11,12 @@ export interface Room {
   image: ImageAsset;
   available: boolean;
   size: string;
+  type?: string;
+  roomSize?: number | null;
+  roomSizeUnit?: string | null;
+  isAvailable?: boolean;
+  highlightedAmenities?: string[];
+  gallery?: ImageAsset[];
 }
 
 export interface Event {

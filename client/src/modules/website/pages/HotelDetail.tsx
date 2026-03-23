@@ -100,6 +100,12 @@ interface PolicyData {
   policies: Array<{ id: number; name: string; isActive: boolean }>;
 }
 
+interface RoomAmenity {
+  id: number;
+  name: string;
+  showHighlight?: boolean | null;
+}
+
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -420,14 +426,24 @@ export default function HotelDetail() {
           ? res.data.map((r: any) => ({
               id: r.roomId.toString(),
               name: r.roomName || r.roomNumber,
-              type: r.roomType,
+              type: r.roomTypeName || r.roomType,
               description: r.description || "",
               basePrice: r.basePrice || 0,
               maxOccupancy: r.maxOccupancy || 1,
+              roomSize: r.roomSize ?? null,
+              roomSizeUnit: r.roomSizeUnit || "SQ_FT",
               isAvailable: r.status === "AVAILABLE",
-              amenities: r.amenitiesAndFeatures?.map((a: any) => a.name) || [],
+              amenities:
+                r.amenitiesAndFeatures?.map((a: RoomAmenity) => a.name) || [],
+              highlightedAmenities:
+                r.amenitiesAndFeatures
+                  ?.filter((a: RoomAmenity) => Boolean(a.showHighlight))
+                  .map((a: RoomAmenity) => a.name) || [],
               image: {
-                src: r.media?.[0]?.url || "/images/room-placeholder.jpg",
+                src:
+                  r.media?.find((item: any) => item.type === "IMAGE")?.url ||
+                  r.media?.[0]?.url ||
+                  "/images/room-placeholder.jpg",
                 alt: r.roomName,
               },
             }))
@@ -773,6 +789,7 @@ export default function HotelDetail() {
                     rooms={rooms}
                     selectedRoomId={selectedRoomId}
                     onSelectRoom={setSelectedRoomId}
+                    policyHighlightText="Free Cancellation"
                   />
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
