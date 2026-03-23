@@ -12,6 +12,8 @@ import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { colors } from "@/lib/colors/colors";
 import {
   addRoomToProperty,
+  amenitiesHighlight,
+  getAllRoomTypes,
   getAllAmenityFeatures,
   updateRoomById,
   uploadHeroMediaBulk,
@@ -29,7 +31,7 @@ const AddRoomModal = ({
 
   const [formData, setFormData] = useState({
     roomNumber: "",
-    roomType: "DELUXE",
+    roomType: "",
     roomName: "",
     description: "",
     basePrice: "",
@@ -46,20 +48,15 @@ const AddRoomModal = ({
 
   const [amenities, setAmenities] = useState([]);
   const [loadingAmenities, setLoadingAmenities] = useState(false);
+  const [togglingHighlightId, setTogglingHighlightId] = useState(null);
+  const [roomTypes, setRoomTypes] = useState([]);
+  const [loadingRoomTypes, setLoadingRoomTypes] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // ─── Media Upload State ───────────────────────────────────────────────────
   const [mediaFiles, setMediaFiles] = useState([]); // { file, preview, status: 'pending'|'uploading'|'done'|'error', mediaId, url, fileName }
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
-
-  // Room Type Options
-  const roomTypes = [
-    { value: "SINGLE", label: "Single" },
-    { value: "DOUBLE", label: "Double" },
-    { value: "DELUXE", label: "Deluxe" },
-    { value: "SUITE", label: "Suite" },
-  ];
 
   // Room Status Options
   const roomStatuses = [
@@ -78,6 +75,7 @@ const AddRoomModal = ({
   useEffect(() => {
     if (isOpen) {
       fetchAmenities();
+      fetchRoomTypes();
     }
   }, [isOpen]);
 
@@ -96,7 +94,7 @@ const AddRoomModal = ({
 
         setFormData({
           roomNumber: initialData.roomNumber || "",
-          roomType: initialData.roomType || "DELUXE",
+          roomType: initialData.roomType || "",
           roomName: initialData.roomName || "",
           description: initialData.description || "",
           basePrice: initialData.basePrice || "",
@@ -128,7 +126,7 @@ const AddRoomModal = ({
       } else {
         setFormData({
           roomNumber: "",
-          roomType: "DELUXE",
+          roomType: "",
           roomName: "",
           description: "",
           basePrice: "",
@@ -188,6 +186,60 @@ const AddRoomModal = ({
           : [...currentIds, amenityId],
       };
     });
+  };
+
+  const fetchRoomTypes = async () => {
+    setLoadingRoomTypes(true);
+    try {
+      const response = await getAllRoomTypes();
+      const roomTypesData = response?.data?.data || response?.data || response || [];
+      const normalizedRoomTypes = (Array.isArray(roomTypesData) ? roomTypesData : [])
+        .filter((item) => item?.name)
+        .map((item) => ({
+          id: item.id,
+          value: item.name,
+          label: item.name,
+          active: item.active ?? true,
+        }));
+
+      setRoomTypes(normalizedRoomTypes);
+
+      if (!initialData?.roomType && normalizedRoomTypes.length > 0) {
+        setFormData((prev) => ({
+          ...prev,
+          roomType: prev.roomType || normalizedRoomTypes[0].value,
+        }));
+      }
+    } catch (error) {
+      showError("Failed to load room types");
+      setRoomTypes([]);
+    } finally {
+      setLoadingRoomTypes(false);
+    }
+  };
+
+  const handleAmenityHighlightToggle = async (e, amenity) => {
+    e.stopPropagation();
+
+    if (!amenity?.id) return;
+
+    const nextValue = !amenity.showHighlight;
+    setTogglingHighlightId(amenity.id);
+
+    try {
+      await amenitiesHighlight(amenity.id, nextValue);
+      setAmenities((prev) =>
+        prev.map((item) =>
+          item.id === amenity.id
+            ? { ...item, showHighlight: nextValue }
+            : item,
+        ),
+      );
+    } catch (error) {
+      showError(error?.response?.data?.message || "Failed to update highlight");
+    } finally {
+      setTogglingHighlightId(null);
+    }
   };
 
   const incrementValue = (field) => {
@@ -468,13 +520,20 @@ const AddRoomModal = ({
                     name="roomType"
                     value={formData.roomType}
                     onChange={handleChange}
+                    disabled={loadingRoomTypes}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
                   >
-                    {roomTypes.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
-                      </option>
-                    ))}
+                    {loadingRoomTypes ? (
+                      <option value="">Loading room types...</option>
+                    ) : roomTypes.length > 0 ? (
+                      roomTypes.map((t) => (
+                        <option key={t.id ?? t.value} value={t.value}>
+                          {t.label}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">No room types available</option>
+                    )}
                   </select>
                 </div>
                 <div>
@@ -748,11 +807,35 @@ const AddRoomModal = ({
                         : "border-gray-100 hover:border-gray-200 text-gray-600"
                     }`}
                   >
-                    <span className="text-xs font-bold truncate">
-                      {amenity.name || amenity.featureName}
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-xs font-bold truncate">
+                        {amenity.name || amenity.featureName}
+                      </span>
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-gray-500">
+                          Highlight
+                        </span>
+                        <span
+                          onClick={(e) => handleAmenityHighlightToggle(e, amenity)}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                            amenity.showHighlight ? "bg-amber-500" : "bg-gray-300"
+                          } ${togglingHighlightId === amenity.id ? "opacity-60" : ""}`}
+                        >
+                          <span
+                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                              amenity.showHighlight ? "translate-x-5" : "translate-x-0.5"
+                            }`}
+                          />
+                        </span>
+                        {amenity.showHighlight && (
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-amber-700">
+                            On
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     {formData.amenitiesAndFeaturesIds.includes(amenity.id) && (
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0"></div>
                     )}
                   </button>
                 ))}

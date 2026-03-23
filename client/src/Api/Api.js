@@ -314,6 +314,9 @@ export const getGroupBookings = () =>API.get("/api/v1/group-bookings");
 // ===============================
 // ROOMS
 // ===============================
+export const createRoomType = (data) =>API.post("api/v1/room-types", data);
+export const getAllRoomTypes = () =>API.get("api/v1/room-types");
+export const deleteRoomType = (id) =>API.delete(`api/v1/room-types/${id}`);
 export const addRoomToProperty = (propertyId, data) =>API.post(`api/v1/rooms/property/${propertyId}`, data);
 export const updateRoomById = (roomId, data) =>API.put(`api/v1/rooms/${roomId}`, data);
 export const getRoomById = (roomId) => API.get(`api/v1/rooms/${roomId}`);
