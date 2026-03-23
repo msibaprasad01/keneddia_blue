@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -37,6 +37,10 @@ import NotFound from "./not-found";
 import EventImageCarousel from "@/modules/website/components/eventDetail/Eventimagecarousel";
 import PastEventGallery from "@/modules/website/components/eventDetail/Pasteventgallery";
 import { UpcomingPropertyEvents } from "@/modules/website/components/eventDetail/Eventcards";
+import {
+  buildEventDetailPath,
+  getEventIdFromSlug,
+} from "@/modules/website/utils/eventSlug";
 
 // ============================================================================
 // FALLBACK CONSTANTS
@@ -488,7 +492,9 @@ function BookingModal({
 // MAIN PAGE
 // ============================================================================
 export default function EventDetails() {
-  const { id } = useParams<{ id: string }>();
+  const { eventSlug } = useParams<{ eventSlug: string }>();
+  const navigate = useNavigate();
+  const id = getEventIdFromSlug(eventSlug);
   const [event, setEvent] = useState<ApiEvent | null>(null);
   const [detailInfoList, setDetailInfoList] = useState<EventDetailInfo[]>([]);
   const [heroSlides, setHeroSlides] = useState<
@@ -548,8 +554,20 @@ export default function EventDetails() {
         setEvent(null);
       }
     };
+    if (!id) {
+      setEvent(null);
+      return;
+    }
     fetchEventBase();
   }, [id]);
+
+  useEffect(() => {
+    if (!event || !eventSlug) return;
+    const canonicalPath = buildEventDetailPath(event);
+    if (canonicalPath !== `/events/${eventSlug}`) {
+      navigate(canonicalPath, { replace: true });
+    }
+  }, [event, eventSlug, navigate]);
 
   // ── Fetch detail info + media + interest list ──
   useEffect(() => {

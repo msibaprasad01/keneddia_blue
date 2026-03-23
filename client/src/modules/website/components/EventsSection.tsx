@@ -17,6 +17,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -191,7 +192,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
-       onClick={() => navigate(`/events/${event.id}`)}
+       onClick={() => navigate(buildEventDetailPath(event))}
       className="group h-[520px] border border-border/60 rounded-[1rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer bg-black"
     >
       {isFullFrame ? (
@@ -268,7 +269,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             )}
             {event.ctaText?.trim() && (
               <Link
-                to={`/events/${event.id}`}
+                to={buildEventDetailPath(event)}
                 className="w-full bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
               >
                 {event.ctaText} <ArrowRight size={14} />
@@ -357,7 +358,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             <div className="mt-auto pt-3 border-t border-dashed border-border">
               {event.ctaText?.trim() && (
                 <Link
-                  to={`/events/${event.id}`}
+                  to={buildEventDetailPath(event)}
                   className="w-full bg-primary text-white py-2.5 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
                 >
                   {event.ctaText} <ArrowRight size={14} />

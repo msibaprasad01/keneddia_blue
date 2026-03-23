@@ -20,6 +20,7 @@ import {
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { getEventsUpdated } from "@/Api/Api";
+import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 
 const dateFilters = [
   { label: "Today", value: "today" },
@@ -27,6 +28,14 @@ const dateFilters = [
   { label: "This Weekend", value: "weekend" },
   { label: "This Month", value: "month" },
 ];
+
+const defaultFilters = {
+  dateFilter: "",
+  locations: [] as string[],
+  eventTypes: [] as string[],
+  statuses: [] as string[],
+  categories: [] as string[],
+};
 
 // ============================================================================
 // DYNAMIC MEDIA COMPONENT
@@ -71,7 +80,7 @@ const EventMedia = ({
             ? "h-full"
             : "h-64"
       }`}
-      onClick={() => navigate(`/events/${event.id}`)}
+      onClick={() => navigate(buildEventDetailPath(event))}
     >
       {event.image?.url ? (
         isVideo ? (
@@ -134,16 +143,24 @@ export default function EventsListing() {
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(false);
-  const [filters, setFilters] = useState({
-    dateFilter: "",
-    locations: [] as string[],
-    eventTypes: [] as string[],
-    statuses: [] as string[],
-    categories: [] as string[],
-  });
+  const [filters, setFilters] = useState(defaultFilters);
 
   useEffect(() => {
     fetchEvents();
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const previousOverflowY = root.style.overflowY;
+    const previousScrollbarGutter = root.style.scrollbarGutter;
+
+    root.style.overflowY = "scroll";
+    root.style.scrollbarGutter = "stable";
+
+    return () => {
+      root.style.overflowY = previousOverflowY;
+      root.style.scrollbarGutter = previousScrollbarGutter;
+    };
   }, []);
 
   const fetchEvents = async () => {
@@ -245,6 +262,12 @@ export default function EventsListing() {
   ].sort();
   const uniqueTypes = [...new Set(eventList.map((e) => e.typeName))].sort();
   const uniqueStatuses = [...new Set(eventList.map((e) => e.status))].sort();
+  const hasActiveFilters =
+    Boolean(filters.dateFilter) ||
+    filters.locations.length > 0 ||
+    filters.eventTypes.length > 0 ||
+    filters.statuses.length > 0 ||
+    filters.categories.length > 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -254,10 +277,11 @@ export default function EventsListing() {
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr]">
             {/* Sidebar with all filters restored */}
             <aside
-              className={`fixed lg:sticky top-0 left-0 h-screen lg:h-[calc(100vh-80px)] lg:top-20 w-80 lg:w-full bg-card border-r border-border/50 p-6 z-50 lg:z-0 transition-transform overflow-y-auto ${filterSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+              className={`fixed lg:sticky top-0 left-0 h-screen lg:h-[calc(100vh-80px)] lg:top-20 w-80 lg:w-full bg-card border-r border-border/50 p-6 z-50 lg:z-0 transition-transform overflow-y-scroll ${filterSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+              style={{ scrollbarGutter: "stable" }}
             >
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-lg font-serif">Filters</h3>
+              <div className="sticky top-0 z-10 -mx-6 mb-8 flex items-center justify-between bg-card px-6 pb-4 pt-1">
+                <h3 className="text-lg font-serif shrink-0">Filters</h3>
                 <X
                   className="lg:hidden cursor-pointer"
                   onClick={() => setFilterSidebarOpen(false)}
@@ -345,6 +369,18 @@ export default function EventsListing() {
                   ))}
                 </div>
               </div>
+
+              {hasActiveFilters && (
+                <div className="sticky bottom-0 -mx-6 mt-10 border-t border-border/50 bg-card px-6 pb-2 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setFilters(defaultFilters)}
+                    className="w-full rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-xs font-bold uppercase tracking-widest text-primary transition-colors hover:bg-primary/10"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
             </aside>
 
             {/* Content Area */}
@@ -445,7 +481,7 @@ export default function EventsListing() {
                           </div>
                           {event.ctaText && (
                             <Link
-                              to={`/events/${event.id}`}
+                              to={buildEventDetailPath(event)}
                               className="mt-6 flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all"
                             >
                               {event.ctaText} <ArrowRight size={14} />

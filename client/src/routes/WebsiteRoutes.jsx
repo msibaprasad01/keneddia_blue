@@ -138,7 +138,7 @@ const WebsiteRoutes = [
   // Detail Pages
   <Route key="offer-details" path="/offers/:id" element={<OfferDetails />} />,
   <Route key="property-details" path="/properties/:id" element={<PropertyDetails />} />,
-  <Route key="event-details" path="/events/:id" element={<EventDetails />} />,
+  <Route key="event-details" path="/events/:eventSlug" element={<EventDetails />} />,
 
   // News
   <Route key="news-listing" path="/news" element={<NewsListing />} />,

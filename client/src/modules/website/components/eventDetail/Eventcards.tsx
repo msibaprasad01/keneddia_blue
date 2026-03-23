@@ -19,6 +19,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { getEventsUpdated } from "@/Api/Api";
+import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 
 // ============================================================================
 // TYPES
@@ -92,7 +93,7 @@ export function UpcomingEventCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.08 }}
-      onClick={() => navigate(`/events/${ev.id}`)}
+      onClick={() => navigate(buildEventDetailPath(ev))}
       className="group h-[480px] bg-card border border-border/60 rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
     >
       {/* Media */}
@@ -171,7 +172,7 @@ export function UpcomingEventCard({
             </p>
             {ev.ctaText?.trim() && (
               <Link
-                to={`/events/${ev.id}`}
+                to={buildEventDetailPath(ev)}
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center justify-center gap-2 bg-[#E33E33] text-white py-3 rounded-xl text-[11px] font-black uppercase tracking-widest active:scale-95 transition-transform"
               >
@@ -200,7 +201,7 @@ export function UpcomingEventCard({
           <div className="mt-auto pt-4 border-t border-dashed border-border">
             {ev.ctaText?.trim() && (
               <Link
-                to={`/events/${ev.id}`}
+                to={buildEventDetailPath(ev)}
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center justify-center gap-2 bg-[#E33E33] text-white py-3 rounded-xl text-[11px] font-black uppercase tracking-widest active:scale-95 transition-transform"
               >

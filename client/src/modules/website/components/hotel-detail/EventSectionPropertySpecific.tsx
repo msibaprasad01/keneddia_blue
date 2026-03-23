@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { getEventsUpdated } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 
 interface EventImage {
   mediaId: number;
@@ -82,7 +83,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
-      onClick={() => navigate(`/events/${event.id}`)}
+      onClick={() => navigate(buildEventDetailPath(event))}
       className="group w-full max-w-[300px] h-[520px] mx-auto bg-card border border-border/60 rounded-[1rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
     >
       {/* Media Container */}
@@ -184,7 +185,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/events/${event.id}`);
+                    navigate(buildEventDetailPath(event));
                   }}
                   className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
                 >
@@ -217,7 +218,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/events/${event.id}`);
+                  navigate(buildEventDetailPath(event));
                 }}
                 className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform hover:opacity-90"
               >

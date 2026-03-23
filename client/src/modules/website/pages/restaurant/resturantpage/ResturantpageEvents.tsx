@@ -26,6 +26,7 @@ import {
   createGroupBookingEnquiry,
   getEventsHeaderByProperty,
 } from "@/Api/RestaurantApi";
+import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface PropertyProps {
@@ -625,7 +626,7 @@ function EventCard({ event }: { event: ApiEvent }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
-      onClick={() => navigate(`/events/${event.id}`)}
+      onClick={() => navigate(buildEventDetailPath(event))}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5 }}
@@ -703,7 +704,7 @@ function EventCard({ event }: { event: ApiEvent }) {
                   if (event.ctaLink) {
                     window.open(event.ctaLink, "_blank");
                   } else {
-                    navigate(`/events/${event.id}`);
+                    navigate(buildEventDetailPath(event));
                   }
                 }}
                 className="mt-4 py-3 rounded-xl text-[10px] font-bold uppercase bg-primary text-white"

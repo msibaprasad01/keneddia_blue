@@ -29,6 +29,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { getEventsUpdated, getGroupBookings } from "@/Api/Api";
+import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 
 /* ================= TYPES ================= */
 type ValuePiece = Date | null;
@@ -110,7 +111,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      onClick={() => navigate(`/events/${event.id}`)}
+      onClick={() => navigate(buildEventDetailPath(event))}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
@@ -196,7 +197,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
                     window.open(event.ctaLink, "_blank");
                   } else {
                     // Otherwise navigate internally
-                    navigate(`/events/${event.id}`);
+                    navigate(buildEventDetailPath(event));
                   }
                 }}
                 className="w-full bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform hover:opacity-90"
