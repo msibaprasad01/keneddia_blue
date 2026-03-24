@@ -50,6 +50,21 @@ export default function RoomList({
     }).format(amount);
   };
 
+  const getDiscountedPrice = (room: Room) => {
+    const price = room.basePrice ?? room.price ?? 0;
+    return typeof price === "number" ? price : 0;
+  };
+
+  const getOriginalPrice = (room: Room) => {
+    const originalPrice = room.originalPrice ?? room.strikePrice;
+    if (typeof originalPrice === "number" && originalPrice > 0) {
+      return originalPrice;
+    }
+
+    const discountedPrice = getDiscountedPrice(room);
+    return Math.round(discountedPrice * 1.2);
+  };
+
   const formatRoomSize = (room: Room) => {
     if (!room.roomSize) return null;
 
@@ -61,14 +76,60 @@ export default function RoomList({
     return `${room.roomSize} ${unitMap[room.roomSizeUnit || ""] || room.roomSizeUnit || ""}`.trim();
   };
 
+  const getAmenityLabel = (amenity: unknown) => {
+    if (typeof amenity === "string") return amenity;
+    if (
+      amenity &&
+      typeof amenity === "object" &&
+      "name" in amenity &&
+      typeof amenity.name === "string"
+    ) {
+      return amenity.name;
+    }
+
+    return null;
+  };
+
+  const isHighlightedAmenity = (amenity: unknown) => {
+    return Boolean(
+      amenity &&
+        typeof amenity === "object" &&
+        "showHighlight" in amenity &&
+        amenity.showHighlight,
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
         {currentRooms.map((room) => {
           const isSelected = selectedRoomId === room.id;
           const isAvailable = room.isAvailable === true;
-          const highlightedAmenity = room.highlightedAmenities?.[0];
           const roomSizeText = formatRoomSize(room);
+          const highlightedAmenities = (
+            room.highlightedAmenities?.length
+              ? room.highlightedAmenities
+              : (room.amenities || []).filter(isHighlightedAmenity)
+          )
+            .map(getAmenityLabel)
+            .filter(Boolean);
+          const primaryHighlightedAmenity = highlightedAmenities[0] ?? null;
+          let highlightedAmenityRemoved = false;
+          const amenities = (room.amenities || [])
+            .map(getAmenityLabel)
+            .filter(Boolean)
+            .filter((amenity) => {
+              if (
+                primaryHighlightedAmenity &&
+                amenity === primaryHighlightedAmenity &&
+                !highlightedAmenityRemoved
+              ) {
+                highlightedAmenityRemoved = true;
+                return false;
+              }
+
+              return true;
+            });
 
           return (
             <div
@@ -126,7 +187,7 @@ export default function RoomList({
                       {/* Mobile Price */}
                       <div className="md:hidden text-right">
                         <p className="text-lg font-bold text-primary">
-                          {formatPrice(room.basePrice)}
+                          {formatPrice(getDiscountedPrice(room))}
                         </p>
                       </div>
                     </div>
@@ -140,22 +201,25 @@ export default function RoomList({
                       <span className="rounded-md bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-stone-700">
                         {room.type || "Room Only"}
                       </span>
-                      {highlightedAmenity && (
-                        <span className="rounded-md border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-700">
-                          {highlightedAmenity}
+                      {primaryHighlightedAmenity && (
+                        <span
+                          key={`${room.id}-${primaryHighlightedAmenity}`}
+                          className="rounded-md border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-700"
+                        >
+                          {primaryHighlightedAmenity}
                         </span>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
-                      {room.amenities.slice(0, 6).map((item, idx) => (
-                        <div
+                    <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2">
+                      {amenities.slice(0, 6).map((item, idx) => (
+                        <span
                           key={idx}
-                          className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                          className="inline-flex max-w-full items-center gap-1.5 text-xs text-muted-foreground"
                         >
                           <div className="h-1 w-1 rounded-full bg-red-500" />
                           <span className="truncate">{item}</span>
-                        </div>
+                        </span>
                       ))}
                     </div>
 
@@ -192,10 +256,10 @@ export default function RoomList({
                 >
                   <div className="hidden md:block mb-4">
                     <p className="text-xs text-muted-foreground line-through">
-                      ₹{(room.basePrice * 1.2).toLocaleString()}
+                      {formatPrice(getOriginalPrice(room))}
                     </p>
                     <p className="text-2xl font-serif font-bold text-primary">
-                      {formatPrice(room.basePrice)}
+                      {formatPrice(getDiscountedPrice(room))}
                     </p>
                     <p className="text-[10px] text-muted-foreground">
                       + taxes & fees

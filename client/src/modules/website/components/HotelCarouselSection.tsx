@@ -22,6 +22,20 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { GetAllPropertyDetails } from "@/Api/Api";
 
+const getAmenityName = (amenity: unknown) => {
+  if (typeof amenity === "string") return amenity;
+  if (
+    amenity &&
+    typeof amenity === "object" &&
+    "name" in amenity &&
+    typeof amenity.name === "string"
+  ) {
+    return amenity.name;
+  }
+
+  return null;
+};
+
 // Custom CSS for Leaflet popups
 const customPopupStyles = `
   .leaflet-popup-content-wrapper {
@@ -75,7 +89,11 @@ const mapApiToHotelUI = (item: any) => {
       listing?.tagline ||
       listing?.subTitle ||
       "Luxury comfort in the heart of the city",
-    amenities: Array.isArray(listing?.amenities) ? listing.amenities : [],
+    amenities: Array.isArray(listing?.amenities)
+      ? listing.amenities
+          .map((amenity: unknown) => getAmenityName(amenity))
+          .filter(Boolean)
+      : [],
 
     // Dynamic Capacity and Rooms
     rooms: listing?.capacity || 1,

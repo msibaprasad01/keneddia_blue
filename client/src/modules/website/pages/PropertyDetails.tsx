@@ -7,6 +7,20 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { GetAllPropertyListing, getPropertyListingMedia } from "@/Api/Api";
 import NotFound from "./not-found";
 
+const getAmenityName = (amenity: unknown) => {
+  if (typeof amenity === "string") return amenity;
+  if (
+    amenity &&
+    typeof amenity === "object" &&
+    "name" in amenity &&
+    typeof amenity.name === "string"
+  ) {
+    return amenity.name;
+  }
+
+  return null;
+};
+
 interface ApiProperty {
   id: number;
   propertyName: string;
@@ -115,7 +129,10 @@ export default function PropertyDetails() {
 
               <h3 className="text-2xl font-serif mb-6">Amenities</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {property.amenities?.map((amenity, index) => (
+                {property.amenities
+                  ?.map((amenity) => getAmenityName(amenity))
+                  .filter(Boolean)
+                  .map((amenity, index) => (
                   <div key={index} className="flex items-center gap-3 p-4 bg-secondary/10 rounded-xl border border-border">
                     <CheckCircle2 className="w-5 h-5 text-primary" />
                     <span className="font-medium">{amenity}</span>

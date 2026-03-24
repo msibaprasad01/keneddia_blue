@@ -319,6 +319,10 @@ export const getAllRoomTypes = () =>API.get("api/v1/room-types");
 export const deleteRoomType = (id) =>API.delete(`api/v1/room-types/${id}`);
 export const addRoomToProperty = (propertyId, data) =>API.post(`api/v1/rooms/property/${propertyId}`, data);
 export const updateRoomById = (roomId, data) =>API.put(`api/v1/rooms/${roomId}`, data);
+export const updateRoomAmenityHighlight = (roomId, amenityId, showHighlight) =>
+  API.put(`api/v1/rooms/${roomId}/amenities/${amenityId}/highlight`, null, {
+    params: { showHighlight },
+  });
 export const getRoomById = (roomId) => API.get(`api/v1/rooms/${roomId}`);
 export const getRoomsByPropertyId = (propertyId) =>API.get(`api/v1/rooms/property/${propertyId}`);
 export const deleteOrDeactivateRoom = (roomId) =>API.delete(`api/v1/rooms/${roomId}`);

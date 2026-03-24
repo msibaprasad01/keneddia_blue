@@ -124,10 +124,26 @@ export default function RightSidebar({
     return typeof price === "number" ? price : 0;
   };
 
+  const getOriginalRoomPrice = (room: Room | null): number => {
+    if (!room) return 0;
+
+    const originalPrice = room.originalPrice ?? room.strikePrice;
+    if (typeof originalPrice === "number" && originalPrice > 0) {
+      return originalPrice;
+    }
+
+    return Math.round(getRoomPrice(room) * 1.2);
+  };
+
   const calculateTotalPrice = (room: Room | null): number => {
     if (!room) return 0;
     const roomPrice = getRoomPrice(room);
     return roomPrice * numberOfNights;
+  };
+
+  const calculateOriginalTotalPrice = (room: Room | null): number => {
+    if (!room) return 0;
+    return getOriginalRoomPrice(room) * numberOfNights;
   };
 
   const getMapEmbedUrl = () => {
@@ -209,7 +225,7 @@ export default function RightSidebar({
                       {formatPrice(calculateTotalPrice(selectedRoom))}
                     </span>
                     <span className="text-xs text-muted-foreground line-through">
-                      {formatPrice(getRoomPrice(selectedRoom))}
+                      {formatPrice(calculateOriginalTotalPrice(selectedRoom))}
                     </span>
                   </div>
                   <p className="text-sm font-medium text-foreground mt-1 truncate">

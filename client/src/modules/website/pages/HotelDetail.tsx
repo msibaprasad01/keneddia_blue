@@ -82,6 +82,7 @@ interface HotelData {
   description: string;
   tagline: string;
   rating: number | null;
+  verifiedReviews: number | null;
   price: string;
   media: PropertyMedia[];
   restaurants?: Restaurant[];
@@ -106,6 +107,20 @@ interface RoomAmenity {
   showHighlight?: boolean | null;
 }
 
+const getAmenityName = (amenity: unknown) => {
+  if (typeof amenity === "string") return amenity;
+  if (
+    amenity &&
+    typeof amenity === "object" &&
+    "name" in amenity &&
+    typeof amenity.name === "string"
+  ) {
+    return amenity.name;
+  }
+
+  return null;
+};
+
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -123,6 +138,32 @@ interface Restaurant {
 interface FoodDiningSectionProps {
   restaurants?: Restaurant[];
 }
+
+const VERIFIED_REVIEWS_SCALE = 1000000;
+
+const parseCombinedRatingMeta = (value: unknown) => {
+  if (value === null || value === undefined || value === "") {
+    return { rating: null, verifiedReviews: null };
+  }
+
+  const numericValue = Number(value);
+  if (Number.isNaN(numericValue)) {
+    return { rating: null, verifiedReviews: null };
+  }
+
+  const rating = Math.floor((numericValue + 0.0000001) * 10) / 10;
+  const verifiedReviews = Math.round(
+    (numericValue - rating) * VERIFIED_REVIEWS_SCALE,
+  );
+
+  return {
+    rating: Number.isNaN(rating) ? null : rating,
+    verifiedReviews:
+      Number.isNaN(verifiedReviews) || verifiedReviews <= 0
+        ? null
+        : verifiedReviews,
+  };
+};
 
 // Sample data — replace with API data when available
 const sampleRestaurants: Restaurant[] = [
@@ -222,13 +263,20 @@ export default function HotelDetail() {
     return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
   }, [searchData.checkIn, searchData.checkOut]);
 
-  const lowestPricedAvailableRoom = useMemo(() => {
-    const availableRooms = rooms.filter((room) => room.isAvailable);
-    if (availableRooms.length === 0) return null;
-
-    return availableRooms.reduce((lowest, room) =>
-      room.basePrice < lowest.basePrice ? room : lowest,
+  const highlightedRoomAmenities = useMemo(() => {
+    return Array.from(
+      new Set(
+        rooms
+          .flatMap((room) => room.highlightedAmenities || [])
+          .map((amenity) => getAmenityName(amenity))
+          .filter(Boolean),
+      ),
     );
+  }, [rooms]);
+
+  const firstAvailableRoom = useMemo(() => {
+    const availableRooms = rooms.filter((room) => room.isAvailable);
+    return availableRooms[0] || null;
   }, [rooms]);
 
   const effectiveSelectedRoomId = useMemo(() => {
@@ -239,8 +287,8 @@ export default function HotelDetail() {
       return selectedRoomId;
     }
 
-    return lowestPricedAvailableRoom?.id || null;
-  }, [lowestPricedAvailableRoom, rooms, selectedRoomId]);
+    return firstAvailableRoom?.id || null;
+  }, [firstAvailableRoom, rooms, selectedRoomId]);
 
   const effectiveSelectedRoom = useMemo(
     () => rooms.find((room) => room.id === effectiveSelectedRoomId) || null,
@@ -387,6 +435,7 @@ export default function HotelDetail() {
         const displayName = listing?.propertyName?.trim()
           ? listing.propertyName
           : listing?.mainHeading || parent.propertyName;
+        const ratingMeta = parseCombinedRatingMeta(listing?.rating);
 
         // Fetch dynamic nearby places based on coordinates
         let dynamicNearby = [];
@@ -409,11 +458,14 @@ export default function HotelDetail() {
             listing?.propertyType || parent.propertyTypes?.[0] || "Property",
           description: listing?.mainHeading || "",
           tagline: listing?.tagline || "",
-          rating: listing?.rating || null,
+          rating: ratingMeta.rating,
+          verifiedReviews: ratingMeta.verifiedReviews,
           price: `₹${(listing?.price || 0).toLocaleString()}`,
           media: listing?.media || [],
           coordinates: coords,
-          amenities: listing?.amenities || [],
+          amenities: (listing?.amenities || [])
+            .map((amenity: unknown) => getAmenityName(amenity))
+            .filter(Boolean),
           bookingEngineUrl: parent.bookingEngineUrl || null,
           image: { src: listing?.media?.[0]?.url || "", alt: displayName },
           nearbyPlaces:
@@ -458,12 +510,11 @@ export default function HotelDetail() {
             roomSize: r.roomSize ?? null,
             roomSizeUnit: r.roomSizeUnit || "SQ_FT",
             isAvailable: r.status === "AVAILABLE",
-            amenities:
-              r.amenitiesAndFeatures?.map((a: RoomAmenity) => a.name) || [],
+            amenities: r.amenitiesAndFeatures || [],
             highlightedAmenities:
               r.amenitiesAndFeatures
                 ?.filter((a: RoomAmenity) => Boolean(a.showHighlight))
-                .map((a: RoomAmenity) => a.name) || [],
+                || [],
             image: {
               src:
                 r.media?.find((item: any) => item.type === "IMAGE")?.url ||
@@ -483,12 +534,7 @@ export default function HotelDetail() {
           return currentSelectedRoomId;
         }
 
-        const availableRooms = mappedRooms.filter((room: any) => room.isAvailable);
-        if (availableRooms.length === 0) return null;
-
-        return availableRooms.reduce((lowest: any, room: any) =>
-          room.basePrice < lowest.basePrice ? room : lowest,
-        ).id;
+        return mappedRooms.find((room: any) => room.isAvailable)?.id || null;
       });
     } finally {
       setRoomsLoading(false);
@@ -738,10 +784,11 @@ export default function HotelDetail() {
                     {hotel.rating} <Star className="w-3 h-3 fill-white" />
                   </div>
 
-                  {/* {/* REVIEWS (static for now, matches UI) */}
-                  {/* <span className="text-sm text-foreground underline cursor-pointer">
-                    2156 Verified Reviews
-                  </span> */}
+                  {hotel.verifiedReviews ? (
+                    <span className="text-sm text-foreground">
+                      {hotel.verifiedReviews} Verified Reviews
+                    </span>
+                  ) : null}
                 </motion.div>
               )}
             </motion.div>
@@ -821,6 +868,18 @@ export default function HotelDetail() {
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
                   Choose Your Room
                 </h2>
+                {highlightedRoomAmenities.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mb-6">
+                    {highlightedRoomAmenities.map((amenity) => (
+                      <span
+                        key={amenity}
+                        className="inline-flex items-center rounded-full bg-stone-100 px-4 py-2 text-sm font-medium text-foreground"
+                      >
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 {roomsLoading ? (
                   <div className="flex justify-center py-12">
                     <Loader2 className="animate-spin w-8 h-8 text-primary" />

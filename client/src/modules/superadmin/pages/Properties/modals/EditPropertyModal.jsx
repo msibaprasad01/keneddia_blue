@@ -50,6 +50,43 @@ const Section = ({ label, icon: Icon }) => (
   </div>
 );
 
+const VERIFIED_USERS_SCALE = 1000000;
+
+const parseCombinedRating = (value) => {
+  if (value === null || value === undefined || value === "") {
+    return { rating: "", verifiedUsers: "" };
+  }
+
+  const numericValue = Number(value);
+  if (Number.isNaN(numericValue)) {
+    return { rating: "", verifiedUsers: "" };
+  }
+
+  const baseRating = Math.floor((numericValue + 0.0000001) * 10) / 10;
+  const verifiedUsers = Math.round(
+    (numericValue - baseRating) * VERIFIED_USERS_SCALE,
+  );
+
+  return {
+    rating: baseRating ? baseRating.toFixed(1) : "0.0",
+    verifiedUsers: verifiedUsers > 0 ? String(verifiedUsers) : "",
+  };
+};
+
+const encodeCombinedRating = (ratingValue, verifiedUsersValue) => {
+  if (ratingValue === "") return null;
+
+  const rating = Number(ratingValue);
+  if (Number.isNaN(rating)) return null;
+
+  const normalizedRating = Math.round(rating * 10) / 10;
+  const verifiedUsers = Math.max(0, Number(verifiedUsersValue) || 0);
+
+  return Number(
+    (normalizedRating + verifiedUsers / VERIFIED_USERS_SCALE).toFixed(6),
+  );
+};
+
 function EditPropertyModal({
   item,
   propertyTypes,
@@ -64,6 +101,7 @@ function EditPropertyModal({
   console.log("item", item);
   const p = item?.propertyResponseDTO || {};
   const listing = item?.propertyListingResponseDTOS?.[0] || {};
+  const parsedRating = parseCombinedRating(listing.rating);
 
   // ── Existing media (max 3) ─────────────────────────────────────────────────
   const existingMedia = (listing.media || []).slice(0, 3);
@@ -106,7 +144,8 @@ function EditPropertyModal({
     subTitle: listing.subTitle || "",
     fullAddress: listing.fullAddress || "",
     tagline: listing.tagline || "",
-    rating: listing.rating ?? "",
+    rating: parsedRating.rating,
+    verifiedUsers: parsedRating.verifiedUsers,
     capacity: listing.capacity ?? "",
     price: listing.price ?? "",
     gstPercentage: listing.gstPercentage ?? "",
@@ -121,6 +160,11 @@ function EditPropertyModal({
       p.nearbyLocations && p.nearbyLocations.length > 0
         ? p.nearbyLocations
         : [{ nearbyLocationName: "", googleMapLink: "" }],
+  });
+
+  const isHotelType = form.propertyTypeIds.some((id) => {
+    const matchedType = propertyTypes?.find((type) => type.id === id);
+    return String(matchedType?.typeName || "").toLowerCase() === "hotel";
   });
 
   const [saving, setSaving] = useState(false);
@@ -211,6 +255,12 @@ function EditPropertyModal({
     e.preventDefault();
     setSaving(true);
     try {
+      const combinedRatingValue = isHotelType
+        ? encodeCombinedRating(form.rating, form.verifiedUsers)
+        : form.rating !== ""
+          ? Number(form.rating)
+          : null;
+
       const payload = {
         propertyName: form.propertyName,
         propertyTypeIds: form.propertyTypeIds,
@@ -234,7 +284,7 @@ function EditPropertyModal({
         fullAddress: form.fullAddress,
         bookingEngineUrl: form.bookingEngineUrl || "",
         tagline: form.tagline,
-        rating: form.rating !== "" ? Number(form.rating) : null,
+        rating: combinedRatingValue,
         capacity: form.capacity !== "" ? Number(form.capacity) : null,
         price: form.price !== "" ? Number(form.price) : null,
         gstPercentage:
@@ -700,6 +750,19 @@ function EditPropertyModal({
                   className={inputCls}
                 />
               </Field>
+
+              {isHotelType && (
+                <Field label="Verified Users Rating" icon={Users}>
+                  <input
+                    type="number"
+                    value={form.verifiedUsers}
+                    onChange={(e) => set("verifiedUsers", e.target.value)}
+                    placeholder="e.g. 2156"
+                    min="0"
+                    className={inputCls}
+                  />
+                </Field>
+              )}
 
               {/* ─── AMENITIES ────────────────────────────────────── */}
               {amenities && amenities.length > 0 && (

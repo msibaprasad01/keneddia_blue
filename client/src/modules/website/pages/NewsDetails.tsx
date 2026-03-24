@@ -27,6 +27,20 @@ import {
   buildNewsDetailPath,
   getNewsIdFromSlug,
 } from "@/modules/website/utils/newsSlug";
+
+const getAmenityName = (amenity: unknown) => {
+  if (typeof amenity === "string") return amenity;
+  if (
+    amenity &&
+    typeof amenity === "object" &&
+    "name" in amenity &&
+    typeof amenity.name === "string"
+  ) {
+    return amenity.name;
+  }
+
+  return null;
+};
 // Types
 interface NewsItem {
   id: number;
@@ -265,7 +279,9 @@ export default function NewsDetails() {
                   location: parent.locationName || "India",
                   image: l.media?.[0]?.url || "",
                   rating: l.rating || 5,
-                  highlights: l.amenities || [],
+                  highlights: (l.amenities || [])
+                    .map((amenity: unknown) => getAmenityName(amenity))
+                    .filter(Boolean),
                 }));
             },
           );

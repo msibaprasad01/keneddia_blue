@@ -17,6 +17,20 @@ import { GetAllPropertyDetails } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import { createHotelSlug, createCitySlug } from "@/lib/HotelSlug";
 
+const getAmenityName = (amenity: unknown) => {
+  if (typeof amenity === "string") return amenity;
+  if (
+    amenity &&
+    typeof amenity === "object" &&
+    "name" in amenity &&
+    typeof amenity.name === "string"
+  ) {
+    return amenity.name;
+  }
+
+  return null;
+};
+
 interface ApiProperty {
   id: number;
   propertyId: number;
@@ -293,7 +307,9 @@ export default function PropertiesSection() {
                 price: l.price ?? 0,
                 gstPercentage: l.gstPercentage ?? 0,
                 discountAmount: l.discountAmount ?? 0,
-                amenities: l.amenities || [],
+                amenities: (l.amenities || [])
+                  .map((amenity: unknown) => getAmenityName(amenity))
+                  .filter(Boolean),
                 isActive: true,
                 media: l.media || [],
                 bookingEngineUrl: parent?.bookingEngineUrl || null,

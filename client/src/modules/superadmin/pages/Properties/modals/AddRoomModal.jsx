@@ -12,9 +12,9 @@ import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { colors } from "@/lib/colors/colors";
 import {
   addRoomToProperty,
-  amenitiesHighlight,
   getAllRoomTypes,
   getAllAmenityFeatures,
+  updateRoomAmenityHighlight,
   updateRoomById,
   uploadHeroMediaBulk,
 } from "@/Api/Api";
@@ -31,7 +31,7 @@ const AddRoomModal = ({
 
   const [formData, setFormData] = useState({
     roomNumber: "",
-    roomType: "",
+    roomTypeId: "",
     roomName: "",
     description: "",
     basePrice: "",
@@ -72,6 +72,24 @@ const AddRoomModal = ({
     { value: "SQ_M", label: "Square Meters" },
   ];
 
+  const resolveRoomTypeId = (room, availableRoomTypes = []) => {
+    if (room?.roomTypeId != null) {
+      return String(room.roomTypeId);
+    }
+
+    const roomTypeName = String(
+      room?.roomTypeName || room?.roomType || "",
+    ).trim().toLowerCase();
+
+    if (!roomTypeName) return "";
+
+    const matchedRoomType = availableRoomTypes.find(
+      (item) => String(item.label || item.value || "").trim().toLowerCase() === roomTypeName,
+    );
+
+    return matchedRoomType?.id != null ? String(matchedRoomType.id) : "";
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchAmenities();
@@ -94,7 +112,7 @@ const AddRoomModal = ({
 
         setFormData({
           roomNumber: initialData.roomNumber || "",
-          roomType: initialData.roomType || "",
+          roomTypeId: resolveRoomTypeId(initialData),
           roomName: initialData.roomName || "",
           description: initialData.description || "",
           basePrice: initialData.basePrice || "",
@@ -126,7 +144,7 @@ const AddRoomModal = ({
       } else {
         setFormData({
           roomNumber: "",
-          roomType: "",
+          roomTypeId: "",
           roomName: "",
           description: "",
           basePrice: "",
@@ -151,7 +169,30 @@ const AddRoomModal = ({
       const response = await getAllAmenityFeatures();
       const amenitiesData =
         response?.data?.data || response?.data || response || [];
-      setAmenities(Array.isArray(amenitiesData) ? amenitiesData : []);
+      const normalizedAmenities = Array.isArray(amenitiesData) ? amenitiesData : [];
+
+      if (initialData?.amenitiesAndFeatures?.length) {
+        const roomAmenityMap = new Map(
+          initialData.amenitiesAndFeatures.map((amenity) => [amenity.id, amenity]),
+        );
+
+        setAmenities(
+          normalizedAmenities.map((amenity) => {
+            const roomAmenity = roomAmenityMap.get(amenity.id);
+
+            return roomAmenity
+              ? { ...amenity, showHighlight: roomAmenity.showHighlight ?? false }
+              : { ...amenity, showHighlight: false };
+          }),
+        );
+      } else {
+        setAmenities(
+          normalizedAmenities.map((amenity) => ({
+            ...amenity,
+            showHighlight: false,
+          })),
+        );
+      }
     } catch (error) {
       showError("Failed to load amenities");
     } finally {
@@ -197,19 +238,25 @@ const AddRoomModal = ({
         .filter((item) => item?.name)
         .map((item) => ({
           id: item.id,
-          value: item.name,
+          value: String(item.id),
           label: item.name,
           active: item.active ?? true,
         }));
 
       setRoomTypes(normalizedRoomTypes);
+      setFormData((prev) => {
+        const resolvedRoomTypeId = initialData
+          ? resolveRoomTypeId(initialData, normalizedRoomTypes)
+          : "";
 
-      if (!initialData?.roomType && normalizedRoomTypes.length > 0) {
-        setFormData((prev) => ({
+        return {
           ...prev,
-          roomType: prev.roomType || normalizedRoomTypes[0].value,
-        }));
-      }
+          roomTypeId:
+            prev.roomTypeId ||
+            resolvedRoomTypeId ||
+            (normalizedRoomTypes[0]?.value ?? ""),
+        };
+      });
     } catch (error) {
       showError("Failed to load room types");
       setRoomTypes([]);
@@ -224,10 +271,33 @@ const AddRoomModal = ({
     if (!amenity?.id) return;
 
     const nextValue = !amenity.showHighlight;
+
+    if (nextValue) {
+      const existingHighlightedAmenity = amenities.find(
+        (item) => item.id !== amenity.id && item.showHighlight,
+      );
+
+      if (existingHighlightedAmenity) {
+        showError("You can add only one highlight in room");
+        return;
+      }
+    }
+
+    if (!initialData?.roomId) {
+      setAmenities((prev) =>
+        prev.map((item) =>
+          item.id === amenity.id
+            ? { ...item, showHighlight: nextValue }
+            : item,
+        ),
+      );
+      return;
+    }
+
     setTogglingHighlightId(amenity.id);
 
     try {
-      await amenitiesHighlight(amenity.id, nextValue);
+      await updateRoomAmenityHighlight(initialData.roomId, amenity.id, nextValue);
       setAmenities((prev) =>
         prev.map((item) =>
           item.id === amenity.id
@@ -433,15 +503,32 @@ const AddRoomModal = ({
       return;
     }
 
+    if (!formData.roomTypeId) {
+      showError("Please select a room type");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
+      const amenitiesPayload = formData.amenitiesAndFeaturesIds.map((amenityId) => {
+        const amenity = amenities.find((item) => item.id === amenityId);
+
+        return {
+          amenityId,
+          showHighlight: amenity?.showHighlight ?? false,
+        };
+      });
+
+      const { amenitiesAndFeaturesIds, ...restFormData } = formData;
       const payload = {
-        ...formData,
+        ...restFormData,
         basePrice: parseFloat(formData.basePrice),
         maxOccupancy: parseInt(formData.maxOccupancy),
         roomSize: formData.roomSize ? parseFloat(formData.roomSize) : null,
         floorNumber: parseInt(formData.floorNumber),
+        roomTypeId: parseInt(formData.roomTypeId),
+        amenities: amenitiesPayload,
         mediaIds: formData.mediaIds,
       };
 
@@ -517,10 +604,11 @@ const AddRoomModal = ({
                     Room Type *
                   </label>
                   <select
-                    name="roomType"
-                    value={formData.roomType}
+                    name="roomTypeId"
+                    value={formData.roomTypeId}
                     onChange={handleChange}
                     disabled={loadingRoomTypes}
+                    required
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
                   >
                     {loadingRoomTypes ? (

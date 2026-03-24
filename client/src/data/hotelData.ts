@@ -7,7 +7,7 @@ export interface Room {
   description: string;
   basePrice: number;
   maxOccupancy: number;
-  amenities: string[];
+  amenities: Array<string | { id?: number; name?: string; showHighlight?: boolean | null }>;
   image: ImageAsset;
   available: boolean;
   size: string;
@@ -15,7 +15,7 @@ export interface Room {
   roomSize?: number | null;
   roomSizeUnit?: string | null;
   isAvailable?: boolean;
-  highlightedAmenities?: string[];
+  highlightedAmenities?: Array<string | { id?: number; name?: string; showHighlight?: boolean | null }>;
   gallery?: ImageAsset[];
 }
 
