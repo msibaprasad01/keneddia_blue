@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -28,8 +30,10 @@ import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-import { getEventsUpdated, getGroupBookings } from "@/Api/Api";
+import { getEventsUpdated, getGroupBookings, getPropertyTypes } from "@/Api/Api";
+import { createGroupBookingEnquiry } from "@/Api/RestaurantApi";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
+import { toast } from "react-hot-toast";
 
 /* ================= TYPES ================= */
 type ValuePiece = Date | null;
@@ -65,6 +69,18 @@ interface GroupBooking {
   propertyTypeName: string | null;
   media: { mediaId: number; type: string; url: string }[];
 }
+
+interface GroupBookingSectionProps {
+  propertyTypeId?: number | null;
+}
+
+const EMPTY_FORM = {
+  name: "",
+  phone: "",
+  email: "",
+  persons: "",
+  customQuery: "",
+};
 
 /* ================= HELPERS ================= */
 const formatDate = (dateString: string) => {
@@ -242,7 +258,9 @@ function EventCard({ event, index }: { event: Event; index: number }) {
 }
 
 /* ================= MAIN COMPONENT ================= */
-export default function GroupBookingSection() {
+export default function GroupBookingSection({
+  propertyTypeId: initialPropertyTypeId = null,
+}: GroupBookingSectionProps) {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [groupBookings, setGroupBookings] = useState<GroupBooking[]>([]);
@@ -250,9 +268,43 @@ export default function GroupBookingSection() {
   const [selectedOffer, setSelectedOffer] = useState<GroupBooking | null>(null);
   const [step, setStep] = useState(1);
   const [dateRange, setDateRange] = useState<CalendarValue>(null);
+  const [propertyTypeId, setPropertyTypeId] = useState<number | null>(
+    initialPropertyTypeId,
+  );
+  const [formData, setFormData] = useState(EMPTY_FORM);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 4;
+
+  useEffect(() => {
+    setPropertyTypeId(initialPropertyTypeId);
+  }, [initialPropertyTypeId]);
+
+  useEffect(() => {
+    if (propertyTypeId) return;
+
+    const resolveHotelTypeId = async () => {
+      try {
+        const response = await getPropertyTypes();
+        const types = response?.data || response || [];
+        const hotelType = Array.isArray(types)
+          ? types.find(
+              (type: any) =>
+                type?.isActive && type?.typeName?.toLowerCase() === "hotel",
+            )
+          : null;
+
+        if (hotelType?.id) {
+          setPropertyTypeId(Number(hotelType.id));
+        }
+      } catch (error) {
+        console.error("Failed to resolve hotel property type:", error);
+      }
+    };
+
+    resolveHotelTypeId();
+  }, [propertyTypeId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -296,7 +348,14 @@ export default function GroupBookingSection() {
         // Filter: Exclude "Restaurant", include everything else (including null)
         // Sort: latest first (ID descending)
         const filteredBookings = (Array.isArray(rawBookings) ? rawBookings : [])
-          .filter((b: GroupBooking) => b.propertyTypeName !== "Restaurant")
+          .filter((b: GroupBooking) =>
+            propertyTypeId
+              ? b.propertyTypeName === "Restaurant"
+                ? false
+                : (b as any).propertyTypeId == null ||
+                  Number((b as any).propertyTypeId) === Number(propertyTypeId)
+              : b.propertyTypeName !== "Restaurant",
+          )
           .sort((a, b) => b.id - a.id);
 
         setGroupBookings(filteredBookings);
@@ -307,7 +366,66 @@ export default function GroupBookingSection() {
       }
     };
     fetchData();
-  }, []);
+  }, [propertyTypeId]);
+
+  const handleFinalSubmit = async () => {
+    if (!propertyTypeId) {
+      toast.error("Hotel type is not available. Please try again.");
+      return;
+    }
+
+    if (
+      !formData.name.trim() ||
+      !formData.phone.trim() ||
+      !formData.email.trim()
+    ) {
+      toast.error("Please fill in name, phone, and email.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formattedDates =
+        Array.isArray(dateRange) && dateRange[0]
+          ? `${dateRange[0].toLocaleDateString("en-IN")}${
+              dateRange[1]
+                ? ` to ${dateRange[1].toLocaleDateString("en-IN")}`
+                : ""
+            }`
+          : null;
+
+      const queriesText = [
+        `Guest Name: ${formData.name.trim()}`,
+        `Phone Number: ${formData.phone.trim()}`,
+        `Email Address: ${formData.email.trim()}`,
+        selectedOffer?.title ? `Booking Package: ${selectedOffer.title}` : null,
+        formattedDates ? `Preferred Dates: ${formattedDates}` : null,
+        formData.persons ? `No. of Persons: ${formData.persons}` : null,
+        formData.customQuery
+          ? `Additional Info: ${formData.customQuery}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
+      await createGroupBookingEnquiry({
+        name: formData.name.trim(),
+        phoneNumber: formData.phone.trim(),
+        emailAddress: formData.email.trim(),
+        queries: queriesText || null,
+        enquiryDate: new Date().toISOString().split("T")[0],
+        propertyTypeId: Number(propertyTypeId),
+        ...(selectedOffer?.id ? { groupBookingId: selectedOffer.id } : {}),
+      });
+
+      setStep(3);
+    } catch (error) {
+      console.error("Group booking enquiry failed:", error);
+      toast.error("Failed to send inquiry. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const totalPages = Math.ceil(groupBookings.length / itemsPerPage);
   const paginatedBookings = groupBookings.slice(
@@ -427,6 +545,8 @@ export default function GroupBookingSection() {
                         onClick={() => {
                           setSelectedOffer(booking);
                           setStep(1);
+                          setDateRange(null);
+                          setFormData(EMPTY_FORM);
                         }}
                         className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all group ${colorCls}`}
                       >
@@ -484,13 +604,23 @@ export default function GroupBookingSection() {
 
       <Dialog
         open={!!selectedOffer}
-        onOpenChange={() => setSelectedOffer(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedOffer(null);
+            setStep(1);
+            setDateRange(null);
+            setFormData(EMPTY_FORM);
+          }
+        }}
       >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="font-serif text-2xl">
               {selectedOffer?.title}
             </DialogTitle>
+            <DialogDescription>
+              Share your preferred dates and contact details for this booking.
+            </DialogDescription>
           </DialogHeader>
           {step === 1 ? (
             <div className="space-y-4">
@@ -501,6 +631,59 @@ export default function GroupBookingSection() {
                 disabled={!Array.isArray(dateRange) || !dateRange[0]}
               >
                 Confirm Dates
+              </Button>
+            </div>
+          ) : step === 2 ? (
+            <div className="space-y-4">
+              <Input
+                placeholder="Your name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
+              />
+              <Input
+                placeholder="Phone number"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                }
+              />
+              <Input
+                placeholder="Email address"
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, email: e.target.value }))
+                }
+              />
+              <Input
+                placeholder="No. of persons"
+                type="number"
+                min="1"
+                value={formData.persons}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, persons: e.target.value }))
+                }
+              />
+              <Textarea
+                placeholder="Additional requirements"
+                value={formData.customQuery}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    customQuery: e.target.value,
+                  }))
+                }
+                rows={4}
+              />
+              <Button
+                className="w-full"
+                onClick={handleFinalSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Send Enquiry"}
               </Button>
             </div>
           ) : (

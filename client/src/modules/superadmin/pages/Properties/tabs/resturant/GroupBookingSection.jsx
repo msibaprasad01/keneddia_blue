@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 function GroupBookingSection() {
-  return (
-    <div>GroupBookingSection</div>
-  )
+  return <div>GroupBookingSection</div>;
 }
 
-export default GroupBookingSection
+export default GroupBookingSection;

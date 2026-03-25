@@ -448,7 +448,7 @@ export default function Hotels() {
       </div>
 
       {/* GROUP BOOKING EXTENSION */}
-      <GroupBookingSection />
+      <GroupBookingSection propertyTypeId={hotelTypeId} />
 
       {/* HOTEL NEWS UPDATES */}
       <div id="events">
