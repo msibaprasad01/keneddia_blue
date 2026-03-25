@@ -9,6 +9,7 @@ import {
   Share2,
   Heart,
   Check,
+  ChevronLeft,
   ChevronRight,
   Loader2,
   Info,
@@ -261,6 +262,7 @@ export default function HotelDetail() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [currentDiningIndex, setCurrentDiningIndex] = useState(0);
   const [datesInitialized, setDatesInitialized] = useState(false);
 
   // Feature States
@@ -359,6 +361,21 @@ export default function HotelDetail() {
     () => (diningItems.length > 0 ? diningItems : sampleRestaurants),
     [diningItems],
   );
+
+  useEffect(() => {
+    setCurrentDiningIndex(0);
+  }, [diningSectionItems.length]);
+
+  useEffect(() => {
+    if (diningSectionItems.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setCurrentDiningIndex((prev) =>
+        prev === diningSectionItems.length - 1 ? 0 : prev + 1,
+      );
+    }, 3500);
+
+    return () => window.clearInterval(timer);
+  }, [diningSectionItems.length]);
 
   const aboutAmenitiesPreview = useMemo(
     () => hotel?.amenities?.slice(0, 4) ?? [],
@@ -1103,104 +1120,164 @@ export default function HotelDetail() {
               )}
 
               <section id="events" className="scroll-mt-32 border-t pt-10">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
-                  Events
-                </h2>
-                <EventSectionPropertySpecific
-                  locationId={hotel.locationId}
-                  locationName={hotel.city}
-                />
-              </section>
-              <section id="food-dining" className="scroll-mt-32 border-t pt-10">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
-                  Food & Dining
-                </h2>
+                <div id="food-dining" className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                  <div className="min-w-0">
+                    <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
+                      Food & Dining
+                    </h2>
 
-                {diningItems.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {diningSectionItems.map((restaurant) => {
-                      const restaurantPath = restaurant.attachRestaurantId
-                        ? restaurantPaths[String(restaurant.attachRestaurantId)]
-                        : null;
+                    {diningSectionItems.length > 0 ? (
+                      <div className="relative">
+                        <div className="overflow-hidden">
+                          <div
+                            className="flex transition-transform duration-500 ease-out"
+                            style={{
+                              transform: `translateX(-${currentDiningIndex * 100}%)`,
+                            }}
+                          >
+                            {diningSectionItems.map((restaurant) => {
+                              const restaurantPath = restaurant.attachRestaurantId
+                                ? restaurantPaths[String(restaurant.attachRestaurantId)]
+                                : null;
 
-                      return (
-                        <div
-                          key={restaurant.id}
-                          className={`rounded-xl border border-border bg-card overflow-hidden shadow-sm transition-shadow duration-200 ${
-                            restaurantPath
-                              ? "cursor-pointer hover:shadow-md"
-                              : ""
-                          }`}
-                          onClick={() => {
-                            if (restaurantPath) navigate(restaurantPath);
-                          }}
-                          role={restaurantPath ? "button" : undefined}
-                          tabIndex={restaurantPath ? 0 : undefined}
-                          onKeyDown={(event) => {
-                            if (
-                              restaurantPath &&
-                              (event.key === "Enter" || event.key === " ")
-                            ) {
-                              event.preventDefault();
-                              navigate(restaurantPath);
-                            }
-                          }}
-                        >
-                        <div className="relative w-full h-44 bg-muted flex items-center justify-center">
-                          {restaurant.image ? (
-                            <img
-                              src={restaurant.image}
-                              alt={restaurant.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <UtensilsCrossed
-                              className="w-10 h-10 text-muted-foreground/50"
-                              strokeWidth={1.5}
-                            />
-                          )}
-                        </div>
-                        <div className="p-4 space-y-1">
-                          <p className="text-base font-semibold text-foreground leading-snug">
-                            {restaurant.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {restaurant.cuisine}
-                          </p>
-                          {restaurant.description &&
-                          restaurant.description !== restaurant.cuisine ? (
-                            <p className="text-sm text-muted-foreground/90">
-                              {restaurant.description}
-                            </p>
-                          ) : null}
-                          {restaurant.attachedRestaurantName ? (
-                            <div className="pt-2 text-sm">
-                              <span className="text-red-600 font-semibold">
-                                Restaurant:
-                              </span>{" "}
-                              <span className="text-muted-foreground">
-                                {restaurant.attachedRestaurantName}
-                              </span>
-                            </div>
-                          ) : null}
-                          <div className="pt-2 flex items-center gap-1 text-sm">
-                            <span className="text-red-600 font-semibold">
-                              Open:
-                            </span>
-                            <span className="text-muted-foreground">
-                              {restaurant.timings}
-                            </span>
+                              return (
+                                <div
+                                  key={restaurant.id}
+                                  className="w-full flex-shrink-0"
+                                >
+                                  <div
+                                    className={`rounded-xl border border-border bg-card overflow-hidden shadow-sm transition-shadow duration-200 ${
+                                      restaurantPath
+                                        ? "cursor-pointer hover:shadow-md"
+                                        : ""
+                                    }`}
+                                    onClick={() => {
+                                      if (restaurantPath) navigate(restaurantPath);
+                                    }}
+                                    role={restaurantPath ? "button" : undefined}
+                                    tabIndex={restaurantPath ? 0 : undefined}
+                                    onKeyDown={(event) => {
+                                      if (
+                                        restaurantPath &&
+                                        (event.key === "Enter" || event.key === " ")
+                                      ) {
+                                        event.preventDefault();
+                                        navigate(restaurantPath);
+                                      }
+                                    }}
+                                  >
+                                    <div className="relative w-full h-[320px] bg-muted flex items-center justify-center">
+                                      {restaurant.image ? (
+                                        <img
+                                          src={restaurant.image}
+                                          alt={restaurant.name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <UtensilsCrossed
+                                          className="w-10 h-10 text-muted-foreground/50"
+                                          strokeWidth={1.5}
+                                        />
+                                      )}
+                                    </div>
+                                    <div className="p-4 space-y-1">
+                                      <p className="text-base font-semibold text-foreground leading-snug">
+                                        {restaurant.name}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        {restaurant.cuisine}
+                                      </p>
+                                      {restaurant.description &&
+                                      restaurant.description !== restaurant.cuisine ? (
+                                        <p className="text-sm text-muted-foreground/90">
+                                          {restaurant.description}
+                                        </p>
+                                      ) : null}
+                                      {restaurant.attachedRestaurantName ? (
+                                        <div className="pt-2 text-sm">
+                                          <span className="text-red-600 font-semibold">
+                                            Restaurant:
+                                          </span>{" "}
+                                          <span className="text-muted-foreground">
+                                            {restaurant.attachedRestaurantName}
+                                          </span>
+                                        </div>
+                                      ) : null}
+                                      <div className="pt-2 flex items-center gap-1 text-sm">
+                                        <span className="text-red-600 font-semibold">
+                                          Open:
+                                        </span>
+                                        <span className="text-muted-foreground">
+                                          {restaurant.timings}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
+
+                        {diningSectionItems.length > 1 && (
+                          <>
+                            <button
+                              onClick={() =>
+                                setCurrentDiningIndex((prev) =>
+                                  prev === 0 ? diningSectionItems.length - 1 : prev - 1,
+                                )
+                              }
+                              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all"
+                              aria-label="Previous dining item"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                setCurrentDiningIndex((prev) =>
+                                  prev === diningSectionItems.length - 1 ? 0 : prev + 1,
+                                )
+                              }
+                              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all"
+                              aria-label="Next dining item"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                            <div className="flex justify-center gap-2 mt-4">
+                              {diningSectionItems.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setCurrentDiningIndex(idx)}
+                                  className={`h-1.5 rounded-full transition-all ${
+                                    currentDiningIndex === idx
+                                      ? "bg-primary w-5"
+                                      : "bg-border hover:bg-muted-foreground w-1.5"
+                                  }`}
+                                  aria-label={`Go to dining slide ${idx + 1}`}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
                       </div>
-                      );
-                    })}
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
+                        No food and dining highlights available for this property.
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="rounded-xl border border-dashed border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
-                    No food and dining highlights available for this property.
+
+                  <div className="min-w-0">
+                    <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
+                      Events
+                    </h2>
+                    <EventSectionPropertySpecific
+                      locationId={hotel.locationId}
+                      locationName={hotel.city}
+                      singleCard
+                    />
                   </div>
-                )}
+                </div>
               </section>
               {/* <section id="food-dining" className="scroll-mt-32 border-t pt-10">
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">

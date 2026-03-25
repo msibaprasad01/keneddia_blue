@@ -47,6 +47,7 @@ interface Event {
 interface EventSectionPropertySpecificProps {
   locationId: number;
   locationName?: string;
+  singleCard?: boolean;
 }
 
 /* ================= EVENT CARD ================= */
@@ -236,6 +237,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
 export default function EventSectionPropertySpecific({
   locationId,
   locationName,
+  singleCard = false,
 }: EventSectionPropertySpecificProps) {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -343,6 +345,66 @@ export default function EventSectionPropertySpecific({
           <p className="text-xs text-muted-foreground/60">
             Location: {locationName}
           </p>
+        )}
+      </div>
+    );
+  }
+
+  if (singleCard) {
+    return (
+      <div
+        className="relative w-full"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="overflow-hidden w-full">
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{
+              transform: `translateX(-${currentIndex * 100}%)`,
+            }}
+          >
+            {events.map((event, index) => (
+              <div key={event.id} className="w-full flex-shrink-0">
+                <EventCard event={event} index={index} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {events.length > 1 && (
+          <>
+            <button
+              onClick={handlePrevious}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all backdrop-blur-sm"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={handleNext}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all backdrop-blur-sm"
+              aria-label="Next"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            <div className="flex justify-center gap-2 mt-4">
+              {events.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-1.5 rounded-full transition-all ${
+                    currentIndex === idx
+                      ? "bg-primary w-5"
+                      : "bg-border hover:bg-muted-foreground w-1.5"
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
     );
