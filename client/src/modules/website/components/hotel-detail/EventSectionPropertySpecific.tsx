@@ -11,7 +11,7 @@ import {
   Clock,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { getEventsUpdated } from "@/Api/Api";
+import { getEventFilesByUploadedId, getEventsUpdated } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
@@ -40,6 +40,7 @@ interface Event {
   ctaText: string;
   ctaLink: string | null;
   image: EventImage;
+  mediaSlides?: EventImage[];
   active: boolean;
   longDesc: string;
 }
@@ -55,10 +56,27 @@ function EventCard({ event, index }: { event: Event; index: number }) {
   const navigate = useNavigate();
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const slides = event.mediaSlides?.length ? event.mediaSlides : event.image ? [event.image] : [];
+  const activeMedia = slides[activeMediaIndex] || event.image;
 
   const isVideo =
-    event.image?.type === "VIDEO" || event.image?.url?.includes(".mp4");
+    activeMedia?.type === "VIDEO" || activeMedia?.url?.includes(".mp4");
+
+  useEffect(() => {
+    setActiveMediaIndex(0);
+    setIsMuted(true);
+  }, [event.id]);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const interval = window.setInterval(() => {
+      setActiveMediaIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+    }, 2800);
+
+    return () => window.clearInterval(interval);
+  }, [slides.length]);
 
   const analyzeMediaSize = (w: number, h: number) => {
     if (w / h <= 0.85) setIsBanner(true);
@@ -93,11 +111,11 @@ function EventCard({ event, index }: { event: Event; index: number }) {
           isBanner ? "h-full" : "h-[280px]"
         }`}
       >
-        {event.image?.url ? (
+        {activeMedia?.url ? (
           isVideo ? (
             <>
               <video
-                src={event.image.url}
+                src={activeMedia.url}
                 className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl opacity-50"
                 autoPlay
                 loop
@@ -108,7 +126,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
               <div className="absolute inset-0 bg-white/10 backdrop-blur-md" />
               <video
                 ref={videoRef}
-                src={event.image.url}
+                src={activeMedia.url}
                 className="relative z-10 w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
                 autoPlay
                 loop
@@ -136,14 +154,14 @@ function EventCard({ event, index }: { event: Event; index: number }) {
           ) : (
             <>
               <img
-                src={event.image.url}
+                src={activeMedia.url}
                 aria-hidden="true"
                 className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl opacity-50"
               />
               <div className="absolute inset-0 bg-white/10 backdrop-blur-md" />
               <img
-                src={event.image.url}
-                alt={event.image.alt || event.title}
+                src={activeMedia.url}
+                alt={activeMedia.alt || event.title}
                 className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                 onLoad={(e) =>
                   analyzeMediaSize(
@@ -165,6 +183,28 @@ function EventCard({ event, index }: { event: Event; index: number }) {
           <span className="text-lg font-black leading-none">{day}</span>
           <span className="text-[9px] font-bold tracking-tighter">{month}</span>
         </div>
+
+        {slides.length > 1 && (
+          <div className="absolute bottom-4 right-4 z-20 flex gap-1.5">
+            {slides.map((_, idx) => (
+              <button
+                key={`${event.id}-media-${idx}`}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveMediaIndex(idx);
+                }}
+                className={`h-1.5 rounded-full transition-all ${
+                  activeMediaIndex === idx
+                    ? "w-5 bg-white"
+                    : "w-1.5 bg-white/55 hover:bg-white/80"
+                }`}
+                aria-label={`Show media ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Location Badge */}
         <div className="absolute top-4 right-4 z-20 bg-primary text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1">
@@ -290,8 +330,36 @@ export default function EventSectionPropertySpecific({
         return isMatchingLocation && isActive && isUpcoming;
       });
 
+      const enrichedEvents = await Promise.all(
+        filteredEvents.map(async (event: Event) => {
+          try {
+            const filesRes = await getEventFilesByUploadedId(event.id);
+            const fileGroups = filesRes?.data?.data || filesRes?.data || filesRes || [];
+            const groups = Array.isArray(fileGroups) ? fileGroups : [];
+
+            const heroSliderMedia = groups
+              .filter(
+                (group: any) =>
+                  String(group?.category || "").trim().toLowerCase() === "hero_slider",
+              )
+              .flatMap((group: any) => group?.medias || [])
+              .filter((media: EventImage) => Boolean(media?.url));
+
+            return {
+              ...event,
+              mediaSlides: heroSliderMedia.length > 0 ? heroSliderMedia : event.image ? [event.image] : [],
+            };
+          } catch {
+            return {
+              ...event,
+              mediaSlides: event.image ? [event.image] : [],
+            };
+          }
+        }),
+      );
+
       setEvents(
-        filteredEvents.sort(
+        enrichedEvents.sort(
           (a: Event, b: Event) =>
             new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime(),
         ),

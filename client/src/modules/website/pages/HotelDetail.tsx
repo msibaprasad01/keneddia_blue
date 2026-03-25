@@ -39,6 +39,8 @@ import {
   getGalleryByPropertyId,
   getAllDiningByPropertyId,
   getAllBookingChannelPartners,
+  getEventsUpdated,
+  getEventFilesByUploadedId,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import HotelGalleryGrid from "../components/hotel/Hotelgallerygrid";
@@ -141,6 +143,7 @@ interface Restaurant {
   cuisine: string;
   timings: string;
   image?: string;
+  mediaSlides?: PropertyMedia[];
   description?: string;
   attachedRestaurantName?: string;
   attachRestaurantId?: number | string;
@@ -263,6 +266,7 @@ export default function HotelDetail() {
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [currentDiningIndex, setCurrentDiningIndex] = useState(0);
+  const [currentDiningMediaIndex, setCurrentDiningMediaIndex] = useState(0);
   const [datesInitialized, setDatesInitialized] = useState(false);
 
   // Feature States
@@ -367,6 +371,10 @@ export default function HotelDetail() {
   }, [diningSectionItems.length]);
 
   useEffect(() => {
+    setCurrentDiningMediaIndex(0);
+  }, [currentDiningIndex]);
+
+  useEffect(() => {
     if (diningSectionItems.length <= 1) return;
     const timer = window.setInterval(() => {
       setCurrentDiningIndex((prev) =>
@@ -376,6 +384,35 @@ export default function HotelDetail() {
 
     return () => window.clearInterval(timer);
   }, [diningSectionItems.length]);
+
+  const activeDiningItem = diningSectionItems[currentDiningIndex] || null;
+  const activeDiningMediaSlides =
+    activeDiningItem?.mediaSlides?.length
+      ? activeDiningItem.mediaSlides
+      : activeDiningItem?.image
+        ? [
+            {
+              mediaId: null,
+              type: "IMAGE",
+              url: activeDiningItem.image,
+              fileName: null,
+              alt: activeDiningItem.name || null,
+              width: null,
+              height: null,
+            },
+          ]
+        : [];
+
+  useEffect(() => {
+    if (activeDiningMediaSlides.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setCurrentDiningMediaIndex((prev) =>
+        prev === activeDiningMediaSlides.length - 1 ? 0 : prev + 1,
+      );
+    }, 2800);
+
+    return () => window.clearInterval(timer);
+  }, [activeDiningMediaSlides.length]);
 
   const aboutAmenitiesPreview = useMemo(
     () => hotel?.amenities?.slice(0, 4) ?? [],
@@ -701,9 +738,78 @@ export default function HotelDetail() {
   const fetchDining = async (propId: number) => {
     try {
       const res = await getAllDiningByPropertyId(propId);
-      const items = normalizeDiningList(res)
+      const baseItems = normalizeDiningList(res)
         .filter((item: any) => item?.isActive ?? true)
         .map((item: any) => mapDiningItem(item));
+      const eventsRes = await getEventsUpdated();
+      const allEvents = Array.isArray(eventsRes?.data)
+        ? eventsRes.data
+        : Array.isArray(eventsRes)
+          ? eventsRes
+          : [];
+
+      const items = await Promise.all(
+        baseItems.map(async (item: Restaurant) => {
+          const ownSlides = item.image
+            ? [
+                {
+                  mediaId: null,
+                  type: "IMAGE",
+                  url: item.image,
+                  fileName: null,
+                  alt: item.name || null,
+                  width: null,
+                  height: null,
+                },
+              ]
+            : [];
+
+          if (!item.attachRestaurantId) {
+            return {
+              ...item,
+              mediaSlides: ownSlides,
+            };
+          }
+
+          const matchedEvent = allEvents.find(
+            (event: any) =>
+              String(event?.propertyId || "") ===
+                String(item.attachRestaurantId) && event?.active === true,
+          );
+
+          if (!matchedEvent?.id) {
+            return {
+              ...item,
+              mediaSlides: ownSlides,
+            };
+          }
+
+          try {
+            const filesRes = await getEventFilesByUploadedId(matchedEvent.id);
+            const groups = filesRes?.data?.data || filesRes?.data || filesRes || [];
+            const groupList = Array.isArray(groups) ? groups : [];
+            const heroSlides = groupList
+              .filter(
+                (group: any) =>
+                  String(group?.category || "").trim().toLowerCase() ===
+                  "hero_slider",
+              )
+              .flatMap((group: any) => group?.medias || [])
+              .filter((media: PropertyMedia) => Boolean(media?.url));
+
+            return {
+              ...item,
+              mediaSlides: [...ownSlides, ...heroSlides],
+            };
+          } catch (error) {
+            console.error("DINING EVENT MEDIA FETCH ERROR:", error);
+            return {
+              ...item,
+              mediaSlides: ownSlides,
+            };
+          }
+        }),
+      );
 
       setDiningItems(items);
     } catch (error) {
@@ -1167,17 +1273,59 @@ export default function HotelDetail() {
                                     }}
                                   >
                                     <div className="relative w-full h-[320px] bg-muted flex items-center justify-center">
-                                      {restaurant.image ? (
-                                        <img
-                                          src={restaurant.image}
-                                          alt={restaurant.name}
-                                          className="w-full h-full object-cover"
-                                        />
+                                      {activeDiningMediaSlides.length > 0 ? (
+                                        activeDiningMediaSlides[
+                                          currentDiningMediaIndex
+                                        ]?.type === "VIDEO" ? (
+                                          <video
+                                            src={
+                                              activeDiningMediaSlides[
+                                                currentDiningMediaIndex
+                                              ]?.url
+                                            }
+                                            className="w-full h-full object-cover"
+                                            autoPlay
+                                            loop
+                                            muted
+                                            playsInline
+                                          />
+                                        ) : (
+                                          <img
+                                            src={
+                                              activeDiningMediaSlides[
+                                                currentDiningMediaIndex
+                                              ]?.url
+                                            }
+                                            alt={restaurant.name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        )
                                       ) : (
                                         <UtensilsCrossed
                                           className="w-10 h-10 text-muted-foreground/50"
                                           strokeWidth={1.5}
                                         />
+                                      )}
+                                      {activeDiningMediaSlides.length > 1 && (
+                                        <div className="absolute bottom-3 right-3 z-10 flex gap-1.5">
+                                          {activeDiningMediaSlides.map((_, idx) => (
+                                            <button
+                                              key={`dining-media-${restaurant.id}-${idx}`}
+                                              type="button"
+                                              onClick={(event) => {
+                                                event.preventDefault();
+                                                event.stopPropagation();
+                                                setCurrentDiningMediaIndex(idx);
+                                              }}
+                                              className={`h-1.5 rounded-full transition-all ${
+                                                currentDiningMediaIndex === idx
+                                                  ? "w-5 bg-white"
+                                                  : "w-1.5 bg-white/55 hover:bg-white/80"
+                                              }`}
+                                              aria-label={`Show dining media ${idx + 1}`}
+                                            />
+                                          ))}
+                                        </div>
                                       )}
                                     </div>
                                     <div className="p-4 space-y-1">
