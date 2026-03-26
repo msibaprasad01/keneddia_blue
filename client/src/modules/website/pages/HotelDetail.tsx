@@ -1469,18 +1469,29 @@ export default function HotelDetail() {
                       <div className="flex items-center gap-2 text-destructive font-bold text-xs uppercase tracking-widest">
                         <Info className="w-4 h-4" /> CHECK-IN / CHECK-OUT
                       </div>
-                      <div className="space-y-3 text-sm text-muted-foreground">
-                        <div className="flex justify-between md:justify-start md:gap-6">
-                          <span className="font-medium text-foreground min-w-[100px]">
-                            Check-in:
-                          </span>
-                          <span>{policies?.checkInTime || "2:00 PM"}</span>
+                      <div className="space-y-5 text-sm text-muted-foreground">
+                        <div className="space-y-3">
+                          <div className="flex justify-between md:justify-start md:gap-6">
+                            <span className="font-medium text-foreground min-w-[100px]">
+                              Check-in:
+                            </span>
+                            <span>{policies?.checkInTime || "2:00 PM"}</span>
+                          </div>
+                          <div className="flex justify-between md:justify-start md:gap-6">
+                            <span className="font-medium text-foreground min-w-[100px]">
+                              Check-out:
+                            </span>
+                            <span>{policies?.checkOutTime || "11:00 AM"}</span>
+                          </div>
                         </div>
-                        <div className="flex justify-between md:justify-start md:gap-6">
-                          <span className="font-medium text-foreground min-w-[100px]">
-                            Check-out:
-                          </span>
-                          <span>{policies?.checkOutTime || "11:00 AM"}</span>
+                        <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-4">
+                          <p className="font-medium text-foreground mb-2">
+                            Cancellation Policy
+                          </p>
+                          <p className="leading-relaxed">
+                            {policies?.cancellationPolicy ||
+                              "Non-refundable for promotional rates"}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -1488,29 +1499,18 @@ export default function HotelDetail() {
                       <div className="flex items-center gap-2 text-destructive font-bold text-xs uppercase tracking-widest">
                         <Info className="w-4 h-4" /> OTHER POLICIES
                       </div>
-                      <div className="space-y-3 text-sm text-muted-foreground">
-                        {policies?.policies?.map((p) => (
-                          <div
-                            key={p.id}
-                            className="flex justify-between md:justify-start md:gap-6"
-                          >
-                            <span className="font-medium text-foreground min-w-[100px]">
-                              {p.name.split(" ")[0]}:
-                            </span>
-                            <span>
-                              {p.isActive ? "Allowed" : "Not Allowed"}
-                            </span>
-                          </div>
-                        ))}
-                        <div className="flex flex-col gap-1 pt-2">
-                          <span className="font-medium text-foreground">
-                            Cancellation:
-                          </span>
-                          <span className="leading-relaxed">
-                            {policies?.cancellationPolicy ||
-                              "Non-refundable for promotional rates"}
-                          </span>
-                        </div>
+                      <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-4">
+                        <ul className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+                          {policies?.policies?.map((p) => (
+                            <li
+                              key={p.id}
+                              className="flex items-start gap-2 text-foreground"
+                            >
+                              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                              <span className="leading-snug">{p.name}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   </div>
