@@ -64,12 +64,12 @@ export default function CreateCareerModal({ isOpen, onClose, editingJob }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="admin-modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Updated Container: 
           - max-w-[80%] for width 
           - max-h-[85vh] to decrease total height and keep it within viewport
       */}
-      <div className="w-full max-w-[80%] max-h-[85vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="admin-modal-surface w-full max-w-[80%] max-h-[85vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
         
         {/* Fixed Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0" style={{ borderColor: colors.border }}>

@@ -246,11 +246,11 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="admin-modal-overlay fixed inset-0 flex items-center justify-center z-50 p-4"
       onClick={() => onClose(false)}
     >
       <div
-        className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl bg-white"
+        className="admin-modal-surface w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl bg-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

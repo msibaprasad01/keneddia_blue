@@ -72,11 +72,11 @@ const handleSubmit = async () => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+      className="admin-modal-overlay fixed inset-0 flex items-center justify-center z-50 p-4" 
       onClick={() => onClose(false)}
     >
       <div 
-        className="rounded-lg p-5 w-[60%] max-w-3xl shadow-xl bg-white" 
+        className="admin-modal-surface rounded-lg p-5 w-[60%] max-w-3xl shadow-xl bg-white" 
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4 pb-3 border-b">

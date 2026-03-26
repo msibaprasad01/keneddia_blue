@@ -471,11 +471,11 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="admin-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-7xl max-h-[92vh] overflow-hidden rounded-xl shadow-2xl flex flex-col"
+        className="admin-modal-surface w-full max-w-7xl max-h-[92vh] overflow-hidden rounded-xl shadow-2xl flex flex-col"
         style={{ backgroundColor: colors.contentBg }}
         onClick={(e) => e.stopPropagation()}
       >

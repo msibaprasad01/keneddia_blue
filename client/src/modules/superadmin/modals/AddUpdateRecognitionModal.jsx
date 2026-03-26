@@ -48,8 +48,8 @@ function AddUpdateRecognitionModal({ isOpen, onClose, editData = null, aboutUsId
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]" onClick={() => onClose(false)}>
-      <div className="rounded-lg p-5 shadow-xl bg-white w-[60%] max-w-[800px]" onClick={(e) => e.stopPropagation()}>
+    <div className="admin-modal-overlay fixed inset-0 flex items-center justify-center p-4 z-[9999]" onClick={() => onClose(false)}>
+      <div className="admin-modal-surface rounded-lg p-5 shadow-xl bg-white w-[60%] max-w-[800px]" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4 pb-3 border-b">
           <h3 className="text-base font-bold">{editData ? 'Edit Recognition' : 'Add Recognition'}</h3>
           <button onClick={() => onClose(false)}><X size={18} /></button>

@@ -772,8 +772,8 @@ function EventExtraInfoModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl max-h-[95vh] flex flex-col bg-background rounded-2xl shadow-2xl border border-border">
+    <div className="admin-modal-overlay fixed inset-0 z-[150] flex items-center justify-center p-4">
+      <div className="admin-modal-surface relative w-full max-w-4xl max-h-[95vh] flex flex-col bg-background rounded-2xl shadow-2xl border border-border">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
           <div>

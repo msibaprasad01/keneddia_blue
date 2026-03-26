@@ -187,7 +187,7 @@ function EventBookingInfoModal({ isOpen, onClose, eventId }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="admin-modal-overlay absolute inset-0"
           />
 
           {/* Panel */}
@@ -196,7 +196,7 @@ function EventBookingInfoModal({ isOpen, onClose, eventId }) {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.98, opacity: 0, y: 16 }}
             transition={{ type: "spring", damping: 26, stiffness: 300 }}
-            className="relative z-10 flex flex-col bg-white shadow-2xl overflow-hidden w-full h-full"
+            className="admin-modal-surface relative z-10 flex flex-col bg-white shadow-2xl overflow-hidden w-full h-full"
           >
             {/* Header */}
             <div

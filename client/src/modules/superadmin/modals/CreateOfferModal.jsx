@@ -436,9 +436,9 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="admin-modal-overlay fixed inset-0 flex items-center justify-center z-50 p-4">
       <style>{inputStyles}</style>
-      <div className="custom-modal-container h-[90vh] overflow-hidden rounded-xl shadow-2xl flex flex-col bg-white">
+      <div className="admin-modal-surface custom-modal-container h-[90vh] overflow-hidden rounded-xl shadow-2xl flex flex-col bg-white text-gray-900">
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b">
           <div className="flex items-center gap-3">

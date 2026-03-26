@@ -112,6 +112,41 @@
 }
 
 /* ============================================================================
+   ADMIN RENDERING STABILITY
+============================================================================ */
+
+.admin-shell {
+  color-scheme: light;
+  forced-color-adjust: none;
+}
+
+.admin-shell input,
+.admin-shell select,
+.admin-shell textarea,
+.admin-shell button {
+  color-scheme: light;
+}
+
+.admin-shell input,
+.admin-shell textarea,
+.admin-shell select {
+  -webkit-text-fill-color: currentColor;
+}
+
+.admin-shell .admin-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.admin-shell .admin-modal-surface {
+  isolation: isolate;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================================
    GLOBAL UX
 ============================================================================ */
 

@@ -32,7 +32,7 @@ function Layout({ children, title, subtitle, showActions = true, role = 'admin' 
 
   return (
     <div 
-      className="flex h-screen overflow-hidden"
+      className="admin-shell flex h-screen overflow-hidden"
       style={{ backgroundColor: colors.mainBg }}
     >
       <Sidebar role={role} isOpen={isSidebarOpen} onToggle={toggleSidebar} />

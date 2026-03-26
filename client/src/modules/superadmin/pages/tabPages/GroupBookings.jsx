@@ -731,8 +731,8 @@ export default function GroupBookings() {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh]">
+        <div className="admin-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="admin-modal-surface bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <h3 className="font-bold text-gray-800">
                 {editItem ? "Edit Group Booking" : "New Group Booking"}

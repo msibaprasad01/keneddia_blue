@@ -59,8 +59,8 @@ function avatarColor(name = "") {
 
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6">
+    <div className="admin-modal-overlay fixed inset-0 z-[60] flex items-center justify-center">
+      <div className="admin-modal-surface bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6">
         <div className="flex items-start gap-3 mb-5">
           <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center shrink-0">
             <AlertTriangle className="w-5 h-5 text-red-600" />
@@ -439,8 +439,8 @@ function CommentReviewModal({ isOpen, onClose, news }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="admin-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="admin-modal-surface bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-start justify-between px-6 py-5 border-b border-gray-100">
             <div className="flex-1 min-w-0 pr-4">

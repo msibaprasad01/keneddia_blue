@@ -624,13 +624,13 @@ function GuestExp() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="admin-modal-overlay absolute inset-0"
             onClick={closeModal}
           />
 
           {/* Modal Box */}
           <div
-            className="relative w-full max-w-md rounded-xl shadow-2xl z-10"
+            className="admin-modal-surface relative w-full max-w-md rounded-xl shadow-2xl z-10"
             style={{ backgroundColor: colors.contentBg }}
           >
             {/* Modal Header */}
