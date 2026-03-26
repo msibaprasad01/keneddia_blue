@@ -54,6 +54,10 @@ interface RightSidebarProps {
   checkInDate: Date | null;
   checkOutDate: Date | null;
   numberOfNights: number;
+  policies?: {
+    checkInTime?: string | null;
+    checkOutTime?: string | null;
+  } | null;
   bookingPartners?: Array<{
     id: number | string;
     title?: string;
@@ -86,8 +90,13 @@ export default function RightSidebar({
   checkInDate,
   checkOutDate,
   numberOfNights,
+  policies = null,
   bookingPartners = [],
 }: RightSidebarProps) {
+  const resolvedCheckIn = policies?.checkInTime || hotel.checkIn || "2:00 PM";
+  const resolvedCheckOut =
+    policies?.checkOutTime || hotel.checkOut || "11:00 AM";
+
   const scrollToSection = (id: string, offset = 150) => {
     const element = document.getElementById(id);
     if (element) {
@@ -390,9 +399,9 @@ export default function RightSidebar({
               </p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
+          {/* <p className="text-xs text-muted-foreground">
             Based on {hotel.verifiedReviews || 0} verified reviews
-          </p>
+          </p> */}
         </div>
       )}
 
@@ -461,13 +470,13 @@ export default function RightSidebar({
               <span>
                 In:{" "}
                 <span className="text-foreground font-medium">
-                  {hotel.checkIn}
+                  {resolvedCheckIn}
                 </span>
               </span>
               <span>
                 Out:{" "}
                 <span className="text-foreground font-medium">
-                  {hotel.checkOut}
+                  {resolvedCheckOut}
                 </span>
               </span>
             </div>

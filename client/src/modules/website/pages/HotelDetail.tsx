@@ -1584,6 +1584,7 @@ export default function HotelDetail() {
                 checkInDate={searchData.checkIn}
                 checkOutDate={searchData.checkOut}
                 numberOfNights={numberOfNights}
+                policies={policies}
                 bookingPartners={bookingPartners}
               />
             </aside>
