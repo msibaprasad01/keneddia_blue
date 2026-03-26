@@ -14,6 +14,30 @@ import {
   getPropertyTypes,
 } from "@/Api/Api";
 
+const DAYS = [
+  "SUNDAY",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+];
+
+const getAmenityName = (amenity) => {
+  if (typeof amenity === "string") return amenity;
+  if (
+    amenity &&
+    typeof amenity === "object" &&
+    "name" in amenity &&
+    typeof amenity.name === "string"
+  ) {
+    return amenity.name;
+  }
+
+  return null;
+};
+
 export const defaultHotelsPageData = {
   heroSlides: [],
   aboutSections: [],
@@ -41,7 +65,7 @@ const fetchSafe = async (fn, fallback) => {
 
 const mapApiToHotelUI = (item) => {
   const parent = item.propertyResponseDTO;
-  const listing = item.propertyListingResponseDTOS?.find((l) => l.isActive);
+  const listing = item.propertyListingResponseDTOS?.find((entry) => entry.isActive);
   const basePrice = listing?.price || 0;
   const discount = listing?.discountAmount || 0;
   const gstPercent = listing?.gstPercentage || 0;
@@ -66,7 +90,11 @@ const mapApiToHotelUI = (item) => {
       listing?.tagline ||
       listing?.subTitle ||
       "Luxury comfort in the heart of the city",
-    amenities: Array.isArray(listing?.amenities) ? listing.amenities : [],
+    amenities: Array.isArray(listing?.amenities)
+      ? listing.amenities
+          .map((amenity) => getAmenityName(amenity))
+          .filter(Boolean)
+      : [],
     rooms: listing?.capacity || 1,
     capacity: listing?.capacity || parent?.capacity || 0,
     pricing: {
@@ -83,11 +111,9 @@ const mapApiToHotelUI = (item) => {
   };
 };
 
-const normalizeHeroSlides = (data) => {
-  const filteredContent = (Array.isArray(data) ? data : []).filter(
-    (item) => item.active === true,
-  );
-  return filteredContent
+const normalizeHeroSlides = (data) =>
+  (Array.isArray(data) ? data : [])
+    .filter((item) => item.active === true)
     .sort((a, b) => b.id - a.id)
     .slice(0, 3)
     .map((item) => {
@@ -95,9 +121,10 @@ const normalizeHeroSlides = (data) => {
         item.backgroundAll?.[0] ||
         item.backgroundLight?.[0] ||
         item.backgroundDark?.[0];
+
       return {
         id: item.id,
-        type: (mediaObj?.type?.toLowerCase() || "image"),
+        type: mediaObj?.type?.toLowerCase() || "image",
         media: mediaObj?.url || "",
         title: item.mainTitle || "",
         subtitle: item.subTitle || "",
@@ -106,7 +133,6 @@ const normalizeHeroSlides = (data) => {
         backgroundDark: item.backgroundDark || [],
       };
     });
-};
 
 const normalizeAboutSections = (data) =>
   (Array.isArray(data) ? data : [])
@@ -115,149 +141,153 @@ const normalizeAboutSections = (data) =>
     .slice(0, 3);
 
 const normalizeHotelOffers = async (offersRes) => {
-  const normalize = (v) => (v || "").trim().toLowerCase().replace(/\s+/g, " ");
   const rawData = offersRes?.data?.data || offersRes?.data || [];
   const list = Array.isArray(rawData) ? rawData : rawData.content || [];
-  const now = Date.now();
-
-  const DAYS = [
-    "SUNDAY",
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
-  ];
   const todayName = DAYS[new Date().getDay()];
+  const propertyTypeCache = new Map();
 
   const filtered = await Promise.all(
-    list.map(async (o) => {
-      if (!o.isActive) return null;
+    list.map(async (offer) => {
+      if (!offer?.isActive) return null;
+      if (!["PROPERTY_PAGE", "BOTH"].includes(offer.displayLocation)) return null;
+      if (!offer.propertyTypeId) return null;
 
-      if (!["PROPERTY_PAGE", "BOTH"].includes(o.displayLocation)) return null;
-
-      if (!o.propertyTypeId) return null;
-
-      const notExpired =
-        !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+      let notExpired = true;
+      if (offer.expiresAt) {
+        const expiry = new Date(`${offer.expiresAt}T23:59:59`);
+        notExpired = expiry.getTime() >= Date.now();
+      }
       if (!notExpired) return null;
 
       const isDayActive =
-        !Array.isArray(o.activeDays) ||
-        o.activeDays.length === 0 ||
-        o.activeDays.includes(todayName);
+        !offer.activeDays?.length || offer.activeDays.includes(todayName);
       if (!isDayActive) return null;
 
-      const propertyTypeRes = await fetchSafe(
-        () => getPropertyTypeById(o.propertyTypeId),
-        { data: null },
-      );
+      if (!propertyTypeCache.has(offer.propertyTypeId)) {
+        const propertyTypeRes = await fetchSafe(
+          () => getPropertyTypeById(offer.propertyTypeId),
+          { data: null },
+        );
+        propertyTypeCache.set(offer.propertyTypeId, propertyTypeRes?.data || null);
+      }
 
-      const propertyType = propertyTypeRes?.data;
+      const propertyType = propertyTypeCache.get(offer.propertyTypeId);
+      const typeName = propertyType?.typeName?.trim().toLowerCase();
+
       if (!propertyType?.isActive) return null;
-
-      const typeName = normalize(propertyType.typeName);
       if (typeName !== "hotel" && typeName !== "both") return null;
 
-      return { ...o, propertyTypeName: propertyType.typeName };
+      return {
+        ...offer,
+        propertyTypeName: propertyType.typeName,
+      };
     }),
   );
 
-  return filtered
-    .filter(Boolean)
-    .map((o) => ({
-      id: o.id,
-      title: o.title,
-      description: o.description,
-      couponCode: o.couponCode,
-      ctaText: o.ctaText || "",
-      ctaLink: o.ctaUrl || o.ctaLink || null,
-      expiresAt: o.expiresAt,
-      propertyType: o.propertyTypeName || "",
-      image: o.image?.url
-        ? {
-          src: o.image.url,
-          type: o.image.type,
-          width: o.image.width,
-          height: o.image.height,
-          fileName: o.image.fileName,
-          alt: o.title,
+  return filtered.filter(Boolean).map((offer) => ({
+    id: offer.id,
+    title: offer.title,
+    description: offer.description,
+    couponCode: offer.couponCode,
+    ctaText: offer.ctaText || "",
+    ctaLink: offer.ctaUrl || offer.ctaLink || null,
+    expiresAt: offer.expiresAt,
+    propertyType: offer.propertyTypeName || "",
+    image: offer.image?.url
+      ? {
+          src: offer.image.url,
+          type: offer.image.type,
+          width: offer.image.width,
+          height: offer.image.height,
+          fileName: offer.image.fileName,
+          alt: offer.title,
         }
-        : null,
-    }));
+      : null,
+  }));
 };
 
-const normalizeHotelNews = (res) => {
-  const data = res?.content || res?.data?.content || [];
-  return Array.isArray(data)
-    ? data
-      .filter((item) => item.active === true && item.badgeType?.toLowerCase() === "hotel")
-      .sort(
-        (a, b) =>
-          new Date(b.newsDate || b.dateBadge).getTime() -
-          new Date(a.newsDate || a.dateBadge).getTime(),
-      )
-      .slice(0, 6)
-    : [];
+const normalizeHotelNews = (response) => {
+  const data = response?.content || response?.data?.content || [];
+  if (!Array.isArray(data)) return [];
+
+  return [...data]
+    .filter(
+      (item) =>
+        item.active === true && item.badgeType?.toLowerCase() === "hotel",
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.newsDate || b.dateBadge).getTime() -
+        new Date(a.newsDate || a.dateBadge).getTime(),
+    )
+    .slice(0, 6);
 };
 
-const normalizeGroupEvents = (eventResponse) => {
-  const rawEvents = Array.isArray(eventResponse?.data)
-    ? eventResponse.data
-    : Array.isArray(eventResponse)
-      ? eventResponse
+const normalizeGroupEvents = (response) => {
+  const rawEvents = Array.isArray(response?.data)
+    ? response.data
+    : Array.isArray(response)
+      ? response
       : [];
 
-  const now = Date.now();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return rawEvents
-    .filter((e) => {
-      const eventTime = new Date(e.eventDate).getTime();
+    .filter((event) => {
+      const eventDate = new Date(event.eventDate);
+      eventDate.setHours(0, 0, 0, 0);
+
       return (
-        e.typeName === "Hotel" &&
-        e.status === "ACTIVE" &&
-        e.active === true &&
-        eventTime >= now
+        event.typeName === "Hotel" &&
+        event.status === "ACTIVE" &&
+        event.active === true &&
+        eventDate >= today
       );
     })
     .sort(
       (a, b) =>
-        new Date(b.eventDate).getTime() -
-        new Date(a.eventDate).getTime(),
+        new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime(),
     );
 };
 
-const normalizeGroupBookings = (bookingResponse) => {
-  const rawBookings = bookingResponse?.data || bookingResponse || [];
-  return (Array.isArray(rawBookings) ? rawBookings : [])
-    .filter((b) => b.propertyTypeName !== "Restaurant")
+const normalizeGroupBookings = (response, propertyTypeId) => {
+  const rawBookings = response?.data || response || [];
+  if (!Array.isArray(rawBookings)) return [];
+
+  return rawBookings
+    .filter((booking) => {
+      if (booking.propertyTypeName === "Restaurant") return false;
+
+      if (!propertyTypeId) {
+        return booking.propertyTypeName !== "Restaurant";
+      }
+
+      return (
+        booking.propertyTypeId == null ||
+        Number(booking.propertyTypeId) === Number(propertyTypeId)
+      );
+    })
     .sort((a, b) => b.id - a.id);
 };
 
 const normalizeHotelReviews = (experiencesRes, headerRes, ratingRes) => {
   const rawData =
     experiencesRes?.data?.data || experiencesRes?.data || experiencesRes || [];
-  const guestExperiences = Array.isArray(rawData)
-    ? [...rawData].sort((a, b) => {
-      if (a.createdAt && b.createdAt) {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-      return Number(b.id) - Number(a.id);
-    })
-    : [];
-  const headerData = Array.isArray(headerRes?.data) ? headerRes.data[0] : headerRes?.data;
-  const ratingData = Array.isArray(ratingRes?.data) ? ratingRes.data[0] : ratingRes?.data;
 
   return {
-    guestExperiences,
-    sectionHeader: headerData || null,
-    ratingHeader: ratingData || null,
+    guestExperiences: Array.isArray(rawData) ? rawData : [],
+    sectionHeader: Array.isArray(headerRes?.data)
+      ? headerRes.data[0] || null
+      : headerRes?.data || null,
+    ratingHeader: Array.isArray(ratingRes?.data)
+      ? ratingRes.data[0] || null
+      : ratingRes?.data || null,
   };
 };
 
-const normalizeHotelCollection = (res) => {
-  const rawData = res?.data?.data || res?.data || [];
+const normalizeHotelCollection = (response) => {
+  const rawData = response?.data?.data || response?.data || [];
   if (!Array.isArray(rawData)) return [];
 
   return rawData
@@ -266,16 +296,19 @@ const normalizeHotelCollection = (res) => {
     .reverse();
 };
 
-const normalizeHotelLocations = (res) => {
-  const data = res?.data || res || [];
-  return (Array.isArray(data) ? data : []).filter((l) => l.isActive);
+const normalizeHotelLocations = (response) => {
+  const data = response?.data || response || [];
+  return (Array.isArray(data) ? data : []).filter((item) => item.isActive);
 };
 
 export const fetchHotelsPageData = async () => {
   const propertyTypesRes = await fetchSafe(() => getPropertyTypes(), []);
   const propertyTypes = propertyTypesRes?.data || propertyTypesRes || [];
   const hotelType = Array.isArray(propertyTypes)
-    ? propertyTypes.find((type) => type.isActive && type.typeName?.toLowerCase() === "hotel")
+    ? propertyTypes.find(
+        (type) =>
+          type.isActive && type.typeName?.trim().toLowerCase() === "hotel",
+      )
     : null;
   const hotelTypeId = hotelType?.id || null;
 
@@ -292,9 +325,13 @@ export const fetchHotelsPageData = async () => {
     collectionRes,
     locationsRes,
   ] = await Promise.all([
-    hotelTypeId ? fetchSafe(() => getHotelHomepageHeroSection(hotelTypeId), []) : [],
-    hotelTypeId ? fetchSafe(() => getAboutUsByPropertyType(hotelTypeId), []) : [],
-    fetchSafe(() => getDailyOffers({ page: 0, size: 100 }), null),
+    hotelTypeId
+      ? fetchSafe(() => getHotelHomepageHeroSection(hotelTypeId), [])
+      : [],
+    hotelTypeId
+      ? fetchSafe(() => getAboutUsByPropertyType(hotelTypeId), [])
+      : [],
+    fetchSafe(() => getDailyOffers({ targetType: "GLOBAL", page: 0, size: 100 }), null),
     fetchSafe(() => getAllNews({ category: "", page: 0, size: 20 }), null),
     fetchSafe(() => getEventsUpdated(), null),
     fetchSafe(() => getGroupBookings(), null),
@@ -311,7 +348,9 @@ export const fetchHotelsPageData = async () => {
     hotelOffers: offersRes ? await normalizeHotelOffers(offersRes) : [],
     hotelNews: newsRes ? normalizeHotelNews(newsRes) : [],
     groupEvents: groupEventsRes ? normalizeGroupEvents(groupEventsRes) : [],
-    groupBookings: groupBookingsRes ? normalizeGroupBookings(groupBookingsRes) : [],
+    groupBookings: groupBookingsRes
+      ? normalizeGroupBookings(groupBookingsRes, hotelTypeId)
+      : [],
     hotelReviews: normalizeHotelReviews(
       reviewExperiencesRes,
       reviewHeaderRes,

@@ -15,6 +15,30 @@ import {
   getVenturesByAboutUsId,
 } from "@/Api/Api";
 
+const DAYS = [
+  "SUNDAY",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+];
+
+const getAmenityName = (amenity) => {
+  if (typeof amenity === "string") return amenity;
+  if (
+    amenity &&
+    typeof amenity === "object" &&
+    "name" in amenity &&
+    typeof amenity.name === "string"
+  ) {
+    return amenity.name;
+  }
+
+  return null;
+};
+
 export const defaultHomePageData = {
   heroData: [],
   dailyOffers: [],
@@ -49,61 +73,93 @@ const fetchSafe = async (fn, fallback) => {
 
 const normalizeHero = (response) => {
   const pageData = response?.data?.data || response?.data || response;
-  return Array.isArray(pageData?.content) ? pageData.content : [];
+  const content = Array.isArray(pageData?.content) ? pageData.content : [];
+
+  return [...content]
+    .filter((item) => item.active === true && item.showOnHomepage === true)
+    .sort((a, b) => b.id - a.id)
+    .map((item) => {
+      const backgroundMedia =
+        item.backgroundAll?.[0] ||
+        item.backgroundLight?.[0] ||
+        item.backgroundDark?.[0] ||
+        null;
+      const subMedia =
+        item.subAll?.[0] ||
+        item.subLight?.[0] ||
+        item.subDark?.[0] ||
+        null;
+      const isBackgroundVideo = backgroundMedia?.type === "VIDEO";
+
+      let thumbnailUrl = "";
+      if (subMedia?.type === "IMAGE") {
+        thumbnailUrl = subMedia.url;
+      } else if (subMedia?.type === "VIDEO") {
+        thumbnailUrl = isBackgroundVideo ? "" : backgroundMedia?.url || "";
+      } else {
+        thumbnailUrl = backgroundMedia?.url || "";
+      }
+
+      return {
+        id: item.id,
+        type: isBackgroundVideo ? "video" : "image",
+        mobileMediaType: isBackgroundVideo ? "video" : "image",
+        media: backgroundMedia?.url || "",
+        mobileMedia: backgroundMedia?.url || "",
+        thumbnail: subMedia?.url || thumbnailUrl,
+        thumbnailType: subMedia?.type === "VIDEO" ? "video" : "image",
+        title: item.mainTitle || "",
+        subtitle: item.subTitle || "",
+        cta: item.ctaText ?? undefined,
+        ctaLink: item.ctaLink ?? null,
+      };
+    });
 };
 
 const normalizeOffers = (response) => {
   const rawData = response?.data?.data || response?.data || [];
   const list = Array.isArray(rawData) ? rawData : rawData.content || [];
   const now = Date.now();
-
-  const DAYS = [
-    "SUNDAY",
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
-  ];
-
   const todayName = DAYS[new Date().getDay()];
 
   return list
-    .filter((o) => {
-      const notExpired =
-        !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+    .filter((offer) => {
+      let notExpired = true;
+
+      if (offer.expiresAt) {
+        const expiry = new Date(offer.expiresAt);
+        expiry.setHours(23, 59, 59, 999);
+        notExpired = expiry.getTime() > now;
+      }
 
       const isDayActive =
-        !Array.isArray(o.activeDays) ||
-        o.activeDays.length === 0 ||
-        o.activeDays.includes(todayName);
+        !offer.activeDays?.length || offer.activeDays.includes(todayName);
 
       return (
-        o.isActive &&
-        notExpired &&
-        o.showOnHomepage === true &&
-        isDayActive
+        offer.isActive === true &&
+        offer.showOnHomepage === true &&
+        isDayActive &&
+        notExpired
       );
     })
-    .map((o) => ({
-      id: o.id,
-      title: o.title,
-      description: o.description,
-      couponCode: o.couponCode,
-      ctaText: o.ctaText || "",
-      ctaLink: o.ctaUrl || o.ctaLink || null,
-      expiresAt: o.expiresAt,
-      propertyType: o.propertyTypeName || "",
-      image: o.image?.url
+    .map((offer) => ({
+      id: offer.id,
+      title: offer.title,
+      description: offer.description,
+      couponCode: offer.couponCode,
+      ctaText: offer.ctaText || "",
+      ctaLink: offer.ctaUrl || offer.ctaLink || null,
+      expiresAt: offer.expiresAt,
+      propertyType: offer.propertyTypeName || "",
+      image: offer.image?.url
         ? {
-          src: o.image.url,
-          type: o.image.type,
-          width: o.image.width,
-          height: o.image.height,
-          fileName: o.image.fileName,
-          alt: o.title,
-        }
+            src: offer.image.url,
+            type: offer.image.type,
+            width: offer.image.width,
+            height: offer.image.height,
+            fileName: offer.image.fileName,
+            alt: offer.title,
+          }
         : null,
     }));
 };
@@ -118,27 +174,34 @@ const normalizeProperties = (response) => {
 
     if (!parent || parent.isActive !== true) return [];
 
-    return listings.filter((l) => l.isActive === true).map((l) => ({
-      id: l.id,
-      propertyId: parent?.id,
-      listingId: l.id,
-      propertyName: parent?.propertyName || "Unnamed Property",
-      propertyType: l.propertyType || parent?.propertyTypes?.[0] || "Property",
-      city: parent?.locationName,
-      mainHeading: l.mainHeading || "",
-      subTitle: l.subTitle || "",
-      fullAddress: l.fullAddress || parent?.address,
-      tagline: l.tagline || "",
-      rating: l.rating ?? 0,
-      capacity: l.capacity ?? 0,
-      price: l.price ?? 0,
-      gstPercentage: l.gstPercentage ?? 0,
-      discountAmount: l.discountAmount ?? 0,
-      amenities: l.amenities || [],
-      isActive: true,
-      media: l.media || [],
-      bookingEngineUrl: parent?.bookingEngineUrl || null,
-    }));
+    return listings
+      .filter((listing) => listing.isActive === true)
+      .map((listing) => ({
+        id: listing.id,
+        propertyId: parent?.id,
+        listingId: listing.id,
+        propertyName: parent?.propertyName || "Unnamed Property",
+        propertyType:
+          listing.propertyType || parent?.propertyTypes?.[0] || "Property",
+        city: parent?.locationName,
+        mainHeading: listing.mainHeading || "",
+        subTitle: listing.subTitle || "",
+        fullAddress: listing.fullAddress || parent?.address,
+        tagline: listing.tagline || "",
+        rating: listing.rating ?? 0,
+        capacity: listing.capacity ?? 0,
+        price: listing.price ?? 0,
+        gstPercentage: listing.gstPercentage ?? 0,
+        discountAmount: listing.discountAmount ?? 0,
+        amenities: (listing.amenities || [])
+          .map((amenity) => getAmenityName(amenity))
+          .filter(Boolean),
+        isActive: true,
+        media: listing.media || [],
+        bookingEngineUrl: parent?.bookingEngineUrl || null,
+        mobileNumber: parent?.mobileNumber || null,
+        email: parent?.email || null,
+      }));
   });
 
   return [...formatted].reverse();
@@ -149,10 +212,11 @@ const normalizeAbout = async (response) => {
   if (!Array.isArray(data)) return defaultHomePageData.aboutData;
 
   const homepageOnly = data.filter(
-    (item) => item.propertyTypeId == null && item.isActive,
+    (item) => item.propertyTypeId == null && item.isActive === true,
   );
 
   if (homepageOnly.length === 0) return defaultHomePageData.aboutData;
+
   const aboutUsData = [...homepageOnly].sort((a, b) => b.id - a.id)[0];
 
   const [venturesRes, recognitionsRes] = await Promise.all([
@@ -178,47 +242,46 @@ const normalizeEvents = (response) => {
       ? response
       : [];
 
-  const now = Date.now();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return rawEvents
     .filter((event) => {
-      const eventTime = new Date(event.eventDate).getTime();
-      return event.active === true && eventTime >= now;
+      const eventDate = new Date(event.eventDate);
+      eventDate.setHours(0, 0, 0, 0);
+      return event.active === true && eventDate >= today;
     })
     .sort(
       (a, b) =>
-        new Date(b.eventDate).getTime() -
-        new Date(a.eventDate).getTime(),
+        new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime(),
     );
 };
 
 const normalizeNews = (response) => {
   const data = response?.data?.content || response?.content || [];
   if (!Array.isArray(data)) return [];
+
   return [...data]
-    .sort((a, b) => new Date(b.dateBadge).getTime() - new Date(a.dateBadge).getTime())
+    .filter((item) => item.active === true)
+    .sort(
+      (a, b) =>
+        new Date(b.dateBadge).getTime() - new Date(a.dateBadge).getTime(),
+    )
     .slice(0, 6);
 };
 
 const normalizeStory = (experiencesRes, headerRes, ratingRes) => {
   const rawData =
     experiencesRes?.data?.data || experiencesRes?.data || experiencesRes || [];
-  const guestExperiences = Array.isArray(rawData)
-    ? [...rawData].sort((a, b) => {
-      if (a.createdAt && b.createdAt) {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-      return Number(b.id) - Number(a.id);
-    })
-    : [];
-
-  const headerData = Array.isArray(headerRes?.data) ? headerRes.data[0] : headerRes?.data;
-  const ratingData = Array.isArray(ratingRes?.data) ? ratingRes.data[0] : ratingRes?.data;
 
   return {
-    guestExperiences,
-    sectionHeader: headerData || null,
-    ratingHeader: ratingData || null,
+    guestExperiences: Array.isArray(rawData) ? rawData : [],
+    sectionHeader: Array.isArray(headerRes?.data)
+      ? headerRes.data[0] || null
+      : headerRes?.data || null,
+    ratingHeader: Array.isArray(ratingRes?.data)
+      ? ratingRes.data[0] || null
+      : ratingRes?.data || null,
   };
 };
 
@@ -253,7 +316,7 @@ export const fetchHomePageData = async () => {
     presenceRes,
   ] = await Promise.all([
     fetchSafe(() => getHeroSectionsPaginated({ page: 0, size: 100 }), null),
-    fetchSafe(() => getDailyOffers({ page: 0, size: 100 }), null),
+    fetchSafe(() => getDailyOffers({ targetType: "GLOBAL", page: 0, size: 100 }), null),
     fetchSafe(() => GetAllPropertyDetails(), null),
     fetchSafe(() => getAboutUsAdmin(), null),
     fetchSafe(() => getKennediaGroup(), null),
@@ -274,11 +337,11 @@ export const fetchHomePageData = async () => {
   const businessData =
     businessPayload && Array.isArray(businessPayload.divisions)
       ? {
-        ...businessPayload,
-        divisions: businessPayload.divisions
-          .filter((div) => !!(div.title?.trim() && div.icon?.trim()))
-          .slice(0, 5),
-      }
+          ...businessPayload,
+          divisions: businessPayload.divisions
+            .filter((div) => !!(div.title?.trim() && (div.icon?.trim() || div.icons?.url)))
+            .slice(0, 5),
+        }
       : null;
 
   return {
@@ -289,7 +352,11 @@ export const fetchHomePageData = async () => {
     businessData,
     eventsData: eventsRes ? normalizeEvents(eventsRes) : [],
     newsData: newsRes ? normalizeNews(newsRes) : [],
-    storyData: normalizeStory(storyExperiencesRes, storyHeaderRes, storyRatingRes),
+    storyData: normalizeStory(
+      storyExperiencesRes,
+      storyHeaderRes,
+      storyRatingRes,
+    ),
     globalData: normalizeGlobal(locationsRes, presenceRes),
   };
 };
