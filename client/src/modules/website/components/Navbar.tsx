@@ -137,8 +137,17 @@ export default function Navbar({
 
   const location = useLocation();
   const navigate = useNavigate();
-  const showQuickBook = location.pathname === "/" || location.pathname === "/hotels";
+  const showQuickBook =
+    location.pathname === "/" || location.pathname === "/hotels";
+  const useWhiteTextOnTransparent =
+    location.pathname === "/" || location.pathname === "/hotels";
   const transparentMode = !scrolled;
+  const transparentTextClass = useWhiteTextOnTransparent
+    ? "text-white hover:text-white/80"
+    : "text-black hover:text-black/80 dark:text-white dark:hover:text-white/80";
+  const transparentBorderClass = useWhiteTextOnTransparent
+    ? "border-white/30 text-white hover:border-white/50 hover:text-white hover:bg-white/10"
+    : "border-black/20 text-black hover:border-black/40 hover:text-black hover:bg-black/5 dark:border-white/30 dark:text-white dark:hover:border-white/50 dark:hover:text-white dark:hover:bg-white/10";
 
   const openBooking = (category: "hotel" | "dining" | "delivery") => {
     setBookingCategory(category);
@@ -268,6 +277,7 @@ export default function Navbar({
                 key={item.key}
                 item={item}
                 transparentMode={transparentMode}
+                transparentTextClass={transparentTextClass}
                 activeDropdown={activeDropdown}
                 setActiveDropdown={setActiveDropdown}
                 handleHashLink={handleHashLink}
@@ -308,7 +318,7 @@ export default function Navbar({
               to="/login"
               className={`flex items-center gap-1.5 px-3 2xl:px-5 py-2 transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap cursor-pointer ${
                 transparentMode
-                  ? "text-white hover:text-white/80"
+                  ? transparentTextClass
                   : "text-foreground/80 hover:text-primary"
               }`}
             >
@@ -326,7 +336,7 @@ export default function Navbar({
                 onClick={() => openBooking("hotel")}
                 className={`transition-colors cursor-pointer ${
                   transparentMode
-                    ? "text-white hover:text-white/80"
+                    ? transparentTextClass
                     : "text-foreground hover:text-primary"
                 }`}
                 aria-label="Quick Book"
@@ -341,7 +351,7 @@ export default function Navbar({
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={`transition-colors relative cursor-pointer ${
                 transparentMode
-                  ? "text-white hover:text-white/80"
+                  ? transparentTextClass
                   : "text-foreground hover:text-primary"
               }`}
               aria-label="Toggle menu"
@@ -383,6 +393,8 @@ export default function Navbar({
           mobileExpandedMenu={mobileExpandedMenu}
           setMobileExpandedMenu={setMobileExpandedMenu}
           transparentMode={transparentMode}
+          transparentTextClass={transparentTextClass}
+          transparentBorderClass={transparentBorderClass}
           navItems={navItems}
           handleHashLink={handleHashLink}
         />
@@ -405,6 +417,7 @@ export default function Navbar({
 interface NavItemProps {
   item: NavItem;
   transparentMode: boolean;
+  transparentTextClass: string;
   activeDropdown: string | null;
   setActiveDropdown: (key: string | null) => void;
   handleHashLink: (
@@ -417,6 +430,7 @@ interface NavItemProps {
 function NavItem({
   item,
   transparentMode,
+  transparentTextClass,
   activeDropdown,
   setActiveDropdown,
   handleHashLink,
@@ -435,7 +449,7 @@ function NavItem({
             isActive
               ? "text-primary"
               : transparentMode
-                ? "text-white hover:text-white/80"
+                ? transparentTextClass
                 : "text-foreground hover:text-primary"
           }`}
         >
@@ -457,7 +471,7 @@ function NavItem({
           isActive
             ? "text-primary"
             : transparentMode
-              ? "text-white hover:text-white/80"
+              ? transparentTextClass
               : "text-foreground hover:text-primary"
         }`}
       >
@@ -570,6 +584,8 @@ interface MobileMenuProps {
   mobileExpandedMenu: string | null;
   setMobileExpandedMenu: (key: string | null) => void;
   transparentMode: boolean;
+  transparentTextClass: string;
+  transparentBorderClass: string;
   navItems: NavItem[];
   handleHashLink: (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -582,6 +598,8 @@ function MobileMenu({
   mobileExpandedMenu,
   setMobileExpandedMenu,
   transparentMode,
+  transparentTextClass,
+  transparentBorderClass,
   navItems,
   handleHashLink,
 }: MobileMenuProps) {
@@ -604,7 +622,7 @@ function MobileMenu({
                   onClick={(e) => handleHashLink(e, item.href)}
                   className={`block px-4 py-3 text-sm font-medium transition-colors border-b border-border/5 cursor-pointer ${
                     transparentMode
-                      ? "text-white hover:bg-accent hover:text-white/80"
+                      ? `${transparentTextClass} hover:bg-accent`
                       : "text-foreground hover:bg-accent hover:text-primary"
                   }`}
                 >
@@ -617,6 +635,7 @@ function MobileMenu({
                   mobileExpandedMenu={mobileExpandedMenu}
                   setMobileExpandedMenu={setMobileExpandedMenu}
                   transparentMode={transparentMode}
+                  transparentTextClass={transparentTextClass}
                   handleHashLink={handleHashLink}
                 />
               ),
@@ -628,7 +647,7 @@ function MobileMenu({
                 onClick={(e) => handleHashLink(e, "/login")}
                 className={`flex items-center justify-center gap-2 py-2.5 bg-transparent border text-sm font-medium rounded-full transition-all cursor-pointer ${
                   transparentMode
-                    ? "border-white/30 text-white hover:border-white/50 hover:text-white hover:bg-white/10"
+                    ? transparentBorderClass
                     : "border-border/20 text-foreground hover:border-primary hover:text-primary hover:bg-primary/10"
                 }`}
               >
@@ -649,6 +668,7 @@ interface MobileDropdownProps {
   mobileExpandedMenu: string | null;
   setMobileExpandedMenu: (key: string | null) => void;
   transparentMode: boolean;
+  transparentTextClass: string;
   handleHashLink: (
     e: React.MouseEvent<HTMLAnchorElement>,
     href: string,
@@ -660,6 +680,7 @@ function MobileDropdown({
   mobileExpandedMenu,
   setMobileExpandedMenu,
   transparentMode,
+  transparentTextClass,
   handleHashLink,
 }: MobileDropdownProps) {
   const isExpanded = mobileExpandedMenu === item.key;
@@ -670,7 +691,7 @@ function MobileDropdown({
         onClick={() => setMobileExpandedMenu(isExpanded ? null : item.key)}
         className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors relative cursor-pointer ${
           transparentMode
-            ? "text-white hover:bg-accent/50 hover:text-white/80"
+            ? `${transparentTextClass} hover:bg-accent/50`
             : "text-foreground hover:bg-accent/50 hover:text-primary"
         }`}
       >
