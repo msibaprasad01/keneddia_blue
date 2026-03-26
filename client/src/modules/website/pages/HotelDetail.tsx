@@ -221,7 +221,8 @@ const buildRestaurantPathMap = (rawData: ApiPropertyData[]) => {
         parent?.propertyName ||
         "restaurant";
 
-      acc[String(parent.id)] = `/${createCitySlug(cityName)}/${createHotelSlug(propertyName, parent.id)}`;
+      acc[String(parent.id)] =
+        `/${createCitySlug(cityName)}/${createHotelSlug(propertyName, parent.id)}`;
       return acc;
     },
     {},
@@ -273,9 +274,9 @@ export default function HotelDetail() {
   const [policies, setPolicies] = useState<PolicyData | null>(null);
   const [diningItems, setDiningItems] = useState<Restaurant[]>([]);
   const [bookingPartners, setBookingPartners] = useState<any[]>([]);
-  const [restaurantPaths, setRestaurantPaths] = useState<Record<string, string>>(
-    {},
-  );
+  const [restaurantPaths, setRestaurantPaths] = useState<
+    Record<string, string>
+  >({});
   const [loading, setLoading] = useState(true);
   const [roomsLoading, setRoomsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -403,22 +404,21 @@ export default function HotelDetail() {
   }, [diningSectionItems.length]);
 
   const activeDiningItem = diningSectionItems[currentDiningIndex] || null;
-  const activeDiningMediaSlides =
-    activeDiningItem?.mediaSlides?.length
-      ? activeDiningItem.mediaSlides
-      : activeDiningItem?.image
-        ? [
-            {
-              mediaId: null,
-              type: "IMAGE",
-              url: activeDiningItem.image,
-              fileName: null,
-              alt: activeDiningItem.name || null,
-              width: null,
-              height: null,
-            },
-          ]
-        : [];
+  const activeDiningMediaSlides = activeDiningItem?.mediaSlides?.length
+    ? activeDiningItem.mediaSlides
+    : activeDiningItem?.image
+      ? [
+          {
+            mediaId: null,
+            type: "IMAGE",
+            url: activeDiningItem.image,
+            fileName: null,
+            alt: activeDiningItem.name || null,
+            width: null,
+            height: null,
+          },
+        ]
+      : [];
 
   useEffect(() => {
     if (activeDiningMediaSlides.length <= 1) return;
@@ -649,7 +649,12 @@ export default function HotelDetail() {
       const mappedRooms = Array.isArray(res?.data)
         ? res.data.map((r: any) => {
             const discountedPrice = Number(
-              r.discountedPrice ?? r.offerPrice ?? r.finalPrice ?? r.basePrice ?? r.price ?? 0,
+              r.discountedPrice ??
+                r.offerPrice ??
+                r.finalPrice ??
+                r.basePrice ??
+                r.price ??
+                0,
             );
             const explicitOriginalPrice = Number(
               r.originalPrice ?? r.strikePrice ?? r.mrp ?? r.listPrice ?? 0,
@@ -662,7 +667,9 @@ export default function HotelDetail() {
                 ? Math.round(explicitDiscountPercent)
                 : explicitOriginalPrice > discountedPrice && discountedPrice > 0
                   ? Math.round(
-                      ((explicitOriginalPrice - discountedPrice) / explicitOriginalPrice) * 100,
+                      ((explicitOriginalPrice - discountedPrice) /
+                        explicitOriginalPrice) *
+                        100,
                     )
                   : 0;
 
@@ -672,18 +679,21 @@ export default function HotelDetail() {
               type: r.roomTypeName || r.roomType,
               description: r.description || "",
               basePrice: discountedPrice,
-              originalPrice: explicitOriginalPrice > 0 ? explicitOriginalPrice : null,
-              strikePrice: explicitOriginalPrice > 0 ? explicitOriginalPrice : null,
-              discountPercent: resolvedDiscountPercent > 0 ? resolvedDiscountPercent : null,
+              originalPrice:
+                explicitOriginalPrice > 0 ? explicitOriginalPrice : null,
+              strikePrice:
+                explicitOriginalPrice > 0 ? explicitOriginalPrice : null,
+              discountPercent:
+                resolvedDiscountPercent > 0 ? resolvedDiscountPercent : null,
               maxOccupancy: r.maxOccupancy || 1,
               roomSize: r.roomSize ?? null,
               roomSizeUnit: r.roomSizeUnit || "SQ_FT",
               isAvailable: r.status === "AVAILABLE",
               amenities: r.amenitiesAndFeatures || [],
               highlightedAmenities:
-                r.amenitiesAndFeatures
-                  ?.filter((a: RoomAmenity) => Boolean(a.showHighlight))
-                  || [],
+                r.amenitiesAndFeatures?.filter((a: RoomAmenity) =>
+                  Boolean(a.showHighlight),
+                ) || [],
               image: {
                 src:
                   r.media?.find((item: any) => item.type === "IMAGE")?.url ||
@@ -1197,36 +1207,11 @@ export default function HotelDetail() {
                   )}
                 </div>
               </section>
-
-              {hotel.amenities.length > 0 && (
-                <section id="amenities" className="scroll-mt-32 border-t pt-10">
-                  <div className="pb-10">
-                    <div className="mb-6 flex items-center justify-between gap-4">
-                      <h2 className="text-2xl md:text-3xl font-serif font-bold">
-                        Amenities
-                      </h2>
-                    </div>
-                    <div className="grid grid-cols-1 gap-y-6 gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
-                      {hotel.amenities.map((amenity, index) => (
-                        <div
-                          key={`${amenity}-${index}`}
-                          className="flex items-center gap-3"
-                        >
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-red-500">
-                            <Check className="h-4 w-4" />
-                          </div>
-                          <p className="text-base text-foreground">
-                            {amenity}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-              )}
-
               <section id="events" className="scroll-mt-32 border-t pt-10">
-                <div id="food-dining" className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <div
+                  id="food-dining"
+                  className="grid grid-cols-1 xl:grid-cols-2 gap-8"
+                >
                   <div className="min-w-0">
                     <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
                       Events
@@ -1253,9 +1238,12 @@ export default function HotelDetail() {
                             }}
                           >
                             {diningSectionItems.map((restaurant) => {
-                              const restaurantPath = restaurant.attachRestaurantId
-                                ? restaurantPaths[String(restaurant.attachRestaurantId)]
-                                : null;
+                              const restaurantPath =
+                                restaurant.attachRestaurantId
+                                  ? restaurantPaths[
+                                      String(restaurant.attachRestaurantId)
+                                    ]
+                                  : null;
 
                               return (
                                 <div
@@ -1269,14 +1257,16 @@ export default function HotelDetail() {
                                         : ""
                                     }`}
                                     onClick={() => {
-                                      if (restaurantPath) navigate(restaurantPath);
+                                      if (restaurantPath)
+                                        navigate(restaurantPath);
                                     }}
                                     role={restaurantPath ? "button" : undefined}
                                     tabIndex={restaurantPath ? 0 : undefined}
                                     onKeyDown={(event) => {
                                       if (
                                         restaurantPath &&
-                                        (event.key === "Enter" || event.key === " ")
+                                        (event.key === "Enter" ||
+                                          event.key === " ")
                                       ) {
                                         event.preventDefault();
                                         navigate(restaurantPath);
@@ -1319,23 +1309,28 @@ export default function HotelDetail() {
                                       )}
                                       {activeDiningMediaSlides.length > 1 && (
                                         <div className="absolute bottom-3 right-3 z-10 flex gap-1.5">
-                                          {activeDiningMediaSlides.map((_, idx) => (
-                                            <button
-                                              key={`dining-media-${restaurant.id}-${idx}`}
-                                              type="button"
-                                              onClick={(event) => {
-                                                event.preventDefault();
-                                                event.stopPropagation();
-                                                setCurrentDiningMediaIndex(idx);
-                                              }}
-                                              className={`h-1.5 rounded-full transition-all ${
-                                                currentDiningMediaIndex === idx
-                                                  ? "w-5 bg-white"
-                                                  : "w-1.5 bg-white/55 hover:bg-white/80"
-                                              }`}
-                                              aria-label={`Show dining media ${idx + 1}`}
-                                            />
-                                          ))}
+                                          {activeDiningMediaSlides.map(
+                                            (_, idx) => (
+                                              <button
+                                                key={`dining-media-${restaurant.id}-${idx}`}
+                                                type="button"
+                                                onClick={(event) => {
+                                                  event.preventDefault();
+                                                  event.stopPropagation();
+                                                  setCurrentDiningMediaIndex(
+                                                    idx,
+                                                  );
+                                                }}
+                                                className={`h-1.5 rounded-full transition-all ${
+                                                  currentDiningMediaIndex ===
+                                                  idx
+                                                    ? "w-5 bg-white"
+                                                    : "w-1.5 bg-white/55 hover:bg-white/80"
+                                                }`}
+                                                aria-label={`Show dining media ${idx + 1}`}
+                                              />
+                                            ),
+                                          )}
                                         </div>
                                       )}
                                     </div>
@@ -1347,7 +1342,8 @@ export default function HotelDetail() {
                                         {restaurant.cuisine}
                                       </p>
                                       {restaurant.description &&
-                                      restaurant.description !== restaurant.cuisine ? (
+                                      restaurant.description !==
+                                        restaurant.cuisine ? (
                                         <p className="text-sm text-muted-foreground/90">
                                           {restaurant.description}
                                         </p>
@@ -1383,7 +1379,9 @@ export default function HotelDetail() {
                             <button
                               onClick={() =>
                                 setCurrentDiningIndex((prev) =>
-                                  prev === 0 ? diningSectionItems.length - 1 : prev - 1,
+                                  prev === 0
+                                    ? diningSectionItems.length - 1
+                                    : prev - 1,
                                 )
                               }
                               className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all"
@@ -1394,7 +1392,9 @@ export default function HotelDetail() {
                             <button
                               onClick={() =>
                                 setCurrentDiningIndex((prev) =>
-                                  prev === diningSectionItems.length - 1 ? 0 : prev + 1,
+                                  prev === diningSectionItems.length - 1
+                                    ? 0
+                                    : prev + 1,
                                 )
                               }
                               className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all"
@@ -1421,12 +1421,37 @@ export default function HotelDetail() {
                       </div>
                     ) : (
                       <div className="rounded-xl border border-dashed border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
-                        No food and dining highlights available for this property.
+                        No food and dining highlights available for this
+                        property.
                       </div>
                     )}
                   </div>
                 </div>
               </section>
+              {hotel.amenities.length > 0 && (
+                <section id="amenities" className="scroll-mt-32 border-t pt-10">
+                  <div className="pb-10">
+                    <div className="mb-6 flex items-center justify-between gap-4">
+                      <h2 className="text-2xl md:text-3xl font-serif font-bold">
+                        Amenities
+                      </h2>
+                    </div>
+                    <div className="grid grid-cols-1 gap-y-6 gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
+                      {hotel.amenities.map((amenity, index) => (
+                        <div
+                          key={`${amenity}-${index}`}
+                          className="flex items-center gap-3"
+                        >
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-red-500">
+                            <Check className="h-4 w-4" />
+                          </div>
+                          <p className="text-base text-foreground">{amenity}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
               {/* <section id="food-dining" className="scroll-mt-32 border-t pt-10">
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
                   Food & Dining
