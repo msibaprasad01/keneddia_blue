@@ -1,138 +1,193 @@
-import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Clock, Phone, GlassWater, MapPin, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Clock, Phone, GlassWater, MapPin, Sparkles, UtensilsCrossed } from "lucide-react";
+
+// ── Static Data (mirrors Hotels.tsx aboutSections structure) ─────────────────
+
+const ABOUT_SECTIONS = [
+  {
+    id: 1,
+    subTitle: "Ghaziabad Destination",
+    sectionTitle: "A Symphony of Fine Flavors",
+    description:
+      "We believe dining is more than just a meal — it's a curated premium experience designed to ground you in the moment. Our philosophy balances the bold spices of Indian tradition with the refined elegance of global favorites, all within a thoughtfully designed BYOB setting.",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200",
+    recognitions: [
+      { id: 1, value: "11 AM", title: "Opens Daily",    subTitle: "Serving guests every day from morning to night", isActive: true },
+      { id: 2, value: "₹899",  title: "Lunch Buffet",   subTitle: "Grand spread served daily from 12 PM to 4 PM",  isActive: true },
+      { id: 3, value: "BYOB",  title: "Premium Setting", subTitle: "Bring your own bottle — curated bar ambience",  isActive: true },
+    ],
+    isActive: true,
+  },
+  {
+    id: 2,
+    subTitle: "Signature Experience",
+    sectionTitle: "Where Heritage Meets Modern Craft",
+    description:
+      "Our chefs bring decades of mastery to every plate, blending age-old family recipes with contemporary presentation. Each visit is a new chapter in a story written with saffron, smoke, and seasonal produce sourced from local farms.",
+    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200",
+    recognitions: [
+      { id: 4, value: "50+",   title: "Menu Items",    subTitle: "Rotating seasonal specials added every month",    isActive: true },
+      { id: 5, value: "4.8★",  title: "Guest Rating",  subTitle: "Consistently rated across platforms",             isActive: true },
+      { id: 6, value: "15yr",  title: "Legacy",        subTitle: "Serving the region since our founding",           isActive: true },
+    ],
+    isActive: true,
+  },
+];
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AboutRestaurant() {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentRecognitionIndex, setCurrentRecognitionIndex] = useState(0);
 
-  // PARALLAX CONTROLS
-  const textX = useTransform(scrollYProgress, [0, 1], ["-20%", "20%"]); // BG Horizontal
-  const titleY = useTransform(scrollYProgress, [0, 1], ["60px", "-60px"]); // Headline vertical
-  const descY = useTransform(scrollYProgress, [0, 1], ["100px", "-100px"]); // Narrative vertical
-  const imageY = useTransform(scrollYProgress, [0, 1], ["-40px", "40px"]); // Image vertical
+  // Reset recognition index when section changes
+  useEffect(() => {
+    setCurrentRecognitionIndex(0);
+  }, [currentIndex]);
+
+  // Auto-cycle sections every 5 s
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % ABOUT_SECTIONS.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Auto-cycle recognitions every 2 s
+  useEffect(() => {
+    const recognitions = ABOUT_SECTIONS[currentIndex].recognitions.filter((r) => r.isActive);
+    if (recognitions.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentRecognitionIndex((prev) => (prev + 1) % recognitions.length);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [currentIndex]);
+
+  const section      = ABOUT_SECTIONS[currentIndex];
+  const recognitions = section.recognitions.filter((r) => r.isActive);
 
   return (
-    <section 
-      ref={containerRef}
-      id="about" 
-      className="relative overflow-hidden bg-white py-24 transition-colors duration-500 dark:bg-[#050505]"
+    <section
+      id="about"
+      className="py-8 px-6 bg-white transition-colors duration-500 dark:bg-[#050505]"
     >
-      {/* BACKGROUND DECORATIVE LAYER */}
-      <motion.div 
-        style={{ x: textX }}
-        className="absolute top-1/3 left-0 whitespace-nowrap text-[15rem] font-black text-zinc-900/[0.03] pointer-events-none select-none italic uppercase z-0 dark:text-white/[0.02]"
-      >
-        Authentic Heritage Ghaziabad
-      </motion.div>
+      <div className="container mx-auto max-w-7xl">
+        <div className="grid grid-cols-1 lg:grid-cols-[45%_55%] gap-8 items-center">
 
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-20 items-center">
-          
-          {/* LEFT: VISUAL COMPONENT */}
-          <div className="relative">
-            <motion.div 
-              style={{ y: imageY }}
-              className="relative rounded-sm overflow-hidden aspect-[4/5] shadow-2xl"
-            >
+          {/* ── LEFT: Image ── */}
+          <motion.div
+            key={`about-image-${currentIndex}`}
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="relative"
+          >
+            <div className="aspect-[4/3] rounded-xl overflow-hidden relative z-10 border border-zinc-200/10 dark:border-white/10 shadow-2xl">
               <img
-                src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200"
-                alt="Restaurant Ambience"
-                className="w-full h-full object-cover grayscale-[0.2]"
+                src={section.image}
+                alt={section.sectionTitle}
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            </motion.div>
+              {/* Gradient overlay — matches Hotels.tsx feel */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+            </div>
 
-            {/* Float Badge: BYOB Experience */}
-            <motion.div 
+            {/* Decorative offset borders — exact Hotels.tsx pattern */}
+            <div className="absolute -bottom-4 -right-4 w-2/3 h-2/3 border-2 border-primary/20 rounded-xl -z-0" />
+            <div className="absolute -top-4 -left-4 w-1/2 h-1/2 bg-zinc-100/80 dark:bg-white/5 rounded-xl -z-0" />
+
+            {/* Float badge — retained from original */}
+            {/* <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="absolute top-10 -left-6 bg-primary p-5 shadow-2xl"
+              viewport={{ once: true }}
+              className="absolute top-6 -left-4 bg-primary p-4 shadow-2xl rounded-sm z-20"
             >
-              <GlassWater className="text-white w-6 h-6 mb-2" />
-              <span className="text-white text-[10px] font-black uppercase tracking-tighter leading-tight block">
+              <GlassWater className="text-white w-5 h-5 mb-1.5" />
+              <span className="text-white text-[9px] font-black uppercase tracking-tighter leading-tight block">
                 Premium <br /> BYOB Setting
               </span>
-            </motion.div>
+            </motion.div> */}
+          </motion.div>
 
-            {/* Offer Card: Buffet */}
-            <motion.div
-              style={{ y: titleY }} // Linked to headline speed
-              className="absolute -bottom-10 right-0 max-w-[260px] border border-zinc-200 bg-white p-6 shadow-2xl md:right-10 md:p-8 dark:border-white/10 dark:bg-zinc-900"
-            >
-              <div className="flex items-center gap-2 mb-3 text-primary">
-                <Sparkles className="w-3 h-3" />
-                <span className="text-[9px] font-bold uppercase tracking-widest">Featured</span>
-              </div>
-              <h4 className="mb-2 font-serif text-xl text-zinc-900 dark:text-white">Grand Lunch Buffet</h4>
-              <div className="flex items-baseline gap-2">
-                <span className="text-primary font-serif text-2xl">₹899</span>
-                <span className="text-white/30 text-[10px] uppercase font-bold tracking-widest">Daily • 12-4 PM</span>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* RIGHT: STORYTELLING CONTENT */}
-          <div className="lg:pl-6 space-y-12">
-            {/* Header Content with Parallax */}
-            <motion.div style={{ y: titleY }}>
-              <div className="flex items-center gap-3 mb-6">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="text-primary text-[10px] font-bold uppercase tracking-[0.5em]">
-                  Ghaziabad Destination
-                </span>
-              </div>
-
-              <h2 className="text-5xl font-serif leading-tight tracking-tight text-zinc-900 dark:text-white md:text-7xl">
-                A Symphony of <br />
-                <span className="italic decoration-primary/20 underline decoration-1 underline-offset-[12px] text-zinc-400 dark:text-white/40">
-                  Fine Flavors.
-                </span>
-              </h2>
-            </motion.div>
-
-            {/* Narrative with Independent Parallax */}
-            <motion.div 
-              style={{ y: descY }}
-              className="space-y-8"
-            >
-              <div className="space-y-6 text-lg font-light leading-relaxed text-zinc-600 dark:text-white/70 md:text-xl">
-                <p>
-                  We believe dining is more than just a meal; it’s a 
-                  <span className="font-medium text-zinc-900 dark:text-white"> curated premium experience</span> designed 
-                  to ground you in the moment. 
-                </p>
-                <p>
-                  Our philosophy balances the bold spices of Indian tradition with 
-                  the refined elegance of global favorites, all within a 
-                  <span className="text-primary italic font-medium"> thoughtfully designed BYOB setting</span>.
-                </p>
-              </div>
-
-              {/* Functional Details */}
-              <div className="grid grid-cols-2 gap-8 border-t border-zinc-200 pt-10 dark:border-white/10">
-                <div className="group">
-                  <h4 className="text-white/40 font-bold text-[9px] uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <Clock className="w-3 h-3 text-primary" /> Availability
-                  </h4>
-                  <p className="text-white font-serif text-lg italic leading-tight">11:00 AM — 11:30 PM</p>
-                  <p className="text-white/30 text-[10px] mt-1 font-bold tracking-tighter">MONDAY — SUNDAY</p>
+          {/* ── RIGHT: Content ── */}
+          <div className="relative lg:pl-4">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-4"
+              >
+                {/* Eyebrow + Title */}
+                <div>
+                  <h3 className="text-primary text-xs font-bold uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                    <MapPin className="w-3 h-3" />
+                    {section.subTitle}
+                  </h3>
+                  <h2 className="text-3xl md:text-4xl font-serif text-zinc-900 dark:text-white leading-tight mb-3">
+                    {section.sectionTitle}
+                  </h2>
                 </div>
 
-                <div className="group">
-                  <h4 className="text-white/40 font-bold text-[9px] uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <Phone className="w-3 h-3 text-primary" /> Connect
-                  </h4>
-                  <a href="tel:+919999999999" className="text-white font-serif text-lg italic block hover:text-primary transition-colors">
-                    +91 999 999 9999
-                  </a>
-                  <span className="text-white/30 text-[10px] font-bold tracking-tighter uppercase">Direct Reservation</span>
+                {/* Description */}
+                <p className="text-zinc-500 dark:text-white/60 leading-relaxed text-base font-light">
+                  {section.description}
+                </p>
+
+                {/* Recognitions — exact Hotels.tsx pattern */}
+
+                {/* Quick info row — Hours + Phone */}
+                <div className="grid grid-cols-2 gap-6 pt-2 border-t border-zinc-200 dark:border-white/10">
+                  <div>
+                    <h4 className="text-zinc-400 dark:text-white/40 font-bold text-[9px] uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                      <Clock className="w-3 h-3 text-primary" /> Availability
+                    </h4>
+                    <p className="text-zinc-900 dark:text-white font-serif text-base italic leading-tight">
+                      11:00 AM — 11:30 PM
+                    </p>
+                    <p className="text-zinc-400 dark:text-white/30 text-[10px] mt-1 font-bold tracking-tighter">
+                      MONDAY — SUNDAY
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-zinc-400 dark:text-white/40 font-bold text-[9px] uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                      <Phone className="w-3 h-3 text-primary" /> Connect
+                    </h4>
+                    <a
+                      href="tel:+919999999999"
+                      className="text-zinc-900 dark:text-white font-serif text-base italic block hover:text-primary transition-colors"
+                    >
+                      +91 999 999 9999
+                    </a>
+                    <span className="text-zinc-400 dark:text-white/30 text-[10px] font-bold tracking-tighter uppercase">
+                      Direct Reservation
+                    </span>
+                  </div>
                 </div>
+
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Section dot indicators (bottom-right) */}
+            {ABOUT_SECTIONS.length > 1 && (
+              <div className="flex gap-2 mt-6">
+                {ABOUT_SECTIONS.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentIndex(idx)}
+                    className={`h-1 rounded-full transition-all duration-300 ${
+                      idx === currentIndex
+                        ? "bg-primary w-6"
+                        : "bg-zinc-200 dark:bg-white/10 w-3 hover:bg-primary/50"
+                    }`}
+                  />
+                ))}
               </div>
-            </motion.div>
+            )}
           </div>
 
         </div>

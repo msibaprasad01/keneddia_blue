@@ -3,6 +3,7 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import HeroBanner from "./components/HeroBanner";
 import RestaurantQuickBooking from "./components/RestaurantQuickBooking";
+import RestaurantProperties from "./components/RestaurantProperties";
 import RestaurantOffers from "./components/RestaurantOffers";
 import CuisineCategories from "./components/CuisineCategories";
 import AboutRestaurant from "./components/AboutRestaurant";
@@ -50,6 +51,10 @@ export default function RestaurantHomepage() {
         </div>
 
         <RestaurantQuickBooking />
+
+        <RestaurantProperties />
+        
+        <AboutRestaurant />
 
         <RestaurantOffers />
 
