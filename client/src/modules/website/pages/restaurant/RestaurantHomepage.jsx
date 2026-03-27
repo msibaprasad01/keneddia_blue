@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import HeroBanner from "./components/HeroBanner";
-import QuickBooking from "./components/QuickBooking";
+import RestaurantQuickBooking from "./components/RestaurantQuickBooking";
 import CuisineCategories from "./components/CuisineCategories";
 import AboutRestaurant from "./components/AboutRestaurant";
 import PerformanceMetrics from "./components/PerformanceMetrics";
@@ -34,7 +34,7 @@ export default function RestaurantHomepage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background [scrollbar-gutter:stable]">
       {/* Main Navbar with Restaurant-specific items */}
       <Navbar
         navItems={RESTAURANT_NAV_ITEMS}
@@ -48,7 +48,7 @@ export default function RestaurantHomepage() {
           <HeroBanner />
         </div>
 
-        <QuickBooking />
+        <RestaurantQuickBooking />
 
         {/* About Section */}
         <AboutRestaurant />
