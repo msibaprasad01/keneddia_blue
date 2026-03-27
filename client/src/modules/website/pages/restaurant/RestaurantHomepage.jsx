@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import HeroBanner from "./components/HeroBanner";
+import QuickBooking from "./components/QuickBooking";
 import CuisineCategories from "./components/CuisineCategories";
 import AboutRestaurant from "./components/AboutRestaurant";
 import PerformanceMetrics from "./components/PerformanceMetrics";
@@ -46,6 +47,9 @@ export default function RestaurantHomepage() {
         <div id="home">
           <HeroBanner />
         </div>
+
+        <QuickBooking />
+
         {/* About Section */}
         <AboutRestaurant />
 
