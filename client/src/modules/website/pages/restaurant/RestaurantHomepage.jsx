@@ -11,6 +11,7 @@ import PerformanceMetrics from "./components/PerformanceMetrics";
 import BanquetsAndCatering from "./components/BanquetsAndCatering";
 import EventsSchedule from "./components/EventsSchedule";
 import RestaurantNewsSection from "./components/RestaurantNewsSection";
+import RestaurantGuestReviews from "./components/RestaurantGuestReviews";
 import SignatureDishes from "./components/SignatureDishes";
 import ReservationForm from "./components/ReservationForm";
 import Testimonials from "./components/Testimonials";
@@ -63,6 +64,8 @@ export default function RestaurantHomepage() {
         <EventsSchedule />
 
         <RestaurantNewsSection />
+
+        <RestaurantGuestReviews />
         
       </main>
 
