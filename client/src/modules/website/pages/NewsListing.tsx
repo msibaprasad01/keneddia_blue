@@ -10,6 +10,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getAllNews } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
+import { useSsrData } from "@/ssr/SsrDataContext";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -43,6 +44,8 @@ interface BreadcrumbItem {
 }
 
 const Breadcrumb = ({ items }: { items: BreadcrumbItem[] }) => {
+  const baseOrigin =
+    typeof window !== "undefined" ? window.location.origin : "http://localhost";
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -50,7 +53,7 @@ const Breadcrumb = ({ items }: { items: BreadcrumbItem[] }) => {
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": `${window.location.origin}${item.url}`
+      "item": `${baseOrigin}${item.url}`
     }))
   };
 
@@ -82,8 +85,11 @@ const Breadcrumb = ({ items }: { items: BreadcrumbItem[] }) => {
 };
 
 export default function NewsListing() {
-  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const ssrData = useSsrData();
+  const initialNewsItems = Array.isArray(ssrData?.news?.items) ? ssrData.news.items : [];
+  const hasInitialNews = initialNewsItems.length > 0;
+  const [newsItems, setNewsItems] = useState<NewsItem[]>(initialNewsItems);
+  const [loading, setLoading] = useState(!hasInitialNews);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchQuery, setSearchQuery] = useState("");
@@ -101,7 +107,9 @@ export default function NewsListing() {
 
   const fetchNews = async () => {
     try {
-      setLoading(true);
+      if (!hasInitialNews) {
+        setLoading(true);
+      }
       const response = await getAllNews({ page: 0, size: 100 });
       console.log("News API response:", response);
 
@@ -119,8 +127,10 @@ export default function NewsListing() {
       setNewsItems(activeNews);
     } catch (error) {
       console.error("Failed to fetch news:", error);
-      toast.error("Failed to load news articles");
-      setNewsItems([]);
+      if (!hasInitialNews) {
+        toast.error("Failed to load news articles");
+        setNewsItems([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -163,7 +173,9 @@ export default function NewsListing() {
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     }
   };
 

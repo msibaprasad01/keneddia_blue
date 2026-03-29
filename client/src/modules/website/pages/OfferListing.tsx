@@ -18,6 +18,7 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { getDailyOffers } from "@/Api/Api";
 import OfferVideo from "@/modules/website/components/OfferVideo";
+import { useSsrData } from "@/ssr/SsrDataContext";
 
 // ============================================================================
 // TYPES
@@ -223,8 +224,11 @@ function OfferCard({ offer, isListView }: { offer: Offer; isListView: boolean })
 // MAIN PAGE
 // ============================================================================
 export default function OfferListing() {
-  const [allOffers, setAllOffers] = useState<Offer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const ssrData = useSsrData();
+  const initialOffers = Array.isArray(ssrData?.offers?.items) ? ssrData.offers.items : [];
+  const hasInitialOffers = initialOffers.length > 0;
+  const [allOffers, setAllOffers] = useState<Offer[]>(initialOffers);
+  const [loading, setLoading] = useState(!hasInitialOffers);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
   const [activeTab, setActiveTab] = useState<"active" | "expired">("active");
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(false);
@@ -237,7 +241,9 @@ export default function OfferListing() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        setLoading(true);
+        if (!hasInitialOffers) {
+          setLoading(true);
+        }
         const res = await getDailyOffers({ targetType: "GLOBAL", page: 0, size: 100 });
         const rawData = res.data?.data || res.data || [];
         const list: any[] = Array.isArray(rawData) ? rawData : rawData.content || [];
@@ -263,13 +269,15 @@ export default function OfferListing() {
         setAllOffers(mapped);
       } catch (err) {
         console.error("Failed to fetch offers:", err);
-        setAllOffers([]);
+        if (!hasInitialOffers) {
+          setAllOffers([]);
+        }
       } finally {
         setLoading(false);
       }
     };
     fetch();
-  }, []);
+  }, [hasInitialOffers]);
 
   // Unique filter options derived from data
   const uniquePropertyTypes = useMemo(() => [...new Set(allOffers.map((o) => o.propertyType).filter(Boolean))].sort(), [allOffers]);

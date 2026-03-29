@@ -3,8 +3,9 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { addDays, format, isBefore, parseISO, startOfToday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { P as Popover, a as PopoverTrigger, b as PopoverContent, C as Calendar$1, B as Button, O as OptimizedImage, g as getEventsUpdated, c as getEventFilesByUploadedId, d as buildEventDetailPath, T as Textarea, e as getCommentsByProperty, f as createComment, A as Avatar, h as AvatarFallback, I as Input, i as getCommentThread, N as Navbar, s as siteContent, F as Footer, G as GetAllPropertyDetails, j as getRoomsByPropertyId, k as getGalleryByPropertyId, l as getAllBookingChannelPartners, m as getAllDiningByPropertyId, n as getAllPropertyPolicies, o as showWarning, p as createCitySlug, q as createHotelSlug } from "../entry-server.js";
+import { C as Calendar$1, B as Button, O as OptimizedImage, g as getEventsUpdated, a as getEventFilesByUploadedId, b as buildEventDetailPath, T as Textarea, c as getCommentsByProperty, d as createComment, A as Avatar, e as AvatarFallback, I as Input, f as getCommentThread, N as Navbar, s as siteContent, F as Footer, G as GetAllPropertyDetails, h as getRoomsByPropertyId, i as getGalleryByPropertyId, j as getAllBookingChannelPartners, k as getAllDiningByPropertyId, l as getAllPropertyPolicies, m as showWarning, n as createCitySlug, o as createHotelSlug } from "../entry-server.js";
 import { MapPin, ExternalLink, Calendar, Users, Loader2, Expand, Check, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, VolumeX, Volume2, Image, ArrowRight, Clock, Star, Navigation, Info, MessageSquare, Send, MessageCircle, X, CheckCircle2, Facebook, Twitter, Linkedin, Share2, Heart, UtensilsCrossed } from "lucide-react";
+import { P as Popover, a as PopoverTrigger, b as PopoverContent } from "./popover-B0tp2Gbr.js";
 import { toast } from "react-hot-toast";
 import { G as GalleryModal } from "./GalleryModal-DTwSFNib.js";
 import "react-dom/server";
@@ -23,13 +24,11 @@ import "@radix-ui/react-slot";
 import "swiper/react";
 import "swiper/modules";
 import "@radix-ui/react-avatar";
-import "@radix-ui/react-popover";
 import "react-calendar";
-import "react-leaflet";
-import "leaflet";
 import "@radix-ui/react-label";
 import "@heroicons/react/24/outline";
 import "@heroicons/react/24/solid";
+import "@radix-ui/react-popover";
 function isEmbedUrl(url) {
   return url?.startsWith("https://www.google.com/maps/embed");
 }

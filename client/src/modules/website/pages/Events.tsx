@@ -22,6 +22,7 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { getEventsUpdated } from "@/Api/Api";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
+import { useSsrData } from "@/ssr/SsrDataContext";
 
 const dateFilters = [
   { label: "Today", value: "today" },
@@ -138,9 +139,12 @@ const EventMedia = ({
 // MAIN PAGE COMPONENT
 // ============================================================================
 export default function EventsListing() {
+  const ssrData = useSsrData();
+  const initialEvents = Array.isArray(ssrData?.events?.items) ? ssrData.events.items : [];
+  const hasInitialEvents = initialEvents.length > 0;
   const navigate = useNavigate();
-  const [eventList, setEventList] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [eventList, setEventList] = useState<any[]>(initialEvents);
+  const [loading, setLoading] = useState(!hasInitialEvents);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(false);
@@ -166,12 +170,17 @@ export default function EventsListing() {
 
   const fetchEvents = async () => {
     try {
-      setLoading(true);
+      if (!hasInitialEvents) {
+        setLoading(true);
+      }
       const response = await getEventsUpdated();
       const data = response?.data || response || [];
       setEventList(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
+      if (!hasInitialEvents) {
+        setEventList([]);
+      }
     } finally {
       setLoading(false);
     }

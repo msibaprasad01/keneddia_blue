@@ -41,6 +41,7 @@ import {
   buildEventDetailPath,
   getEventIdFromSlug,
 } from "@/modules/website/utils/eventSlug";
+import { useSsrData } from "@/ssr/SsrDataContext";
 
 // ============================================================================
 // FALLBACK CONSTANTS
@@ -493,23 +494,42 @@ function BookingModal({
 // ============================================================================
 export default function EventDetails() {
   const { eventSlug } = useParams<{ eventSlug: string }>();
+  const ssrData = useSsrData();
+  const initialEventDetail = ssrData?.eventDetail || null;
+  const hasInitialEvent =
+    !!initialEventDetail &&
+    String(initialEventDetail?.eventId || "") === String(getEventIdFromSlug(eventSlug));
   const navigate = useNavigate();
   const id = getEventIdFromSlug(eventSlug);
-  const [event, setEvent] = useState<ApiEvent | null>(null);
-  const [detailInfoList, setDetailInfoList] = useState<EventDetailInfo[]>([]);
+  const [event, setEvent] = useState<ApiEvent | null>(
+    hasInitialEvent ? initialEventDetail.event || null : null,
+  );
+  const [detailInfoList, setDetailInfoList] = useState<EventDetailInfo[]>(
+    hasInitialEvent && Array.isArray(initialEventDetail?.detailInfoList)
+      ? initialEventDetail.detailInfoList
+      : [],
+  );
   const [heroSlides, setHeroSlides] = useState<
     { url: string; type: "IMAGE" | "VIDEO"; alt?: string }[]
-  >([]);
+  >(hasInitialEvent && Array.isArray(initialEventDetail?.heroSlides) ? initialEventDetail.heroSlides : []);
   const [pastEventImages, setPastEventImages] = useState<
     { url: string; type: "IMAGE" | "VIDEO"; alt?: string }[]
-  >([]);
-  const [loading, setLoading] = useState(true);
+  >(
+    hasInitialEvent && Array.isArray(initialEventDetail?.pastEventImages)
+      ? initialEventDetail.pastEventImages
+      : [],
+  );
+  const [loading, setLoading] = useState(!hasInitialEvent);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const [showShareReactions, setShowShareReactions] = useState(false);
 
   // ── Interest / booking ──
-  const [interestList, setInterestList] = useState<InterestEntry[]>([]);
+  const [interestList, setInterestList] = useState<InterestEntry[]>(
+    hasInitialEvent && Array.isArray(initialEventDetail?.interestList)
+      ? initialEventDetail.interestList
+      : [],
+  );
   const [isInterested, setIsInterested] = useState(false);
   const [bookingModal, setBookingModal] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("book");
@@ -546,12 +566,21 @@ export default function EventDetails() {
   useEffect(() => {
     const fetchEventBase = async () => {
       try {
+        if (!hasInitialEvent) {
+          setLoading(true);
+        }
         const response = await getEventsUpdated({});
         const rawEvents: ApiEvent[] = response?.data || response || [];
         const foundEvent = rawEvents.find((e) => e.id.toString() === id);
         setEvent(foundEvent || null);
       } catch {
-        setEvent(null);
+        if (!hasInitialEvent) {
+          setEvent(null);
+        }
+      } finally {
+        if (!hasInitialEvent) {
+          setLoading(false);
+        }
       }
     };
     if (!id) {
@@ -559,7 +588,7 @@ export default function EventDetails() {
       return;
     }
     fetchEventBase();
-  }, [id]);
+  }, [hasInitialEvent, id]);
 
   useEffect(() => {
     if (!event || !eventSlug) return;
@@ -574,7 +603,9 @@ export default function EventDetails() {
     if (!id) return;
 
     const fetchDetails = async () => {
-      setLoading(true);
+      if (!hasInitialEvent) {
+        setLoading(true);
+      }
       try {
         let detailRes: any = null;
         let filesRes: any = null;
@@ -635,15 +666,19 @@ export default function EventDetails() {
         );
       } catch (err) {
         console.error("Failed to fetch event details:", err);
-        setDetailInfoList([]);
+        if (!hasInitialEvent) {
+          setDetailInfoList([]);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchDetails();
-    fetchInterestList(id);
-  }, [id]);
+    if (!hasInitialEvent) {
+      fetchInterestList(id);
+    }
+  }, [hasInitialEvent, id]);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 

@@ -9,7 +9,7 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva } from "class-variance-authority";
-import { X, Search, Loader2, ExternalLink, ChevronRight, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Minus, Plus, BedDouble, Home as Home$1, Maximize, Map as Map$1, Grid3X3, CheckCircle, CreditCard, ChefHat, Flame, ShoppingCart, LogOut, Save, Menu, Upload, Link as Link$1, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Heart, Hash, UserCheck, XCircle, FileText, MessageSquare, AlertTriangle, CornerDownRight, Type, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Check, Filter, Zap, Tags, Gift } from "lucide-react";
+import { X, Search, Loader2, ExternalLink, ChevronRight, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, ChefHat, Flame, ShoppingCart, LogOut, Home as Home$1, Save, Menu, Upload, Plus, Link as Link$1, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Heart, Hash, UserCheck, XCircle, FileText, MessageSquare, AlertTriangle, CornerDownRight, Type, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Check, Filter, Zap, Tags, Gift } from "lucide-react";
 import { toast as toast$3, ToastContainer } from "react-toastify";
 import { useLocation, useNavigate, Link, useParams, useSearchParams, Route, Navigate, Routes } from "react-router-dom";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
@@ -21,11 +21,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Navigation, Pagination as Pagination$2 } from "swiper/modules";
 import { toast as toast$2 } from "react-hot-toast";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
-import * as PopoverPrimitive from "@radix-ui/react-popover";
 import ReactCalendar from "react-calendar";
-import { format, addDays } from "date-fns";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { XMarkIcon, CurrencyRupeeIcon, UserIcon, MapPinIcon, InformationCircleIcon, PhotoIcon, StarIcon as StarIcon$1, UsersIcon as UsersIcon$1, HomeIcon, MinusIcon, PlusIcon, CloudArrowUpIcon, ArrowPathIcon, TrashIcon, PencilSquareIcon, PencilIcon, CheckIcon, BoltIcon, TagIcon, XCircleIcon, MagnifyingGlassIcon, FunnelIcon, Squares2X2Icon, ListBulletIcon, BuildingStorefrontIcon, ArrowsUpDownIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, DocumentTextIcon, ShieldCheckIcon, CheckCircleIcon as CheckCircleIcon$1, ArrowLeftIcon, BuildingOffice2Icon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
@@ -3655,7 +3651,7 @@ function DailyOffers$1({ initialOffers = [] }) {
     )
   ] }) });
 }
-const getAmenityName$4 = (amenity) => {
+const getAmenityName$5 = (amenity) => {
   if (typeof amenity === "string") return amenity;
   if (amenity && typeof amenity === "object" && "name" in amenity && typeof amenity.name === "string") {
     return amenity.name;
@@ -3838,7 +3834,7 @@ function PropertiesSection({
               price: l.price ?? 0,
               gstPercentage: l.gstPercentage ?? 0,
               discountAmount: l.discountAmount ?? 0,
-              amenities: (l.amenities || []).map((amenity) => getAmenityName$4(amenity)).filter(Boolean),
+              amenities: (l.amenities || []).map((amenity) => getAmenityName$5(amenity)).filter(Boolean),
               isActive: true,
               media: l.media || [],
               bookingEngineUrl: parent?.bookingEngineUrl || null,
@@ -6249,9 +6245,12 @@ const EventMedia = ({
   );
 };
 function EventsListing() {
+  const ssrData = useSsrData();
+  const initialEvents = Array.isArray(ssrData?.events?.items) ? ssrData.events.items : [];
+  const hasInitialEvents = initialEvents.length > 0;
   useNavigate();
-  const [eventList, setEventList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [eventList, setEventList] = useState(initialEvents);
+  const [loading, setLoading] = useState(!hasInitialEvents);
   const [viewMode, setViewMode] = useState("card");
   const [activeTab, setActiveTab] = useState("upcoming");
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(false);
@@ -6272,12 +6271,17 @@ function EventsListing() {
   }, []);
   const fetchEvents = async () => {
     try {
-      setLoading(true);
+      if (!hasInitialEvents) {
+        setLoading(true);
+      }
       const response = await getEventsUpdated();
       const data = response?.data || response || [];
       setEventList(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
+      if (!hasInitialEvents) {
+        setEventList([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -7547,8 +7551,11 @@ function OfferCard({ offer, isListView }) {
   );
 }
 function OfferListing() {
-  const [allOffers, setAllOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const ssrData = useSsrData();
+  const initialOffers = Array.isArray(ssrData?.offers?.items) ? ssrData.offers.items : [];
+  const hasInitialOffers = initialOffers.length > 0;
+  const [allOffers, setAllOffers] = useState(initialOffers);
+  const [loading, setLoading] = useState(!hasInitialOffers);
   const [viewMode, setViewMode] = useState("card");
   const [activeTab, setActiveTab] = useState("active");
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(false);
@@ -7560,7 +7567,9 @@ function OfferListing() {
   useEffect(() => {
     const fetch2 = async () => {
       try {
-        setLoading(true);
+        if (!hasInitialOffers) {
+          setLoading(true);
+        }
         const res = await getDailyOffers({ targetType: "GLOBAL", page: 0, size: 100 });
         const rawData = res.data?.data || res.data || [];
         const list = Array.isArray(rawData) ? rawData : rawData.content || [];
@@ -7580,13 +7589,15 @@ function OfferListing() {
         setAllOffers(mapped);
       } catch (err) {
         console.error("Failed to fetch offers:", err);
-        setAllOffers([]);
+        if (!hasInitialOffers) {
+          setAllOffers([]);
+        }
       } finally {
         setLoading(false);
       }
     };
     fetch2();
-  }, []);
+  }, [hasInitialOffers]);
   const uniquePropertyTypes = useMemo(() => [...new Set(allOffers.map((o) => o.propertyType).filter(Boolean))].sort(), [allOffers]);
   const uniqueDays = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
   const filteredOffers = useMemo(() => {
@@ -8008,7 +8019,7 @@ function OfferDetails() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
-const getAmenityName$3 = (amenity) => {
+const getAmenityName$4 = (amenity) => {
   if (typeof amenity === "string") return amenity;
   if (amenity && typeof amenity === "object" && "name" in amenity && typeof amenity.name === "string") {
     return amenity.name;
@@ -8091,7 +8102,7 @@ function PropertyDetails() {
             " offers unmatched excellence and service."
           ] }),
           /* @__PURE__ */ jsx("h3", { className: "text-2xl font-serif mb-6", children: "Amenities" }),
-          /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: property.amenities?.map((amenity) => getAmenityName$3(amenity)).filter(Boolean).map((amenity, index) => /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 p-4 bg-secondary/10 rounded-xl border border-border", children: [
+          /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: property.amenities?.map((amenity) => getAmenityName$4(amenity)).filter(Boolean).map((amenity, index) => /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 p-4 bg-secondary/10 rounded-xl border border-border", children: [
             /* @__PURE__ */ jsx(CheckCircle2, { className: "w-5 h-5 text-primary" }),
             /* @__PURE__ */ jsx("span", { className: "font-medium", children: amenity })
           ] }, index)) })
@@ -9066,17 +9077,28 @@ function BookingModal({
 }
 function EventDetails() {
   const { eventSlug } = useParams();
+  const ssrData = useSsrData();
+  const initialEventDetail = ssrData?.eventDetail || null;
+  const hasInitialEvent = !!initialEventDetail && String(initialEventDetail?.eventId || "") === String(getEventIdFromSlug(eventSlug));
   const navigate = useNavigate();
   const id = getEventIdFromSlug(eventSlug);
-  const [event, setEvent] = useState(null);
-  const [detailInfoList, setDetailInfoList] = useState([]);
-  const [heroSlides, setHeroSlides] = useState([]);
-  const [pastEventImages, setPastEventImages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [event, setEvent] = useState(
+    hasInitialEvent ? initialEventDetail.event || null : null
+  );
+  const [detailInfoList, setDetailInfoList] = useState(
+    hasInitialEvent && Array.isArray(initialEventDetail?.detailInfoList) ? initialEventDetail.detailInfoList : []
+  );
+  const [heroSlides, setHeroSlides] = useState(hasInitialEvent && Array.isArray(initialEventDetail?.heroSlides) ? initialEventDetail.heroSlides : []);
+  const [pastEventImages, setPastEventImages] = useState(
+    hasInitialEvent && Array.isArray(initialEventDetail?.pastEventImages) ? initialEventDetail.pastEventImages : []
+  );
+  const [loading, setLoading] = useState(!hasInitialEvent);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const [showShareReactions, setShowShareReactions] = useState(false);
-  const [interestList, setInterestList] = useState([]);
+  const [interestList, setInterestList] = useState(
+    hasInitialEvent && Array.isArray(initialEventDetail?.interestList) ? initialEventDetail.interestList : []
+  );
   const [isInterested, setIsInterested] = useState(false);
   const [bookingModal, setBookingModal] = useState(false);
   const [modalMode, setModalMode] = useState("book");
@@ -9101,12 +9123,21 @@ function EventDetails() {
   useEffect(() => {
     const fetchEventBase = async () => {
       try {
+        if (!hasInitialEvent) {
+          setLoading(true);
+        }
         const response = await getEventsUpdated({});
         const rawEvents = response?.data || response || [];
         const foundEvent = rawEvents.find((e) => e.id.toString() === id);
         setEvent(foundEvent || null);
       } catch {
-        setEvent(null);
+        if (!hasInitialEvent) {
+          setEvent(null);
+        }
+      } finally {
+        if (!hasInitialEvent) {
+          setLoading(false);
+        }
       }
     };
     if (!id) {
@@ -9114,7 +9145,7 @@ function EventDetails() {
       return;
     }
     fetchEventBase();
-  }, [id]);
+  }, [hasInitialEvent, id]);
   useEffect(() => {
     if (!event || !eventSlug) return;
     const canonicalPath = buildEventDetailPath(event);
@@ -9125,7 +9156,9 @@ function EventDetails() {
   useEffect(() => {
     if (!id) return;
     const fetchDetails = async () => {
-      setLoading(true);
+      if (!hasInitialEvent) {
+        setLoading(true);
+      }
       try {
         let detailRes = null;
         let filesRes = null;
@@ -9167,14 +9200,18 @@ function EventDetails() {
         );
       } catch (err) {
         console.error("Failed to fetch event details:", err);
-        setDetailInfoList([]);
+        if (!hasInitialEvent) {
+          setDetailInfoList([]);
+        }
       } finally {
         setLoading(false);
       }
     };
     fetchDetails();
-    fetchInterestList(id);
-  }, [id]);
+    if (!hasInitialEvent) {
+      fetchInterestList(id);
+    }
+  }, [hasInitialEvent, id]);
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const socialPlatforms = [
     {
@@ -9789,7 +9826,7 @@ function NewsComment({ newsId }) {
     showSuccess2 && /* @__PURE__ */ jsx(SuccessToast, { onClose: () => setShowSuccess(false) })
   ] });
 }
-const getAmenityName$2 = (amenity) => {
+const getAmenityName$3 = (amenity) => {
   if (typeof amenity === "string") return amenity;
   if (amenity && typeof amenity === "object" && "name" in amenity && typeof amenity.name === "string") {
     return amenity.name;
@@ -9915,17 +9952,30 @@ const PropertiesSlider$1 = ({ properties }) => {
 };
 function NewsDetails() {
   const { newsSlug } = useParams();
+  const ssrData = useSsrData();
+  const initialNewsDetail = ssrData?.newsDetail || null;
+  const hasInitialNewsDetail = !!initialNewsDetail && String(initialNewsDetail?.newsId || "") === String(getNewsIdFromSlug(newsSlug));
   const navigate = useNavigate();
   const id = getNewsIdFromSlug(newsSlug);
-  const [newsItem, setNewsItem] = useState(null);
-  const [allNews, setAllNews] = useState([]);
-  const [dynamicProperties, setDynamicProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [newsItem, setNewsItem] = useState(
+    hasInitialNewsDetail ? initialNewsDetail.newsItem || null : null
+  );
+  const [allNews, setAllNews] = useState(
+    hasInitialNewsDetail && Array.isArray(initialNewsDetail?.allNews) ? initialNewsDetail.allNews : []
+  );
+  const [dynamicProperties, setDynamicProperties] = useState(
+    hasInitialNewsDetail && Array.isArray(initialNewsDetail?.dynamicProperties) ? initialNewsDetail.dynamicProperties : []
+  );
+  const [loading, setLoading] = useState(!hasInitialNewsDetail);
+  const [notFound, setNotFound] = useState(
+    hasInitialNewsDetail ? !!initialNewsDetail?.notFound : false
+  );
   useEffect(() => {
     const fetchEverything = async () => {
       try {
-        setLoading(true);
+        if (!hasInitialNewsDetail) {
+          setLoading(true);
+        }
         const newsRes = await getAllNews({ page: 0, size: 100 });
         const newsList = newsRes?.data?.content || newsRes?.content || [];
         const activeNews = newsList.filter((n) => n.active);
@@ -9948,7 +9998,7 @@ function NewsDetails() {
                 location: parent.locationName || "India",
                 image: l.media?.[0]?.url || "",
                 rating: l.rating || 5,
-                highlights: (l.amenities || []).map((amenity) => getAmenityName$2(amenity)).filter(Boolean)
+                highlights: (l.amenities || []).map((amenity) => getAmenityName$3(amenity)).filter(Boolean)
               }));
             }
           );
@@ -9966,13 +10016,15 @@ function NewsDetails() {
           setNotFound(true);
         }
       } catch (error) {
-        setNotFound(true);
+        if (!hasInitialNewsDetail) {
+          setNotFound(true);
+        }
       } finally {
         setLoading(false);
       }
     };
     fetchEverything();
-  }, [id]);
+  }, [hasInitialNewsDetail, id]);
   useEffect(() => {
     if (!newsItem || !newsSlug) return;
     const canonicalPath = buildNewsDetailPath(newsItem);
@@ -12066,22 +12118,6 @@ function HotelReviewsSection({
     ) }) })
   ] });
 }
-const Popover = PopoverPrimitive.Root;
-const PopoverTrigger = PopoverPrimitive.Trigger;
-const PopoverContent = React.forwardRef(({ className, align = "center", sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsx(PopoverPrimitive.Portal, { children: /* @__PURE__ */ jsx(
-  PopoverPrimitive.Content,
-  {
-    ref,
-    align,
-    sideOffset,
-    className: cn(
-      "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-popover-content-transform-origin]",
-      className
-    ),
-    ...props
-  }
-) }));
-PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 function Calendar({
   value,
   onChange,
@@ -12118,803 +12154,6 @@ function Calendar({
       )
     }
   );
-}
-const ITEMS_PER_PAGE$2 = 3;
-const getRoomImage = (room) => room.image || room.media?.find((item) => item?.type === "IMAGE" && item?.url)?.url || room.media?.find((item) => item?.url)?.url || "";
-const markerIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-function QuickBooking() {
-  const navigate = useNavigate();
-  const [locationOpen, setLocationOpen] = useState(false);
-  const [checkInOpen, setCheckInOpen] = useState(false);
-  const [checkOutOpen, setCheckOutOpen] = useState(false);
-  const [guestsOpen, setGuestsOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState(
-    null
-  );
-  const [checkIn, setCheckIn] = useState();
-  const [checkOut, setCheckOut] = useState();
-  const [guests, setGuests] = useState({ adults: 2, children: 0, rooms: 1 });
-  const [showMap, setShowMap] = useState(null);
-  const [searchResults, setSearchResults] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [locations, setLocations] = useState([]);
-  const [locationsLoading, setLocationsLoading] = useState(true);
-  useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        setLocationsLoading(true);
-        const res = await getLocationsByType("Hotel");
-        const data = res?.data || res || [];
-        const activeLocations = data.filter((l) => l.isActive);
-        setLocations(activeLocations);
-      } catch (err) {
-        console.error("Failed to load hotel locations", err);
-        setLocations([]);
-      } finally {
-        setLocationsLoading(false);
-      }
-    };
-    fetchLocations();
-  }, []);
-  const handleLocationSelect = (location) => {
-    setSelectedLocation(location);
-    setLocationOpen(false);
-  };
-  const RESAVENUE_CONFIG = {
-    baseUrl: "https://bookings.resavenue.com/resBooking4/searchRooms",
-    defaultRegCode: "TXGZ0113",
-    dateFormat: "dd/MM/yyyy"
-  };
-  const generateResAvenueUrl = ({
-    checkIn: checkIn2,
-    checkOut: checkOut2,
-    adults,
-    regCode = RESAVENUE_CONFIG.defaultRegCode
-  }) => {
-    if (!checkIn2 || !checkOut2) return null;
-    const arrDate = format(checkIn2, RESAVENUE_CONFIG.dateFormat);
-    const depDate = format(checkOut2, RESAVENUE_CONFIG.dateFormat);
-    const params = new URLSearchParams({
-      targetTemplate: "4",
-      regCode,
-      curr: "INR",
-      arrDate,
-      depDate,
-      arr_date: arrDate,
-      dep_date: depDate,
-      adult_1: String(adults ?? 1)
-    });
-    return `${RESAVENUE_CONFIG.baseUrl}?${params.toString()}`;
-  };
-  const handleCheckInSelect = (date) => {
-    setCheckIn(date);
-    if (date) {
-      setCheckInOpen(false);
-      if (!checkOut) {
-        setTimeout(() => setCheckOutOpen(true), 150);
-      }
-    }
-  };
-  const handleCheckOutSelect = (date) => {
-    setCheckOut(date);
-    if (date) {
-      setCheckOutOpen(false);
-    }
-  };
-  const handleSearch = async () => {
-    setHasSearched(true);
-    setCurrentPage(1);
-    setIsSearching(true);
-    try {
-      const params = {
-        propertyType: "Hotel",
-        // Filter by hotel type
-        page: 0,
-        size: 50
-      };
-      if (selectedLocation) {
-        params.locationId = selectedLocation.id;
-      }
-      if (checkIn) {
-        params.checkIn = format(checkIn, "yyyy-MM-dd");
-      }
-      if (checkOut) {
-        params.checkOut = format(checkOut, "yyyy-MM-dd");
-      }
-      if (guests.adults + guests.children > 0) {
-        params.minOccupancy = guests.adults + guests.children;
-      }
-      const response = await searchRooms(params);
-      const data = response?.data || response;
-      const rooms = data?.content || data || [];
-      const availableRooms = rooms.filter(
-        (room) => room.bookable && room.active && room.status === "AVAILABLE"
-      );
-      setSearchResults(availableRooms);
-      if (availableRooms.length === 1) {
-        handleBook(availableRooms[0]);
-      }
-    } catch (err) {
-      console.error("Search failed:", err);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-  const handleBook = (room) => {
-    const bookingUrl = generateResAvenueUrl({
-      checkIn,
-      checkOut,
-      adults: guests.adults,
-      regCode: RESAVENUE_CONFIG.defaultRegCode
-    });
-    if (!bookingUrl) {
-      const cityName = selectedLocation?.locationName || room.locationName;
-      if (!cityName) {
-        console.error("No location found for hotel navigation.");
-        return;
-      }
-      const citySlug = createCitySlug(cityName);
-      const propertyPath = `/${citySlug}/${createHotelSlug(room.propertyName || cityName || "property", room.propertyId)}`;
-      navigate(propertyPath);
-      return;
-    }
-    window.open(bookingUrl, "_blank", "noopener,noreferrer");
-  };
-  const getRoomTypeBadgeColor = (type) => {
-    switch (type?.toUpperCase()) {
-      case "DELUXE":
-        return "bg-purple-100 text-purple-700";
-      case "SUITE":
-        return "bg-amber-100 text-amber-700";
-      case "STANDARD":
-        return "bg-blue-100 text-blue-700";
-      case "PREMIUM":
-        return "bg-emerald-100 text-emerald-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-  const totalPages = Math.ceil(searchResults.length / ITEMS_PER_PAGE$2);
-  const paginatedRooms = searchResults.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE$2,
-    currentPage * ITEMS_PER_PAGE$2
-  );
-  return /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-4 -mt-10 relative z-30 mb-12", children: [
-    /* @__PURE__ */ jsxs(
-      motion.div,
-      {
-        layout: true,
-        className: "bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-md",
-        children: [
-          /* @__PURE__ */ jsx("div", { className: "p-6 bg-primary/5 border-b border-border/10 flex items-center justify-between", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4", children: [
-            /* @__PURE__ */ jsx("div", { className: "w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-lg", children: /* @__PURE__ */ jsx(Search, { className: "w-5 h-5" }) }),
-            /* @__PURE__ */ jsxs("div", { children: [
-              /* @__PURE__ */ jsx("h3", { className: "text-xl font-serif font-medium text-foreground", children: "Find Your Stay" }),
-              /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground uppercase tracking-wider", children: "Best Prices Guaranteed" })
-            ] })
-          ] }) }),
-          /* @__PURE__ */ jsxs("div", { className: "p-8", children: [
-            /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-5 gap-6 mb-8", children: [
-              /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-                /* @__PURE__ */ jsx("label", { className: "text-[10px] font-bold uppercase tracking-wider text-muted-foreground", children: "Location" }),
-                /* @__PURE__ */ jsxs(Popover, { open: locationOpen, onOpenChange: setLocationOpen, children: [
-                  /* @__PURE__ */ jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsxs(
-                    Button,
-                    {
-                      variant: "outline",
-                      className: cn(
-                        "w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors",
-                        !selectedLocation && "text-muted-foreground"
-                      ),
-                      children: [
-                        /* @__PURE__ */ jsxs("span", { className: "flex items-center", children: [
-                          /* @__PURE__ */ jsx(MapPin, { className: "mr-2 h-4 w-4 text-primary" }),
-                          selectedLocation?.locationName || "Select Location"
-                        ] }),
-                        /* @__PURE__ */ jsx(ChevronDown, { className: "h-4 w-4 opacity-50 group-data-[state=open]:rotate-180 transition-transform" })
-                      ]
-                    }
-                  ) }),
-                  /* @__PURE__ */ jsxs(PopoverContent, { className: "w-[280px] p-0", align: "start", children: [
-                    /* @__PURE__ */ jsx("div", { className: "p-2 border-b border-border/50", children: /* @__PURE__ */ jsx("p", { className: "text-xs font-semibold text-muted-foreground uppercase tracking-wider", children: "Select Location" }) }),
-                    /* @__PURE__ */ jsx("div", { className: "max-h-[280px] overflow-y-auto", children: locationsLoading ? /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center py-8", children: /* @__PURE__ */ jsx(Loader2, { className: "w-5 h-5 animate-spin text-primary" }) }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-                      /* @__PURE__ */ jsxs(
-                        "div",
-                        {
-                          className: cn(
-                            "px-3 py-2.5 cursor-pointer text-sm font-medium transition-colors flex items-center gap-2",
-                            selectedLocation === null ? "bg-primary/10 text-primary" : "hover:bg-muted"
-                          ),
-                          onClick: () => handleLocationSelect(null),
-                          children: [
-                            /* @__PURE__ */ jsx(MapPin, { className: "w-4 h-4" }),
-                            "All Locations"
-                          ]
-                        }
-                      ),
-                      locations.map((location) => /* @__PURE__ */ jsxs(
-                        "div",
-                        {
-                          className: cn(
-                            "px-3 py-2.5 cursor-pointer text-sm transition-colors flex items-center justify-between",
-                            selectedLocation?.id === location.id ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
-                          ),
-                          onClick: () => handleLocationSelect(location),
-                          children: [
-                            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
-                              /* @__PURE__ */ jsx(MapPin, { className: "w-4 h-4 opacity-50" }),
-                              location.locationName
-                            ] }),
-                            /* @__PURE__ */ jsx("span", { className: "text-[10px] text-muted-foreground", children: location.state })
-                          ]
-                        },
-                        location.id
-                      )),
-                      locations.length === 0 && !locationsLoading && /* @__PURE__ */ jsx("div", { className: "px-3 py-4 text-center text-sm text-muted-foreground", children: "No locations available" })
-                    ] }) })
-                  ] })
-                ] })
-              ] }),
-              /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-                /* @__PURE__ */ jsx("label", { className: "text-[10px] font-bold uppercase tracking-wider text-muted-foreground", children: "Check-in" }),
-                /* @__PURE__ */ jsxs(Popover, { open: checkInOpen, onOpenChange: setCheckInOpen, children: [
-                  /* @__PURE__ */ jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsxs(
-                    Button,
-                    {
-                      variant: "outline",
-                      className: cn(
-                        "w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors",
-                        !checkIn && "text-muted-foreground"
-                      ),
-                      children: [
-                        /* @__PURE__ */ jsxs("span", { className: "flex items-center", children: [
-                          /* @__PURE__ */ jsx(Calendar$1, { className: "mr-2 h-4 w-4 text-primary" }),
-                          checkIn ? format(checkIn, "MMM dd, yyyy") : "Select Date"
-                        ] }),
-                        /* @__PURE__ */ jsx(ChevronDown, { className: "h-4 w-4 opacity-50 group-data-[state=open]:rotate-180 transition-transform" })
-                      ]
-                    }
-                  ) }),
-                  /* @__PURE__ */ jsxs(
-                    PopoverContent,
-                    {
-                      className: "w-auto p-0 shadow-xl",
-                      align: "start",
-                      sideOffset: 8,
-                      children: [
-                        /* @__PURE__ */ jsx("div", { className: "p-3 border-b bg-muted/30", children: /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold text-foreground", children: "Select Check-in Date" }) }),
-                        /* @__PURE__ */ jsx(
-                          Calendar,
-                          {
-                            value: checkIn,
-                            onChange: (value) => {
-                              if (value instanceof Date) {
-                                handleCheckInSelect(value);
-                              }
-                            },
-                            minDate: /* @__PURE__ */ new Date(),
-                            maxDate: addDays(/* @__PURE__ */ new Date(), 365)
-                          }
-                        ),
-                        checkIn && /* @__PURE__ */ jsxs("div", { className: "p-3 border-t bg-muted/30 flex items-center justify-between", children: [
-                          /* @__PURE__ */ jsxs("span", { className: "text-xs text-muted-foreground", children: [
-                            "Selected:",
-                            " ",
-                            /* @__PURE__ */ jsx("span", { className: "font-medium text-foreground", children: format(checkIn, "MMM dd, yyyy") })
-                          ] }),
-                          /* @__PURE__ */ jsx(
-                            Button,
-                            {
-                              variant: "ghost",
-                              size: "sm",
-                              className: "h-7 text-xs",
-                              onClick: () => setCheckIn(void 0),
-                              children: "Clear"
-                            }
-                          )
-                        ] })
-                      ]
-                    }
-                  )
-                ] })
-              ] }),
-              /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-                /* @__PURE__ */ jsx("label", { className: "text-[10px] font-bold uppercase tracking-wider text-muted-foreground", children: "Check-out" }),
-                /* @__PURE__ */ jsxs(Popover, { open: checkOutOpen, onOpenChange: setCheckOutOpen, children: [
-                  /* @__PURE__ */ jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsxs(
-                    Button,
-                    {
-                      variant: "outline",
-                      className: cn(
-                        "w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors",
-                        !checkOut && "text-muted-foreground"
-                      ),
-                      children: [
-                        /* @__PURE__ */ jsxs("span", { className: "flex items-center", children: [
-                          /* @__PURE__ */ jsx(Calendar$1, { className: "mr-2 h-4 w-4 text-primary" }),
-                          checkOut ? format(checkOut, "MMM dd, yyyy") : "Select Date"
-                        ] }),
-                        /* @__PURE__ */ jsx(ChevronDown, { className: "h-4 w-4 opacity-50 group-data-[state=open]:rotate-180 transition-transform" })
-                      ]
-                    }
-                  ) }),
-                  /* @__PURE__ */ jsxs(
-                    PopoverContent,
-                    {
-                      className: "w-auto p-0 shadow-xl",
-                      align: "start",
-                      sideOffset: 8,
-                      children: [
-                        /* @__PURE__ */ jsx("div", { className: "p-3 border-b bg-muted/30", children: /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold text-foreground", children: "Select Check-out Date" }) }),
-                        /* @__PURE__ */ jsx(
-                          Calendar,
-                          {
-                            value: checkOut,
-                            onChange: (value) => {
-                              if (value instanceof Date) {
-                                handleCheckOutSelect(value);
-                              }
-                            },
-                            minDate: checkIn ? addDays(checkIn, 1) : /* @__PURE__ */ new Date(),
-                            maxDate: addDays(/* @__PURE__ */ new Date(), 365)
-                          }
-                        ),
-                        /* @__PURE__ */ jsxs("div", { className: "p-3 border-t bg-muted/30 flex items-center justify-between", children: [
-                          checkIn && /* @__PURE__ */ jsxs("span", { className: "text-xs text-muted-foreground", children: [
-                            "Check-in:",
-                            " ",
-                            /* @__PURE__ */ jsx("span", { className: "font-medium text-foreground", children: format(checkIn, "MMM dd") })
-                          ] }),
-                          checkOut && /* @__PURE__ */ jsx(
-                            Button,
-                            {
-                              variant: "ghost",
-                              size: "sm",
-                              className: "h-7 text-xs ml-auto",
-                              onClick: () => setCheckOut(void 0),
-                              children: "Clear"
-                            }
-                          )
-                        ] })
-                      ]
-                    }
-                  )
-                ] })
-              ] }),
-              /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-                /* @__PURE__ */ jsx("label", { className: "text-[10px] font-bold uppercase tracking-wider text-muted-foreground", children: "Guests & Rooms" }),
-                /* @__PURE__ */ jsxs(Popover, { open: guestsOpen, onOpenChange: setGuestsOpen, children: [
-                  /* @__PURE__ */ jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsxs(
-                    Button,
-                    {
-                      variant: "outline",
-                      className: "w-full justify-between text-left font-normal bg-background/50 h-14 px-4 group border-border/60 hover:border-primary/50 transition-colors",
-                      children: [
-                        /* @__PURE__ */ jsxs("span", { className: "flex items-center", children: [
-                          /* @__PURE__ */ jsx(Users, { className: "mr-2 h-4 w-4 text-primary" }),
-                          guests.adults + guests.children,
-                          " Guests, ",
-                          guests.rooms,
-                          " ",
-                          "Room"
-                        ] }),
-                        /* @__PURE__ */ jsx(ChevronDown, { className: "h-4 w-4 opacity-50 group-data-[state=open]:rotate-180 transition-transform" })
-                      ]
-                    }
-                  ) }),
-                  /* @__PURE__ */ jsxs(PopoverContent, { className: "w-80 p-0", align: "start", children: [
-                    /* @__PURE__ */ jsx("div", { className: "p-3 border-b border-border/50", children: /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold", children: "Guests & Rooms" }) }),
-                    /* @__PURE__ */ jsxs("div", { className: "p-4 space-y-4", children: [
-                      /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
-                        /* @__PURE__ */ jsxs("div", { children: [
-                          /* @__PURE__ */ jsx("p", { className: "text-sm font-medium", children: "Adults" }),
-                          /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground", children: "Ages 13+" })
-                        ] }),
-                        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-                          /* @__PURE__ */ jsx(
-                            Button,
-                            {
-                              variant: "outline",
-                              size: "icon",
-                              className: "h-8 w-8 rounded-full",
-                              onClick: () => setGuests((prev) => ({
-                                ...prev,
-                                adults: Math.max(1, prev.adults - 1)
-                              })),
-                              disabled: guests.adults <= 1,
-                              children: /* @__PURE__ */ jsx(Minus, { className: "h-3 w-3" })
-                            }
-                          ),
-                          /* @__PURE__ */ jsx("span", { className: "w-6 text-center text-sm font-semibold", children: guests.adults }),
-                          /* @__PURE__ */ jsx(
-                            Button,
-                            {
-                              variant: "outline",
-                              size: "icon",
-                              className: "h-8 w-8 rounded-full",
-                              onClick: () => setGuests((prev) => ({
-                                ...prev,
-                                adults: prev.adults + 1
-                              })),
-                              children: /* @__PURE__ */ jsx(Plus, { className: "h-3 w-3" })
-                            }
-                          )
-                        ] })
-                      ] }),
-                      /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
-                        /* @__PURE__ */ jsxs("div", { children: [
-                          /* @__PURE__ */ jsx("p", { className: "text-sm font-medium", children: "Children" }),
-                          /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground", children: "Ages 2-12" })
-                        ] }),
-                        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-                          /* @__PURE__ */ jsx(
-                            Button,
-                            {
-                              variant: "outline",
-                              size: "icon",
-                              className: "h-8 w-8 rounded-full",
-                              onClick: () => setGuests((prev) => ({
-                                ...prev,
-                                children: Math.max(0, prev.children - 1)
-                              })),
-                              disabled: guests.children <= 0,
-                              children: /* @__PURE__ */ jsx(Minus, { className: "h-3 w-3" })
-                            }
-                          ),
-                          /* @__PURE__ */ jsx("span", { className: "w-6 text-center text-sm font-semibold", children: guests.children }),
-                          /* @__PURE__ */ jsx(
-                            Button,
-                            {
-                              variant: "outline",
-                              size: "icon",
-                              className: "h-8 w-8 rounded-full",
-                              onClick: () => setGuests((prev) => ({
-                                ...prev,
-                                children: prev.children + 1
-                              })),
-                              children: /* @__PURE__ */ jsx(Plus, { className: "h-3 w-3" })
-                            }
-                          )
-                        ] })
-                      ] }),
-                      /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between pt-3 border-t border-border/50", children: [
-                        /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx("p", { className: "text-sm font-medium", children: "Rooms" }) }),
-                        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-                          /* @__PURE__ */ jsx(
-                            Button,
-                            {
-                              variant: "outline",
-                              size: "icon",
-                              className: "h-8 w-8 rounded-full",
-                              onClick: () => setGuests((prev) => ({
-                                ...prev,
-                                rooms: Math.max(1, prev.rooms - 1)
-                              })),
-                              disabled: guests.rooms <= 1,
-                              children: /* @__PURE__ */ jsx(Minus, { className: "h-3 w-3" })
-                            }
-                          ),
-                          /* @__PURE__ */ jsx("span", { className: "w-6 text-center text-sm font-semibold", children: guests.rooms }),
-                          /* @__PURE__ */ jsx(
-                            Button,
-                            {
-                              variant: "outline",
-                              size: "icon",
-                              className: "h-8 w-8 rounded-full",
-                              onClick: () => setGuests((prev) => ({
-                                ...prev,
-                                rooms: prev.rooms + 1
-                              })),
-                              children: /* @__PURE__ */ jsx(Plus, { className: "h-3 w-3" })
-                            }
-                          )
-                        ] })
-                      ] })
-                    ] }),
-                    /* @__PURE__ */ jsx("div", { className: "p-3 border-t border-border/50 bg-muted/30", children: /* @__PURE__ */ jsx(
-                      Button,
-                      {
-                        className: "w-full",
-                        size: "sm",
-                        onClick: () => setGuestsOpen(false),
-                        children: "Done"
-                      }
-                    ) })
-                  ] })
-                ] })
-              ] }),
-              /* @__PURE__ */ jsx("div", { className: "flex items-end", children: /* @__PURE__ */ jsx(
-                Button,
-                {
-                  onClick: handleSearch,
-                  disabled: isSearching,
-                  className: "w-full h-14 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-bold uppercase tracking-wide text-base shadow-lg hover:shadow-xl transition-all disabled:opacity-70",
-                  children: isSearching ? /* @__PURE__ */ jsxs(Fragment, { children: [
-                    /* @__PURE__ */ jsx(Loader2, { className: "w-4 h-4 animate-spin" }),
-                    "Searching..."
-                  ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-                    /* @__PURE__ */ jsx(Search, { className: "w-4 h-4" }),
-                    "Book"
-                  ] })
-                }
-              ) })
-            ] }),
-            (selectedLocation || checkIn || checkOut) && /* @__PURE__ */ jsxs(
-              motion.div,
-              {
-                initial: { opacity: 0, y: -10 },
-                animate: { opacity: 1, y: 0 },
-                className: "flex flex-wrap items-center gap-2 mb-4",
-                children: [
-                  selectedLocation && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium", children: [
-                    /* @__PURE__ */ jsx(MapPin, { className: "w-3 h-3" }),
-                    selectedLocation.locationName,
-                    /* @__PURE__ */ jsx(
-                      "button",
-                      {
-                        onClick: () => setSelectedLocation(null),
-                        className: "ml-1 hover:bg-primary/20 rounded-full p-0.5",
-                        children: /* @__PURE__ */ jsx(X, { className: "w-3 h-3" })
-                      }
-                    )
-                  ] }),
-                  checkIn && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium", children: [
-                    /* @__PURE__ */ jsx(Calendar$1, { className: "w-3 h-3" }),
-                    format(checkIn, "MMM dd"),
-                    checkOut && ` - ${format(checkOut, "MMM dd")}`,
-                    /* @__PURE__ */ jsx(
-                      "button",
-                      {
-                        onClick: () => {
-                          setCheckIn(void 0);
-                          setCheckOut(void 0);
-                        },
-                        className: "ml-1 hover:bg-primary/20 rounded-full p-0.5",
-                        children: /* @__PURE__ */ jsx(X, { className: "w-3 h-3" })
-                      }
-                    )
-                  ] })
-                ]
-              }
-            ),
-            hasSearched && !isSearching && searchResults.length > 0 && /* @__PURE__ */ jsxs(
-              motion.div,
-              {
-                initial: { opacity: 0, y: 10 },
-                animate: { opacity: 1, y: 0 },
-                className: "border-t border-border/10 pt-6",
-                children: [
-                  /* @__PURE__ */ jsxs("h4", { className: "text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4", children: [
-                    "Available Rooms",
-                    " ",
-                    selectedLocation ? `in ${selectedLocation.locationName}` : "in All Locations",
-                    " ",
-                    "(",
-                    searchResults.length,
-                    ")"
-                  ] }),
-                  /* @__PURE__ */ jsx("div", { className: "space-y-3", children: paginatedRooms.map((room) => {
-                    const roomImage = getRoomImage(room);
-                    return /* @__PURE__ */ jsxs(
-                      "div",
-                      {
-                        className: "bg-background border border-border/50 rounded-lg overflow-hidden flex flex-col md:flex-row hover:shadow-md hover:border-primary/30 transition-all",
-                        children: [
-                          /* @__PURE__ */ jsx("div", { className: "w-full md:w-48 h-40 md:h-auto bg-muted flex items-center justify-center flex-shrink-0", children: roomImage ? /* @__PURE__ */ jsx(
-                            "img",
-                            {
-                              src: roomImage,
-                              alt: room.roomName,
-                              className: "w-full h-full object-cover"
-                            }
-                          ) : /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center justify-center text-muted-foreground", children: [
-                            /* @__PURE__ */ jsx(BedDouble, { className: "w-10 h-10 opacity-30" }),
-                            /* @__PURE__ */ jsx("span", { className: "text-[10px] mt-1 opacity-50", children: "No Image" })
-                          ] }) }),
-                          /* @__PURE__ */ jsxs("div", { className: "flex-1 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4", children: [
-                            /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
-                              /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 mb-1 flex-wrap", children: [
-                                /* @__PURE__ */ jsx("h5", { className: "font-serif text-lg font-medium", children: room.roomName }),
-                                /* @__PURE__ */ jsx(
-                                  "span",
-                                  {
-                                    className: cn(
-                                      "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase",
-                                      getRoomTypeBadgeColor(room.roomType)
-                                    ),
-                                    children: room.roomType
-                                  }
-                                ),
-                                /* @__PURE__ */ jsx("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium", children: room.status })
-                              ] }),
-                              room.propertyName && /* @__PURE__ */ jsxs("p", { className: "text-xs text-muted-foreground mb-1 flex items-center gap-1", children: [
-                                /* @__PURE__ */ jsx(Home$1, { className: "w-3 h-3" }),
-                                " ",
-                                room.propertyName
-                              ] }),
-                              /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground mb-2 line-clamp-2", children: room.description }),
-                              /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center gap-3 mb-2", children: [
-                                /* @__PURE__ */ jsxs("span", { className: "text-[10px] text-muted-foreground flex items-center gap-1", children: [
-                                  /* @__PURE__ */ jsx(Users, { className: "w-3 h-3" }),
-                                  "Max ",
-                                  room.maxOccupancy,
-                                  " guests"
-                                ] }),
-                                /* @__PURE__ */ jsxs("span", { className: "text-[10px] text-muted-foreground flex items-center gap-1", children: [
-                                  /* @__PURE__ */ jsx(Maximize, { className: "w-3 h-3" }),
-                                  room.roomSize,
-                                  " ",
-                                  room.roomSizeUnit?.replace("_", " ")
-                                ] }),
-                                /* @__PURE__ */ jsxs("span", { className: "text-[10px] text-muted-foreground", children: [
-                                  "Floor ",
-                                  room.floorNumber
-                                ] })
-                              ] }),
-                              /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-1.5", children: [
-                                room.amenitiesAndFeatures?.slice(0, 4).map((amenity) => /* @__PURE__ */ jsx(
-                                  "span",
-                                  {
-                                    className: "text-[10px] bg-secondary/30 px-2 py-0.5 rounded text-muted-foreground",
-                                    children: amenity.name
-                                  },
-                                  amenity.id
-                                )),
-                                room.amenitiesAndFeatures?.length > 4 && /* @__PURE__ */ jsxs("span", { className: "text-[10px] text-primary", children: [
-                                  "+",
-                                  room.amenitiesAndFeatures.length - 4,
-                                  " more"
-                                ] })
-                              ] })
-                            ] }),
-                            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4 md:border-l md:pl-4 border-border/10", children: [
-                              /* @__PURE__ */ jsxs("div", { className: "text-right", children: [
-                                /* @__PURE__ */ jsx("p", { className: "text-[10px] text-muted-foreground", children: "Starting from" }),
-                                /* @__PURE__ */ jsxs("p", { className: "text-xl font-bold text-primary", children: [
-                                  "₹",
-                                  room.basePrice?.toLocaleString("en-IN")
-                                ] }),
-                                /* @__PURE__ */ jsx("p", { className: "text-[9px] text-muted-foreground", children: "per night" })
-                              ] }),
-                              /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-2", children: [
-                                /* @__PURE__ */ jsx(
-                                  Button,
-                                  {
-                                    size: "sm",
-                                    onClick: () => handleBook(room),
-                                    className: "w-full md:w-auto px-6",
-                                    children: "Book Now"
-                                  }
-                                ),
-                                room.coordinates && /* @__PURE__ */ jsxs(
-                                  Button,
-                                  {
-                                    size: "sm",
-                                    variant: "ghost",
-                                    className: "h-6 text-[10px] text-muted-foreground hover:text-primary gap-1",
-                                    onClick: () => setShowMap(room),
-                                    children: [
-                                      /* @__PURE__ */ jsx(Map$1, { className: "w-3 h-3" }),
-                                      " Show on Map"
-                                    ]
-                                  }
-                                )
-                              ] })
-                            ] })
-                          ] })
-                        ]
-                      },
-                      `room-${room.roomId}`
-                    );
-                  }) }),
-                  totalPages > 1 && /* @__PURE__ */ jsxs("div", { className: "flex justify-center gap-2 mt-6", children: [
-                    /* @__PURE__ */ jsx(
-                      Button,
-                      {
-                        variant: "outline",
-                        size: "sm",
-                        onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
-                        disabled: currentPage === 1,
-                        children: "Previous"
-                      }
-                    ),
-                    /* @__PURE__ */ jsxs("span", { className: "text-sm flex items-center px-3 bg-muted rounded-md", children: [
-                      "Page ",
-                      currentPage,
-                      " of ",
-                      totalPages
-                    ] }),
-                    /* @__PURE__ */ jsx(
-                      Button,
-                      {
-                        variant: "outline",
-                        size: "sm",
-                        onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
-                        disabled: currentPage === totalPages,
-                        children: "Next"
-                      }
-                    )
-                  ] })
-                ]
-              }
-            ),
-            isSearching && /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center justify-center py-12 border-t border-border/10 mt-6", children: [
-              /* @__PURE__ */ jsx(Loader2, { className: "w-8 h-8 animate-spin text-primary mb-3" }),
-              /* @__PURE__ */ jsx("p", { className: "text-sm text-muted-foreground", children: "Searching for available rooms..." })
-            ] }),
-            hasSearched && !isSearching && searchResults.length === 0 && /* @__PURE__ */ jsxs("div", { className: "text-center py-8 text-muted-foreground border-t border-border/10 pt-6 mt-6", children: [
-              /* @__PURE__ */ jsx(BedDouble, { className: "w-12 h-12 mx-auto opacity-20 mb-3" }),
-              /* @__PURE__ */ jsx("p", { className: "font-medium", children: "No rooms found matching your criteria." }),
-              /* @__PURE__ */ jsx("p", { className: "text-xs mt-1", children: "Try adjusting your filters or selecting a different location." })
-            ] })
-          ] })
-        ]
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      Dialog,
-      {
-        open: !!showMap,
-        onOpenChange: (open) => !open && setShowMap(null),
-        children: /* @__PURE__ */ jsx(DialogContent, { className: "max-w-3xl p-0 overflow-hidden h-[500px]", children: showMap && showMap.coordinates && /* @__PURE__ */ jsxs("div", { className: "w-full h-full relative", children: [
-          /* @__PURE__ */ jsxs(
-            MapContainer,
-            {
-              center: [showMap.coordinates.lat, showMap.coordinates.lng],
-              zoom: 14,
-              scrollWheelZoom: true,
-              className: "w-full h-full",
-              children: [
-                /* @__PURE__ */ jsx(
-                  TileLayer,
-                  {
-                    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  }
-                ),
-                /* @__PURE__ */ jsx(
-                  Marker,
-                  {
-                    position: [showMap.coordinates.lat, showMap.coordinates.lng],
-                    icon: markerIcon,
-                    children: /* @__PURE__ */ jsx(Popup, { children: /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
-                      /* @__PURE__ */ jsx("h3", { className: "font-bold", children: showMap.roomName }),
-                      /* @__PURE__ */ jsx("p", { className: "text-xs", children: showMap.propertyName })
-                    ] }) })
-                  }
-                )
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsxs("div", { className: "absolute top-4 right-4 z-[400] bg-white p-4 rounded-lg shadow-lg max-w-xs", children: [
-            /* @__PURE__ */ jsx("h3", { className: "font-bold text-lg mb-1", children: showMap.roomName }),
-            /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground mb-3", children: showMap.description }),
-            /* @__PURE__ */ jsx(
-              Button,
-              {
-                onClick: () => {
-                  setShowMap(null);
-                  handleBook(showMap);
-                },
-                className: "w-full",
-                children: "Book This Room"
-              }
-            )
-          ] })
-        ] }) })
-      }
-    )
-  ] });
 }
 const createVerticalSectionHeader = (data) => API.post("api/v1/vertical-sections", data);
 const updateVerticalSectionHeader = (id, data) => API.put(`api/v1/vertical-sections/${id}`, data);
@@ -14204,7 +13443,10 @@ function HotelHeroSection({ slides, loading }) {
   ] });
 }
 const HotelCarouselSection = lazy(
-  () => import("./assets/HotelCarouselSection-B6y_-qDn.js")
+  () => import("./assets/HotelCarouselSection-CBNEtal3.js")
+);
+const QuickBooking = lazy(
+  () => import("./assets/QuickBooking-DoyF5K9p.js")
 );
 const HOTEL_NAV_ITEMS = [
   { type: "link", label: "OVERVIEW", key: "overview", href: "#overview" },
@@ -14363,7 +13605,13 @@ function Hotels() {
     /* @__PURE__ */ jsx(Navbar$1, { navItems: HOTEL_NAV_ITEMS, logo: siteContent.brand.logo_hotel }),
     /* @__PURE__ */ jsx(SpecialOfferPopup, {}),
     /* @__PURE__ */ jsx(HotelHeroSection, { slides: heroSlides, loading }),
-    /* @__PURE__ */ jsx(QuickBooking, {}),
+    isClient ? /* @__PURE__ */ jsx(
+      Suspense,
+      {
+        fallback: /* @__PURE__ */ jsx("div", { className: "container mx-auto px-4 -mt-10 relative z-30 mb-12", children: /* @__PURE__ */ jsx("div", { className: "bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-md", children: /* @__PURE__ */ jsx("div", { className: "p-8", children: /* @__PURE__ */ jsx("div", { className: "h-20 flex items-center justify-center text-muted-foreground", children: "Loading booking tools..." }) }) }) }),
+        children: /* @__PURE__ */ jsx(QuickBooking, {})
+      }
+    ) : /* @__PURE__ */ jsx("div", { className: "container mx-auto px-4 -mt-10 relative z-30 mb-12", children: /* @__PURE__ */ jsx("div", { className: "bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-md", children: /* @__PURE__ */ jsx("div", { className: "p-8", children: /* @__PURE__ */ jsx("div", { className: "h-20 flex items-center justify-center text-muted-foreground", children: "Booking tools load after hydration." }) }) }) }),
     /* @__PURE__ */ jsx(
       "div",
       {
@@ -14552,6 +13800,7 @@ function Hotels() {
 }
 const ITEMS_PER_PAGE$1 = 8;
 const Breadcrumb = ({ items }) => {
+  const baseOrigin = typeof window !== "undefined" ? window.location.origin : "http://localhost";
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -14559,7 +13808,7 @@ const Breadcrumb = ({ items }) => {
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": `${window.location.origin}${item.url}`
+      "item": `${baseOrigin}${item.url}`
     }))
   };
   return /* @__PURE__ */ jsxs(Fragment, { children: [
@@ -14581,8 +13830,11 @@ const Breadcrumb = ({ items }) => {
   ] });
 };
 function NewsListing() {
-  const [newsItems, setNewsItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const ssrData = useSsrData();
+  const initialNewsItems = Array.isArray(ssrData?.news?.items) ? ssrData.news.items : [];
+  const hasInitialNews = initialNewsItems.length > 0;
+  const [newsItems, setNewsItems] = useState(initialNewsItems);
+  const [loading, setLoading] = useState(!hasInitialNews);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
   const [searchQuery, setSearchQuery] = useState("");
@@ -14596,7 +13848,9 @@ function NewsListing() {
   }, []);
   const fetchNews = async () => {
     try {
-      setLoading(true);
+      if (!hasInitialNews) {
+        setLoading(true);
+      }
       const response = await getAllNews({ page: 0, size: 100 });
       console.log("News API response:", response);
       let newsData = [];
@@ -14610,8 +13864,10 @@ function NewsListing() {
       setNewsItems(activeNews);
     } catch (error) {
       console.error("Failed to fetch news:", error);
-      toast$2.error("Failed to load news articles");
-      setNewsItems([]);
+      if (!hasInitialNews) {
+        toast$2.error("Failed to load news articles");
+        setNewsItems([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -14643,7 +13899,9 @@ function NewsListing() {
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     }
   };
   const getPageNumbers = () => {
@@ -15744,16 +15002,16 @@ function TakeawayTreats() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
-const HotelDetail = lazy(() => import("./assets/HotelDetail-D5j3xJ8K.js"));
-const RoomSelection = lazy(() => import("./assets/RoomSelection-DkSmto2l.js"));
+const HotelDetail = lazy(() => import("./assets/HotelDetail-fG1Ruc3k.js"));
+const RoomSelection = lazy(() => import("./assets/RoomSelection-DJT9lnO0.js"));
 const RestaurantHomepage = lazy(
-  () => import("./assets/RestaurantHomepage-IpnxtULf.js")
+  () => import("./assets/RestaurantHomepage-DRnsmaMY.js")
 );
 const ResturantPage = lazy(
-  () => import("./assets/ResturantPage-CUIzlpCI.js")
+  () => import("./assets/ResturantPage-SgNoM-gi.js")
 );
 const ResturantCategoryPageTemplate = lazy(
-  () => import("./assets/ResturantCategoryPageTemplate-Ch5EcVUb.js")
+  () => import("./assets/ResturantCategoryPageTemplate-DJGc97DU.js")
 );
 function withRouteSuspense(element) {
   return /* @__PURE__ */ jsx(
@@ -43403,7 +42661,7 @@ const DAYS$1 = [
   "FRIDAY",
   "SATURDAY"
 ];
-const getAmenityName$1 = (amenity) => {
+const getAmenityName$2 = (amenity) => {
   if (typeof amenity === "string") return amenity;
   if (amenity && typeof amenity === "object" && "name" in amenity && typeof amenity.name === "string") {
     return amenity.name;
@@ -43417,7 +42675,7 @@ const defaultHomePageData = {
     recognitions: []
   }
 };
-const fetchSafe$1 = async (fn, fallback) => {
+const fetchSafe$2 = async (fn, fallback) => {
   try {
     return await fn();
   } catch (error) {
@@ -43455,7 +42713,7 @@ const normalizeHero = (response) => {
     };
   });
 };
-const normalizeOffers = (response) => {
+const normalizeOffers$1 = (response) => {
   const rawData = response?.data?.data || response?.data || [];
   const list = Array.isArray(rawData) ? rawData : rawData.content || [];
   const now = Date.now();
@@ -43488,7 +42746,7 @@ const normalizeOffers = (response) => {
     } : null
   }));
 };
-const normalizeProperties = (response) => {
+const normalizeProperties$1 = (response) => {
   const rawData = response?.data?.data || response?.data || [];
   if (!Array.isArray(rawData)) return [];
   const formatted = rawData.flatMap((item) => {
@@ -43511,7 +42769,7 @@ const normalizeProperties = (response) => {
       price: listing.price ?? 0,
       gstPercentage: listing.gstPercentage ?? 0,
       discountAmount: listing.discountAmount ?? 0,
-      amenities: (listing.amenities || []).map((amenity) => getAmenityName$1(amenity)).filter(Boolean),
+      amenities: (listing.amenities || []).map((amenity) => getAmenityName$2(amenity)).filter(Boolean),
       isActive: true,
       media: listing.media || [],
       bookingEngineUrl: parent?.bookingEngineUrl || null,
@@ -43530,8 +42788,8 @@ const normalizeAbout = async (response) => {
   if (homepageOnly.length === 0) return defaultHomePageData.aboutData;
   const aboutUsData = [...homepageOnly].sort((a, b) => b.id - a.id)[0];
   const [venturesRes, recognitionsRes] = await Promise.all([
-    fetchSafe$1(() => getVenturesByAboutUsId(aboutUsData.id), { data: [] }),
-    fetchSafe$1(() => getPublicRecognitionsByAboutUsId(aboutUsData.id), {
+    fetchSafe$2(() => getVenturesByAboutUsId(aboutUsData.id), { data: [] }),
+    fetchSafe$2(() => getPublicRecognitionsByAboutUsId(aboutUsData.id), {
       data: []
     })
   ]);
@@ -43594,18 +42852,18 @@ const fetchHomePageData = async () => {
     locationsRes,
     presenceRes
   ] = await Promise.all([
-    fetchSafe$1(() => getHeroSectionsPaginated({ page: 0, size: 100 }), null),
-    fetchSafe$1(() => getDailyOffers({ targetType: "GLOBAL", page: 0, size: 100 }), null),
-    fetchSafe$1(() => GetAllPropertyDetails(), null),
-    fetchSafe$1(() => getAboutUsAdmin(), null),
-    fetchSafe$1(() => getKennediaGroup(), null),
-    fetchSafe$1(() => getEventsUpdated(), null),
-    fetchSafe$1(() => getAllNews({ category: "", page: 0, size: 10 }), null),
-    fetchSafe$1(() => getGuestExperienceSection({ size: 20 }), null),
-    fetchSafe$1(() => getGuestExperienceSectionHeader(), null),
-    fetchSafe$1(() => getGuestExperineceRatingHeader(), null),
-    fetchSafe$1(() => getAllLocations(), null),
-    fetchSafe$1(() => getOurPresenceSection(), null)
+    fetchSafe$2(() => getHeroSectionsPaginated({ page: 0, size: 100 }), null),
+    fetchSafe$2(() => getDailyOffers({ targetType: "GLOBAL", page: 0, size: 100 }), null),
+    fetchSafe$2(() => GetAllPropertyDetails(), null),
+    fetchSafe$2(() => getAboutUsAdmin(), null),
+    fetchSafe$2(() => getKennediaGroup(), null),
+    fetchSafe$2(() => getEventsUpdated(), null),
+    fetchSafe$2(() => getAllNews({ category: "", page: 0, size: 10 }), null),
+    fetchSafe$2(() => getGuestExperienceSection({ size: 20 }), null),
+    fetchSafe$2(() => getGuestExperienceSectionHeader(), null),
+    fetchSafe$2(() => getGuestExperineceRatingHeader(), null),
+    fetchSafe$2(() => getAllLocations(), null),
+    fetchSafe$2(() => getOurPresenceSection(), null)
   ]);
   const aboutData = aboutRes ? await normalizeAbout(aboutRes) : defaultHomePageData.aboutData;
   const businessPayload = businessRes?.divisions ? businessRes : businessRes?.data;
@@ -43615,8 +42873,8 @@ const fetchHomePageData = async () => {
   } : null;
   return {
     heroData: heroRes ? normalizeHero(heroRes) : [],
-    dailyOffers: offersRes ? normalizeOffers(offersRes) : [],
-    properties: propertiesRes ? normalizeProperties(propertiesRes) : [],
+    dailyOffers: offersRes ? normalizeOffers$1(offersRes) : [],
+    properties: propertiesRes ? normalizeProperties$1(propertiesRes) : [],
     aboutData,
     businessData,
     eventsData: eventsRes ? normalizeEvents(eventsRes) : [],
@@ -43638,7 +42896,7 @@ const DAYS = [
   "FRIDAY",
   "SATURDAY"
 ];
-const getAmenityName = (amenity) => {
+const getAmenityName$1 = (amenity) => {
   if (typeof amenity === "string") return amenity;
   if (amenity && typeof amenity === "object" && "name" in amenity && typeof amenity.name === "string") {
     return amenity.name;
@@ -43651,7 +42909,7 @@ const shouldSuppressFetchError = (error, options = {}) => {
   if (options.silent404 && status === 404) return true;
   return false;
 };
-const fetchSafe = async (fn, fallback, options = {}) => {
+const fetchSafe$1 = async (fn, fallback, options = {}) => {
   try {
     return await fn();
   } catch (error) {
@@ -43686,7 +42944,7 @@ const mapApiToHotelUI = (item) => {
     },
     rating: listing?.rating || 0,
     description: listing?.tagline || listing?.subTitle || "Luxury comfort in the heart of the city",
-    amenities: Array.isArray(listing?.amenities) ? listing.amenities.map((amenity) => getAmenityName(amenity)).filter(Boolean) : [],
+    amenities: Array.isArray(listing?.amenities) ? listing.amenities.map((amenity) => getAmenityName$1(amenity)).filter(Boolean) : [],
     rooms: listing?.capacity || 1,
     capacity: listing?.capacity || parent?.capacity || 0,
     pricing: {
@@ -43735,7 +42993,7 @@ const normalizeHotelOffers = async (offersRes) => {
       const isDayActive = !offer.activeDays?.length || offer.activeDays.includes(todayName2);
       if (!isDayActive) return null;
       if (!propertyTypeCache.has(offer.propertyTypeId)) {
-        const propertyTypeRes = await fetchSafe(
+        const propertyTypeRes = await fetchSafe$1(
           () => getPropertyTypeById(offer.propertyTypeId),
           { data: null },
           {
@@ -43824,7 +43082,7 @@ const normalizeHotelLocations = (response) => {
   return (Array.isArray(data) ? data : []).filter((item) => item.isActive);
 };
 const fetchHotelsPageData = async () => {
-  const propertyTypesRes = await fetchSafe(() => getPropertyTypes(), []);
+  const propertyTypesRes = await fetchSafe$1(() => getPropertyTypes(), []);
   const propertyTypes = propertyTypesRes?.data || propertyTypesRes || [];
   const hotelType = Array.isArray(propertyTypes) ? propertyTypes.find(
     (type) => type.isActive && type.typeName?.trim().toLowerCase() === "hotel"
@@ -43843,17 +43101,17 @@ const fetchHotelsPageData = async () => {
     collectionRes,
     locationsRes
   ] = await Promise.all([
-    hotelTypeId ? fetchSafe(() => getHotelHomepageHeroSection(hotelTypeId), []) : [],
-    hotelTypeId ? fetchSafe(() => getAboutUsByPropertyType(hotelTypeId), []) : [],
-    fetchSafe(() => getDailyOffers({ targetType: "GLOBAL", page: 0, size: 100 }), null),
-    fetchSafe(() => getAllNews({ category: "", page: 0, size: 20 }), null),
-    fetchSafe(() => getEventsUpdated(), null),
-    fetchSafe(() => getGroupBookings(), null),
-    fetchSafe(() => getGuestExperienceSection({ size: 20 }), null),
-    fetchSafe(() => getGuestExperienceSectionHeader(), null),
-    fetchSafe(() => getGuestExperineceRatingHeader(), null),
-    fetchSafe(() => GetAllPropertyDetails(), null),
-    fetchSafe(() => getLocationsByType("Hotel"), [])
+    hotelTypeId ? fetchSafe$1(() => getHotelHomepageHeroSection(hotelTypeId), []) : [],
+    hotelTypeId ? fetchSafe$1(() => getAboutUsByPropertyType(hotelTypeId), []) : [],
+    fetchSafe$1(() => getDailyOffers({ targetType: "GLOBAL", page: 0, size: 100 }), null),
+    fetchSafe$1(() => getAllNews({ category: "", page: 0, size: 20 }), null),
+    fetchSafe$1(() => getEventsUpdated(), null),
+    fetchSafe$1(() => getGroupBookings(), null),
+    fetchSafe$1(() => getGuestExperienceSection({ size: 20 }), null),
+    fetchSafe$1(() => getGuestExperienceSectionHeader(), null),
+    fetchSafe$1(() => getGuestExperineceRatingHeader(), null),
+    fetchSafe$1(() => GetAllPropertyDetails(), null),
+    fetchSafe$1(() => getLocationsByType("Hotel"), [])
   ]);
   return {
     hotelTypeId,
@@ -43872,6 +43130,216 @@ const fetchHotelsPageData = async () => {
     hotelLocations: normalizeHotelLocations(locationsRes)
   };
 };
+const getAmenityName = (amenity) => {
+  if (typeof amenity === "string") return amenity;
+  if (amenity && typeof amenity === "object" && "name" in amenity && typeof amenity.name === "string") {
+    return amenity.name;
+  }
+  return null;
+};
+const fetchSafe = async (fn, fallback, label = "SSR content data fetch error") => {
+  try {
+    return await fn();
+  } catch (error) {
+    console.error(label, error);
+    return fallback;
+  }
+};
+const normalizeOffers = (response) => {
+  const rawData = response?.data?.data || response?.data || [];
+  const list = Array.isArray(rawData) ? rawData : rawData.content || [];
+  return list.filter((offer) => offer?.isActive).map((offer) => ({
+    id: offer.id,
+    title: offer.title || "",
+    description: offer.description || "",
+    couponCode: offer.couponCode || null,
+    ctaText: offer.ctaText || "",
+    ctaLink: offer.ctaUrl || offer.ctaLink || null,
+    expiresAt: offer.expiresAt,
+    activeDays: Array.isArray(offer.activeDays) ? offer.activeDays : [],
+    propertyType: offer.propertyTypeName || "",
+    image: offer.image?.url ? {
+      src: offer.image.url,
+      type: offer.image.type,
+      width: offer.image.width,
+      height: offer.image.height,
+      fileName: offer.image.fileName,
+      alt: offer.title || ""
+    } : null
+  }));
+};
+const normalizeEventsList = (response) => {
+  const raw = response?.data || response || [];
+  return (Array.isArray(raw) ? raw : []).filter((event) => event?.active);
+};
+const normalizeNewsList = (response) => {
+  const raw = response?.data?.content || response?.content || response?.data || [];
+  return (Array.isArray(raw) ? raw : []).filter((item) => item?.active);
+};
+const normalizeEventFiles = (response) => {
+  const fileGroups = response?.data?.data || response?.data || response || [];
+  const groups = Array.isArray(fileGroups) ? fileGroups : [];
+  const heroSlides = [];
+  const pastEventImages = [];
+  groups.forEach((group) => {
+    const medias = Array.isArray(group?.medias) ? group.medias : [];
+    const category = String(group?.category || "").trim().toLowerCase();
+    if (category === "hero_slider") {
+      heroSlides.push(
+        ...medias.filter((media) => media?.url).map((media) => ({
+          url: media.url,
+          type: media.type,
+          alt: media.alt || "event-media"
+        }))
+      );
+    }
+    if (category === "past_event") {
+      pastEventImages.push(
+        ...medias.filter((media) => media?.url).map((media) => ({
+          url: media.url,
+          type: media.type,
+          alt: media.alt || "past-event"
+        }))
+      );
+    }
+  });
+  return { heroSlides, pastEventImages };
+};
+const normalizeProperties = (response) => {
+  const rawData = response?.data || response || [];
+  return (Array.isArray(rawData) ? rawData : []).flatMap((item) => {
+    const parent = item?.propertyResponseDTO;
+    const listings = Array.isArray(item?.propertyListingResponseDTOS) ? item.propertyListingResponseDTOS : [];
+    if (!parent || !parent.isActive) return [];
+    return listings.filter((listing) => listing?.isActive).map((listing) => ({
+      id: listing.id,
+      propertyId: parent.id,
+      name: parent.propertyName || "Premium Property",
+      type: listing.propertyType || (Array.isArray(parent.propertyTypes) ? parent.propertyTypes[0] : null) || "Hotel",
+      location: parent.locationName || "India",
+      image: listing.media?.[0]?.url || "",
+      rating: listing.rating || 5,
+      highlights: (listing.amenities || []).map((amenity) => getAmenityName(amenity)).filter(Boolean)
+    }));
+  });
+};
+const fetchOfferListingData = async () => {
+  const offersRes = await fetchSafe(
+    () => getDailyOffers({ targetType: "GLOBAL", page: 0, size: 100 }),
+    null
+  );
+  return {
+    items: offersRes ? normalizeOffers(offersRes) : []
+  };
+};
+const fetchEventsListingData = async () => {
+  const eventsRes = await fetchSafe(() => getEventsUpdated(), null);
+  return {
+    items: eventsRes ? normalizeEventsList(eventsRes) : []
+  };
+};
+const fetchEventDetailPageData = async (eventSlug) => {
+  const eventId = getEventIdFromSlug(eventSlug);
+  if (!eventId) {
+    return {
+      eventId: "",
+      event: null,
+      detailInfoList: [],
+      heroSlides: [],
+      pastEventImages: [],
+      interestList: [],
+      notFound: true
+    };
+  }
+  const eventsRes = await fetchSafe(() => getEventsUpdated({}), null);
+  const events = eventsRes ? normalizeEventsList(eventsRes) : [];
+  const event = events.find((item) => String(item?.id) === String(eventId)) || null;
+  if (!event) {
+    return {
+      eventId,
+      event: null,
+      detailInfoList: [],
+      heroSlides: [],
+      pastEventImages: [],
+      interestList: [],
+      notFound: true
+    };
+  }
+  const [detailRes, filesRes, interestRes] = await Promise.all([
+    fetchSafe(() => getEventDetailInfoById(eventId), null),
+    fetchSafe(() => getEventFilesByUploadedId(eventId), null),
+    fetchSafe(() => getEventInterestByEventId(eventId), null)
+  ]);
+  const rawDetailList = detailRes?.data?.data ?? detailRes?.data ?? detailRes ?? [];
+  const detailInfoList = (Array.isArray(rawDetailList) ? rawDetailList : rawDetailList ? [rawDetailList] : []).sort((a, b) => b.id - a.id);
+  const media = filesRes ? normalizeEventFiles(filesRes) : { heroSlides: [], pastEventImages: [] };
+  const rawInterest = interestRes?.data?.data ?? interestRes?.data ?? interestRes ?? [];
+  return {
+    eventId,
+    event,
+    detailInfoList,
+    heroSlides: media.heroSlides,
+    pastEventImages: media.pastEventImages,
+    interestList: Array.isArray(rawInterest) ? rawInterest : [],
+    notFound: false
+  };
+};
+const fetchNewsListingData = async () => {
+  const newsRes = await fetchSafe(
+    () => getAllNews({ category: "", page: 0, size: 100 }),
+    null
+  );
+  return {
+    items: newsRes ? normalizeNewsList(newsRes) : []
+  };
+};
+const fetchNewsDetailPageData = async (newsSlug) => {
+  const newsId = getNewsIdFromSlug(newsSlug);
+  if (!newsId) {
+    return {
+      newsId: "",
+      newsItem: null,
+      allNews: [],
+      dynamicProperties: [],
+      notFound: true
+    };
+  }
+  const newsRes = await fetchSafe(
+    () => getAllNews({ category: "", page: 0, size: 100 }),
+    null
+  );
+  const allNews = newsRes ? normalizeNewsList(newsRes) : [];
+  const newsItem = allNews.find((item) => String(item?.id) === String(newsId)) || null;
+  if (!newsItem) {
+    return {
+      newsId,
+      newsItem: null,
+      allNews,
+      dynamicProperties: [],
+      notFound: true
+    };
+  }
+  const propertiesRes = await fetchSafe(() => GetAllPropertyDetails(), null);
+  const allProperties = propertiesRes ? normalizeProperties(propertiesRes) : [];
+  const targetCategory = String(newsItem.badgeType || "").toLowerCase();
+  const dynamicProperties = allProperties.filter((property) => {
+    const propertyType = String(property.type || "").toLowerCase();
+    if (targetCategory === "hotel") {
+      return ["hotel", "resort", "villa"].includes(propertyType);
+    }
+    if (targetCategory === "restaurant") {
+      return ["restaurant", "cafe", "wine & dine"].includes(propertyType);
+    }
+    return true;
+  });
+  return {
+    newsId,
+    newsItem,
+    allNews,
+    dynamicProperties,
+    notFound: false
+  };
+};
 const serializeInitialData = (data) => JSON.stringify(data).replace(/</g, "\\u003c");
 async function render(url, template) {
   const pathname = new URL(url, "http://localhost").pathname;
@@ -43881,6 +43349,23 @@ async function render(url, template) {
   }
   if (pathname === "/hotels" || pathname === "/hotels/") {
     initialData.hotels = await fetchHotelsPageData();
+  }
+  if (pathname === "/offers" || pathname === "/offers/") {
+    initialData.offers = await fetchOfferListingData();
+  }
+  if (pathname === "/events" || pathname === "/events/") {
+    initialData.events = await fetchEventsListingData();
+  }
+  const eventDetailMatch = pathname.match(/^\/events\/([^/]+)\/?$/);
+  if (eventDetailMatch) {
+    initialData.eventDetail = await fetchEventDetailPageData(eventDetailMatch[1]);
+  }
+  if (pathname === "/news" || pathname === "/news/") {
+    initialData.news = await fetchNewsListingData();
+  }
+  const newsDetailMatch = pathname.match(/^\/news\/([^/]+)\/?$/);
+  if (newsDetailMatch) {
+    initialData.newsDetail = await fetchNewsDetailPageData(newsDetailMatch[1]);
   }
   const appHtml = renderToString(
     /* @__PURE__ */ jsx(StaticRouter, { location: url, children: /* @__PURE__ */ jsx(App, { initialData }) })
@@ -43893,62 +43378,64 @@ async function render(url, template) {
   return { html, appHtml, initialData };
 }
 export {
-  createGuestExperienceByGuest as $,
+  createGroupBookingEnquiry as $,
   Avatar as A,
   Button as B,
   Calendar as C,
-  getAllBuffetSectionHeaders as D,
-  getAllBuffetItems as E,
+  getAllOfferHeaders as D,
+  getMenuHeaders as E,
   Footer as F,
   GetAllPropertyDetails as G,
-  getAllOfferHeaders as H,
+  getChefRemarks as H,
   Input as I,
-  getMenuHeaders as J,
-  getChefRemarks as K,
+  getMenuItems as J,
+  createJoiningUs as K,
   Label as L,
-  getMenuItems as M,
+  addItemLike as M,
   Navbar$1 as N,
   OptimizedImage as O,
-  Popover as P,
-  createJoiningUs as Q,
-  addItemLike as R,
-  getActiveVisualGalleriesHeader as S,
+  getActiveVisualGalleriesHeader as P,
+  getAllGalleries as Q,
+  getAllMenuThumbnails as R,
+  searchGallery as S,
   Textarea as T,
-  getAllGalleries as U,
-  getAllMenuThumbnails as V,
-  searchGallery as W,
-  getPrimaryConversionsHeader as X,
-  getActiveTestimonialHeaders as Y,
-  getGuestExperienceSection as Z,
-  showError as _,
-  PopoverTrigger as a,
-  getGroupBookings as a0,
-  getEventsHeaderByProperty as a1,
-  createGroupBookingEnquiry as a2,
-  PopoverContent as b,
-  getEventFilesByUploadedId as c,
-  buildEventDetailPath as d,
-  getCommentsByProperty as e,
-  createComment as f,
+  getPrimaryConversionsHeader as U,
+  getActiveTestimonialHeaders as V,
+  getGuestExperienceSection as W,
+  showError as X,
+  createGuestExperienceByGuest as Y,
+  getGroupBookings as Z,
+  getEventsHeaderByProperty as _,
+  getEventFilesByUploadedId as a,
+  cn as a0,
+  Dialog as a1,
+  DialogContent as a2,
+  getLocationsByType as a3,
+  searchRooms as a4,
+  buildEventDetailPath as b,
+  getCommentsByProperty as c,
+  createComment as d,
+  AvatarFallback as e,
+  getCommentThread as f,
   getEventsUpdated as g,
-  AvatarFallback as h,
-  getCommentThread as i,
-  getRoomsByPropertyId as j,
-  getGalleryByPropertyId as k,
-  getAllBookingChannelPartners as l,
-  getAllDiningByPropertyId as m,
-  getAllPropertyPolicies as n,
-  showWarning as o,
-  createCitySlug as p,
-  createHotelSlug as q,
+  getRoomsByPropertyId as h,
+  getGalleryByPropertyId as i,
+  getAllBookingChannelPartners as j,
+  getAllDiningByPropertyId as k,
+  getAllPropertyPolicies as l,
+  showWarning as m,
+  createCitySlug as n,
+  createHotelSlug as o,
+  getAllVerticalSectionsHeader as p,
+  getAllVerticalCards as q,
   restaurantEventShowcase as r,
   render,
   siteContent as s,
-  getAllVerticalSectionsHeader as t,
-  getAllVerticalCards as u,
-  getAllRestaurantAbout as v,
-  getRestaurantImageSocialByProperty as w,
-  getRestaurantConnectByProperty as x,
-  getDailyOffers as y,
-  OfferVideo as z
+  getAllRestaurantAbout as t,
+  getRestaurantImageSocialByProperty as u,
+  getRestaurantConnectByProperty as v,
+  getDailyOffers as w,
+  OfferVideo as x,
+  getAllBuffetSectionHeaders as y,
+  getAllBuffetItems as z
 };

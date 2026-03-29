@@ -27,6 +27,7 @@ import {
   buildNewsDetailPath,
   getNewsIdFromSlug,
 } from "@/modules/website/utils/newsSlug";
+import { useSsrData } from "@/ssr/SsrDataContext";
 
 const getAmenityName = (amenity: unknown) => {
   if (typeof amenity === "string") return amenity;
@@ -236,18 +237,37 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
 
 export default function NewsDetails() {
   const { newsSlug } = useParams();
+  const ssrData = useSsrData();
+  const initialNewsDetail = ssrData?.newsDetail || null;
+  const hasInitialNewsDetail =
+    !!initialNewsDetail &&
+    String(initialNewsDetail?.newsId || "") === String(getNewsIdFromSlug(newsSlug));
   const navigate = useNavigate();
   const id = getNewsIdFromSlug(newsSlug);
-  const [newsItem, setNewsItem] = useState<NewsItem | null>(null);
-  const [allNews, setAllNews] = useState<NewsItem[]>([]);
-  const [dynamicProperties, setDynamicProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [newsItem, setNewsItem] = useState<NewsItem | null>(
+    hasInitialNewsDetail ? initialNewsDetail.newsItem || null : null,
+  );
+  const [allNews, setAllNews] = useState<NewsItem[]>(
+    hasInitialNewsDetail && Array.isArray(initialNewsDetail?.allNews)
+      ? initialNewsDetail.allNews
+      : [],
+  );
+  const [dynamicProperties, setDynamicProperties] = useState<Property[]>(
+    hasInitialNewsDetail && Array.isArray(initialNewsDetail?.dynamicProperties)
+      ? initialNewsDetail.dynamicProperties
+      : [],
+  );
+  const [loading, setLoading] = useState(!hasInitialNewsDetail);
+  const [notFound, setNotFound] = useState(
+    hasInitialNewsDetail ? !!initialNewsDetail?.notFound : false,
+  );
 
   useEffect(() => {
     const fetchEverything = async () => {
       try {
-        setLoading(true);
+        if (!hasInitialNewsDetail) {
+          setLoading(true);
+        }
         const newsRes = await getAllNews({ page: 0, size: 100 });
         const newsList = newsRes?.data?.content || newsRes?.content || [];
         const activeNews = newsList.filter((n: NewsItem) => n.active);
@@ -307,13 +327,15 @@ export default function NewsDetails() {
           setNotFound(true);
         }
       } catch (error) {
-        setNotFound(true);
+        if (!hasInitialNewsDetail) {
+          setNotFound(true);
+        }
       } finally {
         setLoading(false);
       }
     };
     fetchEverything();
-  }, [id]);
+  }, [hasInitialNewsDetail, id]);
 
   useEffect(() => {
     if (!newsItem || !newsSlug) return;

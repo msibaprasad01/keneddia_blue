@@ -3,6 +3,13 @@ import { StaticRouter } from "react-router";
 import App from "./App";
 import { fetchHomePageData } from "@/ssr/homepageData";
 import { fetchHotelsPageData } from "@/ssr/hotelsPageData";
+import {
+  fetchEventDetailPageData,
+  fetchEventsListingData,
+  fetchNewsDetailPageData,
+  fetchNewsListingData,
+  fetchOfferListingData,
+} from "@/ssr/contentPagesData";
 
 const serializeInitialData = (data) =>
   JSON.stringify(data).replace(/</g, "\\u003c");
@@ -18,6 +25,28 @@ export async function render(url, template) {
 
   if (pathname === "/hotels" || pathname === "/hotels/") {
     initialData.hotels = await fetchHotelsPageData();
+  }
+
+  if (pathname === "/offers" || pathname === "/offers/") {
+    initialData.offers = await fetchOfferListingData();
+  }
+
+  if (pathname === "/events" || pathname === "/events/") {
+    initialData.events = await fetchEventsListingData();
+  }
+
+  const eventDetailMatch = pathname.match(/^\/events\/([^/]+)\/?$/);
+  if (eventDetailMatch) {
+    initialData.eventDetail = await fetchEventDetailPageData(eventDetailMatch[1]);
+  }
+
+  if (pathname === "/news" || pathname === "/news/") {
+    initialData.news = await fetchNewsListingData();
+  }
+
+  const newsDetailMatch = pathname.match(/^\/news\/([^/]+)\/?$/);
+  if (newsDetailMatch) {
+    initialData.newsDetail = await fetchNewsDetailPageData(newsDetailMatch[1]);
   }
 
   const appHtml = renderToString(

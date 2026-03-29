@@ -14,7 +14,18 @@ const sendHtml = (res, html) => {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.end(html);
 };
-const ssrRoutes = new Set(["/", "/hotels", "/hotels/"]);
+const isSsrRoute = (pathname) =>
+  pathname === "/" ||
+  pathname === "/hotels" ||
+  pathname === "/hotels/" ||
+  pathname === "/offers" ||
+  pathname === "/offers/" ||
+  pathname === "/events" ||
+  pathname === "/events/" ||
+  pathname === "/news" ||
+  pathname === "/news/" ||
+  /^\/events\/[^/]+\/?$/.test(pathname) ||
+  /^\/news\/[^/]+\/?$/.test(pathname);
 
 const start = async () => {
   let vite;
@@ -31,7 +42,7 @@ const start = async () => {
 
     try {
       if (!isProd) {
-        if (ssrRoutes.has(pathname)) {
+        if (isSsrRoute(pathname)) {
           const templatePath = resolveFromRoot("client", "index.html");
           const rawTemplate = await fs.readFile(templatePath, "utf-8");
           const template = await vite.transformIndexHtml(url, rawTemplate);
@@ -54,7 +65,7 @@ const start = async () => {
       const clientDir = resolveFromRoot("public_html");
       const serverEntryPath = resolveFromRoot("public_html-ssr", "entry-server.js");
 
-      if (ssrRoutes.has(pathname)) {
+      if (isSsrRoute(pathname)) {
         const template = await fs.readFile(path.join(clientDir, "index.html"), "utf-8");
         const { render } = await import(serverEntryPath);
         const { html } = await render(url, template);
