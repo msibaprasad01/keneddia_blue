@@ -15007,6 +15007,9 @@ const RoomSelection = lazy(() => import("./assets/RoomSelection-DJT9lnO0.js"));
 const RestaurantHomepage = lazy(
   () => import("./assets/RestaurantHomepage-DRnsmaMY.js")
 );
+const CafeHomepage = lazy(
+  () => import("./assets/CafeHomepage-G9Xdl3ou.js")
+);
 const ResturantPage = lazy(
   () => import("./assets/ResturantPage-SgNoM-gi.js")
 );
@@ -15092,6 +15095,7 @@ const WebsiteRoutes = [
   /* @__PURE__ */ jsx(Route, { path: "/login", element: /* @__PURE__ */ jsx(Login, {}) }, "login"),
   /* @__PURE__ */ jsx(Route, { path: "/careers", element: /* @__PURE__ */ jsx(Careers, {}) }, "careers"),
   /* @__PURE__ */ jsx(Route, { path: "/restaurant-homepage", element: withRouteSuspense(/* @__PURE__ */ jsx(RestaurantHomepage, {})) }, "restaurant-homepage"),
+  /* @__PURE__ */ jsx(Route, { path: "/cafe-homepage", element: withRouteSuspense(/* @__PURE__ */ jsx(CafeHomepage, {})) }, "cafe-homepage"),
   /* @__PURE__ */ jsx(Route, { path: "/resturant/:propertyId", element: withRouteSuspense(/* @__PURE__ */ jsx(ResturantPage, {})) }, "resturant-detail-legacy"),
   // Restaurant Sub-Verticals
   /* @__PURE__ */ jsx(Route, { path: "/:citySlug/:propertySlug/:categoryType", element: withRouteSuspense(/* @__PURE__ */ jsx(ResturantCategoryPageTemplate, {})) }),

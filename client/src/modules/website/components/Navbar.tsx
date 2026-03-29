@@ -140,7 +140,8 @@ export default function Navbar({
   const isTransparentHeroRoute =
     location.pathname === "/" ||
     location.pathname === "/hotels" ||
-    location.pathname === "/restaurant-homepage";
+    location.pathname === "/restaurant-homepage"||
+    location.pathname === "/cafe-homepage";
   const showQuickBook = isTransparentHeroRoute;
   const useWhiteTextOnTransparent = isTransparentHeroRoute;
   const transparentMode = !scrolled;

@@ -31,6 +31,9 @@ const RoomSelection = lazy(() => import("@/modules/website/pages/RoomSelection")
 const RestaurantHomepage = lazy(
   () => import("@/modules/website/pages/restaurant/RestaurantHomepage"),
 );
+const CafeHomepage = lazy(
+  () => import("@/modules/website/pages/cafe/CafeHomepage"),
+);
 const ResturantPage = lazy(
   () => import("@/modules/website/pages/restaurant/ResturantPage"),
 );
@@ -148,6 +151,7 @@ const WebsiteRoutes = [
   <Route key="login" path="/login" element={<Login />} />,
   <Route key="careers" path="/careers" element={<Careers />} />,
   <Route key="restaurant-homepage" path="/restaurant-homepage" element={withRouteSuspense(<RestaurantHomepage />)} />,
+  <Route key="cafe-homepage" path="/cafe-homepage" element={withRouteSuspense(<CafeHomepage />)} />,
   <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={withRouteSuspense(<ResturantPage />)} />,
 
   // Restaurant Sub-Verticals
