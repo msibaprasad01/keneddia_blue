@@ -49,6 +49,12 @@ interface RatingHeader {
   isActive?: boolean;
 }
 
+interface HotelReviewsInitialData {
+  guestExperiences?: ExperienceItem[];
+  sectionHeader?: SectionHeader | null;
+  ratingHeader?: RatingHeader | null;
+}
+
 const isYoutubeUrl = (url: string): boolean =>
   /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
 const isInstagramUrl = (url: string): boolean =>
@@ -114,11 +120,19 @@ const buildMediaList = (
   return allMedia;
 };
 
-export default function HotelReviewsSection() {
+export default function HotelReviewsSection({
+  initialData,
+}: {
+  initialData?: HotelReviewsInitialData;
+}) {
   const [guestExperiences, setGuestExperiences] = useState<ExperienceItem[]>(
-    [],
+    Array.isArray(initialData?.guestExperiences)
+      ? initialData.guestExperiences
+      : [],
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(
+    !Array.isArray(initialData?.guestExperiences),
+  );
   const [mediaPreviews, setMediaPreviews] = useState<
     { type: string; url: string; file: File }[]
   >([]);
@@ -126,7 +140,7 @@ export default function HotelReviewsSection() {
   const [ytLink, setYtLink] = useState("");
   const [ytError, setYtError] = useState("");
   const [sectionHeader, setSectionHeader] = useState<SectionHeader | null>(
-    null,
+    initialData?.sectionHeader || null,
   );
   const [authorName, setAuthorName] = useState("");
   const [email, setEmail] = useState("");
@@ -138,7 +152,9 @@ export default function HotelReviewsSection() {
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState<Set<string>>(new Set());
   const [mutedVideos, setMutedVideos] = useState<Set<string>>(new Set());
-  const [ratingHeader, setRatingHeader] = useState<RatingHeader | null>(null);
+  const [ratingHeader, setRatingHeader] = useState<RatingHeader | null>(
+    initialData?.ratingHeader || null,
+  );
   const swiperRef = useRef<any>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);

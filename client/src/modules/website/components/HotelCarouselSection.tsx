@@ -285,20 +285,36 @@ function MapViewController({
   return null;
 }
 
-export default function HotelCarouselSection() {
+const getCityOptions = (hotelList: any[]) => {
+  const uniqueCities = Array.from(
+    new Set(
+      (Array.isArray(hotelList) ? hotelList : [])
+        .map((hotel) => hotel?.city)
+        .filter(Boolean),
+    ),
+  );
+
+  return ["All Cities", ...uniqueCities];
+};
+
+export default function HotelCarouselSection({
+  initialHotels = [],
+}: {
+  initialHotels?: any[];
+}) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [viewMode, setViewMode] = useState<"gallery" | "map">("gallery");
   const [isPaused, setIsPaused] = useState(false);
-  const [cities, setCities] = useState<string[]>(["All Cities"]);
+  const [cities, setCities] = useState<string[]>(getCityOptions(initialHotels));
 
   const navigate = useNavigate();
 
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialHotels.length === 0);
 
-  const [hotels, setHotels] = useState<any[]>([]);
-  const [filteredHotels, setFilteredHotels] = useState<any[]>([]);
+  const [hotels, setHotels] = useState<any[]>(initialHotels);
+  const [filteredHotels, setFilteredHotels] = useState<any[]>(initialHotels);
 
   useEffect(() => {
     const fetchHotels = async () => {
@@ -316,7 +332,9 @@ export default function HotelCarouselSection() {
             );
 
           // REQUIREMENT: Show latest data (Reverse the list)
-          setHotels([...mappedHotels].reverse());
+          const nextHotels = [...mappedHotels].reverse();
+          setHotels(nextHotels);
+          setCities(getCityOptions(nextHotels));
         }
       } catch (err) {
         console.error("Failed to load hotels", err);

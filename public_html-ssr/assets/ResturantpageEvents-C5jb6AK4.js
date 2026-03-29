@@ -2,7 +2,7 @@ import { jsxs, jsx, Fragment } from "react/jsx-runtime";
 import { useState, useRef, useEffect } from "react";
 import { useScroll, useTransform, useSpring, motion, AnimatePresence } from "framer-motion";
 import { Sparkles, ChevronRight as ChevronRight$1, CheckCircle2, Star, Loader2, X, Video, Upload, Youtube, User, Send, VolumeX, Volume2, ChevronLeft, Users, ArrowRight as ArrowRight$1, MapPin, PartyPopper, Briefcase, Calendar } from "lucide-react";
-import { aa as getPrimaryConversionsHeader, S as Label, I as Input, B as Button, a4 as createJoiningUs, ab as getActiveTestimonialHeaders, i as getGuestExperienceSection, ac as showError, j as createGuestExperienceByGuest, r as getEventsUpdated, t as getGroupBookings, ad as getEventsHeaderByProperty, u as createGroupBookingEnquiry, v as buildEventDetailPath } from "../entry-server.js";
+import { X as getPrimaryConversionsHeader, L as Label, I as Input, B as Button, Q as createJoiningUs, Y as getActiveTestimonialHeaders, Z as getGuestExperienceSection, _ as showError, $ as createGuestExperienceByGuest, g as getEventsUpdated, a0 as getGroupBookings, a1 as getEventsHeaderByProperty, a2 as createGroupBookingEnquiry, d as buildEventDetailPath } from "../entry-server.js";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 const FALLBACK = {

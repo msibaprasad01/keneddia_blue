@@ -39,6 +39,7 @@ const getAmenityName = (amenity) => {
 };
 
 export const defaultHotelsPageData = {
+  hotelTypeId: null,
   heroSlides: [],
   aboutSections: [],
   hotelOffers: [],
@@ -54,11 +55,25 @@ export const defaultHotelsPageData = {
   hotelLocations: [],
 };
 
-const fetchSafe = async (fn, fallback) => {
+const shouldSuppressFetchError = (error, options = {}) => {
+  const status = error?.response?.status;
+
+  if (options.silent) return true;
+  if (options.silent404 && status === 404) return true;
+
+  return false;
+};
+
+const fetchSafe = async (fn, fallback, options = {}) => {
   try {
     return await fn();
   } catch (error) {
-    console.error("Hotels SSR data fetch error:", error);
+    if (!shouldSuppressFetchError(error, options)) {
+      console.error(
+        options.label ? `${options.label}:` : "Hotels SSR data fetch error:",
+        error,
+      );
+    }
     return fallback;
   }
 };
@@ -167,6 +182,10 @@ const normalizeHotelOffers = async (offersRes) => {
         const propertyTypeRes = await fetchSafe(
           () => getPropertyTypeById(offer.propertyTypeId),
           { data: null },
+          {
+            label: "Hotels SSR property type lookup skipped",
+            silent404: true,
+          },
         );
         propertyTypeCache.set(offer.propertyTypeId, propertyTypeRes?.data || null);
       }
@@ -343,6 +362,7 @@ export const fetchHotelsPageData = async () => {
   ]);
 
   return {
+    hotelTypeId,
     heroSlides: normalizeHeroSlides(heroRes?.data || heroRes || []),
     aboutSections: normalizeAboutSections(aboutRes?.data || aboutRes || []),
     hotelOffers: offersRes ? await normalizeHotelOffers(offersRes) : [],

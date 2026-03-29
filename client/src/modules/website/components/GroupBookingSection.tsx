@@ -72,6 +72,8 @@ interface GroupBooking {
 
 interface GroupBookingSectionProps {
   propertyTypeId?: number | null;
+  initialEvents?: Event[];
+  initialGroupBookings?: GroupBooking[];
 }
 
 const EMPTY_FORM = {
@@ -260,11 +262,16 @@ function EventCard({ event, index }: { event: Event; index: number }) {
 /* ================= MAIN COMPONENT ================= */
 export default function GroupBookingSection({
   propertyTypeId: initialPropertyTypeId = null,
+  initialEvents = [],
+  initialGroupBookings = [],
 }: GroupBookingSectionProps) {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [groupBookings, setGroupBookings] = useState<GroupBooking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<Event[]>(initialEvents);
+  const [groupBookings, setGroupBookings] =
+    useState<GroupBooking[]>(initialGroupBookings);
+  const [loading, setLoading] = useState(
+    initialEvents.length === 0 && initialGroupBookings.length === 0,
+  );
   const [selectedOffer, setSelectedOffer] = useState<GroupBooking | null>(null);
   const [step, setStep] = useState(1);
   const [dateRange, setDateRange] = useState<CalendarValue>(null);

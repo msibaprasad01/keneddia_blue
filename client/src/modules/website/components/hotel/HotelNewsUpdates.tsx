@@ -48,13 +48,19 @@ interface NewsItem {
   active: boolean;
 }
 
+interface HotelNewsUpdatesProps {
+  initialItems?: NewsItem[];
+}
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
-export default function HotelNewsUpdates() {
-  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function HotelNewsUpdates({
+  initialItems = [],
+}: HotelNewsUpdatesProps) {
+  const [newsItems, setNewsItems] = useState<NewsItem[]>(initialItems);
+  const [loading, setLoading] = useState(initialItems.length === 0);
   const swiperRef = useRef<SwiperType | null>(null);
 
   useEffect(() => {

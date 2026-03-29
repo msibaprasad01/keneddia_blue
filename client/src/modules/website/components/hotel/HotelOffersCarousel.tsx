@@ -97,10 +97,33 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
 /* =======================
     MAIN COMPONENT
 ======================= */
-export default function HotelOffersCarousel() {
+interface HotelOfferItem {
+  id: number | string;
+  title: string;
+  description: string;
+  couponCode?: string;
+  ctaText?: string;
+  ctaLink?: string | null;
+  expiresAt?: string;
+  propertyType?: string;
+  image?: {
+    src: string;
+    type?: string;
+    width?: number | null;
+    height?: number | null;
+    fileName?: string | null;
+    alt?: string;
+  } | null;
+}
+
+export default function HotelOffersCarousel({
+  initialOffers = [],
+}: {
+  initialOffers?: HotelOfferItem[];
+}) {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
-  const [offers, setOffers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [offers, setOffers] = useState<HotelOfferItem[]>(initialOffers);
+  const [loading, setLoading] = useState(initialOffers.length === 0);
 
   const normalize = (v?: string) =>
     (v || "").trim().toLowerCase().replace(/\s+/g, " ");

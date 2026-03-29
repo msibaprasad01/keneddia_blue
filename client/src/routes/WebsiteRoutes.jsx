@@ -16,6 +16,7 @@ import EventDetails from "@/modules/website/pages/EventDetails";
 import NewsDetails from "@/modules/website/pages/NewsDetails";
 import HotelNewsDetails from "@/modules/website/pages/hotel/HotelNewsDetails";
 import HotelOfferDetails from "@/modules/website/pages/hotel/HotelOfferDetails";
+import Hotels from "@/modules/website/pages/Hotels";
 import NewsListing from "@/modules/website/pages/NewsListing";
 import Careers from "@/modules/website/pages/Careers";
 import Checkout from "@/modules/website/pages/Checkout";
@@ -25,7 +26,6 @@ import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/Spic
 import TakeawayTreats from "@/modules/website/pages/restaurant/pages/verticals/TakeawayTreats";
 import { GetAllPropertyDetails } from "@/Api/Api";
 
-const Hotels = lazy(() => import("@/modules/website/pages/Hotels"));
 const HotelDetail = lazy(() => import("@/modules/website/pages/HotelDetail"));
 const RoomSelection = lazy(() => import("@/modules/website/pages/RoomSelection"));
 const RestaurantHomepage = lazy(
@@ -131,7 +131,7 @@ const WebsiteRoutes = [
   // <Route key="home" path="/" element={<Hotels />} />,
   // <Route path="/" element={<Navigate to="/ghaziabad/kennedia-blu-restaurant-ghaziabad-31" replace />}/>,
   
-  <Route key="hotels" path="/hotels" element={withRouteSuspense(<Hotels />)} />,
+  <Route key="hotels" path="/hotels" element={<Hotels />} />,
   // <Route key="hotel-detail" path="/hotels/:city/:propertyId" element={<HotelDetail />} />,
   <Route key="property-detail" path="/:citySlug/:propertySlug" element={<PropertyDetailRoute />} />,
   // <Route key="hotel-detail" path="/hotels/:propertyId" element={<HotelDetail />} />,
