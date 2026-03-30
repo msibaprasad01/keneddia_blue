@@ -233,6 +233,15 @@ export default function CafeHeroBanner() {
           </div>
         </div>
       </div>
+
+      <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
+        <svg viewBox="0 0 1440 320" className="h-full w-full" preserveAspectRatio="none">
+          <path
+            className="fill-background"
+            d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          />
+        </svg>
+      </div>
     </section>
   );
 }
