@@ -499,4 +499,22 @@ export const updateBookingChannelPartner = (id, data) =>API.put(`api/v1/booking-
 export const updateBookingChannelPartnerStatus = (id, isActive) =>API.patch(`api/v1/booking-channel-partners/${id}/status`,null,{
 params: { isActive },});
 
+//SEO API'S
+export const addGoogleTag = (data) =>API.post("api/v1/google-tag/addGoogleTag", data);
+export const getAllGoogleTags = () =>API.get("api/v1/google-tag/getAllGoogleTag");
+export const getAllActiveGoogleTags = () =>API.get("api/v1/google-tag/getAllActiveGoogleTag");
+export const getGoogleTagById = (id) =>API.get(`api/v1/google-tag/getGoogleTagById/${id}`);
+export const updateGoogleTag = (id, data) =>API.patch(`api/v1/google-tag/updateGoogleTag/${id}`, data);
+export const deleteGoogleTag = (id) =>API.delete(`api/v1/google-tag/deleteGoogleTag/${id}`);
+// ----------------
+// ================= META DATA APIs =================
+
+export const addMetaData = (data) =>API.post("api/v1/meta-data/addMetaData", data);
+// GET all Meta Data
+export const getAllMetaData = () =>API.get("api/v1/meta-data/getAllMetaData");
+export const getAllActiveMetaData = () =>API.get("api/v1/meta-data/getAllActiveMetaData");
+export const getMetaDataById = (id) =>API.get(`api/v1/meta-data/getMetaDataById/${id}`);
+export const updateMetaData = (id, data) =>API.patch(`api/v1/meta-data/updateMetaData/${id}`, data);
+export const deleteMetaData = (id) =>API.delete(`api/v1/meta-data/deleteMetaData/${id}`);
+
 export default API;

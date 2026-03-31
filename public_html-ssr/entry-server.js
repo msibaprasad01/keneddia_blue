@@ -1201,6 +1201,14 @@ const updateBookingChannelPartner = (id, data) => API.put(`api/v1/booking-channe
 const updateBookingChannelPartnerStatus = (id, isActive) => API.patch(`api/v1/booking-channel-partners/${id}/status`, null, {
   params: { isActive }
 });
+const addGoogleTag = (data) => API.post("api/v1/google-tag/addGoogleTag", data);
+const getAllGoogleTags = () => API.get("api/v1/google-tag/getAllGoogleTag");
+const updateGoogleTag = (id, data) => API.patch(`api/v1/google-tag/updateGoogleTag/${id}`, data);
+const deleteGoogleTag = (id) => API.delete(`api/v1/google-tag/deleteGoogleTag/${id}`);
+const addMetaData = (data) => API.post("api/v1/meta-data/addMetaData", data);
+const getAllMetaData = () => API.get("api/v1/meta-data/getAllMetaData");
+const updateMetaData = (id, data) => API.patch(`api/v1/meta-data/updateMetaData/${id}`, data);
+const deleteMetaData = (id) => API.delete(`api/v1/meta-data/deleteMetaData/${id}`);
 const createHotelSlug = (name, id) => {
   const safeId = String(id).trim();
   if (!name) return safeId;
@@ -23611,6 +23619,11 @@ function Sidebar({ isOpen, onToggle }) {
         path: "/ManageUsers"
       });
     }
+    coreItems2.push({
+      icon: Globe,
+      label: "SEO",
+      path: "/Seo"
+    });
     const verticals2 = [
       // {
       //   icon: Building2,
@@ -36586,7 +36599,7 @@ function AddPropertyCategoryModal({ editItem, onClose, onSuccess }) {
   ] }) });
 }
 const inputCls = "w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-800 font-medium focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all bg-white";
-const Field$7 = ({ label, icon: Icon, children, span = 1 }) => /* @__PURE__ */ jsxs("div", { className: span === 2 ? "col-span-2" : "col-span-1", children: [
+const Field$8 = ({ label, icon: Icon, children, span = 1 }) => /* @__PURE__ */ jsxs("div", { className: span === 2 ? "col-span-2" : "col-span-1", children: [
   /* @__PURE__ */ jsxs("label", { className: "flex items-center gap-1 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5", children: [
     Icon && /* @__PURE__ */ jsx(Icon, { size: 10 }),
     " ",
@@ -36873,7 +36886,7 @@ function EditPropertyModal({
         children: [
           /* @__PURE__ */ jsx("div", { className: "flex-1 overflow-y-auto px-7 py-6", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-x-5 gap-y-4", children: [
             /* @__PURE__ */ jsx(Section$3, { label: "Identity", icon: Building2 }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Property Name", icon: Building2, span: 2, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Property Name", icon: Building2, span: 2, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "text",
@@ -36884,7 +36897,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Property Types", icon: Tag, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Property Types", icon: Tag, children: /* @__PURE__ */ jsx(
               ChipSelect,
               {
                 items: propertyTypes,
@@ -36894,7 +36907,7 @@ function EditPropertyModal({
                 color: "bg-blue-600"
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Categories", icon: Layers, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Categories", icon: Layers, children: /* @__PURE__ */ jsx(
               ChipSelect,
               {
                 items: propertyCategories,
@@ -36904,7 +36917,7 @@ function EditPropertyModal({
                 color: "bg-purple-600"
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Status", icon: ToggleLeft, span: 2, children: /* @__PURE__ */ jsxs(
+            /* @__PURE__ */ jsx(Field$8, { label: "Status", icon: ToggleLeft, span: 2, children: /* @__PURE__ */ jsxs(
               "button",
               {
                 type: "button",
@@ -36934,7 +36947,7 @@ function EditPropertyModal({
               }
             ) }),
             /* @__PURE__ */ jsx(Section$3, { label: "Location", icon: MapPin }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Address", icon: MapPin, span: 2, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Address", icon: MapPin, span: 2, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "text",
@@ -36944,7 +36957,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Main Location Input", icon: Navigation$1, span: 2, children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3 rounded-xl border border-gray-200 p-1 bg-gray-50", children: [
+            /* @__PURE__ */ jsx(Field$8, { label: "Main Location Input", icon: Navigation$1, span: 2, children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3 rounded-xl border border-gray-200 p-1 bg-gray-50", children: [
               /* @__PURE__ */ jsx(
                 "button",
                 {
@@ -36970,7 +36983,7 @@ function EditPropertyModal({
                 }
               )
             ] }) }),
-            locationInputMode === "addressUrl" && /* @__PURE__ */ jsx(Field$7, { label: "Main Address URL", icon: LinkIcon, span: 2, children: /* @__PURE__ */ jsx(
+            locationInputMode === "addressUrl" && /* @__PURE__ */ jsx(Field$8, { label: "Main Address URL", icon: LinkIcon, span: 2, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "url",
@@ -36980,7 +36993,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Area", children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Area", children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "text",
@@ -36990,7 +37003,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Pincode", icon: Hash, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Pincode", icon: Hash, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "text",
@@ -37000,7 +37013,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Location", icon: MapPin, children: locations ? /* @__PURE__ */ jsxs(
+            /* @__PURE__ */ jsx(Field$8, { label: "Location", icon: MapPin, children: locations ? /* @__PURE__ */ jsxs(
               "select",
               {
                 value: form.locationId,
@@ -37021,7 +37034,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Mobile Number", icon: User, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Mobile Number", icon: User, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "tel",
@@ -37031,7 +37044,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Email", icon: LinkIcon, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Email", icon: LinkIcon, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "email",
@@ -37041,7 +37054,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Assigned Admin", icon: User, children: admins ? /* @__PURE__ */ jsxs(
+            /* @__PURE__ */ jsx(Field$8, { label: "Assigned Admin", icon: User, children: admins ? /* @__PURE__ */ jsxs(
               "select",
               {
                 value: form.assignedAdminId,
@@ -37061,7 +37074,7 @@ function EditPropertyModal({
                 className: `${inputCls} bg-gray-100 cursor-not-allowed`
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Booking Engine URL", icon: LinkIcon, span: 2, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Booking Engine URL", icon: LinkIcon, span: 2, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "url",
@@ -37073,7 +37086,7 @@ function EditPropertyModal({
             ) }),
             locationInputMode === "coordinates" && /* @__PURE__ */ jsxs(Fragment, { children: [
               /* @__PURE__ */ jsx(Section$3, { label: "Coordinates", icon: Navigation$1 }),
-              /* @__PURE__ */ jsx(Field$7, { label: "Latitude", icon: Navigation$1, children: /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx(Field$8, { label: "Latitude", icon: Navigation$1, children: /* @__PURE__ */ jsx(
                 "input",
                 {
                   type: "number",
@@ -37084,7 +37097,7 @@ function EditPropertyModal({
                   className: inputCls
                 }
               ) }),
-              /* @__PURE__ */ jsx(Field$7, { label: "Longitude", icon: Navigation$1, children: /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx(Field$8, { label: "Longitude", icon: Navigation$1, children: /* @__PURE__ */ jsx(
                 "input",
                 {
                   type: "number",
@@ -37160,7 +37173,7 @@ function EditPropertyModal({
               )
             ] }),
             /* @__PURE__ */ jsx(Section$3, { label: "Listing Details", icon: FileText }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Description", span: 2, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Description", span: 2, children: /* @__PURE__ */ jsx(
               "textarea",
               {
                 value: form.mainHeading,
@@ -37170,7 +37183,7 @@ function EditPropertyModal({
                 className: `${inputCls} resize-none leading-relaxed`
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Sub Title", children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Sub Title", children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "text",
@@ -37180,7 +37193,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Tagline", children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Tagline", children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "text",
@@ -37190,7 +37203,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Full Address", span: 2, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Full Address", span: 2, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "text",
@@ -37201,7 +37214,7 @@ function EditPropertyModal({
               }
             ) }),
             /* @__PURE__ */ jsx(Section$3, { label: "Pricing & Capacity", icon: DollarSign }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Price (₹)", icon: DollarSign, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Price (₹)", icon: DollarSign, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "number",
@@ -37212,7 +37225,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Discount Amount (₹)", children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Discount Amount (₹)", children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "number",
@@ -37223,7 +37236,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "GST (%)", icon: Percent, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "GST (%)", icon: Percent, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "number",
@@ -37236,7 +37249,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Capacity", icon: Users, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Capacity", icon: Users, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "number",
@@ -37247,7 +37260,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            /* @__PURE__ */ jsx(Field$7, { label: "Rating", icon: Star, children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Field$8, { label: "Rating", icon: Star, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "number",
@@ -37260,7 +37273,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            isHotelType && /* @__PURE__ */ jsx(Field$7, { label: "Verified Users Rating", icon: Users, children: /* @__PURE__ */ jsx(
+            isHotelType && /* @__PURE__ */ jsx(Field$8, { label: "Verified Users Rating", icon: Users, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "number",
@@ -37273,7 +37286,7 @@ function EditPropertyModal({
             ) }),
             amenities && amenities.length > 0 && /* @__PURE__ */ jsxs(Fragment, { children: [
               /* @__PURE__ */ jsx(Section$3, { label: "Amenities & Features", icon: Sparkles }),
-              /* @__PURE__ */ jsx(Field$7, { label: "Select Amenities", span: 2, children: /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx(Field$8, { label: "Select Amenities", span: 2, children: /* @__PURE__ */ jsx(
                 ChipSelect,
                 {
                   items: amenities,
@@ -42076,7 +42089,7 @@ const Section$2 = ({ title, children }) => /* @__PURE__ */ jsxs("div", { classNa
   /* @__PURE__ */ jsx("div", { className: "bg-gray-50 px-4 py-3 border-b border-gray-100", children: /* @__PURE__ */ jsx("h3", { className: "text-xs font-black uppercase tracking-widest text-gray-400", children: title }) }),
   /* @__PURE__ */ jsx("div", { className: "p-4 space-y-3", children })
 ] });
-const Field$6 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1" : "w-full", children: [
+const Field$7 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1" : "w-full", children: [
   /* @__PURE__ */ jsx("label", { className: "block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1", children: label }),
   children
 ] });
@@ -42224,7 +42237,7 @@ function HeaderEditor$3({ propertyId, onSaved }) {
   return /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
     /* @__PURE__ */ jsxs(Section$2, { title: "Hero Text", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ jsx(Field$6, { label: "Badge Label", half: true, children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$7, { label: "Badge Label", half: true, children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp$7,
@@ -42233,7 +42246,7 @@ function HeaderEditor$3({ propertyId, onSaved }) {
             placeholder: "e.g. Verticals"
           }
         ) }),
-        /* @__PURE__ */ jsx(Field$6, { label: "Headline Line 1", half: true, children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$7, { label: "Headline Line 1", half: true, children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp$7,
@@ -42243,7 +42256,7 @@ function HeaderEditor$3({ propertyId, onSaved }) {
           }
         ) })
       ] }),
-      /* @__PURE__ */ jsx(Field$6, { label: "Headline Line 2 (italic / accent color)", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$7, { label: "Headline Line 2 (italic / accent color)", children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$7,
@@ -42252,7 +42265,7 @@ function HeaderEditor$3({ propertyId, onSaved }) {
           placeholder: "Diverse Verticals."
         }
       ) }),
-      /* @__PURE__ */ jsx(Field$6, { label: "Description", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$7, { label: "Description", children: /* @__PURE__ */ jsx(
         "textarea",
         {
           className: inp$7,
@@ -42275,7 +42288,7 @@ function HeaderEditor$3({ propertyId, onSaved }) {
     ] }),
     /* @__PURE__ */ jsxs(Section$2, { title: "Dining Policy Card", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ jsx(Field$6, { label: "Policy Type (label)", half: true, children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$7, { label: "Policy Type (label)", half: true, children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp$7,
@@ -42284,7 +42297,7 @@ function HeaderEditor$3({ propertyId, onSaved }) {
             placeholder: "DINING POLICY"
           }
         ) }),
-        /* @__PURE__ */ jsx(Field$6, { label: "Policy Name", half: true, children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$7, { label: "Policy Name", half: true, children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp$7,
@@ -42294,7 +42307,7 @@ function HeaderEditor$3({ propertyId, onSaved }) {
           }
         ) })
       ] }),
-      /* @__PURE__ */ jsx(Field$6, { label: "Quote / Description", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$7, { label: "Quote / Description", children: /* @__PURE__ */ jsx(
         "textarea",
         {
           className: inp$7,
@@ -42304,7 +42317,7 @@ function HeaderEditor$3({ propertyId, onSaved }) {
           placeholder: "Bring your favorite spirits; we provide premium glassware."
         }
       ) }),
-      /* @__PURE__ */ jsx(Field$6, { label: "Policy Image", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$7, { label: "Policy Image", children: /* @__PURE__ */ jsx(
         ImageUpload$2,
         {
           value: form.policyMediaUrl,
@@ -42399,7 +42412,7 @@ function VerticalForm({ initial, propertyId, onSave, onCancel }) {
   };
   return /* @__PURE__ */ jsxs("div", { className: "border border-blue-200 rounded-xl bg-blue-50/30 p-4 space-y-4", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-      /* @__PURE__ */ jsx(Field$6, { label: "Vertical Name", half: true, children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$7, { label: "Vertical Name", half: true, children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$7,
@@ -42408,7 +42421,7 @@ function VerticalForm({ initial, propertyId, onSave, onCancel }) {
           placeholder: "e.g. Italian"
         }
       ) }),
-      /* @__PURE__ */ jsx(Field$6, { label: "Display Order", half: true, children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$7, { label: "Display Order", half: true, children: /* @__PURE__ */ jsx(
         "input",
         {
           type: "number",
@@ -42419,7 +42432,7 @@ function VerticalForm({ initial, propertyId, onSave, onCancel }) {
         }
       ) })
     ] }),
-    /* @__PURE__ */ jsx(Field$6, { label: "Description", children: /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsx(Field$7, { label: "Description", children: /* @__PURE__ */ jsx(
       "textarea",
       {
         className: inp$7,
@@ -42430,7 +42443,7 @@ function VerticalForm({ initial, propertyId, onSave, onCancel }) {
       }
     ) }),
     /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-      /* @__PURE__ */ jsx(Field$6, { label: "Extra Text", half: true, children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$7, { label: "Extra Text", half: true, children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$7,
@@ -42439,7 +42452,7 @@ function VerticalForm({ initial, propertyId, onSave, onCancel }) {
           placeholder: "Weekend Special Available"
         }
       ) }),
-      /* @__PURE__ */ jsx(Field$6, { label: "Link / URL", half: true, children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$7, { label: "Link / URL", half: true, children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$7,
@@ -42449,7 +42462,7 @@ function VerticalForm({ initial, propertyId, onSave, onCancel }) {
         }
       ) })
     ] }),
-    /* @__PURE__ */ jsx(Field$6, { label: "Image", children: /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsx(Field$7, { label: "Image", children: /* @__PURE__ */ jsx(
       ImageUpload$2,
       {
         value: form.mediaUrl,
@@ -42988,7 +43001,7 @@ const EventsTab = ({ data = [], propertyData, refreshData }) => {
   ] });
 };
 const inp$6 = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 outline-none bg-white transition-all";
-const Field$5 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1 min-w-0" : "w-full", children: [
+const Field$6 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1 min-w-0" : "w-full", children: [
   /* @__PURE__ */ jsx("label", { className: "block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1", children: label }),
   children
 ] });
@@ -43400,7 +43413,7 @@ function AddMenuItemModal({
         /* @__PURE__ */ jsx(AlertCircle, { size: 15, className: "shrink-0" }),
         error
       ] }),
-      /* @__PURE__ */ jsx(Field$5, { label: "Item Image", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$6, { label: "Item Image", children: /* @__PURE__ */ jsx(
         ImageUpload$1,
         {
           value: form.image,
@@ -43414,7 +43427,7 @@ function AddMenuItemModal({
           }
         }
       ) }),
-      /* @__PURE__ */ jsx(Field$5, { label: "Item Name", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$6, { label: "Item Name", children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$6,
@@ -43423,7 +43436,7 @@ function AddMenuItemModal({
           placeholder: "e.g. Paneer Butter Masala"
         }
       ) }),
-      /* @__PURE__ */ jsxs(Field$5, { label: `Vertical${loadingMeta ? " — Loading…" : ""}`, children: [
+      /* @__PURE__ */ jsxs(Field$6, { label: `Vertical${loadingMeta ? " — Loading…" : ""}`, children: [
         /* @__PURE__ */ jsxs(
           "select",
           {
@@ -43457,7 +43470,7 @@ function AddMenuItemModal({
           }
         )
       ] }),
-      /* @__PURE__ */ jsx(Field$5, { label: "Description", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$6, { label: "Description", children: /* @__PURE__ */ jsx(
         "textarea",
         {
           className: inp$6,
@@ -43467,7 +43480,7 @@ function AddMenuItemModal({
           placeholder: "Creamy paneer curry with aromatic spices…"
         }
       ) }),
-      /* @__PURE__ */ jsx(Field$5, { label: "Like Count", children: /* @__PURE__ */ jsxs("div", { className: "relative max-w-[160px]", children: [
+      /* @__PURE__ */ jsx(Field$6, { label: "Like Count", children: /* @__PURE__ */ jsxs("div", { className: "relative max-w-[160px]", children: [
         /* @__PURE__ */ jsx(
           Heart,
           {
@@ -43822,7 +43835,7 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
   ] }) });
 }
 const inp$4 = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 outline-none bg-white transition-all";
-const Field$4 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1 min-w-0" : "w-full", children: [
+const Field$5 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1 min-w-0" : "w-full", children: [
   /* @__PURE__ */ jsx("label", { className: "block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1", children: label }),
   children
 ] });
@@ -44039,7 +44052,7 @@ function HeaderEditor$2({ propertyId }) {
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "p-4 space-y-3", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-          /* @__PURE__ */ jsx(Field$4, { label: 'Part 1 (e.g. "Signature")', half: true, children: /* @__PURE__ */ jsx(
+          /* @__PURE__ */ jsx(Field$5, { label: 'Part 1 (e.g. "Signature")', half: true, children: /* @__PURE__ */ jsx(
             "input",
             {
               className: inp$4,
@@ -44048,7 +44061,7 @@ function HeaderEditor$2({ propertyId }) {
               placeholder: "Signature"
             }
           ) }),
-          /* @__PURE__ */ jsx(Field$4, { label: 'Part 2 (accent, e.g. "Masterpieces")', half: true, children: /* @__PURE__ */ jsx(
+          /* @__PURE__ */ jsx(Field$5, { label: 'Part 2 (accent, e.g. "Masterpieces")', half: true, children: /* @__PURE__ */ jsx(
             "input",
             {
               className: inp$4,
@@ -44058,7 +44071,7 @@ function HeaderEditor$2({ propertyId }) {
             }
           ) })
         ] }),
-        /* @__PURE__ */ jsx(Field$4, { label: "Description", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$5, { label: "Description", children: /* @__PURE__ */ jsx(
           "textarea",
           {
             className: inp$4,
@@ -44122,7 +44135,7 @@ function HeaderEditor$2({ propertyId }) {
         remarkForm.existingId && /* @__PURE__ */ jsx("span", { className: "text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded", children: "Editing existing" })
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "p-4 space-y-3", children: [
-        /* @__PURE__ */ jsx(Field$4, { label: "Remark (short label, e.g. Low salt preference)", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$5, { label: "Remark (short label, e.g. Low salt preference)", children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp$4,
@@ -44131,7 +44144,7 @@ function HeaderEditor$2({ propertyId }) {
             placeholder: "e.g. Low salt preference"
           }
         ) }),
-        /* @__PURE__ */ jsx(Field$4, { label: "Description / Quote Text", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$5, { label: "Description / Quote Text", children: /* @__PURE__ */ jsx(
           "textarea",
           {
             className: inp$4,
@@ -44162,7 +44175,7 @@ function HeaderEditor$2({ propertyId }) {
               }
             )
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsx(Field$4, { label: "Chef Photo", children: /* @__PURE__ */ jsx(
+          /* @__PURE__ */ jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsx(Field$5, { label: "Chef Photo", children: /* @__PURE__ */ jsx(
             ChefImageUpload,
             {
               value: remarkForm.imageUrl,
@@ -44858,7 +44871,7 @@ const TablesTab = ({ data, onEdit, onAdd, onDelete }) => {
   ] });
 };
 const inp$3 = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 outline-none bg-white transition-all";
-const Field$3 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1 min-w-0" : "w-full", children: [
+const Field$4 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1 min-w-0" : "w-full", children: [
   /* @__PURE__ */ jsx("label", { className: "block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1", children: label }),
   children
 ] });
@@ -44994,7 +45007,7 @@ function HeaderEditor$1({ propertyId, onSaved }) {
   return /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
     /* @__PURE__ */ jsxs(Section$1, { title: "Section Header", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ jsx(Field$3, { label: 'Headline Part 1 (normal, e.g. "Buffet")', half: true, children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$4, { label: 'Headline Part 1 (normal, e.g. "Buffet")', half: true, children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp$3,
@@ -45003,7 +45016,7 @@ function HeaderEditor$1({ propertyId, onSaved }) {
             placeholder: "Buffet"
           }
         ) }),
-        /* @__PURE__ */ jsx(Field$3, { label: 'Headline Part 2 (italic accent, e.g. "Selection")', half: true, children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$4, { label: 'Headline Part 2 (italic accent, e.g. "Selection")', half: true, children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp$3,
@@ -45013,7 +45026,7 @@ function HeaderEditor$1({ propertyId, onSaved }) {
           }
         ) })
       ] }),
-      /* @__PURE__ */ jsx(Field$3, { label: "Description", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$4, { label: "Description", children: /* @__PURE__ */ jsx(
         "textarea",
         {
           className: inp$3,
@@ -45110,7 +45123,7 @@ function ItemForm({ initial, propertyId, onSave, onCancel }) {
   };
   return /* @__PURE__ */ jsxs("div", { className: "border border-blue-200 rounded-xl bg-blue-50/30 p-4 space-y-4", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-      /* @__PURE__ */ jsx(Field$3, { label: "Item Name", half: true, children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$4, { label: "Item Name", half: true, children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$3,
@@ -45119,7 +45132,7 @@ function ItemForm({ initial, propertyId, onSave, onCancel }) {
           placeholder: "e.g. Grand Indian Buffet"
         }
       ) }),
-      /* @__PURE__ */ jsx(Field$3, { label: "Display Order", half: true, children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$4, { label: "Display Order", half: true, children: /* @__PURE__ */ jsx(
         "input",
         {
           type: "number",
@@ -45130,7 +45143,7 @@ function ItemForm({ initial, propertyId, onSave, onCancel }) {
         }
       ) })
     ] }),
-    /* @__PURE__ */ jsx(Field$3, { label: "Description", children: /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsx(Field$4, { label: "Description", children: /* @__PURE__ */ jsx(
       "textarea",
       {
         className: inp$3,
@@ -45141,7 +45154,7 @@ function ItemForm({ initial, propertyId, onSave, onCancel }) {
       }
     ) }),
     /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-      /* @__PURE__ */ jsx(Field$3, { label: "Price (₹)", half: true, children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+      /* @__PURE__ */ jsx(Field$4, { label: "Price (₹)", half: true, children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
         /* @__PURE__ */ jsx(
           IndianRupee,
           {
@@ -45159,7 +45172,7 @@ function ItemForm({ initial, propertyId, onSave, onCancel }) {
           }
         )
       ] }) }),
-      /* @__PURE__ */ jsx(Field$3, { label: "CTA Button Text", half: true, children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$4, { label: "CTA Button Text", half: true, children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$3,
@@ -45169,7 +45182,7 @@ function ItemForm({ initial, propertyId, onSave, onCancel }) {
         }
       ) })
     ] }),
-    /* @__PURE__ */ jsx(Field$3, { label: "CTA Link / URL", children: /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsx(Field$4, { label: "CTA Link / URL", children: /* @__PURE__ */ jsx(
       "input",
       {
         className: inp$3,
@@ -45178,7 +45191,7 @@ function ItemForm({ initial, propertyId, onSave, onCancel }) {
         placeholder: "/buffet/indian or https://..."
       }
     ) }),
-    /* @__PURE__ */ jsx(Field$3, { label: "Buffet Image", children: /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsx(Field$4, { label: "Buffet Image", children: /* @__PURE__ */ jsx(
       ImageUpload,
       {
         value: form.mediaUrl,
@@ -45488,7 +45501,7 @@ function BuffetSection({ propertyData, refreshData }) {
   ] });
 }
 const inp$2 = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 outline-none bg-white transition-all";
-const Field$2 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1 min-w-0" : "w-full", children: [
+const Field$3 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1 min-w-0" : "w-full", children: [
   /* @__PURE__ */ jsx("label", { className: "block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1", children: label }),
   children
 ] });
@@ -45597,7 +45610,7 @@ function HeaderEditor({ propertyId, onSaved }) {
       /* @__PURE__ */ jsx("div", { className: "bg-gray-50 px-4 py-3 border-b border-gray-100", children: /* @__PURE__ */ jsx("h3", { className: "text-xs font-black uppercase tracking-widest text-gray-400", children: "Section Header" }) }),
       /* @__PURE__ */ jsxs("div", { className: "p-4 space-y-3", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-          /* @__PURE__ */ jsx(Field$2, { label: `Headline Part 1 (normal, e.g. "Today's")`, half: true, children: /* @__PURE__ */ jsx(
+          /* @__PURE__ */ jsx(Field$3, { label: `Headline Part 1 (normal, e.g. "Today's")`, half: true, children: /* @__PURE__ */ jsx(
             "input",
             {
               className: inp$2,
@@ -45606,7 +45619,7 @@ function HeaderEditor({ propertyId, onSaved }) {
               placeholder: "Today's"
             }
           ) }),
-          /* @__PURE__ */ jsx(Field$2, { label: 'Headline Part 2 (italic accent, e.g. "Deals")', half: true, children: /* @__PURE__ */ jsx(
+          /* @__PURE__ */ jsx(Field$3, { label: 'Headline Part 2 (italic accent, e.g. "Deals")', half: true, children: /* @__PURE__ */ jsx(
             "input",
             {
               className: inp$2,
@@ -45616,7 +45629,7 @@ function HeaderEditor({ propertyId, onSaved }) {
             }
           ) })
         ] }),
-        /* @__PURE__ */ jsx(Field$2, { label: "Description", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$3, { label: "Description", children: /* @__PURE__ */ jsx(
           "textarea",
           {
             className: inp$2,
@@ -46074,7 +46087,7 @@ function ResturantOffers({ propertyData, refreshData }) {
   ] });
 }
 const inp$1 = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 outline-none bg-white transition-all";
-const Field$1 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1 min-w-0" : "w-full", children: [
+const Field$2 = ({ label, children, half }) => /* @__PURE__ */ jsxs("div", { className: half ? "flex-1 min-w-0" : "w-full", children: [
   /* @__PURE__ */ jsx("label", { className: "block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1", children: label }),
   children
 ] });
@@ -46212,7 +46225,7 @@ function ContentPanel({ propertyId, sharedImage, sharedConnectForm }) {
   if (loading)
     return /* @__PURE__ */ jsx("div", { className: "py-10 text-center text-sm text-gray-400", children: "Loading content…" });
   return /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-    /* @__PURE__ */ jsx(Section, { title: "Badge & Location", children: /* @__PURE__ */ jsx(Field$1, { label: "Badge Label (shown in red above headline)", children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+    /* @__PURE__ */ jsx(Section, { title: "Badge & Location", children: /* @__PURE__ */ jsx(Field$2, { label: "Badge Label (shown in red above headline)", children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
       /* @__PURE__ */ jsx(
         MapPin,
         {
@@ -46231,7 +46244,7 @@ function ContentPanel({ propertyId, sharedImage, sharedConnectForm }) {
       )
     ] }) }) }),
     /* @__PURE__ */ jsxs(Section, { title: "Headline", children: [
-      /* @__PURE__ */ jsx(Field$1, { label: 'Line 1 (normal serif, e.g. "Experience elegance, taste")', children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$2, { label: 'Line 1 (normal serif, e.g. "Experience elegance, taste")', children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$1,
@@ -46240,7 +46253,7 @@ function ContentPanel({ propertyId, sharedImage, sharedConnectForm }) {
           placeholder: "Experience elegance, taste"
         }
       ) }),
-      /* @__PURE__ */ jsx(Field$1, { label: 'Line 2 (italic/muted, e.g. "and unforgettable dining.")', children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$2, { label: 'Line 2 (italic/muted, e.g. "and unforgettable dining.")', children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$1,
@@ -46271,7 +46284,7 @@ function ContentPanel({ propertyId, sharedImage, sharedConnectForm }) {
     ] }),
     /* @__PURE__ */ jsxs(Section, { title: "Availability", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ jsx(Field$1, { label: "Opening Time", half: true, children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+        /* @__PURE__ */ jsx(Field$2, { label: "Opening Time", half: true, children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
           /* @__PURE__ */ jsx(
             Clock,
             {
@@ -46289,7 +46302,7 @@ function ContentPanel({ propertyId, sharedImage, sharedConnectForm }) {
             }
           )
         ] }) }),
-        /* @__PURE__ */ jsx(Field$1, { label: "Closing Time", half: true, children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+        /* @__PURE__ */ jsx(Field$2, { label: "Closing Time", half: true, children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
           /* @__PURE__ */ jsx(
             Clock,
             {
@@ -46308,7 +46321,7 @@ function ContentPanel({ propertyId, sharedImage, sharedConnectForm }) {
           )
         ] }) })
       ] }),
-      /* @__PURE__ */ jsx(Field$1, { label: "Days (e.g. Monday — Sunday)", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$2, { label: "Days (e.g. Monday — Sunday)", children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$1,
@@ -46872,7 +46885,7 @@ function ConnectPanel({ propertyId, form, setForm }) {
   return /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
     /* @__PURE__ */ jsxs(Section, { title: "Connect Card (shown beside Availability)", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ jsx(Field$1, { label: "Section Label (small caps above)", half: true, children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$2, { label: "Section Label (small caps above)", half: true, children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp$1,
@@ -46881,7 +46894,7 @@ function ConnectPanel({ propertyId, form, setForm }) {
             placeholder: "CONNECT"
           }
         ) }),
-        /* @__PURE__ */ jsx(Field$1, { label: "Title", half: true, children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$2, { label: "Title", half: true, children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp$1,
@@ -46891,7 +46904,7 @@ function ConnectPanel({ propertyId, form, setForm }) {
           }
         ) })
       ] }),
-      /* @__PURE__ */ jsx(Field$1, { label: "Subtitle (small caps below title)", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$2, { label: "Subtitle (small caps below title)", children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp$1,
@@ -46910,7 +46923,7 @@ function ConnectPanel({ propertyId, form, setForm }) {
             /* @__PURE__ */ jsx("p", { className: "text-[10px] text-gray-400", children: "Instant Chat" })
           ] })
         ] }),
-        /* @__PURE__ */ jsx(Field$1, { label: "WhatsApp Number / Link", children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+        /* @__PURE__ */ jsx(Field$2, { label: "WhatsApp Number / Link", children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
           /* @__PURE__ */ jsx(
             MessageCircle,
             {
@@ -46937,7 +46950,7 @@ function ConnectPanel({ propertyId, form, setForm }) {
             /* @__PURE__ */ jsx("p", { className: "text-[10px] text-gray-400", children: "Speak to Host" })
           ] })
         ] }),
-        /* @__PURE__ */ jsx(Field$1, { label: "Phone Number", children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+        /* @__PURE__ */ jsx(Field$2, { label: "Phone Number", children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
           /* @__PURE__ */ jsx(
             Phone,
             {
@@ -47053,7 +47066,7 @@ function GroupBookingSection() {
   return /* @__PURE__ */ jsx("div", { children: "GroupBookingSection" });
 }
 const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 outline-none bg-white transition-all";
-const Field = ({ label, children }) => /* @__PURE__ */ jsxs("div", { className: "w-full", children: [
+const Field$1 = ({ label, children }) => /* @__PURE__ */ jsxs("div", { className: "w-full", children: [
   /* @__PURE__ */ jsx("label", { className: "block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1", children: label }),
   children
 ] });
@@ -47169,7 +47182,7 @@ function VisualGalleryHeaderEditor({ propertyId }) {
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "p-4 space-y-3", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ jsx(Field, { label: "Header Part 1 (e.g. Welcome to)", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$1, { label: "Header Part 1 (e.g. Welcome to)", children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp,
@@ -47178,7 +47191,7 @@ function VisualGalleryHeaderEditor({ propertyId }) {
             placeholder: "Welcome to"
           }
         ) }),
-        /* @__PURE__ */ jsx(Field, { label: "Header Part 2 — accent (e.g. Kennedia.)", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$1, { label: "Header Part 2 — accent (e.g. Kennedia.)", children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp,
@@ -47188,7 +47201,7 @@ function VisualGalleryHeaderEditor({ propertyId }) {
           }
         ) })
       ] }),
-      /* @__PURE__ */ jsx(Field, { label: "Description", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$1, { label: "Description", children: /* @__PURE__ */ jsx(
         "textarea",
         {
           className: inp,
@@ -47328,7 +47341,7 @@ function TestimonialHeaderEditor({ propertyId }) {
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "p-4 space-y-3", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ jsx(Field, { label: "Part 1 (e.g. Voices of)", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$1, { label: "Part 1 (e.g. Voices of)", children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp,
@@ -47337,7 +47350,7 @@ function TestimonialHeaderEditor({ propertyId }) {
             placeholder: "Voices of"
           }
         ) }),
-        /* @__PURE__ */ jsx(Field, { label: "Part 2 — accent (e.g. Delight.)", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$1, { label: "Part 2 — accent (e.g. Delight.)", children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp,
@@ -47347,7 +47360,7 @@ function TestimonialHeaderEditor({ propertyId }) {
           }
         ) })
       ] }),
-      /* @__PURE__ */ jsx(Field, { label: "Description", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$1, { label: "Description", children: /* @__PURE__ */ jsx(
         "textarea",
         {
           className: inp,
@@ -47490,7 +47503,7 @@ function PrimaryConversionHeaderEditor({ propertyId }) {
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "p-4 space-y-3", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ jsx(Field, { label: "Part 1 (e.g. Welcome to)", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$1, { label: "Part 1 (e.g. Welcome to)", children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp,
@@ -47499,7 +47512,7 @@ function PrimaryConversionHeaderEditor({ propertyId }) {
             placeholder: "Welcome to"
           }
         ) }),
-        /* @__PURE__ */ jsx(Field, { label: "Part 2 — accent (e.g. Kennedia.)", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$1, { label: "Part 2 — accent (e.g. Kennedia.)", children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp,
@@ -47509,7 +47522,7 @@ function PrimaryConversionHeaderEditor({ propertyId }) {
           }
         ) })
       ] }),
-      /* @__PURE__ */ jsx(Field, { label: "Description", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$1, { label: "Description", children: /* @__PURE__ */ jsx(
         "textarea",
         {
           className: inp,
@@ -47519,7 +47532,7 @@ function PrimaryConversionHeaderEditor({ propertyId }) {
           placeholder: "A cinematic intersection of our finest spaces…"
         }
       ) }),
-      /* @__PURE__ */ jsx(Field, { label: "Footer (optional — e.g. tagline or sub-note)", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$1, { label: "Footer (optional — e.g. tagline or sub-note)", children: /* @__PURE__ */ jsx(
         "input",
         {
           className: inp,
@@ -47667,7 +47680,7 @@ function EventsHeaderEditor({ propertyId }) {
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "p-4 space-y-3", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ jsx(Field, { label: "Part 1 (e.g. Events)", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$1, { label: "Part 1 (e.g. Events)", children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp,
@@ -47676,7 +47689,7 @@ function EventsHeaderEditor({ propertyId }) {
             placeholder: "Events"
           }
         ) }),
-        /* @__PURE__ */ jsx(Field, { label: "Part 2 — accent (e.g. Celebrations)", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Field$1, { label: "Part 2 — accent (e.g. Celebrations)", children: /* @__PURE__ */ jsx(
           "input",
           {
             className: inp,
@@ -47686,7 +47699,7 @@ function EventsHeaderEditor({ propertyId }) {
           }
         ) })
       ] }),
-      /* @__PURE__ */ jsx(Field, { label: "Description", children: /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx(Field$1, { label: "Description", children: /* @__PURE__ */ jsx(
         "textarea",
         {
           className: inp,
@@ -49931,6 +49944,642 @@ function ManageProperties() {
     )
   ] });
 }
+const META_INITIAL = {
+  targetType: "property",
+  propertyId: "",
+  propertyTypeId: "",
+  metaTitle: "",
+  metaDescription: "",
+  skima: "",
+  metaKeywords: "",
+  url: ""
+};
+const GOOGLE_INITIAL = {
+  targetType: "property",
+  propertyId: "",
+  propertyTypeId: "",
+  category: "",
+  description: ""
+};
+const toList = (response) => {
+  const data = response?.data ?? response;
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.content)) return data.content;
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
+};
+const getItemId = (item) => String(item?.id ?? "");
+const propertyLabel = (item) => item?.propertyName || item?.name || `Property #${item?.id}`;
+const typeLabel = (item) => item?.typeName || item?.name || item?.propertyType || `Type #${item?.id}`;
+const buildTargetPayload = (form) => form.targetType === "propertyType" ? { propertyTypeId: Number(form.propertyTypeId), propertyId: null } : { propertyId: Number(form.propertyId), propertyTypeId: null };
+function SeoManagement() {
+  const [activeSection, setActiveSection] = useState("meta");
+  const [loading, setLoading] = useState(true);
+  const [savingMeta, setSavingMeta] = useState(false);
+  const [savingGoogle, setSavingGoogle] = useState(false);
+  const [deletingId, setDeletingId] = useState("");
+  const [metaList, setMetaList] = useState([]);
+  const [googleList, setGoogleList] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
+  const [metaForm, setMetaForm] = useState(META_INITIAL);
+  const [googleForm, setGoogleForm] = useState(GOOGLE_INITIAL);
+  const [editingMetaId, setEditingMetaId] = useState(null);
+  const [editingGoogleId, setEditingGoogleId] = useState(null);
+  const [metaSearch, setMetaSearch] = useState("");
+  const [googleSearch, setGoogleSearch] = useState("");
+  const propertyOptions = useMemo(
+    () => properties.map((item) => ({ value: getItemId(item), label: propertyLabel(item) })),
+    [properties]
+  );
+  const propertyTypeOptions = useMemo(
+    () => propertyTypes.map((item) => ({ value: getItemId(item), label: typeLabel(item) })),
+    [propertyTypes]
+  );
+  const propertyMap = useMemo(
+    () => Object.fromEntries(propertyOptions.map((item) => [item.value, item.label])),
+    [propertyOptions]
+  );
+  const propertyTypeMap = useMemo(
+    () => Object.fromEntries(propertyTypeOptions.map((item) => [item.value, item.label])),
+    [propertyTypeOptions]
+  );
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [metaRes, googleRes, propertyRes, propertyTypeRes] = await Promise.all([
+        getAllMetaData(),
+        getAllGoogleTags(),
+        GetAllPropertyDetails(),
+        getPropertyTypes()
+      ]);
+      setMetaList(toList(metaRes));
+      setGoogleList(toList(googleRes));
+      setProperties(toList(propertyRes));
+      setPropertyTypes(toList(propertyTypeRes));
+    } catch (error) {
+      console.error("SEO load error:", error);
+      showError("Failed to load SEO data");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    loadData();
+  }, []);
+  const resetMetaForm = () => {
+    setMetaForm(META_INITIAL);
+    setEditingMetaId(null);
+  };
+  const resetGoogleForm = () => {
+    setGoogleForm(GOOGLE_INITIAL);
+    setEditingGoogleId(null);
+  };
+  const targetLabel = (item) => {
+    if (item?.propertyTypeId) {
+      return propertyTypeMap[String(item.propertyTypeId)] || `Type #${item.propertyTypeId}`;
+    }
+    if (item?.propertyId) {
+      return propertyMap[String(item.propertyId)] || `Property #${item.propertyId}`;
+    }
+    return "Not linked";
+  };
+  const targetTypeLabel = (item) => item?.propertyTypeId ? "Property Type (Homepage)" : "Property";
+  const filteredMeta = useMemo(() => {
+    const query = metaSearch.trim().toLowerCase();
+    if (!query) return metaList;
+    return metaList.filter(
+      (item) => [
+        item.metaTitle,
+        item.metaDescription,
+        item.metaKeywords,
+        item.skima,
+        item.url,
+        targetLabel(item)
+      ].filter(Boolean).some((value) => String(value).toLowerCase().includes(query))
+    );
+  }, [metaList, metaSearch, propertyMap, propertyTypeMap]);
+  const filteredGoogle = useMemo(() => {
+    const query = googleSearch.trim().toLowerCase();
+    if (!query) return googleList;
+    return googleList.filter(
+      (item) => [item.category, item.description, targetLabel(item)].filter(Boolean).some((value) => String(value).toLowerCase().includes(query))
+    );
+  }, [googleList, googleSearch, propertyMap, propertyTypeMap]);
+  const saveMeta = async (event) => {
+    event.preventDefault();
+    if (metaForm.targetType === "property" && !metaForm.propertyId) return showError("Select a property");
+    if (metaForm.targetType === "propertyType" && !metaForm.propertyTypeId) return showError("Select a property type");
+    if (!metaForm.metaTitle.trim()) return showError("Meta title is required");
+    if (!metaForm.metaDescription.trim()) return showError("Meta description is required");
+    const payload = {
+      ...buildTargetPayload(metaForm),
+      metaTitle: metaForm.metaTitle.trim(),
+      metaDescription: metaForm.metaDescription.trim(),
+      skima: metaForm.skima.trim(),
+      metaKeywords: metaForm.metaKeywords.trim(),
+      url: metaForm.url.trim()
+    };
+    try {
+      setSavingMeta(true);
+      if (editingMetaId) {
+        await updateMetaData(editingMetaId, payload);
+        showSuccess("Meta tag updated successfully");
+      } else {
+        await addMetaData(payload);
+        showSuccess("Meta tag created successfully");
+      }
+      resetMetaForm();
+      loadData();
+    } catch (error) {
+      console.error("Meta save error:", error);
+      showError(error?.response?.data?.message || "Failed to save meta tag");
+    } finally {
+      setSavingMeta(false);
+    }
+  };
+  const saveGoogle = async (event) => {
+    event.preventDefault();
+    if (googleForm.targetType === "property" && !googleForm.propertyId) return showError("Select a property");
+    if (googleForm.targetType === "propertyType" && !googleForm.propertyTypeId) return showError("Select a property type");
+    if (!googleForm.category.trim()) return showError("Category is required");
+    if (!googleForm.description.trim()) return showError("Description is required");
+    const payload = {
+      ...buildTargetPayload(googleForm),
+      category: googleForm.category.trim(),
+      description: googleForm.description.trim()
+    };
+    try {
+      setSavingGoogle(true);
+      if (editingGoogleId) {
+        await updateGoogleTag(editingGoogleId, payload);
+        showSuccess("Google tag updated successfully");
+      } else {
+        await addGoogleTag(payload);
+        showSuccess("Google tag created successfully");
+      }
+      resetGoogleForm();
+      loadData();
+    } catch (error) {
+      console.error("Google save error:", error);
+      showError(error?.response?.data?.message || "Failed to save Google tag");
+    } finally {
+      setSavingGoogle(false);
+    }
+  };
+  const editMeta = (item) => {
+    setActiveSection("meta");
+    setEditingMetaId(item.id);
+    setMetaForm({
+      targetType: item.propertyTypeId ? "propertyType" : "property",
+      propertyId: item.propertyId ? String(item.propertyId) : "",
+      propertyTypeId: item.propertyTypeId ? String(item.propertyTypeId) : "",
+      metaTitle: item.metaTitle || "",
+      metaDescription: item.metaDescription || "",
+      skima: item.skima || "",
+      metaKeywords: item.metaKeywords || "",
+      url: item.url || ""
+    });
+  };
+  const editGoogle = (item) => {
+    setActiveSection("google");
+    setEditingGoogleId(item.id);
+    setGoogleForm({
+      targetType: item.propertyTypeId ? "propertyType" : "property",
+      propertyId: item.propertyId ? String(item.propertyId) : "",
+      propertyTypeId: item.propertyTypeId ? String(item.propertyTypeId) : "",
+      category: item.category || "",
+      description: item.description || ""
+    });
+  };
+  const removeMeta = async (id) => {
+    try {
+      setDeletingId(`meta-${id}`);
+      await deleteMetaData(id);
+      showSuccess("Meta tag deleted successfully");
+      if (editingMetaId === id) resetMetaForm();
+      loadData();
+    } catch (error) {
+      console.error("Meta delete error:", error);
+      showError(error?.response?.data?.message || "Failed to delete meta tag");
+    } finally {
+      setDeletingId("");
+    }
+  };
+  const removeGoogle = async (id) => {
+    try {
+      setDeletingId(`google-${id}`);
+      await deleteGoogleTag(id);
+      showSuccess("Google tag deleted successfully");
+      if (editingGoogleId === id) resetGoogleForm();
+      loadData();
+    } catch (error) {
+      console.error("Google delete error:", error);
+      showError(error?.response?.data?.message || "Failed to delete Google tag");
+    } finally {
+      setDeletingId("");
+    }
+  };
+  return /* @__PURE__ */ jsx(Layout, { role: "superadmin", showActions: false, children: /* @__PURE__ */ jsx("div", { className: "h-full overflow-y-auto p-4 md:p-6", children: /* @__PURE__ */ jsxs("div", { className: "bg-white rounded-xl shadow-sm border", style: { borderColor: colors.border }, children: [
+    /* @__PURE__ */ jsx("div", { className: "p-6 border-b", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between", children: [
+      /* @__PURE__ */ jsxs("div", { children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-2xl font-semibold", style: { color: colors.textPrimary }, children: "SEO Management" }),
+        /* @__PURE__ */ jsx("p", { className: "text-sm mt-1", style: { color: colors.textSecondary }, children: "Manage meta tags and Google tags for properties and homepage property types." })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
+        /* @__PURE__ */ jsx(SectionTab, { active: activeSection === "meta", onClick: () => setActiveSection("meta"), icon: Tag, label: "Meta Tag" }),
+        /* @__PURE__ */ jsx(SectionTab, { active: activeSection === "google", onClick: () => setActiveSection("google"), icon: Globe, label: "Google Tag" })
+      ] })
+    ] }) }),
+    loading ? /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center py-20", children: /* @__PURE__ */ jsx(Loader2, { size: 32, className: "animate-spin", style: { color: colors.primary } }) }) : /* @__PURE__ */ jsx("div", { className: "p-4 md:p-6", children: activeSection === "meta" ? /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6", children: [
+      /* @__PURE__ */ jsx(
+        SeoFormCard,
+        {
+          title: editingMetaId ? "Edit Meta Tag" : "Create Meta Tag",
+          subtitle: "Configure metadata for a property page or homepage type.",
+          clearable: Boolean(editingMetaId),
+          onClear: resetMetaForm,
+          children: /* @__PURE__ */ jsxs("form", { onSubmit: saveMeta, className: "space-y-4", children: [
+            /* @__PURE__ */ jsx(
+              TargetSelector,
+              {
+                form: metaForm,
+                onFormChange: setMetaForm,
+                propertyOptions,
+                propertyTypeOptions,
+                prefix: "meta"
+              }
+            ),
+            /* @__PURE__ */ jsx(Field, { label: "Meta Title", value: metaForm.metaTitle, onChange: (value) => setMetaForm((prev) => ({ ...prev, metaTitle: value })) }),
+            /* @__PURE__ */ jsx(TextAreaField, { label: "Meta Description", rows: 4, value: metaForm.metaDescription, onChange: (value) => setMetaForm((prev) => ({ ...prev, metaDescription: value })) }),
+            /* @__PURE__ */ jsx(Field, { label: "Schema", value: metaForm.skima, onChange: (value) => setMetaForm((prev) => ({ ...prev, skima: value })) }),
+            /* @__PURE__ */ jsx(Field, { label: "Meta Keywords", value: metaForm.metaKeywords, onChange: (value) => setMetaForm((prev) => ({ ...prev, metaKeywords: value })) }),
+            /* @__PURE__ */ jsx(Field, { label: "URL", type: "url", placeholder: "https://example.com/page", value: metaForm.url, onChange: (value) => setMetaForm((prev) => ({ ...prev, url: value })) }),
+            /* @__PURE__ */ jsx(SubmitButton, { loading: savingMeta, label: editingMetaId ? "Update Meta Tag" : "Add Meta Tag" })
+          ] })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        SeoTableCard,
+        {
+          title: "Meta Tags",
+          count: filteredMeta.length,
+          searchValue: metaSearch,
+          onSearchChange: setMetaSearch,
+          searchPlaceholder: "Search meta tags...",
+          emptyMessage: "No meta tags found.",
+          children: /* @__PURE__ */ jsxs("table", { className: "w-full min-w-[920px]", children: [
+            /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { style: { backgroundColor: colors.mainBg }, children: [
+              /* @__PURE__ */ jsx(Th, { children: "Target" }),
+              /* @__PURE__ */ jsx(Th, { children: "Type" }),
+              /* @__PURE__ */ jsx(Th, { children: "Title" }),
+              /* @__PURE__ */ jsx(Th, { children: "Description" }),
+              /* @__PURE__ */ jsx(Th, { children: "Keywords" }),
+              /* @__PURE__ */ jsx(Th, { children: "URL" }),
+              /* @__PURE__ */ jsx(Th, { children: "Status" }),
+              /* @__PURE__ */ jsx(Th, { align: "right", children: "Actions" })
+            ] }) }),
+            /* @__PURE__ */ jsx("tbody", { className: "divide-y divide-gray-100", children: filteredMeta.map((item) => /* @__PURE__ */ jsxs("tr", { className: "hover:bg-gray-50 transition-colors", children: [
+              /* @__PURE__ */ jsx(Td, { children: targetLabel(item) }),
+              /* @__PURE__ */ jsx(Td, { children: targetTypeLabel(item) }),
+              /* @__PURE__ */ jsx(Td, { children: item.metaTitle || "-" }),
+              /* @__PURE__ */ jsx(Td, { children: item.metaDescription || "-" }),
+              /* @__PURE__ */ jsx(Td, { children: item.metaKeywords || "-" }),
+              /* @__PURE__ */ jsx(Td, { children: item.url || "-" }),
+              /* @__PURE__ */ jsx(Td, { children: /* @__PURE__ */ jsx(StatusBadge, { active: item.active ?? item.status }) }),
+              /* @__PURE__ */ jsx(Td, { align: "right", children: /* @__PURE__ */ jsx(
+                ActionButtons,
+                {
+                  onEdit: () => editMeta(item),
+                  onDelete: () => removeMeta(item.id),
+                  deleting: deletingId === `meta-${item.id}`
+                }
+              ) })
+            ] }, item.id)) })
+          ] })
+        }
+      )
+    ] }) : /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6", children: [
+      /* @__PURE__ */ jsx(
+        SeoFormCard,
+        {
+          title: editingGoogleId ? "Edit Google Tag" : "Create Google Tag",
+          subtitle: "Store Google tag details for properties or homepage types.",
+          clearable: Boolean(editingGoogleId),
+          onClear: resetGoogleForm,
+          children: /* @__PURE__ */ jsxs("form", { onSubmit: saveGoogle, className: "space-y-4", children: [
+            /* @__PURE__ */ jsx(
+              TargetSelector,
+              {
+                form: googleForm,
+                onFormChange: setGoogleForm,
+                propertyOptions,
+                propertyTypeOptions,
+                prefix: "google"
+              }
+            ),
+            /* @__PURE__ */ jsx(Field, { label: "Category", placeholder: "header", value: googleForm.category, onChange: (value) => setGoogleForm((prev) => ({ ...prev, category: value })) }),
+            /* @__PURE__ */ jsx(TextAreaField, { label: "Description", rows: 6, value: googleForm.description, onChange: (value) => setGoogleForm((prev) => ({ ...prev, description: value })) }),
+            /* @__PURE__ */ jsx(SubmitButton, { loading: savingGoogle, label: editingGoogleId ? "Update Google Tag" : "Add Google Tag" })
+          ] })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        SeoTableCard,
+        {
+          title: "Google Tags",
+          count: filteredGoogle.length,
+          searchValue: googleSearch,
+          onSearchChange: setGoogleSearch,
+          searchPlaceholder: "Search Google tags...",
+          emptyMessage: "No Google tags found.",
+          children: /* @__PURE__ */ jsxs("table", { className: "w-full min-w-[760px]", children: [
+            /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { style: { backgroundColor: colors.mainBg }, children: [
+              /* @__PURE__ */ jsx(Th, { children: "Target" }),
+              /* @__PURE__ */ jsx(Th, { children: "Type" }),
+              /* @__PURE__ */ jsx(Th, { children: "Category" }),
+              /* @__PURE__ */ jsx(Th, { children: "Description" }),
+              /* @__PURE__ */ jsx(Th, { children: "Status" }),
+              /* @__PURE__ */ jsx(Th, { align: "right", children: "Actions" })
+            ] }) }),
+            /* @__PURE__ */ jsx("tbody", { className: "divide-y divide-gray-100", children: filteredGoogle.map((item) => /* @__PURE__ */ jsxs("tr", { className: "hover:bg-gray-50 transition-colors", children: [
+              /* @__PURE__ */ jsx(Td, { children: targetLabel(item) }),
+              /* @__PURE__ */ jsx(Td, { children: targetTypeLabel(item) }),
+              /* @__PURE__ */ jsx(Td, { children: item.category || "-" }),
+              /* @__PURE__ */ jsx(Td, { children: item.description || "-" }),
+              /* @__PURE__ */ jsx(Td, { children: /* @__PURE__ */ jsx(StatusBadge, { active: item.active ?? item.status }) }),
+              /* @__PURE__ */ jsx(Td, { align: "right", children: /* @__PURE__ */ jsx(
+                ActionButtons,
+                {
+                  onEdit: () => editGoogle(item),
+                  onDelete: () => removeGoogle(item.id),
+                  deleting: deletingId === `google-${item.id}`
+                }
+              ) })
+            ] }, item.id)) })
+          ] })
+        }
+      )
+    ] }) })
+  ] }) }) });
+}
+function SectionTab({ active, onClick, icon: Icon, label }) {
+  return /* @__PURE__ */ jsxs(
+    "button",
+    {
+      type: "button",
+      onClick,
+      className: "px-4 py-2.5 rounded-lg border text-sm font-medium flex items-center justify-center gap-2",
+      style: {
+        borderColor: active ? colors.primary : colors.border,
+        color: active ? colors.primary : colors.textPrimary,
+        backgroundColor: active ? `${colors.primary}10` : "#fff"
+      },
+      children: [
+        /* @__PURE__ */ jsx(Icon, { size: 16 }),
+        label
+      ]
+    }
+  );
+}
+function SeoFormCard({ title, subtitle, clearable, onClear, children }) {
+  return /* @__PURE__ */ jsxs("div", { className: "bg-[#fcfcfc] rounded-xl border p-5 h-fit", style: { borderColor: colors.border }, children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-4", children: [
+      /* @__PURE__ */ jsxs("div", { children: [
+        /* @__PURE__ */ jsx("h3", { className: "text-lg font-semibold", style: { color: colors.textPrimary }, children: title }),
+        /* @__PURE__ */ jsx("p", { className: "text-xs mt-1", style: { color: colors.textSecondary }, children: subtitle })
+      ] }),
+      clearable ? /* @__PURE__ */ jsx("button", { type: "button", onClick: onClear, className: "text-xs font-medium", style: { color: colors.primary }, children: "Clear" }) : null
+    ] }),
+    children
+  ] });
+}
+function SeoTableCard({
+  title,
+  count: count2,
+  searchValue,
+  onSearchChange,
+  searchPlaceholder,
+  emptyMessage,
+  children
+}) {
+  const rowCount = React__default.Children.count(children?.props?.children?.[1]?.props?.children);
+  return /* @__PURE__ */ jsxs("div", { className: "bg-white rounded-xl border overflow-hidden", style: { borderColor: colors.border }, children: [
+    /* @__PURE__ */ jsx("div", { className: "p-5 border-b", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col md:flex-row md:items-center md:justify-between gap-3", children: [
+      /* @__PURE__ */ jsxs("div", { children: [
+        /* @__PURE__ */ jsx("h3", { className: "text-lg font-semibold", style: { color: colors.textPrimary }, children: title }),
+        /* @__PURE__ */ jsxs("p", { className: "text-xs mt-1", style: { color: colors.textSecondary }, children: [
+          count2,
+          " entries available"
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx(SearchBox, { value: searchValue, onChange: onSearchChange, placeholder: searchPlaceholder })
+    ] }) }),
+    rowCount > 0 ? /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children }) : /* @__PURE__ */ jsx("div", { className: "py-16 text-center text-sm", style: { color: colors.textSecondary }, children: emptyMessage })
+  ] });
+}
+function TargetSelector({
+  form,
+  onFormChange,
+  propertyOptions,
+  propertyTypeOptions,
+  prefix
+}) {
+  const changeTargetType = (targetType) => onFormChange((prev) => ({
+    ...prev,
+    targetType,
+    propertyId: "",
+    propertyTypeId: ""
+  }));
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs("div", { children: [
+      /* @__PURE__ */ jsx("label", { className: "block text-sm font-medium mb-2", style: { color: colors.textPrimary }, children: "Target Type" }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3", children: [
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => changeTargetType("property"),
+            className: "px-4 py-2.5 rounded-lg border text-sm font-medium",
+            style: {
+              borderColor: form.targetType === "property" ? colors.primary : colors.border,
+              color: form.targetType === "property" ? colors.primary : colors.textPrimary,
+              backgroundColor: form.targetType === "property" ? `${colors.primary}10` : "#fff"
+            },
+            children: "Property"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => changeTargetType("propertyType"),
+            className: "px-4 py-2.5 rounded-lg border text-sm font-medium",
+            style: {
+              borderColor: form.targetType === "propertyType" ? colors.primary : colors.border,
+              color: form.targetType === "propertyType" ? colors.primary : colors.textPrimary,
+              backgroundColor: form.targetType === "propertyType" ? `${colors.primary}10` : "#fff"
+            },
+            children: "Property Type (Homepage)"
+          }
+        )
+      ] })
+    ] }),
+    form.targetType === "property" ? /* @__PURE__ */ jsx(
+      SelectField,
+      {
+        id: `${prefix}-property`,
+        label: "Property",
+        value: form.propertyId,
+        onChange: (value) => onFormChange((prev) => ({ ...prev, propertyId: value })),
+        options: propertyOptions,
+        placeholder: "Select property"
+      }
+    ) : /* @__PURE__ */ jsx(
+      SelectField,
+      {
+        id: `${prefix}-property-type`,
+        label: "Property Type",
+        value: form.propertyTypeId,
+        onChange: (value) => onFormChange((prev) => ({ ...prev, propertyTypeId: value })),
+        options: propertyTypeOptions,
+        placeholder: "Select property type"
+      }
+    )
+  ] });
+}
+function SelectField({ id, label, value, onChange, options, placeholder }) {
+  return /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsx("label", { htmlFor: id, className: "block text-sm font-medium mb-2", style: { color: colors.textPrimary }, children: label }),
+    /* @__PURE__ */ jsxs(
+      "select",
+      {
+        id,
+        value,
+        onChange: (event) => onChange(event.target.value),
+        className: "w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none",
+        style: { borderColor: colors.border, color: colors.textPrimary },
+        children: [
+          /* @__PURE__ */ jsx("option", { value: "", children: placeholder }),
+          options.map((option) => /* @__PURE__ */ jsx("option", { value: option.value, children: option.label }, option.value))
+        ]
+      }
+    )
+  ] });
+}
+function Field({ label, value, onChange, type = "text", placeholder = "" }) {
+  return /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsx("label", { className: "block text-sm font-medium mb-2", style: { color: colors.textPrimary }, children: label }),
+    /* @__PURE__ */ jsx(
+      "input",
+      {
+        type,
+        value,
+        onChange: (event) => onChange(event.target.value),
+        placeholder,
+        className: "w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none",
+        style: { borderColor: colors.border, color: colors.textPrimary }
+      }
+    )
+  ] });
+}
+function TextAreaField({ label, value, onChange, rows }) {
+  return /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsx("label", { className: "block text-sm font-medium mb-2", style: { color: colors.textPrimary }, children: label }),
+    /* @__PURE__ */ jsx(
+      "textarea",
+      {
+        rows,
+        value,
+        onChange: (event) => onChange(event.target.value),
+        className: "w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none resize-none",
+        style: { borderColor: colors.border, color: colors.textPrimary }
+      }
+    )
+  ] });
+}
+function SearchBox({ value, onChange, placeholder }) {
+  return /* @__PURE__ */ jsxs("div", { className: "relative w-full md:w-72", children: [
+    /* @__PURE__ */ jsx(Search, { size: 16, className: "absolute left-3 top-1/2 -translate-y-1/2", style: { color: colors.textSecondary } }),
+    /* @__PURE__ */ jsx(
+      "input",
+      {
+        type: "text",
+        value,
+        onChange: (event) => onChange(event.target.value),
+        placeholder,
+        className: "w-full pl-9 pr-3 py-2.5 rounded-lg border text-sm focus:outline-none",
+        style: { borderColor: colors.border, color: colors.textPrimary }
+      }
+    )
+  ] });
+}
+function SubmitButton({ loading, label }) {
+  return /* @__PURE__ */ jsxs(
+    "button",
+    {
+      type: "submit",
+      disabled: loading,
+      className: "w-full px-4 py-3 rounded-lg text-sm font-medium text-white flex items-center justify-center gap-2 disabled:opacity-70",
+      style: { backgroundColor: colors.primary },
+      children: [
+        loading ? /* @__PURE__ */ jsx(Loader2, { size: 16, className: "animate-spin" }) : /* @__PURE__ */ jsx(Plus, { size: 16 }),
+        label
+      ]
+    }
+  );
+}
+function Th({ children, align = "left" }) {
+  return /* @__PURE__ */ jsx(
+    "th",
+    {
+      className: `px-4 py-3 text-xs font-semibold uppercase tracking-wider ${align === "right" ? "text-right" : "text-left"}`,
+      style: { color: colors.textSecondary },
+      children
+    }
+  );
+}
+function Td({ children, align = "left" }) {
+  return /* @__PURE__ */ jsx(
+    "td",
+    {
+      className: `px-4 py-4 text-sm align-top ${align === "right" ? "text-right" : "text-left"}`,
+      style: { color: colors.textPrimary },
+      children
+    }
+  );
+}
+function StatusBadge({ active }) {
+  const isActive = Boolean(active);
+  return /* @__PURE__ */ jsx(
+    "span",
+    {
+      className: "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium",
+      style: {
+        backgroundColor: isActive ? "#10b98115" : "#ef444415",
+        color: isActive ? "#10b981" : "#ef4444"
+      },
+      children: isActive ? "Active" : "Inactive"
+    }
+  );
+}
+function ActionButtons({ onEdit, onDelete, deleting }) {
+  return /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-end gap-2", children: [
+    /* @__PURE__ */ jsx("button", { type: "button", onClick: onEdit, className: "p-2 rounded-lg hover:bg-gray-100 transition-colors", children: /* @__PURE__ */ jsx(Pencil, { size: 15, style: { color: colors.primary } }) }),
+    /* @__PURE__ */ jsx(
+      "button",
+      {
+        type: "button",
+        disabled: deleting,
+        onClick: () => {
+          if (window.confirm("Delete this SEO entry?")) onDelete();
+        },
+        className: "p-2 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-60",
+        children: deleting ? /* @__PURE__ */ jsx(Loader2, { size: 15, className: "animate-spin text-red-500" }) : /* @__PURE__ */ jsx(Trash2, { size: 15, className: "text-red-500" })
+      }
+    )
+  ] });
+}
 function Hotel() {
   return /* @__PURE__ */ jsx(
     Layout,
@@ -50864,6 +51513,14 @@ const SuperAdminRoutes = [
       element: /* @__PURE__ */ jsx(ProtectedRoute, { allowedRoles: ["ROLE_SUPERADMIN", "ROLE_ADMIN"], children: /* @__PURE__ */ jsx(ManageProperties, {}) })
     },
     "super-admin-manage-properties"
+  ),
+  /* @__PURE__ */ jsx(
+    Route,
+    {
+      path: "/Seo",
+      element: /* @__PURE__ */ jsx(ProtectedRoute, { allowedRoles: ["ROLE_SUPERADMIN", "ROLE_ADMIN"], children: /* @__PURE__ */ jsx(SeoManagement, {}) })
+    },
+    "super-admin-seo"
   ),
   /* @__PURE__ */ jsx(
     Route,
