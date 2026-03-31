@@ -6,6 +6,7 @@ import {
   Home,
   MapPin,
   Users,
+  Globe,
   Building2,
   UtensilsCrossed,
   Settings,
@@ -44,6 +45,12 @@ function Sidebar({ isOpen, onToggle }) {
         path: "/ManageUsers",
       });
     }
+
+    coreItems.push({
+      icon: Globe,
+      label: "SEO",
+      path: "/Seo",
+    });
 
     // Business Verticals
     const verticals = [
