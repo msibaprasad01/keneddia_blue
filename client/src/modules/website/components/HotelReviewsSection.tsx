@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, ChangeEvent } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import type { ChangeEvent } from "react";
 import {
   Star,
   X,

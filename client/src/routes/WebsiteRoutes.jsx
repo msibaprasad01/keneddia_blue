@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { Route, useParams,Navigate} from "react-router-dom";
+import { Route, useParams, Navigate } from "react-router-dom";
 import Home from "@/modules/website/pages/Home";
 import Cafes from "@/modules/website/pages/Cafes";
 import Bars from "@/modules/website/pages/Bars";
@@ -20,22 +20,21 @@ import Hotels from "@/modules/website/pages/Hotels";
 import NewsListing from "@/modules/website/pages/NewsListing";
 import Careers from "@/modules/website/pages/Careers";
 import Checkout from "@/modules/website/pages/Checkout";
+import HotelDetail from "@/modules/website/pages/HotelDetail";
+import ResturantPage from "@/modules/website/pages/restaurant/ResturantPage";
 import Italian from "@/modules/website/pages/restaurant/pages/verticals/Italian";
 import LuxuryLounge from "@/modules/website/pages/restaurant/pages/verticals/LuxuryLounge";
 import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/SpicyDarbar";
 import TakeawayTreats from "@/modules/website/pages/restaurant/pages/verticals/TakeawayTreats";
 import { GetAllPropertyDetails } from "@/Api/Api";
+import { useSsrData } from "@/ssr/SsrDataContext";
 
-const HotelDetail = lazy(() => import("@/modules/website/pages/HotelDetail"));
 const RoomSelection = lazy(() => import("@/modules/website/pages/RoomSelection"));
 const RestaurantHomepage = lazy(
   () => import("@/modules/website/pages/restaurant/RestaurantHomepage"),
 );
 const CafeHomepage = lazy(
   () => import("@/modules/website/pages/cafe/CafeHomepage"),
-);
-const ResturantPage = lazy(
-  () => import("@/modules/website/pages/restaurant/ResturantPage"),
 );
 const ResturantCategoryPageTemplate = lazy(
   () => import("@/modules/website/pages/restaurant/ResturantCategoryPageTemplate"),
@@ -57,16 +56,30 @@ function withRouteSuspense(element) {
 
 function PropertyDetailRoute() {
   const { propertySlug, propertyId } = useParams();
-  const [resolvedType, setResolvedType] = useState(null);
+  const { propertyDetail } = useSsrData();
 
   const hostname =
     typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
   const isRestaurantHost = hostname.startsWith("restaurants.");
   const slugTail = propertySlug?.split("-").pop() || "";
   const resolvedPropertyId = Number(propertyId || slugTail) || null;
+  const ssrResolvedType =
+    propertyDetail?.propertyId === resolvedPropertyId &&
+    (propertyDetail?.propertyType === "restaurant" ||
+      propertyDetail?.propertyType === "hotel")
+      ? propertyDetail.propertyType
+      : null;
+  const [resolvedType, setResolvedType] = useState(ssrResolvedType);
 
   useEffect(() => {
     let isMounted = true;
+
+    if (ssrResolvedType) {
+      setResolvedType(ssrResolvedType);
+      return () => {
+        isMounted = false;
+      };
+    }
 
     const resolvePropertyType = async () => {
       if (isRestaurantHost) {
@@ -114,7 +127,7 @@ function PropertyDetailRoute() {
     return () => {
       isMounted = false;
     };
-  }, [isRestaurantHost, resolvedPropertyId]);
+  }, [isRestaurantHost, resolvedPropertyId, ssrResolvedType]);
 
   if (!resolvedType) {
     return (
@@ -124,9 +137,7 @@ function PropertyDetailRoute() {
     );
   }
 
-  return resolvedType === "restaurant"
-    ? withRouteSuspense(<ResturantPage />)
-    : withRouteSuspense(<HotelDetail />);
+  return resolvedType === "restaurant" ? <ResturantPage /> : <HotelDetail />;
 }
 
 const WebsiteRoutes = [

@@ -10,6 +10,7 @@ import {
   fetchNewsListingData,
   fetchOfferListingData,
 } from "@/ssr/contentPagesData";
+import { fetchPropertyDetailPageData } from "@/ssr/propertyDetailData";
 
 const serializeInitialData = (data) =>
   JSON.stringify(data).replace(/</g, "\\u003c");
@@ -47,6 +48,11 @@ export async function render(url, template) {
   const newsDetailMatch = pathname.match(/^\/news\/([^/]+)\/?$/);
   if (newsDetailMatch) {
     initialData.newsDetail = await fetchNewsDetailPageData(newsDetailMatch[1]);
+  }
+
+  const propertyDetailMatch = pathname.match(/^\/([^/]+)\/([^/]+-\d+)\/?$/);
+  if (propertyDetailMatch) {
+    initialData.propertyDetail = await fetchPropertyDetailPageData(pathname);
   }
 
   const appHtml = renderToString(

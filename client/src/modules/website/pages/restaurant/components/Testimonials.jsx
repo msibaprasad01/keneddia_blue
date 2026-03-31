@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, ChangeEvent } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   motion,
   AnimatePresence,
