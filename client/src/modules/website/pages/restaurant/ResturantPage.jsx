@@ -4,7 +4,6 @@ import Footer from "@/modules/website/components/Footer";
 import ResturantBanner from "./resturantpage/ResturantBanner";
 import ResturantSubCategories from "./resturantpage/ResturantSubCategories";
 import AboutResturantPage from "./resturantpage/AboutResturantPage";
-import ResturantpageOffers from "./resturantpage/ResturantpageOffers";
 import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
 import SignatureDishesAndBuffet from "./resturantpage/SignatureDishesAndBuffet";
 import Testimonials from "./components/Testimonials";
@@ -12,40 +11,43 @@ import ResturantGallerypage from "./resturantpage/ResturantGallerypage";
 import ReservationForm from "./components/ReservationForm";
 import { siteContent } from "@/data/siteContent";
 import { useParams } from "react-router-dom";
-import {
-  GetAllPropertyDetails,
-  getAllGalleries,
-  getGalleryByPropertyId,
-} from "@/Api/Api";
-/* ===============================
-   RESTAURANT NAVIGATION ITEMS
-================================= */
+import { GetAllPropertyDetails, getGalleryByPropertyId } from "@/Api/Api";
+import { useSsrData } from "@/ssr/SsrDataContext";
+
 const RESTAURANT_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
   { type: "link", label: "MENU", key: "menu", href: "#menu" },
-  // { type: "link", label: "OFFERS", key: "offers", href: "#offers" },
   { type: "link", label: "ABOUT", key: "about", href: "#about" },
-  // { type: "link", label: "EVENTS", key: "events", href: "#events" },
   { type: "link", label: "GALLERY", key: "gallery", href: "#gallery" },
-  // { type: "link", label: "CONTACT", key: "contact", href: "#contact" },
 ];
 
 export default function RestaurantHomepage() {
   const { propertyId, propertySlug } = useParams();
+  const { propertyDetail } = useSsrData();
   const slugTail = propertySlug?.split("-").pop() || "";
   const numericPropertyId = Number(propertyId || slugTail) || null;
+  const ssrRestaurantDetail =
+    propertyDetail?.propertyType === "restaurant" &&
+    propertyDetail?.propertyId === numericPropertyId
+      ? propertyDetail.pageData
+      : null;
 
-  const [propertyData, setPropertyData] = useState(null);
-  const [galleryData, setGalleryData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [propertyData, setPropertyData] = useState(
+    ssrRestaurantDetail?.propertyData || null,
+  );
+  const [galleryData, setGalleryData] = useState(
+    ssrRestaurantDetail?.galleryData || [],
+  );
+  const [loading, setLoading] = useState(!ssrRestaurantDetail);
 
-  // Scroll to top (ONLY ONCE)
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    if (!numericPropertyId) return;
+    if (ssrRestaurantDetail || !numericPropertyId) return;
+
+    let isMounted = true;
 
     const fetchData = async () => {
       try {
@@ -53,7 +55,6 @@ export default function RestaurantHomepage() {
         setPropertyData(null);
         setGalleryData([]);
 
-        // 1️⃣ Fetch property details
         const response = await GetAllPropertyDetails();
         const rawData = response?.data || response;
 
@@ -64,39 +65,31 @@ export default function RestaurantHomepage() {
 
             return listings.length === 0
               ? [{ parent, listing: null }]
-              : listings.map((l) => ({ parent, listing: l }));
+              : listings.map((listing) => ({ parent, listing }));
           },
         );
 
         const matched = flattened.find(
-          (m) => Number(m.parent.id) === numericPropertyId,
+          (item) => Number(item.parent.id) === numericPropertyId,
         );
 
         if (!matched) {
-          console.warn("Property not found");
+          if (isMounted) setLoading(false);
           return;
         }
 
         const { parent, listing } = matched;
-
         const combinedProperty = {
           ...parent,
           ...listing,
-
-          // Override specific fields cleanly
           id: parent.id,
           propertyId: parent.id,
           name: listing?.propertyName?.trim() || parent.propertyName,
-
           description: listing?.mainHeading || "",
-
           location: listing?.fullAddress || parent.address,
-
           city: listing?.city || parent.locationName,
-
           media:
             listing?.media?.length > 0 ? listing.media : parent.media || [],
-
           coordinates:
             parent.latitude && parent.longitude
               ? {
@@ -106,33 +99,35 @@ export default function RestaurantHomepage() {
               : null,
         };
 
-        setPropertyData(combinedProperty);
-
-        // 2️⃣ Fetch gallery using propertyId
         const galleryRes = await getGalleryByPropertyId(parent.id);
-
         const rawGallery =
           galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
-
         const filteredGallery = (
           Array.isArray(rawGallery) ? rawGallery : []
         ).filter(
-          (g) =>
-            g.isActive &&
-            g.media?.url &&
-            !g.vertical && // exclude vertical galleries
-            (g.categoryName || "").toLowerCase() !== "3d",
+          (item) =>
+            item?.isActive &&
+            item?.media?.url &&
+            !item?.vertical &&
+            String(item?.categoryName || "").toLowerCase() !== "3d",
         );
+
+        if (!isMounted) return;
+        setPropertyData(combinedProperty);
         setGalleryData(filteredGallery);
       } catch (err) {
         console.error("Restaurant Fetch Error:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchData();
-  }, [numericPropertyId]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [numericPropertyId, ssrRestaurantDetail]);
 
   return (
     <div className="min-h-screen bg-background">

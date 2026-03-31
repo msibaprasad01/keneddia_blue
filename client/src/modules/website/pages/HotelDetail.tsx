@@ -42,6 +42,7 @@ import {
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import HotelGalleryGrid from "../components/hotel/Hotelgallerygrid";
+import { useSsrData } from "@/ssr/SsrDataContext";
 // Components
 import RightSidebar from "@/modules/website/components/hotel-detail/RightSidebar";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
@@ -248,24 +249,42 @@ export default function HotelDetail() {
     propertySlug: string;
     propertyId: string;
   }>();
+  const { propertyDetail } = useSsrData();
   const navigate = useNavigate();
   const slugTail = propertySlug?.split("-").pop() || "";
   const propertyIdFromUrl = Number(propertyId || slugTail) || null;
-  const [hotel, setHotel] = useState<HotelData | null>(null);
-  const [rooms, setRooms] = useState<any[]>([]);
-  const [galleryData, setGalleryData] = useState<GalleryItem[]>([]);
-  const [policies, setPolicies] = useState<PolicyData | null>(null);
-  const [diningItems, setDiningItems] = useState<Restaurant[]>([]);
-  const [bookingPartners, setBookingPartners] = useState<any[]>([]);
+  const ssrHotelDetail =
+    propertyDetail?.propertyType === "hotel" &&
+    propertyDetail?.propertyId === propertyIdFromUrl
+      ? propertyDetail?.pageData
+      : null;
+  const [hotel, setHotel] = useState<HotelData | null>(
+    ssrHotelDetail?.hotel || null,
+  );
+  const [rooms, setRooms] = useState<any[]>(ssrHotelDetail?.rooms || []);
+  const [galleryData, setGalleryData] = useState<GalleryItem[]>(
+    ssrHotelDetail?.galleryData || [],
+  );
+  const [policies, setPolicies] = useState<PolicyData | null>(
+    ssrHotelDetail?.policies || null,
+  );
+  const [diningItems, setDiningItems] = useState<Restaurant[]>(
+    ssrHotelDetail?.diningItems || [],
+  );
+  const [bookingPartners, setBookingPartners] = useState<any[]>(
+    ssrHotelDetail?.bookingPartners || [],
+  );
   const [restaurantPaths, setRestaurantPaths] = useState<
     Record<string, string>
-  >({});
-  const [loading, setLoading] = useState(true);
+  >(ssrHotelDetail?.restaurantPaths || {});
+  const [loading, setLoading] = useState(!ssrHotelDetail);
   const [roomsLoading, setRoomsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
+    ssrHotelDetail?.selectedRoomId || null,
+  );
   const [currentDiningIndex, setCurrentDiningIndex] = useState(0);
   const [currentDiningMediaIndex, setCurrentDiningMediaIndex] = useState(0);
   const [datesInitialized, setDatesInitialized] = useState(false);
@@ -531,6 +550,10 @@ export default function HotelDetail() {
 
   // --- MAIN FETCH FUNCTION ---
   useEffect(() => {
+    if (ssrHotelDetail) {
+      return;
+    }
+
     const fetchPropertyData = async () => {
       if (!propertyIdFromUrl) {
         setError("Invalid ID");
@@ -639,7 +662,7 @@ export default function HotelDetail() {
     };
 
     fetchPropertyData();
-  }, [propertyIdFromUrl]);
+  }, [propertyIdFromUrl, ssrHotelDetail]);
   const fetchRooms = async (propId: number) => {
     try {
       setRoomsLoading(true);
