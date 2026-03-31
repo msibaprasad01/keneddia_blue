@@ -5,6 +5,7 @@ import HeroBanner from "./components/HeroBanner";
 import RestaurantQuickBooking from "./components/RestaurantQuickBooking";
 import RestaurantProperties from "./components/RestaurantProperties";
 import RestaurantOffers from "./components/RestaurantOffers";
+import RestaurantBestSellers from "./components/RestaurantBestSellers";
 import CuisineCategories from "./components/CuisineCategories";
 import AboutRestaurant from "./components/AboutRestaurant";
 import PerformanceMetrics from "./components/PerformanceMetrics";
@@ -62,6 +63,8 @@ export default function RestaurantHomepage() {
         <AboutRestaurant />
 
         <RestaurantOffers />
+
+        <RestaurantBestSellers />
 
         {/* Events Schedule */}
         <EventsSchedule />

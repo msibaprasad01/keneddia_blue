@@ -250,6 +250,19 @@ export default function EventsSchedule() {
               <div className="absolute bottom-[-18px] right-8 h-36 w-36 rounded-full bg-amber-200/35 blur-3xl" />
               <div className="absolute bottom-10 left-8 h-24 w-24 rounded-full bg-sky-200/25 blur-3xl" />
               <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5" />
+
+              <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                <Users className="h-8 w-8 text-primary/60" />
+                <p className="font-serif text-sm font-semibold text-foreground/80">
+                  Planning something bigger?
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Reach out for private dining, festive reservations, and custom group experiences tailored to your event.
+                </p>
+                <Button className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold">
+                  Enquire Now
+                </Button>
+              </div>
             </div>
           </div>
         </div>
