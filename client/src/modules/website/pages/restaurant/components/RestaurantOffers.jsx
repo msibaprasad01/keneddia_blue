@@ -2,26 +2,25 @@ import { useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  Clock,
   ExternalLink,
   MapPin,
-  Tag,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { motion } from "framer-motion";
 
-import { Button } from "@/components/ui/button";
 import { siteContent } from "@/data/siteContent";
 
 import "swiper/css";
 
 function OfferCard({ offer, index }) {
-  const media = offer.image;
-  const isVideo = media?.type === "VIDEO";
-  const isReel =
-    !!media?.width && !!media?.height && media.width / media.height <= 0.85;
-  const showFullMedia = isVideo || isReel;
+  const accentStyles = [
+    "from-[#9e003f] via-[#b10046] to-[#7f0033] text-white",
+    "from-[#ffb400] via-[#ffcb45] to-[#ffab00] text-[#2f1f00]",
+    "from-[#b0004b] via-[#cb0055] to-[#8a003b] text-white",
+    "from-[#ffb000] via-[#ffc73a] to-[#f59e0b] text-[#2f1f00]",
+  ];
+  const accentClass = accentStyles[index % accentStyles.length];
 
   return (
     <motion.div
@@ -29,95 +28,43 @@ function OfferCard({ offer, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.08 }}
-      className="group relative flex h-[520px] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
+      className={`group relative flex h-[148px] cursor-pointer flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-r p-4 shadow-[0_14px_28px_-18px_rgba(0,0,0,0.45)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-18px_rgba(0,0,0,0.55)] ${accentClass}`}
     >
-      <div
-        className={`relative overflow-hidden bg-card ${
-          showFullMedia ? "h-full" : "h-[280px]"
-        }`}
-      >
-        {isVideo ? (
-          <video
-            src={media?.src}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
-        ) : (
-          <img
-            src={media?.src}
-            alt={media?.alt || offer.title}
-            className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-          />
-        )}
-
-        <div className="absolute left-3 top-3 z-10 rounded bg-black/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-          Offer
-        </div>
-
-        <div className="absolute right-3 top-3 z-10 rounded-full bg-primary px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white shadow-md">
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-3 w-3" />
-            <span>{offer.location}</span>
-          </div>
-        </div>
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/30 blur-2xl" />
+        <div className="absolute -bottom-10 left-4 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
       </div>
 
-      {showFullMedia ? (
-        <div className="absolute inset-0 z-20 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/20 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <div className="mb-3">
-            <h3 className="line-clamp-2 text-sm font-bold text-white">
-              {offer.title}
-            </h3>
-            <p className="mt-1 line-clamp-2 text-[10px] text-white/80">
-              {offer.description}
-            </p>
-          </div>
-          <a href={offer.link || "#"} target="_blank" rel="noopener noreferrer">
-            <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-primary/90">
-              {offer.ctaText || "View Offer"}
-              <ExternalLink className="ml-2 h-3.5 w-3.5" />
-            </Button>
-          </a>
+      <a
+        href={offer.link || "#"}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute right-4 top-4 z-20"
+        aria-label={offer.ctaText || "View Offer"}
+      >
+        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/15 text-current backdrop-blur-md transition-colors hover:bg-white hover:text-black">
+          <ExternalLink className="h-4 w-4" />
         </div>
-      ) : (
-        <div className="flex flex-1 flex-col p-4">
-          <h3 className="line-clamp-2 font-serif text-sm font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
-            {offer.title}
-          </h3>
+      </a>
 
-          <div className="mt-2 flex items-center gap-1.5 text-muted-foreground">
-            <Tag size={12} className="text-primary" />
-            <span className="text-[11px] font-medium italic uppercase">
-              {offer.couponCode || "Exclusive Offer"}
-            </span>
+      <div className="relative z-10 min-w-0">
+        {offer.location && (
+          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white/16 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] backdrop-blur-md ring-1 ring-white/20">
+            <MapPin className="h-3 w-3" />
+            {offer.location}
           </div>
+        )}
 
-          {offer.availableHours && (
-            <div className="mt-2 flex items-center gap-1.5 text-muted-foreground">
-              <Clock size={12} className="text-primary" />
-              <span className="text-[11px] font-medium italic uppercase">
-                {offer.availableHours}
-              </span>
-            </div>
-          )}
+        <h3 className="line-clamp-2 text-lg font-black leading-[1.1] tracking-tight">
+          {offer.title}
+        </h3>
 
-          <p className="mt-3 line-clamp-3 text-[11px] italic text-muted-foreground">
-            {offer.description}
-          </p>
+        <p className="mt-2 line-clamp-2 text-[13px] leading-snug opacity-90">
+          {offer.description}
+        </p>
+      </div>
 
-          <div className="mt-auto border-t border-muted pt-4">
-            <a href={offer.link || "#"} target="_blank" rel="noopener noreferrer">
-              <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-primary/90">
-                {offer.ctaText || "View Offer"}
-                <ExternalLink className="ml-2 h-3.5 w-3.5" />
-              </Button>
-            </a>
-          </div>
-        </div>
-      )}
+      <div className="relative z-10 mt-4 border-t border-white/20 pt-3" />
     </motion.div>
   );
 }
@@ -131,20 +78,25 @@ export default function RestaurantOffers() {
   return (
     <section id="offers" className="bg-muted py-10">
       <div className="container mx-auto px-6">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-serif">
-            {siteContent?.text?.dailyOffers?.title || "Restaurant Offers"}
-          </h2>
-          <div className="flex gap-2">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
+              Curated Savings
+            </span>
+            <h2 className="text-2xl font-serif md:text-3xl">
+              {siteContent?.text?.dailyOffers?.title || "Restaurant Offers"}
+            </h2>
+          </div>
+          <div className="flex gap-2 self-start md:self-auto">
             <button
               onClick={() => swiper?.slidePrev()}
-              className="rounded-full p-2 transition-colors hover:bg-white/50"
+              className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-white/50"
             >
               <ChevronLeft size={20} />
             </button>
             <button
               onClick={() => swiper?.slideNext()}
-              className="rounded-full p-2 transition-colors hover:bg-white/50"
+              className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-white/50"
             >
               <ChevronRight size={20} />
             </button>
@@ -157,7 +109,7 @@ export default function RestaurantOffers() {
           spaceBetween={16}
           breakpoints={{
             640: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
+            768: { slidesPerView: 2.2 },
             1200: { slidesPerView: 4 },
           }}
           autoplay={{
