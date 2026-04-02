@@ -1,0 +1,253 @@
+@layer components {
+  .website-shell {
+    @apply relative min-h-screen overflow-x-hidden bg-background text-foreground;
+  }
+
+  .website-page-container {
+    @apply container mx-auto px-4 md:px-8 lg:px-12;
+  }
+
+  .website-section-divider {
+    @apply border-b border-section-divider;
+  }
+
+  .website-section-heading {
+    @apply mb-6 text-2xl font-serif font-bold md:text-3xl;
+  }
+
+  .website-floating-cta {
+    @apply fixed bottom-8 right-8 z-50 flex cursor-pointer items-center gap-4 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-6 py-3 shadow-[0_4px_20px_rgba(251,191,36,0.4)] ring-1 ring-amber-500/30 backdrop-blur-md transition-all duration-300 hover:scale-105 hover:shadow-[0_6px_28px_rgba(251,191,36,0.6)] hover:ring-amber-500/50;
+  }
+
+  .website-floating-cta-copy {
+    @apply flex flex-col items-start bg-transparent;
+  }
+
+  .website-floating-cta-badge {
+    @apply mb-1 text-[10px] font-semibold uppercase leading-none tracking-widest text-gray-700;
+  }
+
+  .website-floating-cta-title {
+    @apply whitespace-nowrap text-sm font-medium text-gray-900;
+  }
+
+  .website-floating-cta-icon {
+    @apply flex h-8 w-8 items-center justify-center rounded-full bg-gray-900/20 transition-colors group-hover:bg-gray-900/30;
+  }
+
+  .site-nav-shell {
+    @apply fixed left-0 right-0 top-0 z-50 transition-all duration-300;
+  }
+
+  .site-nav-container {
+    @apply container mx-auto px-4 xl:px-12;
+  }
+
+  .site-nav-row {
+    @apply flex h-16 items-center justify-between;
+  }
+
+  .site-nav-link {
+    @apply relative flex cursor-pointer items-center gap-1 whitespace-nowrap px-2 py-2 text-xs font-medium transition-colors xl:px-3 xl:text-sm;
+  }
+
+  .site-nav-dropdown {
+    @apply absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-lg border border-border/50 bg-card shadow-xl;
+  }
+
+  .site-nav-dropdown-link {
+    @apply block cursor-pointer px-6 py-3 text-sm text-foreground/80 transition-colors hover:bg-primary/10 hover:text-primary;
+  }
+
+  .site-nav-action-link {
+    @apply flex cursor-pointer items-center gap-1.5 whitespace-nowrap px-3 py-2 text-xs font-medium transition-colors 2xl:px-5 2xl:text-sm;
+  }
+
+  .site-nav-quickbook-trigger {
+    @apply flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition-all hover:bg-primary hover:text-primary-foreground 2xl:px-4 2xl:text-sm;
+  }
+
+  .site-nav-quickbook-panel {
+    @apply invisible absolute right-0 mt-2 w-56 origin-top-right cursor-pointer overflow-hidden rounded-xl border border-border bg-card opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:opacity-100;
+  }
+
+  .site-nav-quickbook-option {
+    @apply block w-full cursor-pointer px-4 py-3 text-left text-sm text-foreground transition-colors hover:bg-primary/10 hover:text-primary;
+  }
+
+  .site-mobile-menu {
+    @apply overflow-hidden border-t border-border/10 bg-background/95 backdrop-blur-md xl:hidden;
+  }
+
+  .site-mobile-link {
+    @apply block cursor-pointer border-b border-border/5 px-4 py-3 text-sm font-medium transition-colors;
+  }
+
+  .site-mobile-login {
+    @apply flex items-center justify-center gap-2 rounded-full border bg-transparent py-2.5 text-sm font-medium transition-all;
+  }
+
+  .site-mobile-submenu-link {
+    @apply block cursor-pointer px-6 py-2.5 text-sm text-foreground/70 transition-colors hover:bg-accent/10 hover:text-primary;
+  }
+
+  .footer-shell {
+    @apply border-t border-border bg-white text-foreground;
+  }
+
+  .footer-main {
+    @apply container mx-auto px-6 py-16 lg:px-12;
+  }
+
+  .footer-grid {
+    @apply grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .footer-brand {
+    @apply flex flex-col items-center space-y-6 md:items-start;
+  }
+
+  .footer-social-row {
+    @apply flex items-center gap-4 border-t border-border pt-4;
+  }
+
+  .footer-social-link {
+    @apply flex h-9 w-9 items-center justify-center text-[#4B5563] transition-colors hover:text-[#B11226];
+  }
+
+  .footer-heading {
+    @apply mb-6 text-sm font-bold uppercase tracking-wider text-[#1F2937];
+  }
+
+  .footer-link {
+    @apply block text-sm text-[#374151] transition-colors hover:text-[#B11226];
+  }
+
+  .footer-bottom {
+    @apply border-t border-border bg-black/5;
+  }
+
+  .footer-bottom-row {
+    @apply flex flex-col items-center justify-between gap-4 md:flex-row;
+  }
+
+  .footer-meta-text {
+    @apply text-sm text-[#4B5563] transition-colors hover:text-[#B11226];
+  }
+
+  .footer-scrolltop {
+    @apply fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border-2 border-border bg-card text-foreground shadow-lg transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 hover:border-primary hover:bg-primary/5 hover:text-primary;
+  }
+
+  .stay-search-panel {
+    @apply mb-8 rounded-xl border border-border bg-card p-3 shadow-sm;
+  }
+
+  .stay-search-row {
+    @apply flex flex-col gap-3 lg:flex-row lg:items-center;
+  }
+
+  .stay-search-group {
+    @apply rounded-lg bg-secondary/5 p-3;
+  }
+
+  .stay-search-label {
+    @apply mb-1 text-[10px] font-semibold uppercase text-muted-foreground;
+  }
+
+  .stay-search-trigger {
+    @apply flex items-center gap-2 text-sm font-medium hover:text-primary;
+  }
+
+  .stay-stepper-btn {
+    @apply flex h-8 w-8 items-center justify-center rounded-full border;
+  }
+
+  .stay-search-cta {
+    @apply w-full px-8 py-4 text-sm font-bold uppercase tracking-wider lg:w-auto;
+  }
+
+  .hotel-breadcrumb {
+    @apply mb-6 flex items-center gap-2 text-sm text-muted-foreground;
+  }
+
+  .hotel-breadcrumb-link {
+    @apply transition-colors hover:text-foreground;
+  }
+
+  .hotel-page-grid {
+    @apply grid grid-cols-1 gap-6 py-8 lg:grid-cols-[1fr_340px] lg:gap-8;
+  }
+
+  .hotel-section {
+    @apply scroll-mt-32 border-t pt-10;
+  }
+
+  .hotel-pill {
+    @apply inline-flex items-center rounded-full bg-stone-100 px-4 py-2 text-sm font-medium text-foreground;
+  }
+
+  .hotel-card {
+    @apply rounded-xl border border-border bg-card shadow-sm;
+  }
+
+  .hotel-empty-state {
+    @apply rounded-xl border border-dashed border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground;
+  }
+
+  .hotel-carousel-nav {
+    @apply absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-white/90 p-2 shadow-md transition-all hover:bg-primary hover:text-white;
+  }
+
+  .hotel-policy-panel {
+    @apply rounded-xl border bg-white p-6 shadow-sm md:p-8;
+  }
+
+  .hotel-policy-box {
+    @apply rounded-lg border border-border/60 bg-muted/20 px-4 py-4;
+  }
+
+  .hotel-amenity-row {
+    @apply flex items-center gap-3;
+  }
+
+  .hotel-amenity-icon {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-red-500;
+  }
+
+  .hotel-sidebar {
+    @apply sticky top-24 space-y-6;
+  }
+
+  .hotel-sidebar-card {
+    @apply rounded-xl border border-border bg-card p-5 shadow-sm;
+  }
+
+  .hotel-sidebar-card-strong {
+    @apply relative overflow-hidden rounded-xl border bg-card p-5 text-left shadow-lg transition-all;
+  }
+
+  .hotel-sidebar-link {
+    @apply cursor-pointer text-[10px] font-normal text-primary hover:underline;
+  }
+
+  .hotel-sidebar-map-card {
+    @apply overflow-hidden rounded-2xl border border-border shadow-md;
+  }
+
+  .hotel-sidebar-map-footer {
+    @apply flex gap-2 border-t border-border bg-card p-3;
+  }
+
+  .hotel-sidebar-map-action {
+    @apply inline-flex items-center justify-center rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+  }
+
+  .hotel-partner-link {
+    @apply flex items-center gap-2 rounded-lg border border-border bg-secondary/10 px-3 py-2 transition-all hover:bg-secondary/20;
+  }
+
+  .hotel-whatsapp-button {
+    @apply h-12 w-full gap-2 border-[#25D366]/30 text-[#25D366] font-bold shadow-sm hover:bg-[#25D366]/10 hover:text-[#25D366];
+  }
+}

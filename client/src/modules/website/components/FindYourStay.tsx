@@ -77,19 +77,19 @@ export default function FindYourStay({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border border-border rounded-xl p-3 shadow-sm mb-8"
+      className="stay-search-panel"
     >
-      <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
+      <div className="stay-search-row">
         {/* ================= DATE PICKER ================= */}
-        <div className="flex-1 grid grid-cols-2 gap-3 bg-secondary/5 rounded-lg p-3">
+        <div className="stay-search-group flex-1 grid grid-cols-2 gap-3">
           {/* Check-in */}
           <div className="flex flex-col">
-            <span className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">
+            <span className="stay-search-label">
               Check-in
             </span>
             <Popover>
               <PopoverTrigger asChild>
-                <button className="flex items-center gap-2 text-sm font-medium hover:text-primary">
+                <button className="stay-search-trigger">
                   <CalendarIcon className="w-4 h-4 text-primary" />
                   {startDate ? format(startDate, "EEE, dd MMM") : "Select"}
                 </button>
@@ -107,10 +107,10 @@ export default function FindYourStay({
 
           {/* Check-out */}
           <div className="flex flex-col border-l border-border/10 pl-3">
-            <span className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">
+            <span className="stay-search-label">
               Check-out
             </span>
-            <div className="flex items-center gap-2 text-sm font-medium">
+            <div className="stay-search-trigger">
               <CalendarIcon className="w-4 h-4 text-primary" />
               {endDate ? format(endDate, "EEE, dd MMM") : "Select"}
             </div>
@@ -118,14 +118,14 @@ export default function FindYourStay({
         </div>
 
         {/* ================= GUESTS ================= */}
-        <div className="flex-1 bg-secondary/5 rounded-lg p-3">
-          <span className="text-[10px] text-muted-foreground uppercase font-semibold mb-1 block">
+        <div className="stay-search-group flex-1">
+          <span className="stay-search-label block">
             Guests & Rooms
           </span>
 
           <Popover open={guestOpen} onOpenChange={setGuestOpen}>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-2 text-sm font-medium w-full hover:text-primary">
+              <button className="stay-search-trigger w-full">
                 <Users className="w-4 h-4 text-primary" />
                 {guests.rooms} Room · {guests.adults} Adults ·{" "}
                 {guests.children} Children
@@ -163,7 +163,7 @@ export default function FindYourStay({
                     <span className="text-sm">{item.label}</span>
                     <div className="flex items-center gap-3">
                       <button
-                        className="w-8 h-8 rounded-full border flex items-center justify-center"
+                        className="stay-stepper-btn"
                         onClick={() =>
                           setGuests((p) => ({
                             ...p,
@@ -177,7 +177,7 @@ export default function FindYourStay({
                         {item.value}
                       </span>
                       <button
-                        className="w-8 h-8 rounded-full border flex items-center justify-center"
+                        className="stay-stepper-btn"
                         onClick={() =>
                           setGuests((p) => ({
                             ...p,
@@ -202,7 +202,7 @@ export default function FindYourStay({
         {/* ================= CTA ================= */}
         <div>
           <Button
-            className="w-full lg:w-auto px-8 py-4 text-sm font-bold uppercase tracking-wider"
+            className="stay-search-cta"
             onClick={handleUpdateStay}
             disabled={!startDate || !endDate || isApplying}
           >

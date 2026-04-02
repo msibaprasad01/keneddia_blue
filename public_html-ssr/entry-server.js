@@ -1684,9 +1684,9 @@ function Navbar$1({
     }
   };
   const navbarClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white dark:bg-background/95 dark:backdrop-blur-sm shadow-md py-2 border-b border-border/10" : "bg-white/10 backdrop-blur-[2px] shadow-md xl:shadow-none py-2 xl:py-4"}`;
-  return /* @__PURE__ */ jsxs("nav", { className: navbarClasses, children: [
-    /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-4 xl:px-12", children: [
-      /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between h-16", children: [
+  return /* @__PURE__ */ jsxs("nav", { className: `${navbarClasses} site-nav-shell`, children: [
+    /* @__PURE__ */ jsxs("div", { className: "site-nav-container", children: [
+      /* @__PURE__ */ jsxs("div", { className: "site-nav-row", children: [
         /* @__PURE__ */ jsx("div", { className: "flex items-center gap-2 xl:gap-4", children: /* @__PURE__ */ jsx("div", { className: "flex items-center justify-start flex-shrink-0 bg-transparent", children: /* @__PURE__ */ jsxs(
           Link,
           {
@@ -1728,15 +1728,15 @@ function Navbar$1({
         )) }),
         /* @__PURE__ */ jsxs("div", { className: "hidden xl:flex items-center justify-end gap-2 2xl:gap-3 w-auto", children: [
           showQuickBook && /* @__PURE__ */ jsxs("div", { className: "relative group", children: [
-            /* @__PURE__ */ jsxs("button", { className: "flex items-center gap-1.5 px-3 2xl:px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-xs 2xl:text-sm font-medium rounded-full hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer whitespace-nowrap", children: [
+            /* @__PURE__ */ jsxs("button", { className: "site-nav-quickbook-trigger", children: [
               /* @__PURE__ */ jsx("span", { children: "Quick Book" }),
               /* @__PURE__ */ jsx(ChevronDown, { className: "w-3.5 h-3.5 2xl:w-4 2xl:h-4" })
             ] }),
-            /* @__PURE__ */ jsx("div", { className: "absolute right-0 mt-2 w-56 bg-card border border-border shadow-xl rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right cursor-pointer", children: /* @__PURE__ */ jsx("div", { className: "py-1", children: QUICK_BOOKING_OPTIONS.map((option, index) => /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx("div", { className: "site-nav-quickbook-panel", children: /* @__PURE__ */ jsx("div", { className: "py-1", children: QUICK_BOOKING_OPTIONS.map((option, index) => /* @__PURE__ */ jsx(
               "button",
               {
                 onClick: () => openBooking(option.category),
-                className: "block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer",
+                className: "site-nav-quickbook-option",
                 children: option.label
               },
               index
@@ -1746,7 +1746,7 @@ function Navbar$1({
             Link,
             {
               to: "/login",
-              className: `flex items-center gap-1.5 px-3 2xl:px-5 py-2 transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap cursor-pointer ${transparentMode ? transparentTextClass : "text-foreground/80 hover:text-primary"}`,
+              className: `site-nav-action-link ${transparentMode ? transparentTextClass : "text-foreground/80 hover:text-primary"}`,
               children: [
                 /* @__PURE__ */ jsx(LogIn, { className: "w-3.5 h-3.5 2xl:w-4 2xl:h-4" }),
                 "LOGIN"
@@ -1847,7 +1847,7 @@ function NavItem({
         {
           to: item.href,
           onClick: (e) => handleHashLink(e, item.href),
-          className: `flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${isActive ? "text-primary" : transparentMode ? transparentTextClass : "text-foreground hover:text-primary"}`,
+          className: `site-nav-link ${isActive ? "text-primary" : transparentMode ? transparentTextClass : "text-foreground hover:text-primary"}`,
           children: item.label
         }
       ),
@@ -1864,7 +1864,7 @@ function NavItem({
         /* @__PURE__ */ jsxs(
           "button",
           {
-            className: `flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${isActive ? "text-primary" : transparentMode ? transparentTextClass : "text-foreground hover:text-primary"}`,
+            className: `site-nav-link ${isActive ? "text-primary" : transparentMode ? transparentTextClass : "text-foreground hover:text-primary"}`,
             children: [
               item.label,
               /* @__PURE__ */ jsx(ChevronDown, { className: "w-3.5 h-3.5 xl:w-4 xl:h-4" })
@@ -1896,7 +1896,7 @@ function DropdownMenu({ items, handleHashLink }) {
       animate: { opacity: 1, y: 0 },
       exit: { opacity: 0, y: -10 },
       transition: { duration: 0.2 },
-      className: "absolute top-full mt-2 bg-card border border-border/50 shadow-xl rounded-lg overflow-hidden right-0 w-64",
+      className: "site-nav-dropdown",
       children: /* @__PURE__ */ jsx("div", { className: "py-2", children: items.map(
         (subItem, idx) => subItem.external ? /* @__PURE__ */ jsx(
           "a",
@@ -1904,7 +1904,7 @@ function DropdownMenu({ items, handleHashLink }) {
             href: subItem.href,
             target: "_blank",
             rel: "noopener noreferrer",
-            className: "block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer",
+            className: "site-nav-dropdown-link",
             children: subItem.label
           },
           idx
@@ -1913,7 +1913,7 @@ function DropdownMenu({ items, handleHashLink }) {
           {
             to: subItem.href,
             onClick: (e) => handleHashLink(e, subItem.href),
-            className: "block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer",
+            className: "site-nav-dropdown-link",
             children: subItem.label
           },
           idx
@@ -1971,7 +1971,7 @@ function MobileMenu({
       animate: { opacity: 1, height: "auto" },
       exit: { opacity: 0, height: 0 },
       transition: { duration: 0.3 },
-      className: "xl:hidden border-t border-border/10 overflow-hidden bg-background/95 backdrop-blur-md",
+      className: "site-mobile-menu",
       children: /* @__PURE__ */ jsxs("div", { className: "py-4 max-h-[70vh] overflow-y-auto", children: [
         navItems.map(
           (item) => item.type === "link" ? /* @__PURE__ */ jsx(
@@ -1979,7 +1979,7 @@ function MobileMenu({
             {
               to: item.href,
               onClick: (e) => handleHashLink(e, item.href),
-              className: `block px-4 py-3 text-sm font-medium transition-colors border-b border-border/5 cursor-pointer ${transparentMode ? `${transparentTextClass} hover:bg-accent` : "text-foreground hover:bg-accent hover:text-primary"}`,
+              className: `site-mobile-link ${transparentMode ? `${transparentTextClass} hover:bg-accent` : "text-foreground hover:bg-accent hover:text-primary"}`,
               children: item.label
             },
             item.key
@@ -2001,7 +2001,7 @@ function MobileMenu({
           {
             to: "/login",
             onClick: (e) => handleHashLink(e, "/login"),
-            className: `flex items-center justify-center gap-2 py-2.5 bg-transparent border text-sm font-medium rounded-full transition-all cursor-pointer ${transparentMode ? transparentBorderClass : "border-border/20 text-foreground hover:border-primary hover:text-primary hover:bg-primary/10"}`,
+            className: `site-mobile-login ${transparentMode ? transparentBorderClass : "border-border/20 text-foreground hover:border-primary hover:text-primary hover:bg-primary/10"}`,
             children: [
               /* @__PURE__ */ jsx(LogIn, { className: "w-4 h-4" }),
               "LOGIN"
@@ -2056,7 +2056,7 @@ function MobileDropdown({
               href: subItem.href,
               target: "_blank",
               rel: "noopener noreferrer",
-              className: "block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer",
+              className: "site-mobile-submenu-link",
               children: subItem.label
             },
             idx
@@ -2065,7 +2065,7 @@ function MobileDropdown({
             {
               to: subItem.href,
               onClick: (e) => handleHashLink(e, subItem.href),
-              className: "block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer",
+              className: "site-mobile-submenu-link",
               children: subItem.label
             },
             idx
@@ -3283,9 +3283,9 @@ function Footer() {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  return /* @__PURE__ */ jsxs("footer", { className: "bg-white text-foreground border-t border-border", children: [
-    /* @__PURE__ */ jsx("div", { className: "container mx-auto px-6 lg:px-12 py-16", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12", children: [
-      /* @__PURE__ */ jsxs("div", { className: "space-y-6 flex flex-col items-center md:items-start", children: [
+  return /* @__PURE__ */ jsxs("footer", { className: "footer-shell", children: [
+    /* @__PURE__ */ jsx("div", { className: "footer-main", children: /* @__PURE__ */ jsxs("div", { className: "footer-grid", children: [
+      /* @__PURE__ */ jsxs("div", { className: "footer-brand", children: [
         /* @__PURE__ */ jsx(Link, { to: "/", onClick: handleLinkClick, className: "inline-block", children: /* @__PURE__ */ jsxs("div", { className: "relative", children: [
           /* @__PURE__ */ jsx(
             "img",
@@ -3304,7 +3304,7 @@ function Footer() {
             }
           )
         ] }) }),
-        /* @__PURE__ */ jsx("div", { className: "flex items-center gap-4 pt-4 border-t border-border", children: socialLinks.map((social) => /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx("div", { className: "footer-social-row", children: socialLinks.map((social) => /* @__PURE__ */ jsx(
           "a",
           {
             href: social.href,
@@ -3312,27 +3312,27 @@ function Footer() {
             target: "_blank",
             rel: "noopener noreferrer",
             "aria-label": social.label,
-            className: "w-9 h-9 flex items-center justify-center text-[#4B5563] hover:text-[#B11226] transition-colors",
+            className: "footer-social-link",
             children: /* @__PURE__ */ jsx(social.icon, { className: "w-5 h-5", strokeWidth: 1.5 })
           },
           social.label
         )) })
       ] }),
       footerSections.map((section, index) => /* @__PURE__ */ jsxs("div", { children: [
-        /* @__PURE__ */ jsx("h3", { className: "text-[#1F2937] font-bold text-sm mb-6 uppercase tracking-wider", children: section.title }),
+        /* @__PURE__ */ jsx("h3", { className: "footer-heading", children: section.title }),
         /* @__PURE__ */ jsx("ul", { className: "space-y-3", children: section.links.map((link, linkIndex) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
           Link,
           {
             to: link.href,
             onClick: handleLinkClick,
-            className: "text-sm text-[#374151] hover:text-[#B11226] transition-colors block",
+            className: "footer-link",
             children: link.label
           }
         ) }, linkIndex)) })
       ] }, index))
     ] }) }),
-    /* @__PURE__ */ jsx("div", { className: "bg-black/5 border-t border-border", children: /* @__PURE__ */ jsx("div", { className: "container mx-auto px-6 lg:px-12 py-4", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col md:flex-row items-center justify-between gap-4", children: [
-      /* @__PURE__ */ jsxs("p", { className: "text-sm text-[#4B5563]", children: [
+    /* @__PURE__ */ jsx("div", { className: "footer-bottom", children: /* @__PURE__ */ jsx("div", { className: "container mx-auto px-6 py-4 lg:px-12", children: /* @__PURE__ */ jsxs("div", { className: "footer-bottom-row", children: [
+      /* @__PURE__ */ jsxs("p", { className: "footer-meta-text", children: [
         "© ",
         (/* @__PURE__ */ new Date()).getFullYear(),
         " ",
@@ -3344,7 +3344,7 @@ function Footer() {
         {
           to: link.href,
           onClick: handleLinkClick,
-          className: "text-sm text-[#4B5563] hover:text-[#B11226] transition-colors",
+          className: "footer-meta-text",
           children: link.label
         },
         index
@@ -3354,7 +3354,7 @@ function Footer() {
       "button",
       {
         onClick: scrollToTop,
-        className: "fixed bottom-8 right-8 w-12 h-12 bg-card border-2 border-border rounded-full flex items-center justify-center text-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-300 shadow-lg z-40 animate-in fade-in slide-in-from-bottom-4",
+        className: "footer-scrolltop",
         "aria-label": "Scroll to top",
         children: /* @__PURE__ */ jsx(ArrowUp, { className: "w-5 h-5", strokeWidth: 2 })
       }
@@ -5220,7 +5220,7 @@ function Home() {
       businessSection.scrollIntoView({ behavior: "smooth" });
     }
   };
-  return /* @__PURE__ */ jsxs("div", { className: "relative min-h-screen bg-background text-foreground overflow-x-hidden", children: [
+  return /* @__PURE__ */ jsxs("div", { className: "website-shell", children: [
     /* @__PURE__ */ jsx(
       "div",
       {
@@ -5258,7 +5258,7 @@ function Home() {
         "section",
         {
           id: "daily-offers",
-          className: "border-b border-section-divider",
+          className: "website-section-divider",
           "data-ssr-section": "daily-offers",
           "data-ssr-count": debug.dailyOffers,
           children: /* @__PURE__ */ jsx(DailyOffers$1, { initialOffers: home?.dailyOffers })
@@ -5268,7 +5268,7 @@ function Home() {
         "section",
         {
           id: "properties",
-          className: "border-b border-section-divider",
+          className: "website-section-divider",
           "data-ssr-section": "properties",
           "data-ssr-count": debug.properties,
           children: /* @__PURE__ */ jsx(PropertiesSection, { initialProperties: home?.properties })
@@ -5278,7 +5278,7 @@ function Home() {
         "section",
         {
           id: "about",
-          className: "border-b border-section-divider",
+          className: "website-section-divider",
           "data-ssr-section": "about",
           "data-ssr-count": debug.about,
           "data-ssr-ventures-count": debug.aboutVentures,
@@ -5290,7 +5290,7 @@ function Home() {
         "section",
         {
           id: "business",
-          className: "border-b border-section-divider",
+          className: "website-section-divider",
           "data-ssr-section": "business",
           "data-ssr-count": debug.business,
           children: /* @__PURE__ */ jsx(BusinessVerticals, { initialData: home?.businessData })
@@ -5300,7 +5300,7 @@ function Home() {
         "section",
         {
           id: "events",
-          className: "border-b border-section-divider",
+          className: "website-section-divider",
           "data-ssr-section": "events",
           "data-ssr-count": debug.events,
           children: /* @__PURE__ */ jsx(EventsSection, { initialEvents: home?.eventsData })
@@ -5310,7 +5310,7 @@ function Home() {
         "section",
         {
           id: "news",
-          className: "border-b border-section-divider",
+          className: "website-section-divider",
           "data-ssr-section": "news",
           "data-ssr-count": debug.news,
           children: /* @__PURE__ */ jsx(NewsPress$1, { initialItems: home?.newsData })
@@ -5320,7 +5320,7 @@ function Home() {
         "section",
         {
           id: "story",
-          className: "border-b border-section-divider",
+          className: "website-section-divider",
           "data-ssr-section": "story",
           "data-ssr-count": debug.story,
           "data-ssr-header-count": debug.storyHeader,
@@ -5345,14 +5345,14 @@ function Home() {
         initial: { opacity: 0, x: 50 },
         animate: { opacity: 1, x: 0 },
         transition: { delay: 1.5, duration: 0.8, type: "spring" },
-        className: "fixed bottom-8 right-8 z-50 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 shadow-[0_4px_20px_rgba(251,191,36,0.4)] cursor-pointer hover:shadow-[0_6px_28px_rgba(251,191,36,0.6)] transition-all duration-300 group ring-1 ring-amber-500/30 hover:ring-amber-500/50 hover:scale-105",
+        className: "website-floating-cta group",
         onClick: handleScrollToBusiness,
         children: [
-          /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-start bg-transparent", children: [
-            /* @__PURE__ */ jsx("span", { className: "text-[10px] font-semibold uppercase tracking-widest text-gray-700 leading-none mb-1", children: "Discover More" }),
-            /* @__PURE__ */ jsx("span", { className: "text-sm font-medium text-gray-900 whitespace-nowrap", children: "Explore Our Diversities" })
+          /* @__PURE__ */ jsxs("div", { className: "website-floating-cta-copy", children: [
+            /* @__PURE__ */ jsx("span", { className: "website-floating-cta-badge", children: "Discover More" }),
+            /* @__PURE__ */ jsx("span", { className: "website-floating-cta-title", children: "Explore Our Diversities" })
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-full bg-gray-900/20 flex items-center justify-center group-hover:bg-gray-900/30 transition-colors", children: /* @__PURE__ */ jsx(ChevronDown, { className: "w-4 h-4 animate-pulse text-gray-900" }) })
+          /* @__PURE__ */ jsx("div", { className: "website-floating-cta-icon", children: /* @__PURE__ */ jsx(ChevronDown, { className: "w-4 h-4 animate-pulse text-gray-900" }) })
         ]
       }
     ),
@@ -14647,13 +14647,13 @@ function FindYourStay({
     {
       initial: { opacity: 0, y: 8 },
       animate: { opacity: 1, y: 0 },
-      className: "bg-card border border-border rounded-xl p-3 shadow-sm mb-8",
-      children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col lg:flex-row gap-3 lg:items-center", children: [
-        /* @__PURE__ */ jsxs("div", { className: "flex-1 grid grid-cols-2 gap-3 bg-secondary/5 rounded-lg p-3", children: [
+      className: "stay-search-panel",
+      children: /* @__PURE__ */ jsxs("div", { className: "stay-search-row", children: [
+        /* @__PURE__ */ jsxs("div", { className: "stay-search-group flex-1 grid grid-cols-2 gap-3", children: [
           /* @__PURE__ */ jsxs("div", { className: "flex flex-col", children: [
-            /* @__PURE__ */ jsx("span", { className: "text-[10px] text-muted-foreground uppercase font-semibold mb-1", children: "Check-in" }),
+            /* @__PURE__ */ jsx("span", { className: "stay-search-label", children: "Check-in" }),
             /* @__PURE__ */ jsxs(Popover, { children: [
-              /* @__PURE__ */ jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsxs("button", { className: "flex items-center gap-2 text-sm font-medium hover:text-primary", children: [
+              /* @__PURE__ */ jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsxs("button", { className: "stay-search-trigger", children: [
                 /* @__PURE__ */ jsx(Calendar$1, { className: "w-4 h-4 text-primary" }),
                 startDate ? format(startDate, "EEE, dd MMM") : "Select"
               ] }) }),
@@ -14669,17 +14669,17 @@ function FindYourStay({
             ] })
           ] }),
           /* @__PURE__ */ jsxs("div", { className: "flex flex-col border-l border-border/10 pl-3", children: [
-            /* @__PURE__ */ jsx("span", { className: "text-[10px] text-muted-foreground uppercase font-semibold mb-1", children: "Check-out" }),
-            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 text-sm font-medium", children: [
+            /* @__PURE__ */ jsx("span", { className: "stay-search-label", children: "Check-out" }),
+            /* @__PURE__ */ jsxs("div", { className: "stay-search-trigger", children: [
               /* @__PURE__ */ jsx(Calendar$1, { className: "w-4 h-4 text-primary" }),
               endDate ? format(endDate, "EEE, dd MMM") : "Select"
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "flex-1 bg-secondary/5 rounded-lg p-3", children: [
-          /* @__PURE__ */ jsx("span", { className: "text-[10px] text-muted-foreground uppercase font-semibold mb-1 block", children: "Guests & Rooms" }),
+        /* @__PURE__ */ jsxs("div", { className: "stay-search-group flex-1", children: [
+          /* @__PURE__ */ jsx("span", { className: "stay-search-label block", children: "Guests & Rooms" }),
           /* @__PURE__ */ jsxs(Popover, { open: guestOpen, onOpenChange: setGuestOpen, children: [
-            /* @__PURE__ */ jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsxs("button", { className: "flex items-center gap-2 text-sm font-medium w-full hover:text-primary", children: [
+            /* @__PURE__ */ jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsxs("button", { className: "stay-search-trigger w-full", children: [
               /* @__PURE__ */ jsx(Users, { className: "w-4 h-4 text-primary" }),
               guests.rooms,
               " Room · ",
@@ -14720,7 +14720,7 @@ function FindYourStay({
                       /* @__PURE__ */ jsx(
                         "button",
                         {
-                          className: "w-8 h-8 rounded-full border flex items-center justify-center",
+                          className: "stay-stepper-btn",
                           onClick: () => setGuests((p) => ({
                             ...p,
                             [item.key]: Math.max(item.min, p[item.key] - 1)
@@ -14732,7 +14732,7 @@ function FindYourStay({
                       /* @__PURE__ */ jsx(
                         "button",
                         {
-                          className: "w-8 h-8 rounded-full border flex items-center justify-center",
+                          className: "stay-stepper-btn",
                           onClick: () => setGuests((p) => ({
                             ...p,
                             [item.key]: p[item.key] + 1
@@ -14752,7 +14752,7 @@ function FindYourStay({
         /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx(
           Button,
           {
-            className: "w-full lg:w-auto px-8 py-4 text-sm font-bold uppercase tracking-wider",
+            className: "stay-search-cta",
             onClick: handleUpdateStay,
             disabled: !startDate || !endDate || isApplying,
             children: isApplying ? /* @__PURE__ */ jsxs(Fragment, { children: [
@@ -15645,11 +15645,11 @@ function RightSidebar({
   const visibleBookingPartners = bookingPartners.filter(
     (partner) => partner?.isActive !== false && partner?.url
   );
-  return /* @__PURE__ */ jsxs("div", { className: "space-y-6 sticky top-24", children: [
+  return /* @__PURE__ */ jsxs("div", { className: "hotel-sidebar", children: [
     /* @__PURE__ */ jsxs(
       "div",
       {
-        className: `bg-card border ${selectedRoom ? "border-primary ring-1 ring-primary" : "border-border"} rounded-xl p-5 shadow-lg relative overflow-hidden transition-all text-left`,
+        className: `hotel-sidebar-card-strong ${selectedRoom ? "border-primary ring-1 ring-primary" : "border-border"}`,
         children: [
           /* @__PURE__ */ jsx("div", { className: "absolute top-0 right-0 p-2 opacity-5", children: /* @__PURE__ */ jsx(Star, { className: "w-24 h-24" }) }),
           /* @__PURE__ */ jsxs("div", { className: "relative z-10 text-left", children: [
@@ -15691,7 +15691,7 @@ function RightSidebar({
         ]
       }
     ),
-    /* @__PURE__ */ jsxs("div", { className: "rounded-2xl overflow-hidden border border-border shadow-md group", children: [
+    /* @__PURE__ */ jsxs("div", { className: "hotel-sidebar-map-card group", children: [
       /* @__PURE__ */ jsxs("div", { className: "h-44 relative w-full overflow-hidden", children: [
         /* @__PURE__ */ jsx(
           "iframe",
@@ -15716,7 +15716,7 @@ function RightSidebar({
           hotel.city
         ] }) })
       ] }),
-      /* @__PURE__ */ jsxs("div", { className: "p-3 bg-card border-t border-border flex gap-2", children: [
+      /* @__PURE__ */ jsxs("div", { className: "hotel-sidebar-map-footer", children: [
         /* @__PURE__ */ jsxs(
           Button,
           {
@@ -15736,20 +15736,20 @@ function RightSidebar({
             href: hotel.coordinates ? `https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name} ${hotel.location}`)}`,
             target: "_blank",
             rel: "noopener noreferrer",
-            className: "inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-border text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
+            className: "hotel-sidebar-map-action",
             title: "Open in Google Maps",
             children: /* @__PURE__ */ jsx(Navigation$1, { className: "w-3 h-3" })
           }
         )
       ] })
     ] }),
-    hotel.rating && /* @__PURE__ */ jsxs("div", { className: "bg-card border border-border rounded-xl p-5 shadow-sm", children: [
+    hotel.rating && /* @__PURE__ */ jsxs("div", { className: "hotel-sidebar-card", children: [
       /* @__PURE__ */ jsxs("h4", { className: "text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between", children: [
         "Guest Reviews",
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: "text-[10px] text-primary cursor-pointer hover:underline font-normal",
+            className: "hotel-sidebar-link",
             onClick: () => scrollToSection("reviews"),
             children: "View All"
           }
@@ -15769,13 +15769,13 @@ function RightSidebar({
         ] })
       ] })
     ] }),
-    hotel.amenities && hotel.amenities.length > 0 && /* @__PURE__ */ jsxs("div", { className: "bg-card border border-border rounded-xl p-5 shadow-sm", children: [
+    hotel.amenities && hotel.amenities.length > 0 && /* @__PURE__ */ jsxs("div", { className: "hotel-sidebar-card", children: [
       /* @__PURE__ */ jsxs("h4", { className: "text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between", children: [
         "Top Amenities",
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: "text-[10px] text-primary cursor-pointer hover:underline font-normal",
+            className: "hotel-sidebar-link",
             onClick: () => scrollToSection("amenities"),
             children: "View All"
           }
@@ -15793,13 +15793,13 @@ function RightSidebar({
         )
       ] }, idx)) })
     ] }),
-    hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && /* @__PURE__ */ jsxs("div", { className: "bg-card border border-border rounded-xl p-5 shadow-sm", children: [
+    hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && /* @__PURE__ */ jsxs("div", { className: "hotel-sidebar-card", children: [
       /* @__PURE__ */ jsxs("h4", { className: "text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between", children: [
         "Nearby",
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: "text-[10px] text-primary cursor-pointer hover:underline font-normal",
+            className: "hotel-sidebar-link",
             onClick: () => scrollToSection("location"),
             children: "Full List"
           }
@@ -15843,7 +15843,7 @@ function RightSidebar({
         )
       ] })
     ] }) }),
-    visibleBookingPartners.length > 0 && /* @__PURE__ */ jsxs("div", { className: "bg-card border border-border rounded-xl p-5 shadow-sm", children: [
+    visibleBookingPartners.length > 0 && /* @__PURE__ */ jsxs("div", { className: "hotel-sidebar-card", children: [
       /* @__PURE__ */ jsx("h4", { className: "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center", children: "View on Other Platforms" }),
       /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center justify-center gap-2", children: visibleBookingPartners.map((partner) => {
         const fallbackLogo = PARTNER_LOGOS[normalizePartnerName(partner.title)] || genericPartnerLogo;
@@ -15854,7 +15854,7 @@ function RightSidebar({
             href: partner.url,
             target: "_blank",
             rel: "noopener noreferrer",
-            className: "group flex items-center gap-2 rounded-lg border border-border bg-secondary/10 px-3 py-2 transition-all hover:bg-secondary/20",
+            className: "hotel-partner-link group",
             title: partner.title || "Booking Partner",
             children: [
               /* @__PURE__ */ jsx("div", { className: "flex h-7 w-12 items-center justify-center overflow-hidden rounded bg-white", children: /* @__PURE__ */ jsx(
@@ -15877,7 +15877,7 @@ function RightSidebar({
       Button,
       {
         variant: "outline",
-        className: "w-full h-12 gap-2 text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10 hover:text-[#25D366] font-bold shadow-sm",
+        className: "hotel-whatsapp-button",
         onClick: () => window.open(
           `https://wa.me/919876543210?text=I'm interested in booking a room at ${hotel.name}`,
           "_blank"
@@ -17280,22 +17280,22 @@ function HotelDetail() {
         galleryData
       }
     ),
-    /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-4 md:px-8 lg:px-12 py-6", children: [
+    /* @__PURE__ */ jsxs("div", { className: "website-page-container py-6", children: [
       /* @__PURE__ */ jsxs(
         motion.nav,
         {
           variants: fadeIn$2,
           initial: "initial",
           animate: "animate",
-          className: "flex items-center gap-2 text-sm text-muted-foreground mb-6",
+          className: "hotel-breadcrumb",
           children: [
-            /* @__PURE__ */ jsx(Link, { to: "/", className: "hover:text-foreground transition-colors", children: "Home" }),
+            /* @__PURE__ */ jsx(Link, { to: "/", className: "hotel-breadcrumb-link", children: "Home" }),
             /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-4 h-4" }),
             /* @__PURE__ */ jsx(
               Link,
               {
                 to: "/hotels",
-                className: "hover:text-foreground transition-colors",
+                className: "hotel-breadcrumb-link",
                 children: "Hotels"
               }
             ),
@@ -17474,14 +17474,14 @@ function HotelDetail() {
         }
       ),
       /* @__PURE__ */ jsx(HotelStickyNav, { sections }),
-      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 lg:gap-8 py-8", children: [
+      /* @__PURE__ */ jsxs("div", { className: "hotel-page-grid", children: [
         /* @__PURE__ */ jsxs("div", { className: "space-y-10", children: [
           /* @__PURE__ */ jsxs("section", { id: "room-options", className: "scroll-mt-32", children: [
-            /* @__PURE__ */ jsx("h2", { className: "text-2xl md:text-3xl font-serif font-bold mb-6", children: "Choose Your Room" }),
+            /* @__PURE__ */ jsx("h2", { className: "website-section-heading", children: "Choose Your Room" }),
             highlightedRoomAmenities.length > 0 && /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-3 mb-6", children: highlightedRoomAmenities.map((amenity) => /* @__PURE__ */ jsx(
               "span",
               {
-                className: "inline-flex items-center rounded-full bg-stone-100 px-4 py-2 text-sm font-medium text-foreground",
+                className: "hotel-pill",
                 children: amenity
               },
               amenity
@@ -17496,7 +17496,7 @@ function HotelDetail() {
               }
             ) : /* @__PURE__ */ jsx("div", { className: "text-center py-12 text-muted-foreground", children: "No rooms available for the selected dates" })
           ] }),
-          /* @__PURE__ */ jsx("section", { id: "about-hotel", className: "scroll-mt-32 border-t pt-10", children: /* @__PURE__ */ jsxs("div", { className: "pb-10", children: [
+          /* @__PURE__ */ jsx("section", { id: "about-hotel", className: "hotel-section", children: /* @__PURE__ */ jsxs("div", { className: "pb-10", children: [
             /* @__PURE__ */ jsxs("h2", { className: "text-2xl md:text-3xl font-serif font-bold mb-4", children: [
               "About ",
               hotel.name
@@ -17505,7 +17505,7 @@ function HotelDetail() {
             aboutAmenitiesPreview.length > 0 && /* @__PURE__ */ jsx("div", { className: "mt-8", children: /* @__PURE__ */ jsx("div", { className: "grid grid-cols-2 gap-3 lg:grid-cols-4", children: aboutAmenitiesPreview.map((amenity, index) => /* @__PURE__ */ jsxs(
               "div",
               {
-                className: "rounded-md border border-border bg-card px-4 py-4 text-center shadow-sm transition-colors hover:border-primary/30",
+                className: "hotel-card px-4 py-4 text-center transition-colors hover:border-primary/30",
                 children: [
                   /* @__PURE__ */ jsx(Star, { className: "mx-auto mb-2 h-4 w-4 text-red-500" }),
                   /* @__PURE__ */ jsx("p", { className: "text-[11px] font-bold uppercase tracking-[0.08em] text-foreground leading-snug", children: amenity })
@@ -17514,14 +17514,14 @@ function HotelDetail() {
               `${amenity}-${index}`
             )) }) })
           ] }) }),
-          /* @__PURE__ */ jsx("section", { id: "events", className: "scroll-mt-32 border-t pt-10", children: /* @__PURE__ */ jsxs(
+          /* @__PURE__ */ jsx("section", { id: "events", className: "hotel-section", children: /* @__PURE__ */ jsxs(
             "div",
             {
               id: "food-dining",
               className: "grid grid-cols-1 xl:grid-cols-2 gap-8",
               children: [
                 /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                  /* @__PURE__ */ jsx("h2", { className: "text-2xl md:text-3xl font-serif font-bold mb-6", children: "Events" }),
+                  /* @__PURE__ */ jsx("h2", { className: "website-section-heading", children: "Events" }),
                   /* @__PURE__ */ jsx(
                     EventSectionPropertySpecific,
                     {
@@ -17532,7 +17532,7 @@ function HotelDetail() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                  /* @__PURE__ */ jsx("h2", { className: "text-2xl md:text-3xl font-serif font-bold mb-6", children: "Food & Dining" }),
+                  /* @__PURE__ */ jsx("h2", { className: "website-section-heading", children: "Food & Dining" }),
                   diningSectionItems.length > 0 ? /* @__PURE__ */ jsxs("div", { className: "relative", children: [
                     /* @__PURE__ */ jsx("div", { className: "overflow-hidden", children: /* @__PURE__ */ jsx(
                       "div",
@@ -17550,7 +17550,7 @@ function HotelDetail() {
                               children: /* @__PURE__ */ jsxs(
                                 "div",
                                 {
-                                  className: `rounded-xl border border-border bg-card overflow-hidden shadow-sm transition-shadow duration-200 ${restaurantPath ? "cursor-pointer hover:shadow-md" : ""}`,
+                                  className: `hotel-card overflow-hidden transition-shadow duration-200 ${restaurantPath ? "cursor-pointer hover:shadow-md" : ""}`,
                                   onClick: () => {
                                     if (restaurantPath)
                                       navigate(restaurantPath);
@@ -17638,7 +17638,7 @@ function HotelDetail() {
                           onClick: () => setCurrentDiningIndex(
                             (prev) => prev === 0 ? diningSectionItems.length - 1 : prev - 1
                           ),
-                          className: "absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all",
+                          className: "hotel-carousel-nav left-2",
                           "aria-label": "Previous dining item",
                           children: /* @__PURE__ */ jsx(ChevronLeft, { className: "w-4 h-4" })
                         }
@@ -17649,7 +17649,7 @@ function HotelDetail() {
                           onClick: () => setCurrentDiningIndex(
                             (prev) => prev === diningSectionItems.length - 1 ? 0 : prev + 1
                           ),
-                          className: "absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all",
+                          className: "hotel-carousel-nav right-2",
                           "aria-label": "Next dining item",
                           children: /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-4 h-4" })
                         }
@@ -17664,28 +17664,28 @@ function HotelDetail() {
                         idx
                       )) })
                     ] })
-                  ] }) : /* @__PURE__ */ jsx("div", { className: "rounded-xl border border-dashed border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground", children: "No food and dining highlights available for this property." })
+                  ] }) : /* @__PURE__ */ jsx("div", { className: "hotel-empty-state", children: "No food and dining highlights available for this property." })
                 ] })
               ]
             }
           ) }),
-          hotel.amenities.length > 0 && /* @__PURE__ */ jsx("section", { id: "amenities", className: "scroll-mt-32 border-t pt-10", children: /* @__PURE__ */ jsxs("div", { className: "pb-10", children: [
-            /* @__PURE__ */ jsx("div", { className: "mb-6 flex items-center justify-between gap-4", children: /* @__PURE__ */ jsx("h2", { className: "text-2xl md:text-3xl font-serif font-bold", children: "Amenities" }) }),
+          hotel.amenities.length > 0 && /* @__PURE__ */ jsx("section", { id: "amenities", className: "hotel-section", children: /* @__PURE__ */ jsxs("div", { className: "pb-10", children: [
+            /* @__PURE__ */ jsx("div", { className: "mb-6 flex items-center justify-between gap-4", children: /* @__PURE__ */ jsx("h2", { className: "website-section-heading mb-0", children: "Amenities" }) }),
             /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-y-6 gap-x-10 sm:grid-cols-2 lg:grid-cols-3", children: hotel.amenities.map((amenity, index) => /* @__PURE__ */ jsxs(
               "div",
               {
-                className: "flex items-center gap-3",
+                className: "hotel-amenity-row",
                 children: [
-                  /* @__PURE__ */ jsx("div", { className: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-red-500", children: /* @__PURE__ */ jsx(Check, { className: "h-4 w-4" }) }),
+                  /* @__PURE__ */ jsx("div", { className: "hotel-amenity-icon", children: /* @__PURE__ */ jsx(Check, { className: "h-4 w-4" }) }),
                   /* @__PURE__ */ jsx("p", { className: "text-base text-foreground", children: amenity })
                 ]
               },
               `${amenity}-${index}`
             )) })
           ] }) }),
-          /* @__PURE__ */ jsx("section", { id: "reviews", className: "scroll-mt-32 border-t pt-10", children: /* @__PURE__ */ jsx(ReviewsSection, { propertyId: propertyIdFromUrl }) }),
-          /* @__PURE__ */ jsxs("section", { id: "location", className: "scroll-mt-32 border-t pt-10", children: [
-            /* @__PURE__ */ jsx("h2", { className: "text-2xl md:text-3xl font-serif font-bold mb-6", children: "Location" }),
+          /* @__PURE__ */ jsx("section", { id: "reviews", className: "hotel-section", children: /* @__PURE__ */ jsx(ReviewsSection, { propertyId: propertyIdFromUrl }) }),
+          /* @__PURE__ */ jsxs("section", { id: "location", className: "hotel-section", children: [
+            /* @__PURE__ */ jsx("h2", { className: "website-section-heading", children: "Location" }),
             /* @__PURE__ */ jsx(
               PropertyMap,
               {
@@ -17694,9 +17694,9 @@ function HotelDetail() {
               }
             )
           ] }),
-          /* @__PURE__ */ jsxs("section", { id: "policies", className: "scroll-mt-32 border-t pt-10", children: [
-            /* @__PURE__ */ jsx("h2", { className: "text-2xl md:text-3xl font-serif font-bold mb-6", children: "Guest Policies" }),
-            /* @__PURE__ */ jsx("div", { className: "bg-white border rounded-xl p-6 md:p-8 shadow-sm", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12", children: [
+          /* @__PURE__ */ jsxs("section", { id: "policies", className: "hotel-section", children: [
+            /* @__PURE__ */ jsx("h2", { className: "website-section-heading", children: "Guest Policies" }),
+            /* @__PURE__ */ jsx("div", { className: "hotel-policy-panel", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12", children: [
               /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
                 /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 text-destructive font-bold text-xs uppercase tracking-widest", children: [
                   /* @__PURE__ */ jsx(Info, { className: "w-4 h-4" }),
@@ -17713,7 +17713,7 @@ function HotelDetail() {
                       /* @__PURE__ */ jsx("span", { children: policies?.checkOutTime || "11:00 AM" })
                     ] })
                   ] }),
-                  /* @__PURE__ */ jsxs("div", { className: "rounded-lg border border-border/60 bg-muted/20 px-4 py-4", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "hotel-policy-box", children: [
                     /* @__PURE__ */ jsx("p", { className: "font-medium text-foreground mb-2", children: "Cancellation Policy" }),
                     /* @__PURE__ */ jsx("p", { className: "leading-relaxed", children: policies?.cancellationPolicy || "Non-refundable for promotional rates" })
                   ] })
@@ -17724,7 +17724,7 @@ function HotelDetail() {
                   /* @__PURE__ */ jsx(Info, { className: "w-4 h-4" }),
                   " OTHER POLICIES"
                 ] }),
-                /* @__PURE__ */ jsx("div", { className: "rounded-lg border border-border/60 bg-muted/20 px-4 py-4", children: /* @__PURE__ */ jsx("ul", { className: "grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2", children: policies?.policies?.map((p) => /* @__PURE__ */ jsxs(
+                /* @__PURE__ */ jsx("div", { className: "hotel-policy-box", children: /* @__PURE__ */ jsx("ul", { className: "grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2", children: policies?.policies?.map((p) => /* @__PURE__ */ jsxs(
                   "li",
                   {
                     className: "flex items-start gap-2 text-foreground",

@@ -244,9 +244,9 @@ export default function Navbar({
   }`;
 
   return (
-    <nav className={navbarClasses}>
-      <div className="container mx-auto px-4 xl:px-12">
-        <div className="flex items-center justify-between h-16">
+    <nav className={`${navbarClasses} site-nav-shell`}>
+      <div className="site-nav-container">
+        <div className="site-nav-row">
           {/* Logo Section */}
           <div className="flex items-center gap-2 xl:gap-4">
             <div className="flex items-center justify-start flex-shrink-0 bg-transparent">
@@ -296,17 +296,17 @@ export default function Navbar({
           <div className="hidden xl:flex items-center justify-end gap-2 2xl:gap-3 w-auto">
             {showQuickBook && (
               <div className="relative group">
-                <button className="flex items-center gap-1.5 px-3 2xl:px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-xs 2xl:text-sm font-medium rounded-full hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer whitespace-nowrap">
+                <button className="site-nav-quickbook-trigger">
                   <span>Quick Book</span>
                   <ChevronDown className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
                 </button>
-                <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-xl rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right cursor-pointer">
+                <div className="site-nav-quickbook-panel">
                   <div className="py-1">
                     {QUICK_BOOKING_OPTIONS.map((option, index) => (
                       <button
                         key={index}
                         onClick={() => openBooking(option.category)}
-                        className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+                        className="site-nav-quickbook-option"
                       >
                         {option.label}
                       </button>
@@ -318,7 +318,7 @@ export default function Navbar({
 
             <Link
               to="/login"
-              className={`flex items-center gap-1.5 px-3 2xl:px-5 py-2 transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap cursor-pointer ${
+              className={`site-nav-action-link ${
                 transparentMode
                   ? transparentTextClass
                   : "text-foreground/80 hover:text-primary"
@@ -447,7 +447,7 @@ function NavItem({
         <Link
           to={item.href}
           onClick={(e) => handleHashLink(e, item.href)}
-          className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${
+          className={`site-nav-link ${
             isActive
               ? "text-primary"
               : transparentMode
@@ -469,7 +469,7 @@ function NavItem({
       onMouseLeave={() => setActiveDropdown(null)}
     >
       <button
-        className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${
+        className={`site-nav-link ${
           isActive
             ? "text-primary"
             : transparentMode
@@ -519,7 +519,7 @@ function DropdownMenu({ items, handleHashLink }: DropdownMenuProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2 }}
-      className="absolute top-full mt-2 bg-card border border-border/50 shadow-xl rounded-lg overflow-hidden right-0 w-64"
+      className="site-nav-dropdown"
     >
       <div className="py-2">
         {items.map((subItem, idx) =>
@@ -529,7 +529,7 @@ function DropdownMenu({ items, handleHashLink }: DropdownMenuProps) {
               href={subItem.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+              className="site-nav-dropdown-link"
             >
               {subItem.label}
             </a>
@@ -538,7 +538,7 @@ function DropdownMenu({ items, handleHashLink }: DropdownMenuProps) {
               key={idx}
               to={subItem.href}
               onClick={(e) => handleHashLink(e, subItem.href)}
-              className="block px-6 py-3 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+              className="site-nav-dropdown-link"
             >
               {subItem.label}
             </Link>
@@ -613,7 +613,7 @@ function MobileMenu({
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.3 }}
-          className="xl:hidden border-t border-border/10 overflow-hidden bg-background/95 backdrop-blur-md"
+          className="site-mobile-menu"
         >
           <div className="py-4 max-h-[70vh] overflow-y-auto">
             {navItems.map((item) =>
@@ -622,7 +622,7 @@ function MobileMenu({
                   key={item.key}
                   to={item.href}
                   onClick={(e) => handleHashLink(e, item.href)}
-                  className={`block px-4 py-3 text-sm font-medium transition-colors border-b border-border/5 cursor-pointer ${
+                  className={`site-mobile-link ${
                     transparentMode
                       ? `${transparentTextClass} hover:bg-accent`
                       : "text-foreground hover:bg-accent hover:text-primary"
@@ -647,7 +647,7 @@ function MobileMenu({
               <Link
                 to="/login"
                 onClick={(e) => handleHashLink(e, "/login")}
-                className={`flex items-center justify-center gap-2 py-2.5 bg-transparent border text-sm font-medium rounded-full transition-all cursor-pointer ${
+                className={`site-mobile-login ${
                   transparentMode
                     ? transparentBorderClass
                     : "border-border/20 text-foreground hover:border-primary hover:text-primary hover:bg-primary/10"
@@ -726,7 +726,7 @@ function MobileDropdown({
                   href={subItem.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer"
+                  className="site-mobile-submenu-link"
                 >
                   {subItem.label}
                 </a>
@@ -735,7 +735,7 @@ function MobileDropdown({
                   key={idx}
                   to={subItem.href}
                   onClick={(e) => handleHashLink(e, subItem.href)}
-                  className="block px-6 py-2.5 text-sm text-foreground/70 hover:text-primary hover:bg-accent/10 transition-colors cursor-pointer"
+                  className="site-mobile-submenu-link"
                 >
                   {subItem.label}
                 </Link>

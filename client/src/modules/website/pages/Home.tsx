@@ -44,7 +44,7 @@ export default function Home() {
   };
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="website-shell">
       <div
         hidden
         aria-hidden="true"
@@ -75,7 +75,7 @@ export default function Home() {
         </section>
         <section
           id="daily-offers"
-          className="border-b border-section-divider"
+          className="website-section-divider"
           data-ssr-section="daily-offers"
           data-ssr-count={debug.dailyOffers}
         >
@@ -83,7 +83,7 @@ export default function Home() {
         </section>
         <section
           id="properties"
-          className="border-b border-section-divider"
+          className="website-section-divider"
           data-ssr-section="properties"
           data-ssr-count={debug.properties}
         >
@@ -91,7 +91,7 @@ export default function Home() {
         </section>
         <section
           id="about"
-          className="border-b border-section-divider"
+          className="website-section-divider"
           data-ssr-section="about"
           data-ssr-count={debug.about}
           data-ssr-ventures-count={debug.aboutVentures}
@@ -101,7 +101,7 @@ export default function Home() {
         </section>
         <section
           id="business"
-          className="border-b border-section-divider"
+          className="website-section-divider"
           data-ssr-section="business"
           data-ssr-count={debug.business}
         >
@@ -109,7 +109,7 @@ export default function Home() {
         </section>
         <section
           id="events"
-          className="border-b border-section-divider"
+          className="website-section-divider"
           data-ssr-section="events"
           data-ssr-count={debug.events}
         >
@@ -117,7 +117,7 @@ export default function Home() {
         </section>
         <section
           id="news"
-          className="border-b border-section-divider"
+          className="website-section-divider"
           data-ssr-section="news"
           data-ssr-count={debug.news}
         >
@@ -125,7 +125,7 @@ export default function Home() {
         </section>
         <section
           id="story"
-          className="border-b border-section-divider"
+          className="website-section-divider"
           data-ssr-section="story"
           data-ssr-count={debug.story}
           data-ssr-header-count={debug.storyHeader}
@@ -149,18 +149,18 @@ export default function Home() {
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 1.5, duration: 0.8, type: "spring" }}
-        className="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 shadow-[0_4px_20px_rgba(251,191,36,0.4)] cursor-pointer hover:shadow-[0_6px_28px_rgba(251,191,36,0.6)] transition-all duration-300 group ring-1 ring-amber-500/30 hover:ring-amber-500/50 hover:scale-105"
+        className="website-floating-cta group"
         onClick={handleScrollToBusiness}
       >
-        <div className="flex flex-col items-start bg-transparent">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-700 leading-none mb-1">
+        <div className="website-floating-cta-copy">
+          <span className="website-floating-cta-badge">
             Discover More
           </span>
-          <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
+          <span className="website-floating-cta-title">
             Explore Our Diversities
           </span>
         </div>
-        <div className="w-8 h-8 rounded-full bg-gray-900/20 flex items-center justify-center group-hover:bg-gray-900/30 transition-colors">
+        <div className="website-floating-cta-icon">
           <ChevronDown className="w-4 h-4 animate-pulse text-gray-900" />
         </div>
       </motion.div>
