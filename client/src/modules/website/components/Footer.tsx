@@ -79,12 +79,12 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-white text-foreground border-t border-border">
+    <footer className="footer-shell">
       {/* Main Footer Content */}
-      <div className="container mx-auto px-6 lg:px-12 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="footer-main">
+        <div className="footer-grid">
           {/* Brand Column */}
-          <div className="space-y-6 flex flex-col items-center md:items-start">
+          <div className="footer-brand">
             <Link to="/" onClick={handleLinkClick} className="inline-block">
               <div className="relative">
                 {/* Light Mode Logo */}
@@ -106,7 +106,7 @@ export default function Footer() {
             </Link>
 
             {/* Social Media Icons */}
-            <div className="flex items-center gap-4 pt-4 border-t border-border">
+            <div className="footer-social-row">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
@@ -115,7 +115,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="w-9 h-9 flex items-center justify-center text-[#4B5563] hover:text-[#B11226] transition-colors"
+                  className="footer-social-link"
                 >
                   <social.icon className="w-5 h-5" strokeWidth={1.5} />
                 </a>
@@ -126,7 +126,7 @@ export default function Footer() {
           {/* Navigation Columns */}
           {footerSections.map((section, index) => (
             <div key={index}>
-              <h3 className="text-[#1F2937] font-bold text-sm mb-6 uppercase tracking-wider">
+              <h3 className="footer-heading">
                 {section.title}
               </h3>
               <ul className="space-y-3">
@@ -135,7 +135,7 @@ export default function Footer() {
                     <Link
                       to={link.href}
                       onClick={handleLinkClick}
-                      className="text-sm text-[#374151] hover:text-[#B11226] transition-colors block"
+                      className="footer-link"
                     >
                       {link.label}
                     </Link>
@@ -148,11 +148,11 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-black/5 border-t border-border">
-        <div className="container mx-auto px-6 lg:px-12 py-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="footer-bottom">
+        <div className="container mx-auto px-6 py-4 lg:px-12">
+          <div className="footer-bottom-row">
             {/* Copyright */}
-            <p className="text-sm text-[#4B5563]">
+            <p className="footer-meta-text">
               © {new Date().getFullYear()} {siteContent.brand.name}. All rights
               reserved.
             </p>
@@ -164,7 +164,7 @@ export default function Footer() {
                   key={index}
                   to={link.href}
                   onClick={handleLinkClick}
-                  className="text-sm text-[#4B5563] hover:text-[#B11226] transition-colors"
+                  className="footer-meta-text"
                 >
                   {link.label}
                 </Link>
@@ -178,7 +178,7 @@ export default function Footer() {
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 w-12 h-12 bg-card border-2 border-border rounded-full flex items-center justify-center text-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-300 shadow-lg z-40 animate-in fade-in slide-in-from-bottom-4"
+          className="footer-scrolltop"
           aria-label="Scroll to top"
         >
           <ArrowUp className="w-5 h-5" strokeWidth={2} />

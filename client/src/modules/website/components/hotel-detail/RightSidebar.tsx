@@ -157,10 +157,10 @@ export default function RightSidebar({
   );
 
   return (
-    <div className="space-y-6 sticky top-24">
+    <div className="hotel-sidebar">
       {/* Price Summary Card */}
       <div
-        className={`bg-card border ${selectedRoom ? "border-primary ring-1 ring-primary" : "border-border"} rounded-xl p-5 shadow-lg relative overflow-hidden transition-all text-left`}
+        className={`hotel-sidebar-card-strong ${selectedRoom ? "border-primary ring-1 ring-primary" : "border-border"}`}
       >
         <div className="absolute top-0 right-0 p-2 opacity-5">
           <Star className="w-24 h-24" />
@@ -228,7 +228,7 @@ export default function RightSidebar({
         </div>
       </div>
       {/* MAP PREVIEW CARD */}
-      <div className="rounded-2xl overflow-hidden border border-border shadow-md group">
+      <div className="hotel-sidebar-map-card group">
         {/* MAP IFRAME PREVIEW */}
         <div className="h-44 relative w-full overflow-hidden">
           <iframe
@@ -264,7 +264,7 @@ export default function RightSidebar({
         </div>
 
         {/* FOOTER BUTTON */}
-        <div className="p-3 bg-card border-t border-border flex gap-2">
+        <div className="hotel-sidebar-map-footer">
           <Button
             variant="outline"
             size="sm"
@@ -284,7 +284,7 @@ export default function RightSidebar({
             }
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-border text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="hotel-sidebar-map-action"
             title="Open in Google Maps"
           >
             <Navigation className="w-3 h-3" />
@@ -293,11 +293,11 @@ export default function RightSidebar({
       </div>
       {/* Reviews Snapshot */}
       {hotel.rating && (
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+        <div className="hotel-sidebar-card">
           <h4 className="text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between">
             Guest Reviews
             <span
-              className="text-[10px] text-primary cursor-pointer hover:underline font-normal"
+              className="hotel-sidebar-link"
               onClick={() => scrollToSection("reviews")}
             >
               View All
@@ -323,11 +323,11 @@ export default function RightSidebar({
       )}
       {/* Amenities Snapshot */}
       {hotel.amenities && hotel.amenities.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+        <div className="hotel-sidebar-card">
           <h4 className="text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between">
             Top Amenities
             <span
-              className="text-[10px] text-primary cursor-pointer hover:underline font-normal"
+              className="hotel-sidebar-link"
               onClick={() => scrollToSection("amenities")}
             >
               View All
@@ -350,11 +350,11 @@ export default function RightSidebar({
       )}
       {/* Nearby Snapshot */}
       {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+        <div className="hotel-sidebar-card">
           <h4 className="text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between">
             Nearby
             <span
-              className="text-[10px] text-primary cursor-pointer hover:underline font-normal"
+              className="hotel-sidebar-link"
               onClick={() => scrollToSection("location")}
             >
               Full List
@@ -406,7 +406,7 @@ export default function RightSidebar({
         </div>
       </div>
       {visibleBookingPartners.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+        <div className="hotel-sidebar-card">
           <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center">
             View on Other Platforms
           </h4>
@@ -423,7 +423,7 @@ export default function RightSidebar({
                   href={partner.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-2 rounded-lg border border-border bg-secondary/10 px-3 py-2 transition-all hover:bg-secondary/20"
+                  className="hotel-partner-link group"
                   title={partner.title || "Booking Partner"}
                 >
                   <div className="flex h-7 w-12 items-center justify-center overflow-hidden rounded bg-white">
@@ -447,7 +447,7 @@ export default function RightSidebar({
       {/* WhatsApp Button */}
       <Button
         variant="outline"
-        className="w-full h-12 gap-2 text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10 hover:text-[#25D366] font-bold shadow-sm"
+        className="hotel-whatsapp-button"
         onClick={() =>
           window.open(
             `https://wa.me/919876543210?text=I'm interested in booking a room at ${hotel.name}`,

@@ -999,20 +999,20 @@ export default function HotelDetail() {
           galleryData={galleryData}
         />
 
-        <div className="container mx-auto px-4 md:px-8 lg:px-12 py-6">
+        <div className="website-page-container py-6">
           <motion.nav
             variants={fadeIn}
             initial="initial"
             animate="animate"
-            className="flex items-center gap-2 text-sm text-muted-foreground mb-6"
+            className="hotel-breadcrumb"
           >
-            <Link to="/" className="hover:text-foreground transition-colors">
+            <Link to="/" className="hotel-breadcrumb-link">
               Home
             </Link>
             <ChevronRight className="w-4 h-4" />
             <Link
               to="/hotels"
-              className="hover:text-foreground transition-colors"
+              className="hotel-breadcrumb-link"
             >
               Hotels
             </Link>
@@ -1183,10 +1183,10 @@ export default function HotelDetail() {
           />
           <HotelStickyNav sections={sections} />
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 lg:gap-8 py-8">
+          <div className="hotel-page-grid">
             <div className="space-y-10">
               <section id="room-options" className="scroll-mt-32">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
+                <h2 className="website-section-heading">
                   Choose Your Room
                 </h2>
                 {highlightedRoomAmenities.length > 0 && (
@@ -1194,7 +1194,7 @@ export default function HotelDetail() {
                     {highlightedRoomAmenities.map((amenity) => (
                       <span
                         key={amenity}
-                        className="inline-flex items-center rounded-full bg-stone-100 px-4 py-2 text-sm font-medium text-foreground"
+                        className="hotel-pill"
                       >
                         {amenity}
                       </span>
@@ -1219,7 +1219,7 @@ export default function HotelDetail() {
                 )}
               </section>
 
-              <section id="about-hotel" className="scroll-mt-32 border-t pt-10">
+              <section id="about-hotel" className="hotel-section">
                 <div className="pb-10">
                   <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">
                     About {hotel.name}
@@ -1236,7 +1236,7 @@ export default function HotelDetail() {
                         {aboutAmenitiesPreview.map((amenity, index) => (
                           <div
                             key={`${amenity}-${index}`}
-                            className="rounded-md border border-border bg-card px-4 py-4 text-center shadow-sm transition-colors hover:border-primary/30"
+                            className="hotel-card px-4 py-4 text-center transition-colors hover:border-primary/30"
                           >
                             <Star className="mx-auto mb-2 h-4 w-4 text-red-500" />
                             <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-foreground leading-snug">
@@ -1249,13 +1249,13 @@ export default function HotelDetail() {
                   )}
                 </div>
               </section>
-              <section id="events" className="scroll-mt-32 border-t pt-10">
+              <section id="events" className="hotel-section">
                 <div
                   id="food-dining"
                   className="grid grid-cols-1 xl:grid-cols-2 gap-8"
                 >
                   <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
+                    <h2 className="website-section-heading">
                       Events
                     </h2>
                     <EventSectionPropertySpecific
@@ -1266,7 +1266,7 @@ export default function HotelDetail() {
                   </div>
 
                   <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
+                    <h2 className="website-section-heading">
                       Food & Dining
                     </h2>
 
@@ -1293,10 +1293,10 @@ export default function HotelDetail() {
                                   className="w-full flex-shrink-0"
                                 >
                                   <div
-                                    className={`rounded-xl border border-border bg-card overflow-hidden shadow-sm transition-shadow duration-200 ${
-                                      restaurantPath
-                                        ? "cursor-pointer hover:shadow-md"
-                                        : ""
+                                      className={`hotel-card overflow-hidden transition-shadow duration-200 ${
+                                        restaurantPath
+                                          ? "cursor-pointer hover:shadow-md"
+                                          : ""
                                     }`}
                                     onClick={() => {
                                       if (restaurantPath)
@@ -1432,7 +1432,7 @@ export default function HotelDetail() {
                                     : prev - 1,
                                 )
                               }
-                              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all"
+                              className="hotel-carousel-nav left-2"
                               aria-label="Previous dining item"
                             >
                               <ChevronLeft className="w-4 h-4" />
@@ -1445,7 +1445,7 @@ export default function HotelDetail() {
                                     : prev + 1,
                                 )
                               }
-                              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all"
+                              className="hotel-carousel-nav right-2"
                               aria-label="Next dining item"
                             >
                               <ChevronRight className="w-4 h-4" />
@@ -1468,7 +1468,7 @@ export default function HotelDetail() {
                         )}
                       </div>
                     ) : (
-                      <div className="rounded-xl border border-dashed border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
+                      <div className="hotel-empty-state">
                         No food and dining highlights available for this
                         property.
                       </div>
@@ -1477,10 +1477,10 @@ export default function HotelDetail() {
                 </div>
               </section>
               {hotel.amenities.length > 0 && (
-                <section id="amenities" className="scroll-mt-32 border-t pt-10">
+                <section id="amenities" className="hotel-section">
                   <div className="pb-10">
                     <div className="mb-6 flex items-center justify-between gap-4">
-                      <h2 className="text-2xl md:text-3xl font-serif font-bold">
+                      <h2 className="website-section-heading mb-0">
                         Amenities
                       </h2>
                     </div>
@@ -1488,9 +1488,9 @@ export default function HotelDetail() {
                       {hotel.amenities.map((amenity, index) => (
                         <div
                           key={`${amenity}-${index}`}
-                          className="flex items-center gap-3"
+                          className="hotel-amenity-row"
                         >
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-red-500">
+                          <div className="hotel-amenity-icon">
                             <Check className="h-4 w-4" />
                           </div>
                           <p className="text-base text-foreground">{amenity}</p>
@@ -1500,12 +1500,12 @@ export default function HotelDetail() {
                   </div>
                 </section>
               )}
-               <section id="reviews" className="scroll-mt-32 border-t pt-10">
+               <section id="reviews" className="hotel-section">
                 <ReviewsSection propertyId={propertyIdFromUrl} />
               </section>
              
-              <section id="location" className="scroll-mt-32 border-t pt-10">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
+              <section id="location" className="hotel-section">
+                <h2 className="website-section-heading">
                   Location
                 </h2>
                 <PropertyMap
@@ -1514,11 +1514,11 @@ export default function HotelDetail() {
                 />
               </section>
 
-              <section id="policies" className="scroll-mt-32 border-t pt-10">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
+              <section id="policies" className="hotel-section">
+                <h2 className="website-section-heading">
                   Guest Policies
                 </h2>
-                <div className="bg-white border rounded-xl p-6 md:p-8 shadow-sm">
+                <div className="hotel-policy-panel">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-destructive font-bold text-xs uppercase tracking-widest">
@@ -1539,7 +1539,7 @@ export default function HotelDetail() {
                             <span>{policies?.checkOutTime || "11:00 AM"}</span>
                           </div>
                         </div>
-                        <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-4">
+                        <div className="hotel-policy-box">
                           <p className="font-medium text-foreground mb-2">
                             Cancellation Policy
                           </p>
@@ -1554,7 +1554,7 @@ export default function HotelDetail() {
                       <div className="flex items-center gap-2 text-destructive font-bold text-xs uppercase tracking-widest">
                         <Info className="w-4 h-4" /> OTHER POLICIES
                       </div>
-                      <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-4">
+                      <div className="hotel-policy-box">
                         <ul className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
                           {policies?.policies?.map((p) => (
                             <li
