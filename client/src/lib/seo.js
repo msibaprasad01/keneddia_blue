@@ -18,6 +18,45 @@ const escapeScript = (value = "") => String(value).replace(/<\/script/gi, "<\\/s
 
 const isActiveSeo = (item) => Boolean(item?.active ?? item?.status);
 
+const buildFallbackSchema = (schemaType, metaTag) => {
+  if (!schemaType) return "";
+
+  const fallbackSchema = {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+  };
+
+  if (metaTag?.metaTitle?.trim()) {
+    fallbackSchema.name = metaTag.metaTitle.trim();
+  }
+
+  if (metaTag?.metaDescription?.trim()) {
+    fallbackSchema.description = metaTag.metaDescription.trim();
+  }
+
+  if (metaTag?.url?.trim()) {
+    fallbackSchema.url = metaTag.url.trim();
+  }
+
+  return JSON.stringify(fallbackSchema);
+};
+
+const normalizeSchema = (rawSchema, metaTag) => {
+  const schemaValue = rawSchema?.trim();
+  if (!schemaValue) return "";
+
+  try {
+    const parsed = JSON.parse(schemaValue);
+    if (parsed && typeof parsed === "object") {
+      return JSON.stringify(parsed);
+    }
+  } catch {
+    // Plain strings such as "Hotel" are converted into a minimal valid schema.
+  }
+
+  return buildFallbackSchema(schemaValue, metaTag);
+};
+
 const selectSeoRecord = (list, propertyId) =>
   (Array.isArray(list) ? list : [])
     .filter(
@@ -57,7 +96,7 @@ export function buildSeoState(seo) {
   const description = metaTag?.metaDescription?.trim() || "";
   const keywords = metaTag?.metaKeywords?.trim() || "";
   const canonicalUrl = metaTag?.url?.trim() || "";
-  const schema = metaTag?.skima?.trim() || "";
+  const schema = normalizeSchema(metaTag?.skima, metaTag);
 
   return {
     hasDynamicMeta: Boolean(title || description || keywords || canonicalUrl || schema),
