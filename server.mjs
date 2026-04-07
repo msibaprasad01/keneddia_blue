@@ -13,7 +13,8 @@ const hasProdServer = existsSync(
 );
 const argv = new Set(process.argv.slice(2));
 const explicitDev = argv.has("--dev") || process.env.NODE_ENV === "development";
-const explicitProd = argv.has("--prod") || process.env.NODE_ENV === "production";
+const explicitProd =
+  argv.has("--prod") || process.env.NODE_ENV === "production";
 const hasProdBundle = hasProdClient && hasProdServer;
 const isProd = explicitProd || (!explicitDev && hasProdBundle);
 const setCommonHeaders = (res) => {
@@ -96,23 +97,59 @@ const start = async () => {
 
       // Production mode
       const clientDir = resolveFromRoot("public_html");
-      const serverEntryPath = resolveFromRoot("public_html-ssr", "entry-server.js");
+      const serverEntryPath = resolveFromRoot(
+        "public_html-ssr",
+        "entry-server.js",
+      );
 
       if (isSsrRoute(pathname)) {
-        const template = await fs.readFile(path.join(clientDir, "index.html"), "utf-8");
+        const template = await fs.readFile(
+          path.join(clientDir, "index.html"),
+          "utf-8",
+        );
         const { render } = await import(serverEntryPath);
         const { html } = await render(url, template);
         sendHtml(res, html);
         return;
       }
 
+      // if (!hasFileExtension(pathname)) {
+      //   const template = await fs.readFile(path.join(clientDir, "index.html"), "utf-8");
+      //   sendHtml(res, template);
+      //   return;
+      // }
       if (!hasFileExtension(pathname)) {
-        const template = await fs.readFile(path.join(clientDir, "index.html"), "utf-8");
-        sendHtml(res, template);
-        return;
+        try {
+          const template = await fs.readFile(
+            path.join(clientDir, "index.html"),
+            "utf-8",
+          );
+
+          const { render } = await import(serverEntryPath);
+
+          const { html } = await render(url, template);
+
+          console.log("⚡ SSR ATTEMPT:", pathname);
+
+          sendHtml(res, html);
+          return;
+        } catch (err) {
+          console.warn("⚠️ SSR FAILED, FALLBACK TO SPA:", pathname);
+
+          const template = await fs.readFile(
+            path.join(clientDir, "index.html"),
+            "utf-8",
+          );
+
+          sendHtml(res, template);
+          return;
+        }
       }
 
-      const filePath = path.join(clientDir, pathname === "/" ? "index.html" : pathname);
+      const filePath = path.join(
+        clientDir,
+        pathname === "/" ? "index.html" : pathname,
+      );
       const data = await fs.readFile(filePath).catch(() => null);
       if (!data) {
         sendText(res, "Not Found", 404);
