@@ -118,8 +118,10 @@ interface HotelOfferItem {
 
 export default function HotelOffersCarousel({
   initialOffers = [],
+  variant = "standalone",
 }: {
   initialOffers?: HotelOfferItem[];
+  variant?: "standalone" | "showcase";
 }) {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
   const [offers, setOffers] = useState<HotelOfferItem[]>(initialOffers);
@@ -241,50 +243,95 @@ export default function HotelOffersCarousel({
 
   if (loading)
     return (
-      <div className="flex justify-center py-20">
+      <div
+        className={
+          variant === "showcase"
+            ? "flex h-full min-h-[520px] items-center justify-center rounded-2xl border bg-card p-5"
+            : "flex justify-center py-20"
+        }
+      >
         <Loader2 className="animate-spin" />
       </div>
     );
 
-  if (!offers.length) return null;
-
-  return (
-    <section className="bg-muted py-10">
-      <div className="container mx-auto px-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-serif">Exclusive Hotel Offers</h2>
-          <div className="flex gap-2">
-            <button
-              onClick={() => swiper?.slidePrev()}
-              className="p-2 rounded-full hover:bg-white/50 transition-colors"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={() => swiper?.slideNext()}
-              className="p-2 rounded-full hover:bg-white/50 transition-colors"
-            >
-              <ChevronRight size={20} />
-            </button>
+  if (!offers.length) {
+    if (variant === "showcase") {
+      return (
+        <div className="flex h-full min-h-[520px] flex-col rounded-2xl border bg-card p-5">
+          <h3 className="mb-6 flex items-center gap-2 text-lg font-serif font-semibold">
+            <Tag className="w-5 h-5 text-primary" /> Offers
+          </h3>
+          <div className="flex flex-1 items-center justify-center text-center text-sm text-muted-foreground">
+            No hotel offers available.
           </div>
         </div>
+      );
+    }
 
-        <Swiper
-          modules={[Navigation, Autoplay]}
-          slidesPerView={1}
-          spaceBetween={16}
-          breakpoints={{
-            640: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
-            1200: { slidesPerView: 4 },
-          }}
-          autoplay={{
-            delay: 5000,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          }}
-          onSwiper={setSwiper}
-        >
+    return null;
+  }
+
+  const content = (
+    <div
+      className={
+        variant === "showcase"
+          ? "flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border bg-card p-5"
+          : "container mx-auto px-6"
+      }
+    >
+      <div className="flex justify-between items-center mb-6">
+        {variant === "showcase" ? (
+          <h3 className="text-lg font-serif font-semibold flex items-center gap-2">
+            <Tag className="w-5 h-5 text-primary" /> Offers
+          </h3>
+        ) : (
+          <h2 className="text-2xl font-serif">Exclusive Hotel Offers</h2>
+        )}
+        <div className="flex gap-2">
+          <button
+            onClick={() => swiper?.slidePrev()}
+            className={
+              variant === "showcase"
+                ? "p-2 rounded-full border border-border bg-background hover:bg-muted shadow-sm"
+                : "p-2 rounded-full hover:bg-white/50 transition-colors"
+            }
+          >
+            <ChevronLeft size={variant === "showcase" ? 18 : 20} />
+          </button>
+          <button
+            onClick={() => swiper?.slideNext()}
+            className={
+              variant === "showcase"
+                ? "p-2 rounded-full border border-border bg-background hover:bg-muted shadow-sm"
+                : "p-2 rounded-full hover:bg-white/50 transition-colors"
+            }
+          >
+            <ChevronRight size={variant === "showcase" ? 18 : 20} />
+          </button>
+        </div>
+      </div>
+
+      <Swiper
+        modules={[Navigation, Autoplay]}
+        slidesPerView={1}
+        spaceBetween={16}
+        breakpoints={
+          variant === "showcase"
+            ? undefined
+            : {
+                640: { slidesPerView: 2 },
+                768: { slidesPerView: 3 },
+                1200: { slidesPerView: 4 },
+              }
+        }
+        autoplay={{
+          delay: 5000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        }}
+        onSwiper={setSwiper}
+        className="w-full min-w-0"
+      >
           {offers.map((offer, i) => {
             const isBanner = detectBanner(offer.image);
             const isClickable = !!offer.ctaLink;
@@ -302,8 +349,8 @@ export default function HotelOffersCarousel({
             const showFullImage = isBanner || !hasContent || !hasCtaText;
 
             return (
-              <SwiperSlide key={offer.id || i}>
-                <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer">
+              <SwiperSlide key={offer.id || i} className="min-w-0">
+                <div className="group h-[520px] w-full bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer">
                   {/* MEDIA CONTAINER */}
                   <div
                     className={`relative overflow-hidden ${showFullImage ? "h-full" : "h-[280px]"}`}
@@ -422,8 +469,13 @@ export default function HotelOffersCarousel({
               </SwiperSlide>
             );
           })}
-        </Swiper>
-      </div>
-    </section>
+      </Swiper>
+    </div>
+  );
+
+  if (variant === "showcase") return content;
+
+  return (
+    <section className="bg-muted py-10">{content}</section>
   );
 }

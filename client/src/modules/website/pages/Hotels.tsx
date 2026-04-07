@@ -507,28 +507,47 @@ export default function Hotels() {
         </div>
       </section>
 
-      <div
-        id="offers"
-        data-ssr-section="hotel-offers"
-        data-ssr-count={ssrHotels?.hotelOffers?.length ?? 0}
-      >
-        <HotelOffersCarousel initialOffers={ssrHotels?.hotelOffers} />
-      </div>
+      <section id="offers" className="bg-muted py-10">
+        <div className="mx-auto w-[92%] max-w-7xl">
+          <div className="mb-8 text-center">
+            <h2 className="font-serif text-2xl md:text-3xl">
+              Hotel Showcase
+            </h2>
+            <div className="mx-auto mt-3 h-0.5 w-16 bg-primary" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div
+              className="min-w-0"
+              data-ssr-section="hotel-offers"
+              data-ssr-count={ssrHotels?.hotelOffers?.length ?? 0}
+            >
+              <HotelOffersCarousel
+                initialOffers={ssrHotels?.hotelOffers}
+                variant="showcase"
+              />
+            </div>
+
+            <div
+              id="events"
+              className="contents"
+              data-ssr-section="hotel-group-booking"
+              data-events-count={ssrHotels?.groupEvents?.length ?? 0}
+              data-bookings-count={ssrHotels?.groupBookings?.length ?? 0}
+            >
+              <GroupBookingSection
+                propertyTypeId={hotelTypeId}
+                initialEvents={ssrHotels?.groupEvents}
+                initialGroupBookings={ssrHotels?.groupBookings}
+                variant="showcase"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div
-        data-ssr-section="hotel-group-booking"
-        data-events-count={ssrHotels?.groupEvents?.length ?? 0}
-        data-bookings-count={ssrHotels?.groupBookings?.length ?? 0}
-      >
-        <GroupBookingSection
-          propertyTypeId={hotelTypeId}
-          initialEvents={ssrHotels?.groupEvents}
-          initialGroupBookings={ssrHotels?.groupBookings}
-        />
-      </div>
-
-      <div
-        id="events"
+        id="updates"
         data-ssr-section="hotel-news"
         data-ssr-count={ssrHotels?.hotelNews?.length ?? 0}
       >
