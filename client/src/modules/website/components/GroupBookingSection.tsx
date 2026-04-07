@@ -74,6 +74,7 @@ interface GroupBookingSectionProps {
   propertyTypeId?: number | null;
   initialEvents?: Event[];
   initialGroupBookings?: GroupBooking[];
+  variant?: "standalone" | "showcase";
 }
 
 const EMPTY_FORM = {
@@ -264,6 +265,7 @@ export default function GroupBookingSection({
   propertyTypeId: initialPropertyTypeId = null,
   initialEvents = [],
   initialGroupBookings = [],
+  variant = "standalone",
 }: GroupBookingSectionProps) {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
   const [events, setEvents] = useState<Event[]>(initialEvents);
@@ -441,19 +443,31 @@ export default function GroupBookingSection({
   );
 
   return (
-    <section className="py-10 bg-background">
-      <div className="w-[92%] max-w-7xl mx-auto">
-        <div className="text-center mb-8">
+    <section
+      className={variant === "showcase" ? "contents" : "py-10 bg-background"}
+    >
+      <div
+        className={
+          variant === "showcase" ? "contents" : "w-[92%] max-w-7xl mx-auto"
+        }
+      >
+        <div className={variant === "showcase" ? "hidden" : "text-center mb-8"}>
           <h2 className="text-2xl md:text-3xl font-serif font-semibold mb-2">
             Events & Celebrations
           </h2>
           <div className="w-16 h-0.5 bg-primary mx-auto mb-3" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div
+          className={
+            variant === "showcase"
+              ? "contents"
+              : "grid grid-cols-1 lg:grid-cols-12 gap-6"
+          }
+        >
           {/* LEFT: EVENTS */}
-          <div className="lg:col-span-8">
-            <div className="bg-card border rounded-2xl p-5 h-full">
+          <div className={variant === "showcase" ? "min-w-0" : "lg:col-span-8"}>
+            <div className="bg-card border rounded-2xl p-5 h-full min-w-0 overflow-hidden">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-serif font-semibold flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-primary" /> Upcoming Events
@@ -494,14 +508,18 @@ export default function GroupBookingSection({
                   }}
                   pagination={{ clickable: true }}
                   onSwiper={setSwiper}
-                  breakpoints={{
-                    640: { slidesPerView: 2 },
-                    1024: { slidesPerView: 2.4 }, // 👈 slightly wider cards
-                  }}
-                  className="!pb-10"
+                  breakpoints={
+                    variant === "showcase"
+                      ? undefined
+                      : {
+                          640: { slidesPerView: 2 },
+                          1024: { slidesPerView: 2.4 }, // slightly wider cards
+                        }
+                  }
+                  className="!pb-10 w-full min-w-0"
                 >
                   {events.map((event, index) => (
-                    <SwiperSlide key={event.id}>
+                    <SwiperSlide key={event.id} className="min-w-0">
                       <EventCard event={event} index={index} />
                     </SwiperSlide>
                   ))}
@@ -511,8 +529,8 @@ export default function GroupBookingSection({
           </div>
 
           {/* RIGHT: GROUP BOOKINGS */}
-          <div className="lg:col-span-4">
-            <div className="border rounded-2xl p-5 h-full flex flex-col">
+          <div className={variant === "showcase" ? "min-w-0" : "lg:col-span-4"}>
+            <div className="bg-card border rounded-2xl p-5 h-full min-w-0 flex flex-col overflow-hidden">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-serif font-semibold flex gap-2">
                   <Users className="w-5 h-5 text-primary" /> Group Booking

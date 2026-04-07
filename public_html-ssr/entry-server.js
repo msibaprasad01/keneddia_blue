@@ -11194,7 +11194,8 @@ function CountdownTimer$2({ expiresAt }) {
   );
 }
 function HotelOffersCarousel({
-  initialOffers = []
+  initialOffers = [],
+  variant = "standalone"
 }) {
   const [swiper, setSwiper] = useState(null);
   const [offers, setOffers] = useState(initialOffers);
@@ -11290,73 +11291,135 @@ function HotelOffersCarousel({
     fetchOffers();
   }, []);
   if (loading)
-    return /* @__PURE__ */ jsx("div", { className: "flex justify-center py-20", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin" }) });
-  if (!offers.length) return null;
-  return /* @__PURE__ */ jsx("section", { className: "bg-muted py-10", children: /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-6", children: [
-    /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-6", children: [
-      /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif", children: "Exclusive Hotel Offers" }),
-      /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            onClick: () => swiper?.slidePrev(),
-            className: "p-2 rounded-full hover:bg-white/50 transition-colors",
-            children: /* @__PURE__ */ jsx(ChevronLeft, { size: 20 })
-          }
-        ),
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            onClick: () => swiper?.slideNext(),
-            className: "p-2 rounded-full hover:bg-white/50 transition-colors",
-            children: /* @__PURE__ */ jsx(ChevronRight$1, { size: 20 })
-          }
-        )
-      ] })
-    ] }),
-    /* @__PURE__ */ jsx(
-      Swiper,
+    return /* @__PURE__ */ jsx(
+      "div",
       {
-        modules: [Navigation, Autoplay],
-        slidesPerView: 1,
-        spaceBetween: 16,
-        breakpoints: {
-          640: { slidesPerView: 2 },
-          768: { slidesPerView: 3 },
-          1200: { slidesPerView: 4 }
-        },
-        autoplay: {
-          delay: 5e3,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true
-        },
-        onSwiper: setSwiper,
-        children: offers.map((offer, i) => {
-          const isBanner = detectBanner$1(offer.image);
-          const isClickable = !!offer.ctaLink;
-          const hasContent = !!(offer.title || offer.description || offer.couponCode);
-          const hasCtaText = !!(offer.ctaText && offer.ctaText.trim());
-          const showFullImage = isBanner || !hasContent || !hasCtaText;
-          return /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsxs("div", { className: "group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer", children: [
-            /* @__PURE__ */ jsxs(
-              "div",
+        className: variant === "showcase" ? "flex h-full min-h-[520px] items-center justify-center rounded-2xl border bg-card p-5" : "flex justify-center py-20",
+        children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin" })
+      }
+    );
+  if (!offers.length) {
+    if (variant === "showcase") {
+      return /* @__PURE__ */ jsxs("div", { className: "flex h-full min-h-[520px] flex-col rounded-2xl border bg-card p-5", children: [
+        /* @__PURE__ */ jsxs("h3", { className: "mb-6 flex items-center gap-2 text-lg font-serif font-semibold", children: [
+          /* @__PURE__ */ jsx(Tag, { className: "w-5 h-5 text-primary" }),
+          " Offers"
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "flex flex-1 items-center justify-center text-center text-sm text-muted-foreground", children: "No hotel offers available." })
+      ] });
+    }
+    return null;
+  }
+  const content = /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: variant === "showcase" ? "flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border bg-card p-5" : "container mx-auto px-6",
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-6", children: [
+          variant === "showcase" ? /* @__PURE__ */ jsxs("h3", { className: "text-lg font-serif font-semibold flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx(Tag, { className: "w-5 h-5 text-primary" }),
+            " Offers"
+          ] }) : /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif", children: "Exclusive Hotel Offers" }),
+          /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+            /* @__PURE__ */ jsx(
+              "button",
               {
-                className: `relative overflow-hidden ${showFullImage ? "h-full" : "h-[280px]"}`,
-                children: [
-                  offer.image ? offer.image.type === "VIDEO" ? /* @__PURE__ */ jsx(OfferVideo, { src: offer.image.src }) : /* @__PURE__ */ jsx(
-                    "img",
-                    {
-                      src: offer.image.src,
-                      alt: offer.image.alt,
-                      className: `w-full h-full ${showFullImage ? "object-contain bg-black" : "object-cover"} object-center transition-transform duration-500 group-hover:scale-105`
-                    }
-                  ) : /* @__PURE__ */ jsx("div", { className: "w-full h-full flex items-center justify-center bg-muted", children: /* @__PURE__ */ jsx(Tag, { className: "w-10 h-10 text-muted-foreground/30" }) }),
-                  /* @__PURE__ */ jsx("div", { className: "absolute top-3 left-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded z-10 font-bold uppercase tracking-wider", children: offer.propertyType }),
-                  offer.expiresAt && /* @__PURE__ */ jsx("div", { className: "absolute top-3 right-3 z-10", children: /* @__PURE__ */ jsx(CountdownTimer$2, { expiresAt: offer.expiresAt }) }),
-                  showFullImage && /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 z-20", children: [
-                    /* @__PURE__ */ jsxs("div", { className: "mb-3", children: [
-                      offer.title && /* @__PURE__ */ jsx("h3", { className: "text-white font-bold text-sm line-clamp-1", children: offer.title }),
-                      offer.description && /* @__PURE__ */ jsx("p", { className: "text-white/80 text-[10px] line-clamp-1", children: offer.description })
+                onClick: () => swiper?.slidePrev(),
+                className: variant === "showcase" ? "p-2 rounded-full border border-border bg-background hover:bg-muted shadow-sm" : "p-2 rounded-full hover:bg-white/50 transition-colors",
+                children: /* @__PURE__ */ jsx(ChevronLeft, { size: variant === "showcase" ? 18 : 20 })
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => swiper?.slideNext(),
+                className: variant === "showcase" ? "p-2 rounded-full border border-border bg-background hover:bg-muted shadow-sm" : "p-2 rounded-full hover:bg-white/50 transition-colors",
+                children: /* @__PURE__ */ jsx(ChevronRight$1, { size: variant === "showcase" ? 18 : 20 })
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx(
+          Swiper,
+          {
+            modules: [Navigation, Autoplay],
+            slidesPerView: 1,
+            spaceBetween: 16,
+            breakpoints: variant === "showcase" ? void 0 : {
+              640: { slidesPerView: 2 },
+              768: { slidesPerView: 3 },
+              1200: { slidesPerView: 4 }
+            },
+            autoplay: {
+              delay: 5e3,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true
+            },
+            onSwiper: setSwiper,
+            className: "w-full min-w-0",
+            children: offers.map((offer, i) => {
+              const isBanner = detectBanner$1(offer.image);
+              const isClickable = !!offer.ctaLink;
+              const hasContent = !!(offer.title || offer.description || offer.couponCode);
+              const hasCtaText = !!(offer.ctaText && offer.ctaText.trim());
+              const showFullImage = isBanner || !hasContent || !hasCtaText;
+              return /* @__PURE__ */ jsx(SwiperSlide, { className: "min-w-0", children: /* @__PURE__ */ jsxs("div", { className: "group h-[520px] w-full bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer", children: [
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: `relative overflow-hidden ${showFullImage ? "h-full" : "h-[280px]"}`,
+                    children: [
+                      offer.image ? offer.image.type === "VIDEO" ? /* @__PURE__ */ jsx(OfferVideo, { src: offer.image.src }) : /* @__PURE__ */ jsx(
+                        "img",
+                        {
+                          src: offer.image.src,
+                          alt: offer.image.alt,
+                          className: `w-full h-full ${showFullImage ? "object-contain bg-black" : "object-cover"} object-center transition-transform duration-500 group-hover:scale-105`
+                        }
+                      ) : /* @__PURE__ */ jsx("div", { className: "w-full h-full flex items-center justify-center bg-muted", children: /* @__PURE__ */ jsx(Tag, { className: "w-10 h-10 text-muted-foreground/30" }) }),
+                      /* @__PURE__ */ jsx("div", { className: "absolute top-3 left-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded z-10 font-bold uppercase tracking-wider", children: offer.propertyType }),
+                      offer.expiresAt && /* @__PURE__ */ jsx("div", { className: "absolute top-3 right-3 z-10", children: /* @__PURE__ */ jsx(CountdownTimer$2, { expiresAt: offer.expiresAt }) }),
+                      showFullImage && /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 z-20", children: [
+                        /* @__PURE__ */ jsxs("div", { className: "mb-3", children: [
+                          offer.title && /* @__PURE__ */ jsx("h3", { className: "text-white font-bold text-sm line-clamp-1", children: offer.title }),
+                          offer.description && /* @__PURE__ */ jsx("p", { className: "text-white/80 text-[10px] line-clamp-1", children: offer.description })
+                        ] }),
+                        hasCtaText && (isClickable ? /* @__PURE__ */ jsxs(
+                          "a",
+                          {
+                            href: offer.ctaLink,
+                            target: "_blank",
+                            rel: "noopener noreferrer",
+                            className: "w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-red-700",
+                            children: [
+                              offer.ctaText,
+                              " ",
+                              /* @__PURE__ */ jsx(ExternalLink, { size: 12 })
+                            ]
+                          }
+                        ) : /* @__PURE__ */ jsxs(
+                          "button",
+                          {
+                            disabled: true,
+                            className: "w-full bg-white/20 text-white py-2.5 rounded-lg text-xs font-bold cursor-not-allowed flex items-center justify-center gap-2",
+                            children: [
+                              offer.ctaText,
+                              " ",
+                              /* @__PURE__ */ jsx(ExternalLink, { size: 12 })
+                            ]
+                          }
+                        ))
+                      ] })
+                    ]
+                  }
+                ),
+                !showFullImage && /* @__PURE__ */ jsxs("div", { className: "p-4 flex flex-col flex-1", children: [
+                  /* @__PURE__ */ jsx("h3", { className: "text-sm font-serif font-bold line-clamp-2 leading-tight text-foreground group-hover:text-red-600 transition-colors", children: offer.title }),
+                  /* @__PURE__ */ jsx("p", { className: "text-[11px] text-muted-foreground italic line-clamp-2 mt-2", children: offer.description }),
+                  /* @__PURE__ */ jsxs("div", { className: "mt-auto pt-3 border-t border-muted", children: [
+                    offer.couponCode && /* @__PURE__ */ jsxs("div", { className: "text-[11px] mb-3 flex items-center justify-center gap-2 bg-muted/50 px-3 py-2 rounded-md border border-dashed border-primary/20", children: [
+                      /* @__PURE__ */ jsx("span", { className: "text-muted-foreground font-medium uppercase", children: "Code" }),
+                      /* @__PURE__ */ jsx("span", { className: "font-mono font-black text-primary text-xs tracking-widest bg-card px-2 py-0.5 rounded shadow-sm border", children: offer.couponCode })
                     ] }),
                     hasCtaText && (isClickable ? /* @__PURE__ */ jsxs(
                       "a",
@@ -11364,7 +11427,7 @@ function HotelOffersCarousel({
                         href: offer.ctaLink,
                         target: "_blank",
                         rel: "noopener noreferrer",
-                        className: "w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-red-700",
+                        className: "w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-md",
                         children: [
                           offer.ctaText,
                           " ",
@@ -11375,7 +11438,7 @@ function HotelOffersCarousel({
                       "button",
                       {
                         disabled: true,
-                        className: "w-full bg-white/20 text-white py-2.5 rounded-lg text-xs font-bold cursor-not-allowed flex items-center justify-center gap-2",
+                        className: "w-full bg-muted/80 py-2.5 rounded-lg text-xs font-bold opacity-70 cursor-not-allowed flex items-center justify-center gap-2",
                         children: [
                           offer.ctaText,
                           " ",
@@ -11384,49 +11447,16 @@ function HotelOffersCarousel({
                       }
                     ))
                   ] })
-                ]
-              }
-            ),
-            !showFullImage && /* @__PURE__ */ jsxs("div", { className: "p-4 flex flex-col flex-1", children: [
-              /* @__PURE__ */ jsx("h3", { className: "text-sm font-serif font-bold line-clamp-2 leading-tight text-foreground group-hover:text-red-600 transition-colors", children: offer.title }),
-              /* @__PURE__ */ jsx("p", { className: "text-[11px] text-muted-foreground italic line-clamp-2 mt-2", children: offer.description }),
-              /* @__PURE__ */ jsxs("div", { className: "mt-auto pt-3 border-t border-muted", children: [
-                offer.couponCode && /* @__PURE__ */ jsxs("div", { className: "text-[11px] mb-3 flex items-center justify-center gap-2 bg-muted/50 px-3 py-2 rounded-md border border-dashed border-primary/20", children: [
-                  /* @__PURE__ */ jsx("span", { className: "text-muted-foreground font-medium uppercase", children: "Code" }),
-                  /* @__PURE__ */ jsx("span", { className: "font-mono font-black text-primary text-xs tracking-widest bg-card px-2 py-0.5 rounded shadow-sm border", children: offer.couponCode })
-                ] }),
-                hasCtaText && (isClickable ? /* @__PURE__ */ jsxs(
-                  "a",
-                  {
-                    href: offer.ctaLink,
-                    target: "_blank",
-                    rel: "noopener noreferrer",
-                    className: "w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-md",
-                    children: [
-                      offer.ctaText,
-                      " ",
-                      /* @__PURE__ */ jsx(ExternalLink, { size: 12 })
-                    ]
-                  }
-                ) : /* @__PURE__ */ jsxs(
-                  "button",
-                  {
-                    disabled: true,
-                    className: "w-full bg-muted/80 py-2.5 rounded-lg text-xs font-bold opacity-70 cursor-not-allowed flex items-center justify-center gap-2",
-                    children: [
-                      offer.ctaText,
-                      " ",
-                      /* @__PURE__ */ jsx(ExternalLink, { size: 12 })
-                    ]
-                  }
-                ))
-              ] })
-            ] })
-          ] }) }, offer.id || i);
-        })
-      }
-    )
-  ] }) });
+                ] })
+              ] }) }, offer.id || i);
+            })
+          }
+        )
+      ]
+    }
+  );
+  if (variant === "showcase") return content;
+  return /* @__PURE__ */ jsx("section", { className: "bg-muted py-10", children: content });
 }
 const STYLE_CONFIG = {
   aspectRatio: "4/3",
@@ -12397,7 +12427,8 @@ function EventCard$2({ event, index }) {
 function GroupBookingSection$1({
   propertyTypeId: initialPropertyTypeId = null,
   initialEvents = [],
-  initialGroupBookings = []
+  initialGroupBookings = [],
+  variant = "standalone"
 }) {
   const [swiper, setSwiper] = useState(null);
   const [events, setEvents] = useState(initialEvents);
@@ -12513,233 +12544,251 @@ function GroupBookingSection$1({
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
   );
-  return /* @__PURE__ */ jsxs("section", { className: "py-10 bg-background", children: [
-    /* @__PURE__ */ jsxs("div", { className: "w-[92%] max-w-7xl mx-auto", children: [
-      /* @__PURE__ */ jsxs("div", { className: "text-center mb-8", children: [
-        /* @__PURE__ */ jsx("h2", { className: "text-2xl md:text-3xl font-serif font-semibold mb-2", children: "Events & Celebrations" }),
-        /* @__PURE__ */ jsx("div", { className: "w-16 h-0.5 bg-primary mx-auto mb-3" })
-      ] }),
-      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-6", children: [
-        /* @__PURE__ */ jsx("div", { className: "lg:col-span-8", children: /* @__PURE__ */ jsxs("div", { className: "bg-card border rounded-2xl p-5 h-full", children: [
-          /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-6", children: [
-            /* @__PURE__ */ jsxs("h3", { className: "text-lg font-serif font-semibold flex items-center gap-2", children: [
-              /* @__PURE__ */ jsx(Sparkles, { className: "w-5 h-5 text-primary" }),
-              " Upcoming Events"
-            ] }),
-            /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
-              /* @__PURE__ */ jsx(
-                "button",
+  return /* @__PURE__ */ jsxs(
+    "section",
+    {
+      className: variant === "showcase" ? "contents" : "py-10 bg-background",
+      children: [
+        /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: variant === "showcase" ? "contents" : "w-[92%] max-w-7xl mx-auto",
+            children: [
+              /* @__PURE__ */ jsxs("div", { className: variant === "showcase" ? "hidden" : "text-center mb-8", children: [
+                /* @__PURE__ */ jsx("h2", { className: "text-2xl md:text-3xl font-serif font-semibold mb-2", children: "Events & Celebrations" }),
+                /* @__PURE__ */ jsx("div", { className: "w-16 h-0.5 bg-primary mx-auto mb-3" })
+              ] }),
+              /* @__PURE__ */ jsxs(
+                "div",
                 {
-                  onClick: () => swiper?.slidePrev(),
-                  className: "p-2 rounded-full border border-border bg-background hover:bg-muted shadow-sm",
-                  children: /* @__PURE__ */ jsx(ChevronLeft, { size: 18 })
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                "button",
-                {
-                  onClick: () => swiper?.slideNext(),
-                  className: "p-2 rounded-full border border-border bg-background hover:bg-muted shadow-sm",
-                  children: /* @__PURE__ */ jsx(ChevronRight$1, { size: 18 })
+                  className: variant === "showcase" ? "contents" : "grid grid-cols-1 lg:grid-cols-12 gap-6",
+                  children: [
+                    /* @__PURE__ */ jsx("div", { className: variant === "showcase" ? "min-w-0" : "lg:col-span-8", children: /* @__PURE__ */ jsxs("div", { className: "bg-card border rounded-2xl p-5 h-full min-w-0 overflow-hidden", children: [
+                      /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-6", children: [
+                        /* @__PURE__ */ jsxs("h3", { className: "text-lg font-serif font-semibold flex items-center gap-2", children: [
+                          /* @__PURE__ */ jsx(Sparkles, { className: "w-5 h-5 text-primary" }),
+                          " Upcoming Events"
+                        ] }),
+                        /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+                          /* @__PURE__ */ jsx(
+                            "button",
+                            {
+                              onClick: () => swiper?.slidePrev(),
+                              className: "p-2 rounded-full border border-border bg-background hover:bg-muted shadow-sm",
+                              children: /* @__PURE__ */ jsx(ChevronLeft, { size: 18 })
+                            }
+                          ),
+                          /* @__PURE__ */ jsx(
+                            "button",
+                            {
+                              onClick: () => swiper?.slideNext(),
+                              className: "p-2 rounded-full border border-border bg-background hover:bg-muted shadow-sm",
+                              children: /* @__PURE__ */ jsx(ChevronRight$1, { size: 18 })
+                            }
+                          )
+                        ] })
+                      ] }),
+                      loading ? /* @__PURE__ */ jsx("div", { className: "flex justify-center items-center py-20", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin text-primary w-7 h-7" }) }) : events.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-center py-12 text-muted-foreground text-sm", children: "No upcoming hotel events available." }) : /* @__PURE__ */ jsx(
+                        Swiper,
+                        {
+                          modules: [Autoplay, Pagination$2, Navigation],
+                          spaceBetween: 16,
+                          slidesPerView: 1,
+                          autoplay: {
+                            delay: 5e3,
+                            disableOnInteraction: false,
+                            pauseOnMouseEnter: true
+                          },
+                          pagination: { clickable: true },
+                          onSwiper: setSwiper,
+                          breakpoints: variant === "showcase" ? void 0 : {
+                            640: { slidesPerView: 2 },
+                            1024: { slidesPerView: 2.4 }
+                            // slightly wider cards
+                          },
+                          className: "!pb-10 w-full min-w-0",
+                          children: events.map((event, index) => /* @__PURE__ */ jsx(SwiperSlide, { className: "min-w-0", children: /* @__PURE__ */ jsx(EventCard$2, { event, index }) }, event.id))
+                        }
+                      )
+                    ] }) }),
+                    /* @__PURE__ */ jsx("div", { className: variant === "showcase" ? "min-w-0" : "lg:col-span-4", children: /* @__PURE__ */ jsxs("div", { className: "bg-card border rounded-2xl p-5 h-full min-w-0 flex flex-col overflow-hidden", children: [
+                      /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-4", children: [
+                        /* @__PURE__ */ jsxs("h3", { className: "text-xl font-serif font-semibold flex gap-2", children: [
+                          /* @__PURE__ */ jsx(Users, { className: "w-5 h-5 text-primary" }),
+                          " Group Booking"
+                        ] }),
+                        totalPages > 1 && /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
+                          /* @__PURE__ */ jsx(
+                            "button",
+                            {
+                              disabled: currentPage === 0,
+                              onClick: () => setCurrentPage((p) => p - 1),
+                              className: "p-1 rounded bg-muted disabled:opacity-30",
+                              children: /* @__PURE__ */ jsx(ChevronLeft, { size: 14 })
+                            }
+                          ),
+                          /* @__PURE__ */ jsx(
+                            "button",
+                            {
+                              disabled: currentPage >= totalPages - 1,
+                              onClick: () => setCurrentPage((p) => p + 1),
+                              className: "p-1 rounded bg-muted disabled:opacity-30",
+                              children: /* @__PURE__ */ jsx(ChevronRight$1, { size: 14 })
+                            }
+                          )
+                        ] })
+                      ] }),
+                      groupBookings.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-center py-8 text-muted-foreground text-sm flex-1", children: "No group booking packages available." }) : /* @__PURE__ */ jsx("div", { className: "space-y-3 flex-1", children: paginatedBookings.map((booking, index) => {
+                        const colorCls = CARD_COLORS$1[index % CARD_COLORS$1.length];
+                        return /* @__PURE__ */ jsxs(
+                          "div",
+                          {
+                            onClick: () => {
+                              setSelectedOffer(booking);
+                              setStep(1);
+                              setDateRange(null);
+                              setFormData(EMPTY_FORM$4);
+                            },
+                            className: `flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all group ${colorCls}`,
+                            children: [
+                              /* @__PURE__ */ jsx("div", { className: "w-12 h-12 rounded-lg overflow-hidden bg-muted shrink-0", children: booking.media?.[0]?.url ? /* @__PURE__ */ jsx(
+                                "img",
+                                {
+                                  src: booking.media[0].url,
+                                  alt: booking.title,
+                                  className: "w-full h-full object-cover"
+                                }
+                              ) : /* @__PURE__ */ jsx(Image$1, { className: "w-5 h-5 text-muted-foreground/40 m-auto" }) }),
+                              /* @__PURE__ */ jsxs("div", { className: "flex-1 min-w-0", children: [
+                                /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold line-clamp-1 group-hover:text-primary", children: booking.title }),
+                                booking.description && /* @__PURE__ */ jsx("p", { className: "text-[11px] text-muted-foreground line-clamp-2 mt-0.5", children: booking.description }),
+                                booking.ctaLink && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-2 uppercase tracking-tight", children: [
+                                  booking.ctaText || "Details",
+                                  " ",
+                                  /* @__PURE__ */ jsx(ExternalLink, { size: 9 })
+                                ] })
+                              ] }),
+                              /* @__PURE__ */ jsx(
+                                ArrowRight$1,
+                                {
+                                  size: 14,
+                                  className: "text-muted-foreground/40 group-hover:text-primary transition-colors"
+                                }
+                              )
+                            ]
+                          },
+                          booking.id
+                        );
+                      }) }),
+                      totalPages > 1 && /* @__PURE__ */ jsxs("p", { className: "text-[10px] text-center text-muted-foreground mt-4 uppercase", children: [
+                        "Page ",
+                        currentPage + 1,
+                        " of ",
+                        totalPages
+                      ] })
+                    ] }) })
+                  ]
                 }
               )
-            ] })
-          ] }),
-          loading ? /* @__PURE__ */ jsx("div", { className: "flex justify-center items-center py-20", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin text-primary w-7 h-7" }) }) : events.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-center py-12 text-muted-foreground text-sm", children: "No upcoming hotel events available." }) : /* @__PURE__ */ jsx(
-            Swiper,
-            {
-              modules: [Autoplay, Pagination$2, Navigation],
-              spaceBetween: 16,
-              slidesPerView: 1,
-              autoplay: {
-                delay: 5e3,
-                disableOnInteraction: false,
-                pauseOnMouseEnter: true
-              },
-              pagination: { clickable: true },
-              onSwiper: setSwiper,
-              breakpoints: {
-                640: { slidesPerView: 2 },
-                1024: { slidesPerView: 2.4 }
-                // 👈 slightly wider cards
-              },
-              className: "!pb-10",
-              children: events.map((event, index) => /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsx(EventCard$2, { event, index }) }, event.id))
-            }
-          )
-        ] }) }),
-        /* @__PURE__ */ jsx("div", { className: "lg:col-span-4", children: /* @__PURE__ */ jsxs("div", { className: "border rounded-2xl p-5 h-full flex flex-col", children: [
-          /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-4", children: [
-            /* @__PURE__ */ jsxs("h3", { className: "text-xl font-serif font-semibold flex gap-2", children: [
-              /* @__PURE__ */ jsx(Users, { className: "w-5 h-5 text-primary" }),
-              " Group Booking"
-            ] }),
-            totalPages > 1 && /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
-              /* @__PURE__ */ jsx(
-                "button",
-                {
-                  disabled: currentPage === 0,
-                  onClick: () => setCurrentPage((p) => p - 1),
-                  className: "p-1 rounded bg-muted disabled:opacity-30",
-                  children: /* @__PURE__ */ jsx(ChevronLeft, { size: 14 })
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                "button",
-                {
-                  disabled: currentPage >= totalPages - 1,
-                  onClick: () => setCurrentPage((p) => p + 1),
-                  className: "p-1 rounded bg-muted disabled:opacity-30",
-                  children: /* @__PURE__ */ jsx(ChevronRight$1, { size: 14 })
-                }
-              )
-            ] })
-          ] }),
-          groupBookings.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-center py-8 text-muted-foreground text-sm flex-1", children: "No group booking packages available." }) : /* @__PURE__ */ jsx("div", { className: "space-y-3 flex-1", children: paginatedBookings.map((booking, index) => {
-            const colorCls = CARD_COLORS$1[index % CARD_COLORS$1.length];
-            return /* @__PURE__ */ jsxs(
-              "div",
-              {
-                onClick: () => {
-                  setSelectedOffer(booking);
-                  setStep(1);
-                  setDateRange(null);
-                  setFormData(EMPTY_FORM$4);
-                },
-                className: `flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all group ${colorCls}`,
-                children: [
-                  /* @__PURE__ */ jsx("div", { className: "w-12 h-12 rounded-lg overflow-hidden bg-muted shrink-0", children: booking.media?.[0]?.url ? /* @__PURE__ */ jsx(
-                    "img",
-                    {
-                      src: booking.media[0].url,
-                      alt: booking.title,
-                      className: "w-full h-full object-cover"
-                    }
-                  ) : /* @__PURE__ */ jsx(Image$1, { className: "w-5 h-5 text-muted-foreground/40 m-auto" }) }),
-                  /* @__PURE__ */ jsxs("div", { className: "flex-1 min-w-0", children: [
-                    /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold line-clamp-1 group-hover:text-primary", children: booking.title }),
-                    booking.description && /* @__PURE__ */ jsx("p", { className: "text-[11px] text-muted-foreground line-clamp-2 mt-0.5", children: booking.description }),
-                    booking.ctaLink && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-2 uppercase tracking-tight", children: [
-                      booking.ctaText || "Details",
-                      " ",
-                      /* @__PURE__ */ jsx(ExternalLink, { size: 9 })
-                    ] })
-                  ] }),
-                  /* @__PURE__ */ jsx(
-                    ArrowRight$1,
-                    {
-                      size: 14,
-                      className: "text-muted-foreground/40 group-hover:text-primary transition-colors"
-                    }
-                  )
-                ]
-              },
-              booking.id
-            );
-          }) }),
-          totalPages > 1 && /* @__PURE__ */ jsxs("p", { className: "text-[10px] text-center text-muted-foreground mt-4 uppercase", children: [
-            "Page ",
-            currentPage + 1,
-            " of ",
-            totalPages
-          ] })
-        ] }) })
-      ] })
-    ] }),
-    /* @__PURE__ */ jsx(
-      Dialog,
-      {
-        open: !!selectedOffer,
-        onOpenChange: (open) => {
-          if (!open) {
-            setSelectedOffer(null);
-            setStep(1);
-            setDateRange(null);
-            setFormData(EMPTY_FORM$4);
+            ]
           }
-        },
-        children: /* @__PURE__ */ jsxs(DialogContent, { className: "sm:max-w-[500px]", children: [
-          /* @__PURE__ */ jsxs(DialogHeader, { children: [
-            /* @__PURE__ */ jsx(DialogTitle, { className: "font-serif text-2xl", children: selectedOffer?.title }),
-            /* @__PURE__ */ jsx(DialogDescription, { children: "Share your preferred dates and contact details for this booking." })
-          ] }),
-          step === 1 ? /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-            /* @__PURE__ */ jsx(Calendar, { selectRange: true, value: dateRange, onChange: setDateRange }),
-            /* @__PURE__ */ jsx(
-              Button,
-              {
-                className: "w-full",
-                onClick: () => setStep(2),
-                disabled: !Array.isArray(dateRange) || !dateRange[0],
-                children: "Confirm Dates"
+        ),
+        /* @__PURE__ */ jsx(
+          Dialog,
+          {
+            open: !!selectedOffer,
+            onOpenChange: (open) => {
+              if (!open) {
+                setSelectedOffer(null);
+                setStep(1);
+                setDateRange(null);
+                setFormData(EMPTY_FORM$4);
               }
-            )
-          ] }) : step === 2 ? /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-            /* @__PURE__ */ jsx(
-              Input,
-              {
-                placeholder: "Your name",
-                value: formData.name,
-                onChange: (e) => setFormData((prev) => ({ ...prev, name: e.target.value }))
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              Input,
-              {
-                placeholder: "Phone number",
-                type: "tel",
-                value: formData.phone,
-                onChange: (e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              Input,
-              {
-                placeholder: "Email address",
-                type: "email",
-                value: formData.email,
-                onChange: (e) => setFormData((prev) => ({ ...prev, email: e.target.value }))
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              Input,
-              {
-                placeholder: "No. of persons",
-                type: "number",
-                min: "1",
-                value: formData.persons,
-                onChange: (e) => setFormData((prev) => ({ ...prev, persons: e.target.value }))
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              Textarea,
-              {
-                placeholder: "Additional requirements",
-                value: formData.customQuery,
-                onChange: (e) => setFormData((prev) => ({
-                  ...prev,
-                  customQuery: e.target.value
-                })),
-                rows: 4
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              Button,
-              {
-                className: "w-full",
-                onClick: handleFinalSubmit,
-                disabled: isSubmitting,
-                children: isSubmitting ? "Submitting..." : "Send Enquiry"
-              }
-            )
-          ] }) : /* @__PURE__ */ jsxs("div", { className: "py-8 text-center space-y-2", children: [
-            /* @__PURE__ */ jsx("p", { className: "text-lg font-semibold text-green-600", children: "Enquiry Sent!" }),
-            /* @__PURE__ */ jsx("p", { className: "text-sm text-muted-foreground", children: "We'll get back to you shortly." })
-          ] })
-        ] })
-      }
-    )
-  ] });
+            },
+            children: /* @__PURE__ */ jsxs(DialogContent, { className: "sm:max-w-[500px]", children: [
+              /* @__PURE__ */ jsxs(DialogHeader, { children: [
+                /* @__PURE__ */ jsx(DialogTitle, { className: "font-serif text-2xl", children: selectedOffer?.title }),
+                /* @__PURE__ */ jsx(DialogDescription, { children: "Share your preferred dates and contact details for this booking." })
+              ] }),
+              step === 1 ? /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+                /* @__PURE__ */ jsx(Calendar, { selectRange: true, value: dateRange, onChange: setDateRange }),
+                /* @__PURE__ */ jsx(
+                  Button,
+                  {
+                    className: "w-full",
+                    onClick: () => setStep(2),
+                    disabled: !Array.isArray(dateRange) || !dateRange[0],
+                    children: "Confirm Dates"
+                  }
+                )
+              ] }) : step === 2 ? /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+                /* @__PURE__ */ jsx(
+                  Input,
+                  {
+                    placeholder: "Your name",
+                    value: formData.name,
+                    onChange: (e) => setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  Input,
+                  {
+                    placeholder: "Phone number",
+                    type: "tel",
+                    value: formData.phone,
+                    onChange: (e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  Input,
+                  {
+                    placeholder: "Email address",
+                    type: "email",
+                    value: formData.email,
+                    onChange: (e) => setFormData((prev) => ({ ...prev, email: e.target.value }))
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  Input,
+                  {
+                    placeholder: "No. of persons",
+                    type: "number",
+                    min: "1",
+                    value: formData.persons,
+                    onChange: (e) => setFormData((prev) => ({ ...prev, persons: e.target.value }))
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  Textarea,
+                  {
+                    placeholder: "Additional requirements",
+                    value: formData.customQuery,
+                    onChange: (e) => setFormData((prev) => ({
+                      ...prev,
+                      customQuery: e.target.value
+                    })),
+                    rows: 4
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  Button,
+                  {
+                    className: "w-full",
+                    onClick: handleFinalSubmit,
+                    disabled: isSubmitting,
+                    children: isSubmitting ? "Submitting..." : "Send Enquiry"
+                  }
+                )
+              ] }) : /* @__PURE__ */ jsxs("div", { className: "py-8 text-center space-y-2", children: [
+                /* @__PURE__ */ jsx("p", { className: "text-lg font-semibold text-green-600", children: "Enquiry Sent!" }),
+                /* @__PURE__ */ jsx("p", { className: "text-sm text-muted-foreground", children: "We'll get back to you shortly." })
+              ] })
+            ] })
+          }
+        )
+      ]
+    }
+  );
 }
 function WhatsAppButton() {
   const phoneNumber = "9754811000";
@@ -13759,35 +13808,52 @@ function Hotels() {
         currentAboutIndex
       ) }) })
     ] }) }) }),
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        id: "offers",
-        "data-ssr-section": "hotel-offers",
-        "data-ssr-count": ssrHotels?.hotelOffers?.length ?? 0,
-        children: /* @__PURE__ */ jsx(HotelOffersCarousel, { initialOffers: ssrHotels?.hotelOffers })
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        "data-ssr-section": "hotel-group-booking",
-        "data-events-count": ssrHotels?.groupEvents?.length ?? 0,
-        "data-bookings-count": ssrHotels?.groupBookings?.length ?? 0,
-        children: /* @__PURE__ */ jsx(
-          GroupBookingSection$1,
+    /* @__PURE__ */ jsx("section", { id: "offers", className: "bg-muted py-10", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto w-[92%] max-w-7xl", children: [
+      /* @__PURE__ */ jsxs("div", { className: "mb-8 text-center", children: [
+        /* @__PURE__ */ jsx("h2", { className: "font-serif text-2xl md:text-3xl", children: "Hotel Showcase" }),
+        /* @__PURE__ */ jsx("div", { className: "mx-auto mt-3 h-0.5 w-16 bg-primary" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-6 lg:grid-cols-3", children: [
+        /* @__PURE__ */ jsx(
+          "div",
           {
-            propertyTypeId: hotelTypeId,
-            initialEvents: ssrHotels?.groupEvents,
-            initialGroupBookings: ssrHotels?.groupBookings
+            className: "min-w-0",
+            "data-ssr-section": "hotel-offers",
+            "data-ssr-count": ssrHotels?.hotelOffers?.length ?? 0,
+            children: /* @__PURE__ */ jsx(
+              HotelOffersCarousel,
+              {
+                initialOffers: ssrHotels?.hotelOffers,
+                variant: "showcase"
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            id: "events",
+            className: "contents",
+            "data-ssr-section": "hotel-group-booking",
+            "data-events-count": ssrHotels?.groupEvents?.length ?? 0,
+            "data-bookings-count": ssrHotels?.groupBookings?.length ?? 0,
+            children: /* @__PURE__ */ jsx(
+              GroupBookingSection$1,
+              {
+                propertyTypeId: hotelTypeId,
+                initialEvents: ssrHotels?.groupEvents,
+                initialGroupBookings: ssrHotels?.groupBookings,
+                variant: "showcase"
+              }
+            )
           }
         )
-      }
-    ),
+      ] })
+    ] }) }),
     /* @__PURE__ */ jsx(
       "div",
       {
-        id: "events",
+        id: "updates",
         "data-ssr-section": "hotel-news",
         "data-ssr-count": ssrHotels?.hotelNews?.length ?? 0,
         children: /* @__PURE__ */ jsx(HotelNewsUpdates, { initialItems: ssrHotels?.hotelNews })
