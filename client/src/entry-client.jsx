@@ -13,9 +13,15 @@ async function bootstrap() {
   }
 
   const hasSsrMarkup = container.hasChildNodes();
-  const initialData = hasSsrMarkup
-    ? await loadInitialDataForUrl(window.location.href).catch(() => null)
-    : null;
+  let initialData = null;
+
+  if (hasSsrMarkup) {
+    try {
+      initialData = await loadInitialDataForUrl(window.location.href);
+    } catch {
+      initialData = null;
+    }
+  }
   const app = (
     <BrowserRouter>
       <App initialData={initialData} />
