@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { colors } from "@/lib/colors/colors";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Plus,
   Loader2,
@@ -9,28 +8,27 @@ import {
   Pencil,
   Building2,
   Home,
+  AlertCircle,
 } from "lucide-react";
 import {
   getAboutUsAdmin,
   getVenturesByAboutUsId,
   getRecognitionsByAboutUsId,
-  enableAboutUs,
-  disableAboutUs,
   getAboutUsByPropertyType,
   getPropertyTypes,
 } from "@/Api/Api";
 import {
-  showSuccess,
-  showInfo,
   showError,
-  showWarning,
 } from "@/lib/toasters/toastUtils";
 import AddUpdateAboutModal from "../../modals/AddUpdateAboutModal";
 import AddUpdateVenturesModal from "../../modals/AddUpdateVenturesModal";
 import AddUpdateRecognitionModal from "../../modals/AddUpdateRecognitionModal";
 
+const ENABLED_PROPERTY_TYPE_TABS = ["hotel", "restaurant", "cafe"];
+
 function AboutUs() {
-  const [activeTab, setActiveTab] = useState("about");
+  const [activeTab, setActiveTab] = useState("homepage");
+  const [contentTab, setContentTab] = useState("about");
   const [aboutUsList, setAboutUsList] = useState([]);
   const [ventures, setVentures] = useState([]);
   const [recognitions, setRecognitions] = useState([]);
@@ -48,7 +46,6 @@ function AboutUs() {
 
   // Property Type State
   const [propertyTypes, setPropertyTypes] = useState([]);
-  const [selectedPropertyTypeId, setSelectedPropertyTypeId] = useState(null);
   const [loadingPropertyTypes, setLoadingPropertyTypes] = useState(false);
 
   const normalize = (val = "") =>
@@ -64,7 +61,9 @@ function AboutUs() {
 
         if (Array.isArray(data)) {
           const activeTypes = data.filter(
-            (type) => type.isActive && normalize(type.typeName) !== "both",
+            (type) =>
+              type.isActive &&
+              ENABLED_PROPERTY_TYPE_TABS.includes(normalize(type.typeName)),
           );
           setPropertyTypes(activeTypes);
         }
@@ -85,8 +84,8 @@ function AboutUs() {
 
       let data = [];
 
-      if (selectedPropertyTypeId !== null) {
-        const res = await getAboutUsByPropertyType(selectedPropertyTypeId);
+      if (activeTab !== "homepage") {
+        const res = await getAboutUsByPropertyType(Number(activeTab));
         data = res?.data || res;
       } else {
         const res = await getAboutUsAdmin();
@@ -118,16 +117,16 @@ function AboutUs() {
     } finally {
       setFetching(false);
     }
-  }, [selectedPropertyTypeId]);
+  }, [activeTab]);
 
   const fetchTabData = useCallback(async () => {
     if (!selectedAboutUsId) return;
     try {
       setFetchingTab(true);
-      if (activeTab === "ventures") {
+      if (contentTab === "ventures") {
         const res = await getVenturesByAboutUsId(selectedAboutUsId);
         setVentures(res?.data || []);
-      } else if (activeTab === "recognitions") {
+      } else if (contentTab === "recognitions") {
         const res = await getRecognitionsByAboutUsId(selectedAboutUsId);
         setRecognitions(res?.data || []);
       }
@@ -136,7 +135,7 @@ function AboutUs() {
     } finally {
       setFetchingTab(false);
     }
-  }, [activeTab, selectedAboutUsId]);
+  }, [contentTab, selectedAboutUsId]);
 
   useEffect(() => {
     fetchAboutList();
@@ -171,16 +170,31 @@ function AboutUs() {
     if (type === "recognition") setIsRecognitionModalOpen(true);
   };
 
-  const handlePropertyTypeChange = (typeId) => {
-    setSelectedPropertyTypeId(typeId);
+  const handlePropertyTypeChange = (tabId) => {
+    setActiveTab(tabId);
     setSelectedAboutUsId(null);
   };
 
+  const selectedPropertyTypeId =
+    activeTab === "homepage" ? null : Number(activeTab);
+
   const getSelectedPropertyTypeName = () => {
-    if (selectedPropertyTypeId === null) return "Home page";
+    if (selectedPropertyTypeId === null) return "Homepage";
     const type = propertyTypes.find((pt) => pt.id === selectedPropertyTypeId);
     return type ? type.typeName : "Unknown";
   };
+
+  const propertyTypeTabs = useMemo(
+    () => [
+      { id: "homepage", label: "Homepage", icon: Home },
+      ...propertyTypes.map((type) => ({
+        id: String(type.id),
+        label: `${type.typeName} Page`,
+        icon: Building2,
+      })),
+    ],
+    [propertyTypes],
+  );
 
   if (fetching && propertyTypes.length === 0) {
     return (
@@ -198,50 +212,28 @@ function AboutUs() {
 
   return (
     <div className="space-y-6">
-      {/* Property Type Filter */}
-      <div className="bg-card border rounded-xl p-4 shadow-sm">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Building2 size={18} className="text-muted-foreground" />
-            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Filter by Property Type:
-            </label>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
+      <div className="rounded-xl border bg-card p-4 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          {propertyTypeTabs.map((tab) => (
             <button
-              onClick={() => handlePropertyTypeChange(null)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                selectedPropertyTypeId === null
+              key={tab.id}
+              onClick={() => handlePropertyTypeChange(tab.id)}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all ${
+                activeTab === tab.id
                   ? "bg-primary text-white shadow-md"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
-              <Home size={14} />
-              Home page
+              <tab.icon size={14} />
+              {tab.label}
             </button>
-
-            {propertyTypes.map((type) => (
-              <button
-                key={type.id}
-                onClick={() => handlePropertyTypeChange(type.id)}
-                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                  selectedPropertyTypeId === type.id
-                    ? "bg-primary text-white shadow-md"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                {type.typeName}
-              </button>
-            ))}
-          </div>
-
+          ))}
           {loadingPropertyTypes && (
             <Loader2 size={16} className="animate-spin text-muted-foreground" />
           )}
         </div>
-
-        <div className="mt-3 pt-3 border-t border-border/50">
+        <div className="mt-3 flex items-center gap-2 border-t border-border/50 pt-3 text-xs text-muted-foreground">
+          <AlertCircle size={14} />
           <p className="text-xs text-muted-foreground">
             Currently viewing:{" "}
             <span className="font-bold text-foreground">
@@ -266,9 +258,9 @@ function AboutUs() {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setContentTab(tab.id)}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-bold uppercase transition-all ${
-              activeTab === tab.id
+              contentTab === tab.id
                 ? "bg-primary text-white shadow-md"
                 : "text-muted-foreground hover:bg-muted"
             }`}
@@ -280,7 +272,7 @@ function AboutUs() {
 
       {/* Content Area */}
       <div className="bg-card border rounded-xl shadow-sm min-h-[400px]">
-        {activeTab === "about" && (
+        {contentTab === "about" && (
           <div className="p-6 space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-bold">
@@ -410,7 +402,7 @@ function AboutUs() {
           </div>
         )}
 
-        {activeTab === "ventures" && (
+        {contentTab === "ventures" && (
           <div className="p-6 space-y-6">
             <div className="flex justify-between items-center border-b pb-4">
               <h3 className="text-sm font-bold">
@@ -480,7 +472,7 @@ function AboutUs() {
           </div>
         )}
 
-        {activeTab === "recognitions" && (
+        {contentTab === "recognitions" && (
           <div className="p-6 space-y-6">
             <div className="flex justify-between items-center border-b pb-4">
               <h3 className="text-sm font-bold">
@@ -554,6 +546,7 @@ function AboutUs() {
       <AddUpdateAboutModal
         isOpen={isAboutModalOpen}
         editData={selectedEditData}
+        defaultPropertyTypeId={selectedPropertyTypeId}
         onClose={(refresh) => {
           setIsAboutModalOpen(false);
           setSelectedEditData(null);
