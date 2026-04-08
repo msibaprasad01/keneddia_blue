@@ -148,8 +148,8 @@ const WebsiteRoutes = [
   // <Route key="hotel-detail" path="/hotels/:propertyId" element={<HotelDetail />} />,
 
   <Route key="room-selection" path="/hotels/:hotelId/rooms" element={withRouteSuspense(<RoomSelection />)} />,
-  <Route key="cafes" path="/cafes" element={<Cafes />} />,
-  <Route key="bars" path="/bars" element={<Bars />} />,
+  // <Route key="cafes" path="/cafes" element={<Cafes />} />,
+  // <Route key="bars" path="/bars" element={<Bars />} />,
   <Route key="events" path="/events" element={<Events />} />,
   <Route key="offers" path="/offers" element={<OfferListing />} />,
   // OfferListing
@@ -157,9 +157,11 @@ const WebsiteRoutes = [
   <Route key="about" path="/about" element={<About />} />,
   <Route key="reviews" path="/reviews" element={<Reviews />} />,
   <Route key="login" path="/login" element={<Login />} />,
-  <Route key="careers" path="/careers" element={<Careers />} />,
-  <Route key="restaurant-homepage" path="/restaurant-homepage" element={withRouteSuspense(<RestaurantHomepage />)} />,
-  <Route key="cafe-homepage" path="/cafe-homepage" element={withRouteSuspense(<CafeHomepage />)} />,
+  // <Route key="careers" path="/careers" element={<Careers />} />,
+
+  // <Route key="restaurant-homepage" path="/restaurant-homepage" element={withRouteSuspense(<RestaurantHomepage />)} />,
+  // <Route key="cafe-homepage" path="/cafe-homepage" element={withRouteSuspense(<CafeHomepage />)} />,
+
   <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={withRouteSuspense(<ResturantPage />)} />,
 
   // Restaurant Sub-Verticals
