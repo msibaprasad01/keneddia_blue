@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  Loader2,
   MapPin,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -10,6 +11,7 @@ import { Navigation, Autoplay } from "swiper/modules";
 import { motion } from "framer-motion";
 
 import { siteContent } from "@/data/siteContent";
+import { getDailyOffers, getPropertyTypeById } from "@/Api/Api";
 
 import "swiper/css";
 
@@ -69,9 +71,111 @@ function OfferCard({ offer, index }) {
   );
 }
 
+const normalize = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+
 export default function RestaurantOffers() {
   const [swiper, setSwiper] = useState(null);
-  const offers = siteContent?.text?.dailyOffers?.offers || [];
+  const [offers, setOffers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        setLoading(true);
+
+        const res = await getDailyOffers({
+          targetType: "GLOBAL",
+          page: 0,
+          size: 100,
+        });
+
+        const rawData = res?.data?.data || res?.data || [];
+        const list = Array.isArray(rawData) ? rawData : rawData.content || [];
+        const now = Date.now();
+        const days = [
+          "SUNDAY",
+          "MONDAY",
+          "TUESDAY",
+          "WEDNESDAY",
+          "THURSDAY",
+          "FRIDAY",
+          "SATURDAY",
+        ];
+        const todayName = days[new Date().getDay()];
+
+        const filtered = await Promise.all(
+          list.map(async (offer) => {
+            if (!offer?.isActive || offer?.showOnHomepage !== true) return null;
+
+            let notExpired = true;
+            if (offer.expiresAt) {
+              const expiry = new Date(`${offer.expiresAt}T23:59:59`);
+              notExpired = expiry.getTime() >= now;
+            }
+            if (!notExpired) return null;
+
+            const isDayActive =
+              !offer.activeDays?.length || offer.activeDays.includes(todayName);
+            if (!isDayActive) return null;
+
+            if (!offer.propertyTypeId) return null;
+
+            try {
+              const propertyTypeRes = await getPropertyTypeById(
+                offer.propertyTypeId,
+              );
+              const propertyType = propertyTypeRes?.data;
+
+              if (!propertyType?.isActive) return null;
+              if (normalize(propertyType.typeName) !== "restaurant") return null;
+
+              return {
+                id: offer.id,
+                title: offer.title || "",
+                description: offer.description || "",
+                ctaText: offer.ctaText || "",
+                link: offer.ctaUrl || offer.ctaLink || null,
+                location:
+                  offer.location ||
+                  offer.locationName ||
+                  offer.propertyName ||
+                  "",
+              };
+            } catch (error) {
+              console.error(
+                `Failed to resolve property type for offer ${offer?.id}`,
+                error,
+              );
+              return null;
+            }
+          }),
+        );
+
+        setOffers(filtered.filter(Boolean));
+      } catch (error) {
+        console.error("Restaurant offers fetch failed", error);
+        setOffers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOffers();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="offers" className="bg-muted py-10">
+        <div className="container mx-auto flex justify-center px-6">
+          <Loader2 className="animate-spin" />
+        </div>
+      </section>
+    );
+  }
 
   if (!offers.length) return null;
 
@@ -120,7 +224,7 @@ export default function RestaurantOffers() {
           onSwiper={setSwiper}
         >
           {offers.map((offer, index) => (
-            <SwiperSlide key={`${offer.title}-${index}`}>
+            <SwiperSlide key={offer.id || index}>
               <OfferCard offer={offer} index={index} />
             </SwiperSlide>
           ))}

@@ -29,7 +29,12 @@ const normalize = (str) => {
   return str.toLowerCase().trim();
 };
 
-function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
+function AddUpdateAboutModal({
+  isOpen,
+  onClose,
+  editData = null,
+  defaultPropertyTypeId = null,
+}) {
   const [formData, setFormData] = useState({
     sectionTitle: "",
     subTitle: "",
@@ -103,6 +108,31 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
       resetForm();
     }
   }, [editData, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || editData) return;
+
+    setFormData((prev) => {
+      if (prev.propertyTypeId === defaultPropertyTypeId) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        propertyTypeId: defaultPropertyTypeId,
+        ...(defaultPropertyTypeId !== null
+          ? {
+              videoUrl: "",
+              videoTitle: "",
+              ctaButtonText: "",
+              ctaButtonUrl: "",
+            }
+          : {
+              ctaButtonText: prev.ctaButtonText || "More Details â†’",
+            }),
+      };
+    });
+  }, [defaultPropertyTypeId, editData, isOpen]);
 
   const resetForm = () => {
     setFormData({
@@ -243,6 +273,16 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
   const selectedPropertyType = propertyTypes.find(
     (pt) => pt.id === formData.propertyTypeId,
   );
+  const isRestaurantType =
+    normalize(selectedPropertyType?.typeName) === "restaurant";
+  const subtitleLabel = isRestaurantType ? "Location Tag" : "Sub Title";
+  const titleLabel = isRestaurantType ? "Header" : "Section Title";
+  const subtitlePlaceholder = isRestaurantType
+    ? "e.g., Bengaluru Destination"
+    : "e.g., Building Excellence";
+  const titlePlaceholder = isRestaurantType
+    ? "e.g., A Symphony of Fine Flavors"
+    : "e.g., About Kennedia Hotels";
 
   return (
     <div
@@ -377,25 +417,25 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-bold uppercase text-gray-400 flex items-center gap-1">
-                Section Title <span className="text-red-500">*</span>
+                {titleLabel} <span className="text-red-500">*</span>
               </label>
               <input
                 value={formData.sectionTitle}
                 onChange={(e) =>
                   handleInputChange("sectionTitle", e.target.value)
                 }
-                placeholder="e.g., About Kennedia Hotels"
+                placeholder={titlePlaceholder}
                 className="w-full px-4 py-2 rounded-lg border text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none"
               />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold uppercase text-gray-400 flex items-center gap-1">
-                Sub Title <span className="text-red-500">*</span>
+                {subtitleLabel} <span className="text-red-500">*</span>
               </label>
               <input
                 value={formData.subTitle}
                 onChange={(e) => handleInputChange("subTitle", e.target.value)}
-                placeholder="e.g., Building Excellence"
+                placeholder={subtitlePlaceholder}
                 className="w-full px-4 py-2 rounded-lg border text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none"
               />
             </div>

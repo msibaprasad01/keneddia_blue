@@ -13506,7 +13506,7 @@ const HotelCarouselSection = lazy(
   () => import("./assets/HotelCarouselSection-DimFSu7d.js")
 );
 const QuickBooking = lazy(
-  () => import("./assets/QuickBooking-Cytb49GK.js")
+  () => import("./assets/QuickBooking-B3gGNS9P.js")
 );
 const HOTEL_NAV_ITEMS = [
   { type: "link", label: "OVERVIEW", key: "overview", href: "#overview" },
@@ -23851,7 +23851,7 @@ function TakeawayTreats() {
 }
 const RoomSelection = lazy(() => import("./assets/RoomSelection-NzltMzz4.js"));
 const RestaurantHomepage = lazy(
-  () => import("./assets/RestaurantHomepage-FnT0ULwo.js")
+  () => import("./assets/RestaurantHomepage-B8HnYKBY.js")
 );
 const CafeHomepage = lazy(
   () => import("./assets/CafeHomepage-Beqai0UW.js")
@@ -25227,7 +25227,7 @@ function MediaUploader({ label, previews, types, onUpload, onRemove }) {
     ] })
   ] });
 }
-const ENABLED_PROPERTY_TYPE_TABS = ["hotel", "restaurant", "cafe"];
+const ENABLED_PROPERTY_TYPE_TABS$1 = ["hotel", "restaurant", "cafe"];
 function HeroSection() {
   const [activeTab, setActiveTab] = useState("homepage");
   const [heroSections, setHeroSections] = useState([]);
@@ -25248,7 +25248,7 @@ function HeroSection() {
       if (Array.isArray(data)) {
         setHeroPropertyTypes(
           data.filter(
-            (type) => type.isActive && ENABLED_PROPERTY_TYPE_TABS.includes(
+            (type) => type.isActive && ENABLED_PROPERTY_TYPE_TABS$1.includes(
               type.typeName?.toLowerCase()
             )
           )
@@ -27254,7 +27254,12 @@ const normalize$1 = (str) => {
   if (!str) return "";
   return str.toLowerCase().trim();
 };
-function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
+function AddUpdateAboutModal({
+  isOpen,
+  onClose,
+  editData = null,
+  defaultPropertyTypeId = null
+}) {
   const [formData, setFormData] = useState({
     sectionTitle: "",
     subTitle: "",
@@ -27320,6 +27325,26 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
       resetForm();
     }
   }, [editData, isOpen]);
+  useEffect(() => {
+    if (!isOpen || editData) return;
+    setFormData((prev) => {
+      if (prev.propertyTypeId === defaultPropertyTypeId) {
+        return prev;
+      }
+      return {
+        ...prev,
+        propertyTypeId: defaultPropertyTypeId,
+        ...defaultPropertyTypeId !== null ? {
+          videoUrl: "",
+          videoTitle: "",
+          ctaButtonText: "",
+          ctaButtonUrl: ""
+        } : {
+          ctaButtonText: prev.ctaButtonText || "More Details â†’"
+        }
+      };
+    });
+  }, [defaultPropertyTypeId, editData, isOpen]);
   const resetForm = () => {
     setFormData({
       sectionTitle: "",
@@ -27434,6 +27459,11 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
   const selectedPropertyType = propertyTypes.find(
     (pt) => pt.id === formData.propertyTypeId
   );
+  const isRestaurantType2 = normalize$1(selectedPropertyType?.typeName) === "restaurant";
+  const subtitleLabel = isRestaurantType2 ? "Location Tag" : "Sub Title";
+  const titleLabel = isRestaurantType2 ? "Header" : "Section Title";
+  const subtitlePlaceholder = isRestaurantType2 ? "e.g., Bengaluru Destination" : "e.g., Building Excellence";
+  const titlePlaceholder = isRestaurantType2 ? "e.g., A Symphony of Fine Flavors" : "e.g., About Kennedia Hotels";
   return /* @__PURE__ */ jsx(
     "div",
     {
@@ -27537,7 +27567,8 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
               /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
                 /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
                   /* @__PURE__ */ jsxs("label", { className: "text-[10px] font-bold uppercase text-gray-400 flex items-center gap-1", children: [
-                    "Section Title ",
+                    titleLabel,
+                    " ",
                     /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
                   ] }),
                   /* @__PURE__ */ jsx(
@@ -27545,14 +27576,15 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
                     {
                       value: formData.sectionTitle,
                       onChange: (e) => handleInputChange("sectionTitle", e.target.value),
-                      placeholder: "e.g., About Kennedia Hotels",
+                      placeholder: titlePlaceholder,
                       className: "w-full px-4 py-2 rounded-lg border text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none"
                     }
                   )
                 ] }),
                 /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
                   /* @__PURE__ */ jsxs("label", { className: "text-[10px] font-bold uppercase text-gray-400 flex items-center gap-1", children: [
-                    "Sub Title ",
+                    subtitleLabel,
+                    " ",
                     /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
                   ] }),
                   /* @__PURE__ */ jsx(
@@ -27560,7 +27592,7 @@ function AddUpdateAboutModal({ isOpen, onClose, editData = null }) {
                     {
                       value: formData.subTitle,
                       onChange: (e) => handleInputChange("subTitle", e.target.value),
-                      placeholder: "e.g., Building Excellence",
+                      placeholder: subtitlePlaceholder,
                       className: "w-full px-4 py-2 rounded-lg border text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none"
                     }
                   )
@@ -27946,8 +27978,10 @@ function AddUpdateRecognitionModal({ isOpen, onClose, editData = null, aboutUsId
     ] })
   ] }) });
 }
+const ENABLED_PROPERTY_TYPE_TABS = ["hotel", "restaurant", "cafe"];
 function AboutUs() {
-  const [activeTab, setActiveTab] = useState("about");
+  const [activeTab, setActiveTab] = useState("homepage");
+  const [contentTab, setContentTab] = useState("about");
   const [aboutUsList, setAboutUsList] = useState([]);
   const [ventures, setVentures] = useState([]);
   const [recognitions, setRecognitions] = useState([]);
@@ -27960,7 +27994,6 @@ function AboutUs() {
   const [selectedAboutUsId, setSelectedAboutUsId] = useState(null);
   const [selectedEditData, setSelectedEditData] = useState(null);
   const [propertyTypes, setPropertyTypes] = useState([]);
-  const [selectedPropertyTypeId, setSelectedPropertyTypeId] = useState(null);
   const [loadingPropertyTypes, setLoadingPropertyTypes] = useState(false);
   const normalize2 = (val = "") => val.toString().trim().replace(/\s+/g, "").toLowerCase();
   useEffect(() => {
@@ -27971,7 +28004,7 @@ function AboutUs() {
         const data = response?.data || response;
         if (Array.isArray(data)) {
           const activeTypes = data.filter(
-            (type) => type.isActive && normalize2(type.typeName) !== "both"
+            (type) => type.isActive && ENABLED_PROPERTY_TYPE_TABS.includes(normalize2(type.typeName))
           );
           setPropertyTypes(activeTypes);
         }
@@ -27988,8 +28021,8 @@ function AboutUs() {
     try {
       setFetching(true);
       let data = [];
-      if (selectedPropertyTypeId !== null) {
-        const res = await getAboutUsByPropertyType(selectedPropertyTypeId);
+      if (activeTab !== "homepage") {
+        const res = await getAboutUsByPropertyType(Number(activeTab));
         data = res?.data || res;
       } else {
         const res = await getAboutUsAdmin();
@@ -28016,15 +28049,15 @@ function AboutUs() {
     } finally {
       setFetching(false);
     }
-  }, [selectedPropertyTypeId]);
+  }, [activeTab]);
   const fetchTabData = useCallback(async () => {
     if (!selectedAboutUsId) return;
     try {
       setFetchingTab(true);
-      if (activeTab === "ventures") {
+      if (contentTab === "ventures") {
         const res = await getVenturesByAboutUsId(selectedAboutUsId);
         setVentures(res?.data || []);
-      } else if (activeTab === "recognitions") {
+      } else if (contentTab === "recognitions") {
         const res = await getRecognitionsByAboutUsId(selectedAboutUsId);
         setRecognitions(res?.data || []);
       }
@@ -28033,7 +28066,7 @@ function AboutUs() {
     } finally {
       setFetchingTab(false);
     }
-  }, [activeTab, selectedAboutUsId]);
+  }, [contentTab, selectedAboutUsId]);
   useEffect(() => {
     fetchAboutList();
   }, [fetchAboutList]);
@@ -28046,15 +28079,27 @@ function AboutUs() {
     if (type === "venture") setIsVentureModalOpen(true);
     if (type === "recognition") setIsRecognitionModalOpen(true);
   };
-  const handlePropertyTypeChange = (typeId) => {
-    setSelectedPropertyTypeId(typeId);
+  const handlePropertyTypeChange = (tabId) => {
+    setActiveTab(tabId);
     setSelectedAboutUsId(null);
   };
+  const selectedPropertyTypeId = activeTab === "homepage" ? null : Number(activeTab);
   const getSelectedPropertyTypeName = () => {
-    if (selectedPropertyTypeId === null) return "Home page";
+    if (selectedPropertyTypeId === null) return "Homepage";
     const type = propertyTypes.find((pt) => pt.id === selectedPropertyTypeId);
     return type ? type.typeName : "Unknown";
   };
+  const propertyTypeTabs = useMemo(
+    () => [
+      { id: "homepage", label: "Homepage", icon: Home$1 },
+      ...propertyTypes.map((type) => ({
+        id: String(type.id),
+        label: `${type.typeName} Page`,
+        icon: Building2
+      }))
+    ],
+    [propertyTypes]
+  );
   if (fetching && propertyTypes.length === 0) {
     return /* @__PURE__ */ jsxs("div", { className: "h-96 flex flex-col items-center justify-center gap-4", children: [
       /* @__PURE__ */ jsx(Loader2, { className: "animate-spin text-primary", size: 40 }),
@@ -28063,48 +28108,37 @@ function AboutUs() {
   }
   const latestAbout = aboutUsList[0] || null;
   return /* @__PURE__ */ jsxs("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ jsxs("div", { className: "bg-card border rounded-xl p-4 shadow-sm", children: [
-      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4 flex-wrap", children: [
-        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ jsx(Building2, { size: 18, className: "text-muted-foreground" }),
-          /* @__PURE__ */ jsx("label", { className: "text-xs font-bold uppercase tracking-wider text-muted-foreground", children: "Filter by Property Type:" })
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 flex-wrap", children: [
-          /* @__PURE__ */ jsxs(
-            "button",
-            {
-              onClick: () => handlePropertyTypeChange(null),
-              className: `flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${selectedPropertyTypeId === null ? "bg-primary text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`,
-              children: [
-                /* @__PURE__ */ jsx(Home$1, { size: 14 }),
-                "Home page"
-              ]
-            }
-          ),
-          propertyTypes.map((type) => /* @__PURE__ */ jsx(
-            "button",
-            {
-              onClick: () => handlePropertyTypeChange(type.id),
-              className: `px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${selectedPropertyTypeId === type.id ? "bg-primary text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`,
-              children: type.typeName
-            },
-            type.id
-          ))
-        ] }),
+    /* @__PURE__ */ jsxs("div", { className: "rounded-xl border bg-card p-4 shadow-sm", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center gap-2", children: [
+        propertyTypeTabs.map((tab) => /* @__PURE__ */ jsxs(
+          "button",
+          {
+            onClick: () => handlePropertyTypeChange(tab.id),
+            className: `flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === tab.id ? "bg-primary text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`,
+            children: [
+              /* @__PURE__ */ jsx(tab.icon, { size: 14 }),
+              tab.label
+            ]
+          },
+          tab.id
+        )),
         loadingPropertyTypes && /* @__PURE__ */ jsx(Loader2, { size: 16, className: "animate-spin text-muted-foreground" })
       ] }),
-      /* @__PURE__ */ jsx("div", { className: "mt-3 pt-3 border-t border-border/50", children: /* @__PURE__ */ jsxs("p", { className: "text-xs text-muted-foreground", children: [
-        "Currently viewing:",
-        " ",
-        /* @__PURE__ */ jsx("span", { className: "font-bold text-foreground", children: getSelectedPropertyTypeName() }),
-        aboutUsList.length > 0 && /* @__PURE__ */ jsxs("span", { className: "ml-2", children: [
-          "(",
-          aboutUsList.length,
+      /* @__PURE__ */ jsxs("div", { className: "mt-3 flex items-center gap-2 border-t border-border/50 pt-3 text-xs text-muted-foreground", children: [
+        /* @__PURE__ */ jsx(AlertCircle, { size: 14 }),
+        /* @__PURE__ */ jsxs("p", { className: "text-xs text-muted-foreground", children: [
+          "Currently viewing:",
           " ",
-          aboutUsList.length === 1 ? "section" : "sections",
-          " found)"
+          /* @__PURE__ */ jsx("span", { className: "font-bold text-foreground", children: getSelectedPropertyTypeName() }),
+          aboutUsList.length > 0 && /* @__PURE__ */ jsxs("span", { className: "ml-2", children: [
+            "(",
+            aboutUsList.length,
+            " ",
+            aboutUsList.length === 1 ? "section" : "sections",
+            " found)"
+          ] })
         ] })
-      ] }) })
+      ] })
     ] }),
     /* @__PURE__ */ jsx("div", { className: "flex bg-card border rounded-xl overflow-hidden p-1 gap-1", children: [
       { id: "about", label: "About Sections", icon: Info },
@@ -28113,8 +28147,8 @@ function AboutUs() {
     ].map((tab) => /* @__PURE__ */ jsxs(
       "button",
       {
-        onClick: () => setActiveTab(tab.id),
-        className: `flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-bold uppercase transition-all ${activeTab === tab.id ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-muted"}`,
+        onClick: () => setContentTab(tab.id),
+        className: `flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-bold uppercase transition-all ${contentTab === tab.id ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-muted"}`,
         children: [
           /* @__PURE__ */ jsx(tab.icon, { size: 16 }),
           " ",
@@ -28124,7 +28158,7 @@ function AboutUs() {
       tab.id
     )) }),
     /* @__PURE__ */ jsxs("div", { className: "bg-card border rounded-xl shadow-sm min-h-[400px]", children: [
-      activeTab === "about" && /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-4", children: [
+      contentTab === "about" && /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-4", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center", children: [
           /* @__PURE__ */ jsxs("h3", { className: "text-sm font-bold", children: [
             "Manage Content Sections",
@@ -28202,7 +28236,7 @@ function AboutUs() {
           ) })
         ] }) })
       ] }),
-      activeTab === "ventures" && /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-6", children: [
+      contentTab === "ventures" && /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-6", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center border-b pb-4", children: [
           /* @__PURE__ */ jsxs("h3", { className: "text-sm font-bold", children: [
             "Ventures for Content #",
@@ -28251,7 +28285,7 @@ function AboutUs() {
           v.id
         )) })
       ] }),
-      activeTab === "recognitions" && /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-6", children: [
+      contentTab === "recognitions" && /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-6", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center border-b pb-4", children: [
           /* @__PURE__ */ jsxs("h3", { className: "text-sm font-bold", children: [
             "Recognitions for Content #",
@@ -28298,6 +28332,7 @@ function AboutUs() {
       {
         isOpen: isAboutModalOpen,
         editData: selectedEditData,
+        defaultPropertyTypeId: selectedPropertyTypeId,
         onClose: (refresh) => {
           setIsAboutModalOpen(false);
           setSelectedEditData(null);
@@ -53515,13 +53550,17 @@ export {
   createHotelSlug as a,
   getHotelHomepageHeroSection as b,
   createCitySlug as c,
-  PopoverTrigger as d,
-  cn as e,
-  PopoverContent as f,
+  getDailyOffers as d,
+  getPropertyTypeById as e,
+  getAboutUsByPropertyType as f,
   getPropertyTypes as g,
-  DialogContent as h,
-  getLocationsByType as i,
-  searchRooms as j,
+  getPublicRecognitionsByAboutUsId as h,
+  PopoverTrigger as i,
+  cn as j,
+  PopoverContent as k,
+  DialogContent as l,
+  getLocationsByType as m,
+  searchRooms as n,
   restaurantEventShowcase as r,
   render,
   siteContent as s
