@@ -23,6 +23,7 @@ import Checkout from "@/modules/website/pages/Checkout";
 import HotelDetail from "@/modules/website/pages/HotelDetail";
 import ResturantPage from "@/modules/website/pages/restaurant/ResturantPage";
 import ResturantCategoryPageTemplate from "@/modules/website/pages/restaurant/ResturantCategoryPageTemplate";
+import CafePage from "@/modules/website/pages/cafe/CafePage";
 import Italian from "@/modules/website/pages/restaurant/pages/verticals/Italian";
 import LuxuryLounge from "@/modules/website/pages/restaurant/pages/verticals/LuxuryLounge";
 import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/SpicyDarbar";
@@ -63,6 +64,7 @@ function PropertyDetailRoute() {
   const ssrResolvedType =
     propertyDetail?.propertyId === resolvedPropertyId &&
     (propertyDetail?.propertyType === "restaurant" ||
+      propertyDetail?.propertyType === "cafe" ||
       propertyDetail?.propertyType === "hotel")
       ? propertyDetail.propertyType
       : null;
@@ -85,7 +87,8 @@ function PropertyDetailRoute() {
       }
 
       if (!resolvedPropertyId) {
-        if (isMounted) setResolvedType("hotel");
+        if (isMounted)
+          setResolvedType(slugTail === "cafe" ? "cafe" : "hotel");
         return;
       }
 
@@ -109,11 +112,13 @@ function PropertyDetailRoute() {
         const allTypes = [...parentTypes, ...listingTypes]
           .map((t) => String(t).toLowerCase().trim());
 
+        const isCafe = allTypes.some((t) => t === "cafe");
         const isRestaurant = allTypes.some((t) =>
-          ["restaurant", "resturant", "cafe", "wine & dine", "winedine", "dining"].includes(t),
+          ["restaurant", "resturant", "wine & dine", "winedine", "dining"].includes(t),
         );
 
-        if (isMounted) setResolvedType(isRestaurant ? "restaurant" : "hotel");
+        if (isMounted)
+          setResolvedType(isCafe ? "cafe" : isRestaurant ? "restaurant" : "hotel");
       } catch {
         if (isMounted) setResolvedType("hotel");
       }
@@ -134,7 +139,7 @@ function PropertyDetailRoute() {
     );
   }
 
-  return resolvedType === "restaurant" ? <ResturantPage /> : <HotelDetail />;
+  return resolvedType === "cafe" ? <CafePage /> : resolvedType === "restaurant" ? <ResturantPage /> : <HotelDetail />;
 }
 
 const WebsiteRoutes = [
@@ -161,6 +166,7 @@ const WebsiteRoutes = [
 
   <Route key="restaurant-homepage" path="/restaurant-homepage" element={withRouteSuspense(<RestaurantHomepage />)} />,
   <Route key="cafe-homepage" path="/cafe-homepage" element={withRouteSuspense(<CafeHomepage />)} />,
+  <Route key="cafe-page-preview" path="/cafe-page" element={<CafePage />} />,
 
   <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={withRouteSuspense(<ResturantPage />)} />,
 
