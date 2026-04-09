@@ -144,6 +144,8 @@ function EditPropertyModal({
     latitude: p.latitude ?? "",
     longitude: p.longitude ?? "",
     isActive: p.isActive ?? true,
+    dineIn: Boolean(p.dineIn),
+    takeaway: Boolean(p.takeaway),
     mainHeading: listing.mainHeading || "",
     subTitle: listing.subTitle || "",
     fullAddress: listing.fullAddress || "",
@@ -169,6 +171,11 @@ function EditPropertyModal({
   const isHotelType = form.propertyTypeIds.some((id) => {
     const matchedType = propertyTypes?.find((type) => type.id === id);
     return String(matchedType?.typeName || "").toLowerCase() === "hotel";
+  });
+
+  const isRestaurantType = form.propertyTypeIds.some((id) => {
+    const matchedType = propertyTypes?.find((type) => type.id === id);
+    return String(matchedType?.typeName || "").toLowerCase() === "restaurant";
   });
 
   const [saving, setSaving] = useState(false);
@@ -311,6 +318,8 @@ function EditPropertyModal({
             ? Number(form.longitude)
             : null,
         isActive: form.isActive,
+        dineIn: Boolean(form.dineIn),
+        takeaway: Boolean(form.takeaway),
         mainHeading: form.mainHeading,
         subTitle: form.subTitle,
         fullAddress: form.fullAddress,
@@ -450,6 +459,32 @@ function EditPropertyModal({
                   color="bg-purple-600"
                 />
               </Field>
+
+              {isRestaurantType && (
+                <Field label="Restaurant Type" icon={Tag} span={2}>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { key: "dineIn", label: "Dine In" },
+                      { key: "takeaway", label: "Takeaway" },
+                    ].map((option) => (
+                      <label
+                        key={option.key}
+                        className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={Boolean(form[option.key])}
+                          onChange={(e) => set(option.key, e.target.checked)}
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500/20"
+                        />
+                        <span className="text-sm font-bold text-gray-700">
+                          {option.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </Field>
+              )}
 
               <Field label="Status" icon={ToggleLeft} span={2}>
                 <button

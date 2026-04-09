@@ -53,6 +53,8 @@ function AddPropertyModal({ onClose, onSuccess }) {
     parentPropertyId: null,
     childPropertyIds: null,
     isActive: true,
+    dineIn: false,
+    takeaway: false,
     mobileNumber: "",
     email: "",
 
@@ -145,6 +147,14 @@ function AddPropertyModal({ onClose, onSuccess }) {
     }
   };
 
+  const selectedPropertyTypeName = propertyTypes.find(
+    (type) => String(type.id) === String(parentData.propertyTypeIds),
+  )?.typeName;
+
+  const isRestaurantType =
+    String(selectedPropertyTypeName || "").trim().toLowerCase() ===
+    "restaurant";
+
   const handleLocationModeChange = (mode) => {
     setLocationInputMode(mode);
     setParentData((prev) => ({
@@ -208,6 +218,8 @@ function AddPropertyModal({ onClose, onSuccess }) {
         nearbyLocations: parentData.nearbyLocations.filter(
           (loc) => loc.nearbyLocationName.trim() !== "",
         ),
+        dineIn: Boolean(parentData.dineIn),
+        takeaway: Boolean(parentData.takeaway),
       };
 
       const parentRes = await createPropertyByType(typeName, parentPayload);
@@ -362,6 +374,39 @@ function AddPropertyModal({ onClose, onSuccess }) {
                   ))}
                 </select>
               </div>
+              {isRestaurantType && (
+                <div className="col-span-2">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase mb-3 block">
+                    Restaurant Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { key: "dineIn", label: "Dine In" },
+                      { key: "takeaway", label: "Takeaway" },
+                    ].map((option) => (
+                      <label
+                        key={option.key}
+                        className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={Boolean(parentData[option.key])}
+                          onChange={(e) =>
+                            setParentData((prev) => ({
+                              ...prev,
+                              [option.key]: e.target.checked,
+                            }))
+                          }
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20"
+                        />
+                        <span className="text-sm font-semibold text-gray-700">
+                          {option.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="col-span-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-3 block">
                   Main Location Input
