@@ -37525,6 +37525,8 @@ function AddPropertyModal({ onClose, onSuccess }) {
     parentPropertyId: null,
     childPropertyIds: null,
     isActive: true,
+    dineIn: false,
+    takeaway: false,
     mobileNumber: "",
     email: "",
     // ✅ NEW FIELD
@@ -37606,6 +37608,10 @@ function AddPropertyModal({ onClose, onSuccess }) {
       toast$2.error("Failed to load initial data");
     }
   };
+  const selectedPropertyTypeName = propertyTypes.find(
+    (type) => String(type.id) === String(parentData.propertyTypeIds)
+  )?.typeName;
+  const isRestaurantType2 = String(selectedPropertyTypeName || "").trim().toLowerCase() === "restaurant";
   const handleLocationModeChange = (mode) => {
     setLocationInputMode(mode);
     setParentData((prev) => ({
@@ -37651,7 +37657,9 @@ function AddPropertyModal({ onClose, onSuccess }) {
         // ✅ CLEAN EMPTY LOCATIONS
         nearbyLocations: parentData.nearbyLocations.filter(
           (loc) => loc.nearbyLocationName.trim() !== ""
-        )
+        ),
+        dineIn: Boolean(parentData.dineIn),
+        takeaway: Boolean(parentData.takeaway)
       };
       const parentRes = await createPropertyByType(typeName, parentPayload);
       const newBasePropertyId = parentRes?.data?.id || parentRes?.id;
@@ -37779,6 +37787,34 @@ function AddPropertyModal({ onClose, onSuccess }) {
               ]
             }
           )
+        ] }),
+        isRestaurantType2 && /* @__PURE__ */ jsxs("div", { className: "col-span-2", children: [
+          /* @__PURE__ */ jsx("label", { className: "text-[10px] font-bold text-gray-400 uppercase mb-3 block", children: "Restaurant Type" }),
+          /* @__PURE__ */ jsx("div", { className: "grid grid-cols-2 gap-3", children: [
+            { key: "dineIn", label: "Dine In" },
+            { key: "takeaway", label: "Takeaway" }
+          ].map((option) => /* @__PURE__ */ jsxs(
+            "label",
+            {
+              className: "flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer",
+              children: [
+                /* @__PURE__ */ jsx(
+                  "input",
+                  {
+                    type: "checkbox",
+                    checked: Boolean(parentData[option.key]),
+                    onChange: (e) => setParentData((prev) => ({
+                      ...prev,
+                      [option.key]: e.target.checked
+                    })),
+                    className: "h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20"
+                  }
+                ),
+                /* @__PURE__ */ jsx("span", { className: "text-sm font-semibold text-gray-700", children: option.label })
+              ]
+            },
+            option.key
+          )) })
         ] }),
         /* @__PURE__ */ jsxs("div", { className: "col-span-2", children: [
           /* @__PURE__ */ jsx("label", { className: "text-[10px] font-bold text-gray-400 uppercase mb-3 block", children: "Main Location Input" }),
@@ -38535,6 +38571,8 @@ function EditPropertyModal({
     latitude: p.latitude ?? "",
     longitude: p.longitude ?? "",
     isActive: p.isActive ?? true,
+    dineIn: Boolean(p.dineIn),
+    takeaway: Boolean(p.takeaway),
     mainHeading: listing.mainHeading || "",
     subTitle: listing.subTitle || "",
     fullAddress: listing.fullAddress || "",
@@ -38555,6 +38593,10 @@ function EditPropertyModal({
   const isHotelType = form.propertyTypeIds.some((id) => {
     const matchedType = propertyTypes?.find((type) => type.id === id);
     return String(matchedType?.typeName || "").toLowerCase() === "hotel";
+  });
+  const isRestaurantType2 = form.propertyTypeIds.some((id) => {
+    const matchedType = propertyTypes?.find((type) => type.id === id);
+    return String(matchedType?.typeName || "").toLowerCase() === "restaurant";
   });
   const [saving, setSaving] = useState(false);
   const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
@@ -38655,6 +38697,8 @@ function EditPropertyModal({
         latitude: locationInputMode === "coordinates" && form.latitude !== "" ? Number(form.latitude) : null,
         longitude: locationInputMode === "coordinates" && form.longitude !== "" ? Number(form.longitude) : null,
         isActive: form.isActive,
+        dineIn: Boolean(form.dineIn),
+        takeaway: Boolean(form.takeaway),
         mainHeading: form.mainHeading,
         subTitle: form.subTitle,
         fullAddress: form.fullAddress,
@@ -38770,6 +38814,28 @@ function EditPropertyModal({
                 color: "bg-purple-600"
               }
             ) }),
+            isRestaurantType2 && /* @__PURE__ */ jsx(Field$8, { label: "Restaurant Type", icon: Tag, span: 2, children: /* @__PURE__ */ jsx("div", { className: "grid grid-cols-2 gap-3", children: [
+              { key: "dineIn", label: "Dine In" },
+              { key: "takeaway", label: "Takeaway" }
+            ].map((option) => /* @__PURE__ */ jsxs(
+              "label",
+              {
+                className: "flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "input",
+                    {
+                      type: "checkbox",
+                      checked: Boolean(form[option.key]),
+                      onChange: (e) => set(option.key, e.target.checked),
+                      className: "h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500/20"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx("span", { className: "text-sm font-bold text-gray-700", children: option.label })
+                ]
+              },
+              option.key
+            )) }) }),
             /* @__PURE__ */ jsx(Field$8, { label: "Status", icon: ToggleLeft, span: 2, children: /* @__PURE__ */ jsxs(
               "button",
               {
