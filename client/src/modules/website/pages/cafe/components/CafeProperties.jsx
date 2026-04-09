@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, MapPin, Star } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
+import { useNavigate } from "react-router-dom";
 
 const CAFES = [
   {
@@ -13,6 +14,8 @@ const CAFES = [
     rating: 4.7,
     description: "A modern espresso room with mellow interiors, pastry displays, and long-stay seating.",
     highlights: ["Espresso Bar", "Work-Friendly", "Dessert Counter"],
+    citySlug: "ghaziabad",
+    propertySlug: "kennedia-roast-room-cafe",
   },
   {
     id: 2,
@@ -24,6 +27,8 @@ const CAFES = [
     rating: 4.8,
     description: "An open-air cafe setup designed for daytime brunches, relaxed meetings, and sunset coffee.",
     highlights: ["Outdoor Seating", "Brunch Menu", "Cold Brew"],
+    citySlug: "noida",
+    propertySlug: "kennedia-garden-terrace-cafe",
   },
   {
     id: 3,
@@ -35,10 +40,13 @@ const CAFES = [
     rating: 4.9,
     description: "An elevated tea-and-dessert lounge with plated sweets, polished service, and soft evening ambience.",
     highlights: ["High Tea", "Patisserie", "Lounge Seating"],
+    citySlug: "delhi",
+    propertySlug: "kennedia-high-tea-lounge-cafe",
   },
 ];
 
 export default function CafeProperties() {
+  const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedCity, setSelectedCity] = useState("All Cities");
 
@@ -166,8 +174,11 @@ export default function CafeProperties() {
               >
                 Reserve A Table <ArrowRight className="h-4 w-4" />
               </button>
-              <button onClick={handleNext} className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
-                Browse next cafe →
+              <button
+                onClick={() => navigate(`/${activeCafe.citySlug}/${activeCafe.propertySlug}`)}
+                className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Explore →
               </button>
             </div>
           </div>
