@@ -52,6 +52,22 @@ const Section = ({ label, icon: Icon }) => (
 
 const VERIFIED_USERS_SCALE = 1000000;
 
+const isValidOptionalUrl = (value) => {
+  if (!value) return true;
+
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const isValidOptionalEmail = (value) => {
+  if (!value) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+};
+
 const parseCombinedRating = (value) => {
   if (value === null || value === undefined || value === "") {
     return { rating: "", verifiedUsers: "" };
@@ -237,35 +253,44 @@ function EditPropertyModal({
     }));
   };
 
+  const buildMediaFormData = () => {
+    const mediaFormData = new FormData();
+    mediaFormData.append("mediaType", "IMAGE");
+
+    const existingMediaIds = (listing.media || [])
+      .map((m) => m.mediaId)
+      .filter(Boolean);
+    existingMediaIds.forEach((id) => mediaFormData.append("mediaIds", id));
+    newFiles.forEach((file) => mediaFormData.append("files", file));
+
+    return mediaFormData;
+  };
+
   // ── Upload media via PropertyEdiMedia ──────────────────────────────────────
   const handleMediaUpload = async () => {
-    if (!newFiles.length) return;
+    if (!newFiles.length) return true;
     if (!listing.id) {
       toast.error("No listing ID found for media upload");
-      return;
+      return false;
     }
 
     setMediaUploading(true);
     try {
-      const mediaFormData = new FormData();
-      mediaFormData.append("propertyListingId", listing.id);
-      mediaFormData.append("mediaType", "IMAGE");
-
-      // Send existing mediaIds so backend knows which to replace
-      const existingMediaIds = (listing.media || [])
-        .map((m) => m.mediaId)
-        .filter(Boolean);
-      existingMediaIds.forEach((id) => mediaFormData.append("mediaIds", id));
-
-      // Attach new files
-      newFiles.forEach((file) => mediaFormData.append("files", file));
-
-      await PropertyEdiMedia(mediaFormData);
+      console.log("[EditPropertyModal] Uploading media", {
+        listingId: listing.id,
+        fileCount: newFiles.length,
+        existingMediaIds: (listing.media || [])
+          .map((m) => m.mediaId)
+          .filter(Boolean),
+      });
+      await PropertyEdiMedia(listing.id, buildMediaFormData());
       toast.success("Media updated successfully");
       setNewFiles([]);
+      return true;
     } catch (err) {
       console.error(err);
       toast.error("Media upload failed");
+      return false;
     } finally {
       setMediaUploading(false);
     }
@@ -274,16 +299,69 @@ function EditPropertyModal({
   // ── Submit property update ─────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("[EditPropertyModal] Save Changes clicked", {
+      propertyId: p.id,
+      listingId: listing.id,
+      locationInputMode,
+      addressUrl: form.addressUrl,
+      latitude: form.latitude,
+      longitude: form.longitude,
+      newFilesCount: newFiles.length,
+    });
     setSaving(true);
     try {
+      if (!isValidOptionalEmail(form.email)) {
+        toast.error("Enter a valid email address");
+        console.warn("[EditPropertyModal] Submit blocked: invalid email", {
+          email: form.email,
+        });
+        return;
+      }
+
+      if (
+        locationInputMode === "addressUrl" &&
+        !isValidOptionalUrl(form.addressUrl)
+      ) {
+        toast.error("Enter a valid address URL");
+        console.warn("[EditPropertyModal] Submit blocked: invalid address URL", {
+          addressUrl: form.addressUrl,
+        });
+        return;
+      }
+
+      if (!isValidOptionalUrl(form.bookingEngineUrl)) {
+        toast.error("Enter a valid booking engine URL");
+        console.warn(
+          "[EditPropertyModal] Submit blocked: invalid booking engine URL",
+          {
+            bookingEngineUrl: form.bookingEngineUrl,
+          },
+        );
+        return;
+      }
+
+      const invalidNearbyLocation = form.nearbyLocations.find(
+        (loc) => loc.googleMapLink && !isValidOptionalUrl(loc.googleMapLink),
+      );
+      if (invalidNearbyLocation) {
+        toast.error("Enter a valid nearby location map link");
+        console.warn(
+          "[EditPropertyModal] Submit blocked: invalid nearby map link",
+          invalidNearbyLocation,
+        );
+        return;
+      }
+
       if (locationInputMode === "coordinates") {
-        if (!form.latitude || !form.longitude) {
+        const hasLatitude = form.latitude !== "" && form.latitude !== null;
+        const hasLongitude = form.longitude !== "" && form.longitude !== null;
+        if (hasLatitude !== hasLongitude) {
           toast.error("Enter both latitude and longitude");
+          console.warn(
+            "[EditPropertyModal] Submit blocked: incomplete coordinates",
+          );
           return;
         }
-      } else if (!form.addressUrl) {
-        toast.error("Enter the main address URL");
-        return;
       }
 
       const combinedRatingValue = isHotelType
@@ -343,11 +421,15 @@ function EditPropertyModal({
           (loc) => loc.nearbyLocationName.trim() !== "",
         ),
       };
+      console.log("[EditPropertyModal] Updating property", payload);
       await updatePropertyById(p.id, payload);
 
-      // Upload media if any new files were selected
       if (newFiles.length > 0) {
-        await handleMediaUpload();
+        const mediaSaved = await handleMediaUpload();
+        if (!mediaSaved) {
+          toast.error("Property details saved, but media update failed");
+          return;
+        }
       }
 
       toast.success("Property updated successfully");
@@ -422,6 +504,7 @@ function EditPropertyModal({
         {/* ── Form ────────────────────────────────────────────────── */}
         <form
           onSubmit={handleSubmit}
+          noValidate
           className="flex flex-col flex-1 overflow-hidden"
         >
           <div className="flex-1 overflow-y-auto px-7 py-6">
@@ -572,7 +655,7 @@ function EditPropertyModal({
               {locationInputMode === "addressUrl" && (
                 <Field label="Main Address URL" icon={LinkIcon} span={2}>
                   <input
-                    type="url"
+                    type="text"
                     value={form.addressUrl}
                     onChange={(e) => set("addressUrl", e.target.value)}
                     placeholder="https://maps.google.com/..."
@@ -637,7 +720,7 @@ function EditPropertyModal({
 
               <Field label="Email" icon={LinkIcon}>
                 <input
-                  type="email"
+                  type="text"
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
                   placeholder="hello@gmail.com"
@@ -671,7 +754,7 @@ function EditPropertyModal({
 
               <Field label="Booking Engine URL" icon={LinkIcon} span={2}>
                 <input
-                  type="url"
+                  type="text"
                   value={form.bookingEngineUrl}
                   onChange={(e) => set("bookingEngineUrl", e.target.value)}
                   placeholder="https://book.example.com/property"
@@ -732,7 +815,7 @@ function EditPropertyModal({
 
                     <div className="flex gap-2">
                       <input
-                        type="url"
+                        type="text"
                         placeholder="Google Map Link (optional)"
                         className={`${inputCls} flex-1`}
                         value={loc.googleMapLink}

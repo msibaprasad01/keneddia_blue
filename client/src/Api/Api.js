@@ -47,7 +47,8 @@ export const createRole = (data) => API.post("api/v1/roles", data);
 export const getAllRoles = () => API.get("api/v1/showAll");
 export const uploadMedia = (formData) =>API.post("api/v1/media/upload", formData);
 export const PropertyUploadMedia = (formData) =>API.post("api/v1/property-listings/upload-media", formData);
-export const PropertyEdiMedia = (formData) =>API.put("api/v1/property-listings/edit-media", formData);
+export const PropertyEdiMedia = (listingId, formData) =>
+  API.put(`api/v1/property-listings/${listingId}/edit-media`, formData);
 export const getMediaById = (id) => API.get(`api/v1/media/${id}`);
 export const createUser = (data) => API.post("api/v1/users/create", data);
 export const getUsersPaginated = () => API.get("api/v1/users/auth/paginated");
