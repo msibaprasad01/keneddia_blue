@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, MapPin } from "lucide-react";
+import { Clock, Loader2, MapPin, Phone } from "lucide-react";
 import {
   getAboutUsByPropertyType,
   getPropertyTypes,
@@ -195,63 +195,136 @@ export default function AboutRestaurant({ initialSections }) {
                     {activeSection.description}
                   </p>
 
-                  {recognitions.length > 0 && (
-                    <div className="space-y-4 border-t border-zinc-200 pt-4 dark:border-white/10">
-                      <div className="flex flex-wrap gap-x-10 gap-y-3">
-                        {recognitions.map((item, index) => (
-                          <button
-                            key={item.id}
-                            onClick={() => setCurrentRecognitionIndex(index)}
-                            className="group flex flex-col gap-0.5 text-left"
-                          >
-                            <AnimatePresence mode="wait">
-                              {index === currentRecognitionIndex ? (
-                                <motion.span
-                                  key={`active-${item.id}`}
-                                  initial={{ opacity: 0, y: 6 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -6 }}
-                                  transition={{ duration: 0.35 }}
-                                  className="text-2xl font-serif font-bold leading-none text-primary md:text-3xl"
-                                >
-                                  {item.value}
-                                </motion.span>
-                              ) : (
-                                <motion.span
-                                  key={`inactive-${item.id}`}
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  className="text-2xl font-serif font-bold leading-none text-zinc-900/40 transition-colors group-hover:text-zinc-900/60 dark:text-white/40 dark:group-hover:text-white/60 md:text-3xl"
-                                >
-                                  {item.value}
-                                </motion.span>
-                              )}
-                            </AnimatePresence>
-                            <span
-                              className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                                index === currentRecognitionIndex
-                                  ? "text-zinc-500 dark:text-white/60"
-                                  : "text-zinc-400 group-hover:text-zinc-500 dark:text-white/30 dark:group-hover:text-white/50"
-                              }`}
-                            >
-                              {item.title}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
+                  {recognitions.length > 0 && (() => {
+                    // Detect by r.value — admin stores "Availability"/"Connect" in the value field
+                    const availabilityItem = recognitions.find((r) =>
+                      normalize(r.value).includes("availability"),
+                    );
+                    const contactItem = recognitions.find((r) =>
+                      normalize(r.value).includes("connect") ||
+                      normalize(r.value).includes("contact"),
+                    );
+                    const standardItems = recognitions.filter(
+                      (r) =>
+                        !normalize(r.value).includes("availability") &&
+                        !normalize(r.value).includes("connect") &&
+                        !normalize(r.value).includes("contact"),
+                    );
+                    const hasSpecial = availabilityItem || contactItem;
 
-                      {recognitions[currentRecognitionIndex]?.subTitle && (
-                        <motion.p
-                          key={`recognition-copy-${recognitions[currentRecognitionIndex]?.id}`}
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-sm leading-relaxed text-zinc-500 dark:text-white/60"
-                        >
-                          {recognitions[currentRecognitionIndex].subTitle}
-                        </motion.p>
-                      )}
-                    </div>
-                  )}
+                    return (
+                      <div className="space-y-4 border-t border-zinc-200 pt-4 dark:border-white/10">
+                        {hasSpecial && (
+                          <div className="grid grid-cols-2 gap-8">
+                            {availabilityItem && (
+                              <div className="flex flex-col gap-1.5">
+                                {/* label row: icon + value ("Availability") */}
+                                <div className="flex items-center gap-1.5">
+                                  <Clock className="h-3 w-3 text-zinc-400 dark:text-white/40" />
+                                  <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-400 dark:text-white/40">
+                                    {availabilityItem.value}
+                                  </span>
+                                </div>
+                                {/* title = the actual time value */}
+                                <p className="font-serif italic text-primary text-lg leading-snug">
+                                  {availabilityItem.title}
+                                </p>
+                                {availabilityItem.subTitle && (
+                                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-400 dark:text-white/40">
+                                    {availabilityItem.subTitle}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                            {contactItem && (
+                              <div className="flex flex-col gap-1.5">
+                                {/* label row: icon + value ("Connect") */}
+                                <div className="flex items-center gap-1.5">
+                                  <Phone className="h-3 w-3 text-zinc-400 dark:text-white/40" />
+                                  <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-400 dark:text-white/40">
+                                    {contactItem.value}
+                                  </span>
+                                </div>
+                                {/* title = the actual phone number */}
+                                <p className="font-serif text-primary text-lg leading-snug">
+                                  {contactItem.title}
+                                </p>
+                                {contactItem.subTitle && (
+                                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-400 dark:text-white/40">
+                                    {contactItem.subTitle}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {hasSpecial && (
+                          <div className="flex items-center gap-1.5 pt-0.5">
+                            <span className="h-0.5 w-5 rounded-full bg-primary" />
+                            <span className="h-0.5 w-3 rounded-full bg-zinc-300 dark:bg-white/20" />
+                          </div>
+                        )}
+
+                        {standardItems.length > 0 && (
+                          <>
+                            <div className="flex flex-wrap gap-x-10 gap-y-3">
+                              {standardItems.map((item, index) => (
+                                <button
+                                  key={item.id}
+                                  onClick={() => setCurrentRecognitionIndex(index)}
+                                  className="group flex flex-col gap-0.5 text-left"
+                                >
+                                  <AnimatePresence mode="wait">
+                                    {index === currentRecognitionIndex ? (
+                                      <motion.span
+                                        key={`active-${item.id}`}
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -6 }}
+                                        transition={{ duration: 0.35 }}
+                                        className="text-2xl font-serif font-bold leading-none text-primary md:text-3xl"
+                                      >
+                                        {item.value}
+                                      </motion.span>
+                                    ) : (
+                                      <motion.span
+                                        key={`inactive-${item.id}`}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="text-2xl font-serif font-bold leading-none text-zinc-900/40 transition-colors group-hover:text-zinc-900/60 dark:text-white/40 dark:group-hover:text-white/60 md:text-3xl"
+                                      >
+                                        {item.value}
+                                      </motion.span>
+                                    )}
+                                  </AnimatePresence>
+                                  <span
+                                    className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                                      index === currentRecognitionIndex
+                                        ? "text-zinc-500 dark:text-white/60"
+                                        : "text-zinc-400 group-hover:text-zinc-500 dark:text-white/30 dark:group-hover:text-white/50"
+                                    }`}
+                                  >
+                                    {item.title}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                            {standardItems[currentRecognitionIndex]?.subTitle && (
+                              <motion.p
+                                key={`recognition-copy-${standardItems[currentRecognitionIndex]?.id}`}
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="text-sm leading-relaxed text-zinc-500 dark:text-white/60"
+                              >
+                                {standardItems[currentRecognitionIndex].subTitle}
+                              </motion.p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </motion.div>
               </AnimatePresence>
 
