@@ -387,6 +387,13 @@ function ResturantBanner({
             Home
           </Link>
           <ChevronRight className="w-4 h-4" />
+          <Link
+            to="/restaurant-homepage"
+            className="hover:text-primary transition-colors"
+          >
+            Restaurants
+          </Link>
+          <ChevronRight className="w-4 h-4" />
           <span className="text-foreground font-semibold truncate">
             {restaurant.name}
           </span>
