@@ -850,7 +850,7 @@ const loginAPI = (data) => API.post("api/v1/staff/login", data);
 const getAllRoles = () => API.get("api/v1/showAll");
 const uploadMedia = (formData) => API.post("api/v1/media/upload", formData);
 const PropertyUploadMedia = (formData) => API.post("api/v1/property-listings/upload-media", formData);
-const PropertyEdiMedia = (formData) => API.put("api/v1/property-listings/edit-media", formData);
+const PropertyEdiMedia = (listingId, formData) => API.put(`api/v1/property-listings/${listingId}/edit-media`, formData);
 const getMediaById = (id) => API.get(`api/v1/media/${id}`);
 const createUser = (data) => API.post("api/v1/users/create", data);
 const getUsersPaginated = () => API.get("api/v1/users/auth/paginated");
@@ -17128,6 +17128,15 @@ function ResturantBanner({
               className: "flex items-center gap-2 text-sm text-muted-foreground mb-6",
               children: [
                 /* @__PURE__ */ jsx(Link, { to: "/", className: "hover:text-primary transition-colors", children: "Home" }),
+                /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-4 h-4" }),
+                /* @__PURE__ */ jsx(
+                  Link,
+                  {
+                    to: "/restaurant-homepage",
+                    className: "hover:text-primary transition-colors",
+                    children: "Restaurants"
+                  }
+                ),
                 /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-4 h-4" }),
                 /* @__PURE__ */ jsx("span", { className: "text-foreground font-semibold truncate", children: restaurant.name })
               ]
@@ -44626,42 +44635,62 @@ function EditPropertyModal({
       longitude: mode === "coordinates" ? prev.longitude : ""
     }));
   };
+  const buildMediaFormData = () => {
+    const mediaFormData = new FormData();
+    mediaFormData.append("mediaType", "IMAGE");
+    const existingMediaIds = (listing.media || []).map((m) => m.mediaId).filter(Boolean);
+    existingMediaIds.forEach((id) => mediaFormData.append("mediaIds", id));
+    newFiles.forEach((file) => mediaFormData.append("files", file));
+    return mediaFormData;
+  };
   const handleMediaUpload = async () => {
-    if (!newFiles.length) return;
+    if (!newFiles.length) return true;
     if (!listing.id) {
       toast$2.error("No listing ID found for media upload");
-      return;
+      return false;
     }
     setMediaUploading(true);
     try {
-      const mediaFormData = new FormData();
-      mediaFormData.append("propertyListingId", listing.id);
-      mediaFormData.append("mediaType", "IMAGE");
-      const existingMediaIds = (listing.media || []).map((m) => m.mediaId).filter(Boolean);
-      existingMediaIds.forEach((id) => mediaFormData.append("mediaIds", id));
-      newFiles.forEach((file) => mediaFormData.append("files", file));
-      await PropertyEdiMedia(mediaFormData);
+      console.log("[EditPropertyModal] Uploading media", {
+        listingId: listing.id,
+        fileCount: newFiles.length,
+        existingMediaIds: (listing.media || []).map((m) => m.mediaId).filter(Boolean)
+      });
+      await PropertyEdiMedia(listing.id, buildMediaFormData());
       toast$2.success("Media updated successfully");
       setNewFiles([]);
+      return true;
     } catch (err) {
       console.error(err);
       toast$2.error("Media upload failed");
+      return false;
     } finally {
       setMediaUploading(false);
     }
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("[EditPropertyModal] Save Changes clicked", {
+      propertyId: p.id,
+      listingId: listing.id,
+      locationInputMode,
+      addressUrl: form.addressUrl,
+      latitude: form.latitude,
+      longitude: form.longitude,
+      newFilesCount: newFiles.length
+    });
     setSaving(true);
     try {
       if (locationInputMode === "coordinates") {
-        if (!form.latitude || !form.longitude) {
+        const hasLatitude = form.latitude !== "" && form.latitude !== null;
+        const hasLongitude = form.longitude !== "" && form.longitude !== null;
+        if (hasLatitude !== hasLongitude) {
           toast$2.error("Enter both latitude and longitude");
+          console.warn(
+            "[EditPropertyModal] Submit blocked: incomplete coordinates"
+          );
           return;
         }
-      } else if (!form.addressUrl) {
-        toast$2.error("Enter the main address URL");
-        return;
       }
       const combinedRatingValue = isHotelType2 ? encodeCombinedRating(form.rating, form.verifiedUsers) : form.rating !== "" ? Number(form.rating) : null;
       const payload = {
@@ -44699,9 +44728,14 @@ function EditPropertyModal({
           (loc) => loc.nearbyLocationName.trim() !== ""
         )
       };
+      console.log("[EditPropertyModal] Updating property", payload);
       await updatePropertyById(p.id, payload);
       if (newFiles.length > 0) {
-        await handleMediaUpload();
+        const mediaSaved = await handleMediaUpload();
+        if (!mediaSaved) {
+          toast$2.error("Property details saved, but media update failed");
+          return;
+        }
       }
       toast$2.success("Property updated successfully");
       onSuccess?.();
