@@ -110,19 +110,26 @@ const normalizeProperties = (response) => {
       const amenities = Array.isArray(listing?.amenities)
         ? listing.amenities.map(getAmenityName).filter(Boolean)
         : [];
+      const hasServiceAvailability = Boolean(
+        parent?.dineIn || parent?.takeaway || parent?.bookingEngineUrl,
+      );
       const highlightedAmenities = [];
-      if (parent?.dineIn) highlightedAmenities.push("Dining");
+      if (parent?.dineIn) highlightedAmenities.push("Dine In");
       if (parent?.takeaway) highlightedAmenities.push("Takeaway");
-      highlightedAmenities.push(parent?.bookingEngineUrl ? "Reservation Available" : "Walk-in Only");
+      highlightedAmenities.push(
+        hasServiceAvailability ? "Reservation Available" : "Walk-in Only",
+      );
       return {
         id: listing?.id ? `${parent?.id}-${listing.id}` : `property-${parent?.id}`,
         propertyId: parent?.id,
         name: parent?.propertyName || "Unnamed Restaurant",
+        dineIn: Boolean(parent?.dineIn),
+        takeaway: Boolean(parent?.takeaway),
         city: parent?.locationName || listing?.city || "Unknown",
         location: listing?.fullAddress || parent?.address || "N/A",
         type: listing?.propertyType || parent?.propertyTypes?.[0] || "Restaurant",
         serviceTag: parent?.dineIn ? "Dining" : "Dining",
-        reservationAvailable: Boolean(parent?.bookingEngineUrl),
+        reservationAvailable: hasServiceAvailability,
         image: { src: listing?.media?.[0]?.url || listing?.media?.[0] || "", alt: parent?.propertyName || "Restaurant" },
         rating: listing?.rating || 0,
         description: listing?.mainHeading || listing?.tagline || listing?.subTitle || "",

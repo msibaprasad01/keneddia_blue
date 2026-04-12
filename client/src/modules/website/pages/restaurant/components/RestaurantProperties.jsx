@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { GetAllPropertyDetails } from "@/Api/Api";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
+import RestaurantReserveDialog from "./RestaurantReserveDialog";
 
 const normalize = (value) => String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
 const getAmenityName = (amenity) => typeof amenity === "string" ? amenity : amenity && typeof amenity === "object" && "name" in amenity && typeof amenity.name === "string" ? amenity.name : null;
@@ -16,19 +17,26 @@ const mapApiToRestaurantUI = (item) => {
   const parent = item?.propertyResponseDTO;
   const listing = item?.propertyListingResponseDTOS?.find((entry) => entry?.isActive);
   const amenities = Array.isArray(listing?.amenities) ? listing.amenities.map((a) => getAmenityName(a)).filter(Boolean) : [];
+  const hasServiceAvailability = Boolean(
+    parent?.dineIn || parent?.takeaway || parent?.bookingEngineUrl,
+  );
   const highlightedAmenities = [];
   if (parent?.dineIn) highlightedAmenities.push("Dining");
   if (parent?.takeaway) highlightedAmenities.push("Takeaway");
-  highlightedAmenities.push(parent?.bookingEngineUrl ? "Reservation Available" : "Walk-in Only");
+  highlightedAmenities.push(
+    hasServiceAvailability ? "Reservation Available" : "Walk-in Only",
+  );
   return {
     id: listing?.id ? `${parent?.id}-${listing.id}` : `property-${parent?.id}`,
     propertyId: parent?.id,
     name: parent?.propertyName || "Unnamed Restaurant",
+    dineIn: Boolean(parent?.dineIn),
+    takeaway: Boolean(parent?.takeaway),
     city: parent?.locationName || listing?.city || "Unknown",
     location: listing?.fullAddress || parent?.address || "N/A",
     type: listing?.propertyType || parent?.propertyTypes?.[0] || "Restaurant",
     serviceTag: parent?.dineIn ? "Dining" : listing?.propertyCategoryName || "Dining",
-    reservationAvailable: Boolean(parent?.bookingEngineUrl),
+    reservationAvailable: hasServiceAvailability,
     image: { src: listing?.media?.[0]?.url || listing?.media?.[0] || "", alt: parent?.propertyName || "Restaurant" },
     rating: listing?.rating || 0,
     description: listing?.mainHeading || listing?.tagline || listing?.subTitle || "Curated dining experience with signature hospitality.",
@@ -44,7 +52,7 @@ const mapApiToRestaurantUI = (item) => {
 export default function RestaurantProperties({ initialRestaurants }) {
   const navigate = useNavigate();
   const ssrLoaded = Array.isArray(initialRestaurants) && initialRestaurants.length > 0;
-  const [restaurants, setRestaurants] = useState(ssrLoaded ? initialRestaurants : []), [loading, setLoading] = useState(!ssrLoaded), [activeIndex, setActiveIndex] = useState(0), [viewMode, setViewMode] = useState("gallery"), [selectedCity, setSelectedCity] = useState("All Cities"), [showCityDropdown, setShowCityDropdown] = useState(false), [isPaused, setIsPaused] = useState(false);
+  const [restaurants, setRestaurants] = useState(ssrLoaded ? initialRestaurants : []), [loading, setLoading] = useState(!ssrLoaded), [activeIndex, setActiveIndex] = useState(0), [viewMode, setViewMode] = useState("gallery"), [selectedCity, setSelectedCity] = useState("All Cities"), [showCityDropdown, setShowCityDropdown] = useState(false), [isPaused, setIsPaused] = useState(false), [selectedRestaurant, setSelectedRestaurant] = useState(null);
   useEffect(() => {
     if (ssrLoaded) return;
     const fetchRestaurants = async () => { try { setLoading(true); const response = await GetAllPropertyDetails(); const rawData = response?.data?.data || response?.data || []; const mapped = Array.isArray(rawData) ? rawData.map((item) => mapApiToRestaurantUI(item)).filter((r) => r.isActive && isRestaurantType(r.type)) : []; setRestaurants([...mapped].reverse()); } catch (error) { console.error("Failed to load restaurant properties", error); setRestaurants([]); } finally { setLoading(false); } }; fetchRestaurants();
@@ -56,7 +64,6 @@ export default function RestaurantProperties({ initialRestaurants }) {
   const activeRestaurant = filteredRestaurants[activeIndex] || filteredRestaurants[0];
   const activeMapIsEmbeddable = isEmbedUrl(activeRestaurant?.googleMapLink);
   const getRestaurantDetailUrl = (restaurant) => `/${createCitySlug(restaurant.city || restaurant.name)}/${createHotelSlug(restaurant.name || restaurant.city || "property", restaurant.propertyId)}`;
-  const scrollToReservation = () => document.getElementById("reservation")?.scrollIntoView({ behavior: "smooth", block: "start" });
   const goToRestaurantDetails = (restaurant) => navigate(getRestaurantDetailUrl(restaurant));
   const handlePrev = () => setActiveIndex((prev) => prev === 0 ? filteredRestaurants.length - 1 : prev - 1);
   const handleNext = () => setActiveIndex((prev) => prev === filteredRestaurants.length - 1 ? 0 : prev + 1);
@@ -65,6 +72,21 @@ export default function RestaurantProperties({ initialRestaurants }) {
   if (!activeRestaurant) return <div className="container mx-auto mb-12 px-4"><div className="flex h-[300px] items-center justify-center text-muted-foreground">No restaurants available.</div></div>;
   return (
     <div className="container mx-auto mb-12 px-4">
+      <RestaurantReserveDialog
+        open={Boolean(selectedRestaurant)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedRestaurant(null);
+        }}
+        property={
+          selectedRestaurant
+            ? {
+                id: selectedRestaurant.propertyId,
+                propertyName: selectedRestaurant.name,
+              }
+            : null
+        }
+      />
+
       <motion.div layout className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-2xl backdrop-blur-md">
         <div className="flex items-center justify-between border-b border-border/10 bg-primary/5 p-6"><div className="flex items-center gap-4"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg"><Search className="h-5 w-5" /></div><div><h3 className="text-xl font-serif font-medium text-foreground">Explore Our Restaurants</h3><p className="text-xs uppercase tracking-wider text-muted-foreground">Collection Showcase</p></div></div></div>
         <div className="p-8">
@@ -130,14 +152,19 @@ export default function RestaurantProperties({ initialRestaurants }) {
                       <div>
                         <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground">Available Highlights</h4>
                         <div className="mb-3 flex flex-wrap gap-2">
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary"><Building2 className="h-3 w-3" />{activeRestaurant.serviceTag || "Dining"}</span>
+                          {activeRestaurant.dineIn && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary"><Building2 className="h-3 w-3" />Dine In</span>
+                          )}
+                          {activeRestaurant.takeaway && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-700">Takeaway</span>
+                          )}
                           <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${activeRestaurant.reservationAvailable ? "border-sky-200 bg-sky-50 text-sky-700" : "border-zinc-200 bg-zinc-100 text-zinc-500"}`}>{activeRestaurant.reservationAvailable ? "Reservation Available" : "Walk-in Only"}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-2">{(activeRestaurant.cuisines.length > 0 ? activeRestaurant.cuisines : ["Signature Hospitality", "Prime Location"]).map((item) => <div key={item} className="flex items-center gap-2 text-xs text-muted-foreground"><div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" /><span className="line-clamp-1">{item}</span></div>)}</div>
                       </div>
                     </div>
                     <div className="mt-4 space-y-2.5">
-                      <Button onClick={scrollToReservation} className="w-full gap-2 py-3 text-sm font-bold uppercase">Reserve Table <ArrowRight className="h-4 w-4" /></Button>
+                      <Button onClick={() => setSelectedRestaurant(activeRestaurant)} className="w-full gap-2 py-3 text-sm font-bold uppercase">Reserve Table <ArrowRight className="h-4 w-4" /></Button>
                       <button onClick={() => goToRestaurantDetails(activeRestaurant)} className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">View Details -&gt;</button>
                     </div>
                   </div>
@@ -163,7 +190,7 @@ export default function RestaurantProperties({ initialRestaurants }) {
                       </div>
                       <div className="mb-4"><h4 className="mb-2 text-xs font-bold text-foreground">Top Highlights</h4><div className="flex flex-wrap gap-1.5">{(activeRestaurant.highlightedAmenities?.length > 0 ? activeRestaurant.highlightedAmenities : ["Dining", "Walk-in Only"]).map((item) => <span key={item} className="rounded-full bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-foreground">{item}</span>)}</div></div>
                       <div className="mb-3 rounded-lg border-b border-border bg-muted/20 p-2.5 pb-3"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold text-foreground">Nearby Landmark</p><p className="text-[8px] text-muted-foreground">Restaurant response detail</p></div><p className="text-sm font-bold text-primary">{activeRestaurant.nearbyLocation}</p></div></div>
-                      <div className="space-y-2"><Button onClick={scrollToReservation} className="w-full gap-1.5 text-sm font-bold">Reserve Now <ArrowRight className="h-3.5 w-3.5" /></Button><button onClick={() => goToRestaurantDetails(activeRestaurant)} className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">View Details -&gt;</button></div>
+                      <div className="space-y-2"><Button onClick={() => setSelectedRestaurant(activeRestaurant)} className="w-full gap-1.5 text-sm font-bold">Reserve Now <ArrowRight className="h-3.5 w-3.5" /></Button><button onClick={() => goToRestaurantDetails(activeRestaurant)} className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">View Details -&gt;</button></div>
                     </div>
                   </div>
                   <div className="lg:sticky lg:top-6">
