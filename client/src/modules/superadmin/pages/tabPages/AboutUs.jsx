@@ -184,6 +184,12 @@ function AboutUs() {
     return type ? type.typeName : "Unknown";
   };
 
+  const isRestaurantTab =
+    activeTab !== "homepage" &&
+    propertyTypes.some(
+      (pt) => String(pt.id) === activeTab && normalize(pt.typeName) === "restaurant",
+    );
+
   const propertyTypeTabs = useMemo(
     () => [
       { id: "homepage", label: "Homepage", icon: Home },
@@ -254,7 +260,7 @@ function AboutUs() {
         {[
           { id: "about", label: "About Sections", icon: Info },
           { id: "ventures", label: "Ventures", icon: Briefcase },
-          { id: "recognitions", label: "Recognitions", icon: Award },
+          { id: "recognitions", label: isRestaurantTab ? "Section 3" : "Recognitions", icon: Award },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -283,8 +289,8 @@ function AboutUs() {
                   </span>
                 )}
               </h3>
-              {/* Only show Add button if no entry exists */}
-              {aboutUsList.length === 0 && (
+              {/* Show Add button only when fewer than 2 sections exist */}
+              {aboutUsList.length < 2 && (
                 <button
                   onClick={() => {
                     setSelectedEditData(null);
@@ -326,75 +332,55 @@ function AboutUs() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    <tr
-                      key={latestAbout.id}
-                      className="bg-primary/5 cursor-default"
-                    >
-                      <td className="p-4 font-mono text-xs">
-                        <span className="mr-2 text-primary">●</span>
-                        #{latestAbout.id}
-                      </td>
-                      <td className="p-4 text-sm font-medium">
-                        {latestAbout.sectionTitle}
-                      </td>
-                      <td className="p-4">
-                        {latestAbout.propertyTypeId ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700">
-                            <Building2 size={10} />
-                            {propertyTypes.find(
-                              (pt) => pt.id === latestAbout.propertyTypeId,
-                            )?.typeName || "Unknown"}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-gray-100 text-gray-600">
-                            <Home size={10} />
-                            General
-                          </span>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                            latestAbout.isActive
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {latestAbout.isActive ? "Active" : "Disabled"}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right flex justify-end gap-2">
-                        <button
-                          onClick={() => handleOpenEdit("about", latestAbout)}
-                          className="p-1.5 hover:bg-muted rounded-md text-primary transition-colors"
-                          title="Edit"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        {/* Disable/Enable button commented out
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleStatus(latestAbout);
-                          }}
-                          disabled={loading}
-                          className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                            latestAbout.isActive
-                              ? "border-red-200 text-red-600 hover:bg-red-50"
-                              : "border-green-200 text-green-600 hover:bg-green-50"
-                          }`}
-                        >
-                          {loading ? (
-                            <Loader2 size={12} className="animate-spin" />
-                          ) : latestAbout.isActive ? (
-                            "Disable"
+                    {aboutUsList.map((about, index) => (
+                      <tr
+                        key={about.id}
+                        className={`cursor-default ${index === 0 ? "bg-primary/5" : ""}`}
+                      >
+                        <td className="p-4 font-mono text-xs">
+                          <span className="mr-2 text-primary">●</span>
+                          #{about.id}
+                        </td>
+                        <td className="p-4 text-sm font-medium">
+                          {about.sectionTitle}
+                        </td>
+                        <td className="p-4">
+                          {about.propertyTypeId ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700">
+                              <Building2 size={10} />
+                              {propertyTypes.find(
+                                (pt) => pt.id === about.propertyTypeId,
+                              )?.typeName || "Unknown"}
+                            </span>
                           ) : (
-                            "Enable"
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-gray-100 text-gray-600">
+                              <Home size={10} />
+                              General
+                            </span>
                           )}
-                        </button>
-                        */}
-                      </td>
-                    </tr>
+                        </td>
+                        <td className="p-4">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                              about.isActive
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {about.isActive ? "Active" : "Disabled"}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right flex justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenEdit("about", about)}
+                            className="p-1.5 hover:bg-muted rounded-md text-primary transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
