@@ -209,6 +209,8 @@ const PropertyDetail = ({ property, onBack }) => {
       "gallery",
       "verticals",
       "buffet section",
+      "amenities",
+      "policies",
       "offers section",
       "menu",
       "about",
