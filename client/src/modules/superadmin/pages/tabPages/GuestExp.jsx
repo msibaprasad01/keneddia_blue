@@ -13,6 +13,15 @@ import {
   X,
   Tag,
   Type,
+  Eye,
+  User,
+  Phone,
+  Mail,
+  Building2,
+  Volume2,
+  VolumeX,
+  ChevronLeft as ArrowLeft,
+  ChevronRight as ArrowRight,
 } from "lucide-react";
 import {
   getGuestExperienceSection,
@@ -43,6 +52,381 @@ const formatDateTime = (isoString) => {
   return { date, time };
 };
 
+// ── Media helpers (same logic as Testimonials.jsx) ────────────────────────────
+const isYoutubeUrl = (url) =>
+  /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url?.trim() ?? "");
+
+const getYoutubeId = (url) => {
+  if (!url) return null;
+  const shortsMatch = url.match(/youtube\.com\/shorts\/([^"&?/\s]{11})/);
+  if (shortsMatch) return shortsMatch[1];
+  const shortMatch = url.match(/youtu\.be\/([^"&?/\s]{11})/);
+  if (shortMatch) return shortMatch[1];
+  const longMatch = url.match(/[?&]v=([^"&?/\s]{11})/);
+  if (longMatch) return longMatch[1];
+  const embedMatch = url.match(/embed\/([^"&?/\s]{11})/);
+  if (embedMatch) return embedMatch[1];
+  return null;
+};
+
+const buildMediaList = (item) => {
+  const allMedia = [];
+  const seenUrls = new Set();
+  const add = (type, url) => {
+    if (url && typeof url === "string" && url.trim() !== "" && !seenUrls.has(url)) {
+      seenUrls.add(url.trim());
+      allMedia.push({ type, url: url.trim() });
+    }
+  };
+  if (item.mediaList && Array.isArray(item.mediaList)) {
+    item.mediaList.forEach((m) => {
+      const url = m.url || m.imageUrl || m.videoUrl;
+      if (!url) return;
+      const isVid = m.type === "VIDEO" || isYoutubeUrl(url) || /\.(mp4|webm|mov|ogg)$/i.test(url);
+      add(isVid ? "video" : "image", url);
+    });
+  }
+  if (item.videoUrl) {
+    const isVid = isYoutubeUrl(item.videoUrl) || /\.(mp4|webm|mov|ogg)$/i.test(item.videoUrl);
+    if (isVid) add("video", item.videoUrl);
+  }
+  if (item.imageUrl) add("image", item.imageUrl);
+  return allMedia;
+};
+
+// ── View Modal ────────────────────────────────────────────────────────────────
+function ViewModal({ exp, onClose, properties, propertyTypes }) {
+  const [mutedVideos, setMutedVideos] = useState(new Set());
+  const [mediaErrors, setMediaErrors] = useState(new Set());
+  const [activeMediaIdx, setActiveMediaIdx] = useState(0);
+
+  const allMedia = buildMediaList(exp);
+  const validMedia = allMedia.filter((m) => !mediaErrors.has(m.url));
+  const { date, time } = formatDateTime(exp.createdAt);
+
+  const propertyName = properties.find((p) => p.id === exp.propertyId)?.propertyName;
+  const typeName = propertyTypes.find((t) => t.id === exp.propertyTypeId)?.typeName;
+
+  const toggleMute = (key) =>
+    setMutedVideos((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+
+  const renderMediaItem = (m, idx) => {
+    const videoKey = `video-${m.url}`;
+    const isMuted = !mutedVideos.has(videoKey);
+
+    if (m.type === "video") {
+      if (isYoutubeUrl(m.url)) {
+        const videoId = getYoutubeId(m.url);
+        if (!videoId) return null;
+        return (
+          <div key={idx} className="w-full h-full relative group">
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&modestbranding=1`}
+              className="w-full h-full"
+              style={{ border: "none" }}
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+            />
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleMute(videoKey); }}
+              className="absolute bottom-3 right-3 z-20 bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+          </div>
+        );
+      }
+      return (
+        <div key={idx} className="relative group w-full h-full">
+          <video
+            src={m.url}
+            className="w-full h-full object-contain bg-black"
+            autoPlay
+            muted={isMuted}
+            loop
+            playsInline
+            controls
+          />
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleMute(videoKey); }}
+            className="absolute bottom-3 right-3 z-20 bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </button>
+        </div>
+      );
+    }
+    return (
+      <img
+        key={idx}
+        src={m.url}
+        alt=""
+        className="w-full h-full object-contain bg-black"
+        loading="lazy"
+        onError={() => setMediaErrors((prev) => new Set(prev).add(m.url))}
+      />
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="admin-modal-overlay absolute inset-0" onClick={onClose} />
+      <div
+        className="relative z-10 w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        style={{ backgroundColor: colors.contentBg }}
+      >
+        {/* Modal Header */}
+        <div
+          className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0"
+          style={{ borderColor: colors.border }}
+        >
+          <h4 className="text-sm font-semibold" style={{ color: colors.textPrimary }}>
+            Guest Experience Details
+          </h4>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded hover:bg-black/10 transition-colors"
+            style={{ color: colors.textSecondary }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Scrollable Body */}
+        <div className="overflow-y-auto flex-1">
+          {/* Media Section */}
+          {validMedia.length > 0 ? (
+            <div className="relative bg-black" style={{ height: "320px" }}>
+              {renderMediaItem(validMedia[activeMediaIdx], activeMediaIdx)}
+
+              {/* Navigation arrows */}
+              {validMedia.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setActiveMediaIdx((i) => (i - 1 + validMedia.length) % validMedia.length)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 z-30 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors"
+                  >
+                    <ArrowLeft size={16} />
+                  </button>
+                  <button
+                    onClick={() => setActiveMediaIdx((i) => (i + 1) % validMedia.length)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-30 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors"
+                  >
+                    <ArrowRight size={16} />
+                  </button>
+
+                  {/* Dot indicators */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5">
+                    {validMedia.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActiveMediaIdx(i)}
+                        className={`rounded-full transition-all ${
+                          i === activeMediaIdx ? "w-5 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/50"
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Count badge */}
+                  <div className="absolute top-3 right-3 z-30 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                    {activeMediaIdx + 1} / {validMedia.length}
+                  </div>
+                </>
+              )}
+
+              {/* Thumbnail strip for multiple media */}
+              {validMedia.length > 1 && (
+                <div
+                  className="absolute bottom-0 left-0 right-0 z-20 flex gap-1.5 overflow-x-auto px-3 pb-2 pt-8"
+                  style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" }}
+                >
+                  {validMedia.map((m, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveMediaIdx(i)}
+                      className={`flex-shrink-0 w-12 h-9 rounded overflow-hidden border-2 transition-all ${
+                        i === activeMediaIdx ? "border-white" : "border-transparent opacity-60 hover:opacity-90"
+                      }`}
+                    >
+                      {m.type === "video" ? (
+                        isYoutubeUrl(m.url) ? (
+                          <img
+                            src={`https://img.youtube.com/vi/${getYoutubeId(m.url)}/default.jpg`}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                            <Video size={12} className="text-white/70" />
+                          </div>
+                        )
+                      ) : (
+                        <img src={m.url} alt="" className="w-full h-full object-cover" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              className="flex items-center justify-center gap-2 py-8 border-b"
+              style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}
+            >
+              <ImageIcon size={20} style={{ color: colors.textSecondary }} />
+              <span className="text-sm" style={{ color: colors.textSecondary }}>
+                No media attached
+              </span>
+            </div>
+          )}
+
+          {/* Details Grid */}
+          <div className="p-5 space-y-4">
+            {/* Title */}
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: colors.textSecondary }}>
+                Title
+              </p>
+              <p className="text-base font-medium" style={{ color: colors.textPrimary }}>
+                {exp.title || "—"}
+              </p>
+            </div>
+
+            {/* Description */}
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: colors.textSecondary }}>
+                Description
+              </p>
+              <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: colors.textPrimary }}>
+                {exp.description || "—"}
+              </p>
+            </div>
+
+            {/* Author info */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div
+                className="flex items-start gap-2.5 p-3 rounded-lg border"
+                style={{ backgroundColor: colors.mainBg, borderColor: colors.border }}
+              >
+                <User size={14} style={{ color: colors.primary }} className="mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: colors.textSecondary }}>Author</p>
+                  <p className="text-sm font-medium" style={{ color: colors.textPrimary }}>{exp.author || "—"}</p>
+                </div>
+              </div>
+              <div
+                className="flex items-start gap-2.5 p-3 rounded-lg border"
+                style={{ backgroundColor: colors.mainBg, borderColor: colors.border }}
+              >
+                <Phone size={14} style={{ color: colors.primary }} className="mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: colors.textSecondary }}>Phone</p>
+                  <p className="text-sm font-medium" style={{ color: colors.textPrimary }}>{exp.authorPhone || "—"}</p>
+                </div>
+              </div>
+              <div
+                className="flex items-start gap-2.5 p-3 rounded-lg border"
+                style={{ backgroundColor: colors.mainBg, borderColor: colors.border }}
+              >
+                <Mail size={14} style={{ color: colors.primary }} className="mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: colors.textSecondary }}>Email</p>
+                  <p className="text-sm font-medium break-all" style={{ color: colors.textPrimary }}>{exp.authorEmail || "—"}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Property / Type / Date / Status */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div
+                className="flex items-start gap-2.5 p-3 rounded-lg border"
+                style={{ backgroundColor: colors.mainBg, borderColor: colors.border }}
+              >
+                <Building2 size={14} style={{ color: colors.primary }} className="mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: colors.textSecondary }}>Property</p>
+                  <p className="text-xs font-medium" style={{ color: colors.textPrimary }}>
+                    {propertyName || (exp.propertyId ? `ID: ${exp.propertyId}` : "—")}
+                  </p>
+                </div>
+              </div>
+              <div
+                className="flex items-start gap-2.5 p-3 rounded-lg border"
+                style={{ backgroundColor: colors.mainBg, borderColor: colors.border }}
+              >
+                <Tag size={14} style={{ color: colors.primary }} className="mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: colors.textSecondary }}>Type</p>
+                  <p className="text-xs font-medium" style={{ color: colors.textPrimary }}>
+                    {typeName || (exp.propertyTypeId ? `ID: ${exp.propertyTypeId}` : "—")}
+                  </p>
+                </div>
+              </div>
+              <div
+                className="flex items-start gap-2.5 p-3 rounded-lg border"
+                style={{ backgroundColor: colors.mainBg, borderColor: colors.border }}
+              >
+                <Calendar size={14} style={{ color: colors.primary }} className="mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: colors.textSecondary }}>Added On</p>
+                  <p className="text-xs font-medium" style={{ color: colors.textPrimary }}>{date}</p>
+                  <p className="text-[10px]" style={{ color: colors.textSecondary }}>{time}</p>
+                </div>
+              </div>
+              <div
+                className="flex items-start gap-2.5 p-3 rounded-lg border"
+                style={{ backgroundColor: colors.mainBg, borderColor: colors.border }}
+              >
+                <div className="mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full" style={{ backgroundColor: exp.isActive ? "#22c55e" : "#ef4444" }} />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: colors.textSecondary }}>Status</p>
+                  <p className="text-xs font-medium" style={{ color: exp.isActive ? "#22c55e" : "#ef4444" }}>
+                    {exp.isActive ? "Active" : "Inactive"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Review Note */}
+            {exp.reviewNote && (
+              <div
+                className="p-3 rounded-lg border"
+                style={{ backgroundColor: colors.mainBg, borderColor: colors.border }}
+              >
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: colors.textSecondary }}>
+                  Review Note
+                </p>
+                <p className="text-sm leading-relaxed" style={{ color: colors.textPrimary }}>
+                  {exp.reviewNote}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div
+          className="flex items-center justify-end px-5 py-4 border-t flex-shrink-0"
+          style={{ borderColor: colors.border }}
+        >
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg text-xs font-medium border transition-colors hover:bg-black/5"
+            style={{ borderColor: colors.border, color: colors.textSecondary }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function GuestExp() {
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -64,6 +448,9 @@ function GuestExp() {
   });
   const [savingRating, setSavingRating] = useState(false);
   const [ratingData, setRatingData] = useState(null);
+
+  // View modal state
+  const [viewExp, setViewExp] = useState(null);
 
   // Filter state
   const [filterPropertyId, setFilterPropertyId] = useState("");
@@ -688,19 +1075,29 @@ function GuestExp() {
 
                       {/* Actions */}
                       <td className="p-4 text-right">
-                        <button
-                          onClick={() => handleDelete(exp.id)}
-                          disabled={loading}
-                          className="p-2 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
-                          style={{ color: "#ef4444" }}
-                          title="Delete Experience"
-                        >
-                          {loading ? (
-                            <Loader2 size={16} className="animate-spin" />
-                          ) : (
-                            <Trash2 size={16} />
-                          )}
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => setViewExp(exp)}
+                            className="p-2 rounded hover:bg-blue-50 transition-colors"
+                            style={{ color: colors.primary }}
+                            title="View Details"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(exp.id)}
+                            disabled={loading}
+                            className="p-2 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+                            style={{ color: "#ef4444" }}
+                            title="Delete Experience"
+                          >
+                            {loading ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -747,6 +1144,16 @@ function GuestExp() {
           </div>
         </div>
       </div>
+
+      {/* ── View Modal ── */}
+      {viewExp && (
+        <ViewModal
+          exp={viewExp}
+          onClose={() => setViewExp(null)}
+          properties={properties}
+          propertyTypes={propertyTypes}
+        />
+      )}
 
       {/* ── Modal ── */}
       {modalOpen && (
