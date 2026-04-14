@@ -99,12 +99,13 @@ function AboutUs() {
         const sorted = [...data].sort((a, b) => b.id - a.id);
         setAboutUsList(sorted);
 
-        // Always auto-select the latest (first) item
-        if (sorted.length > 0) {
-          setSelectedAboutUsId(sorted[0].id);
-        } else {
-          setSelectedAboutUsId(null);
-        }
+        setSelectedAboutUsId((currentSelectedId) => {
+          if (sorted.length === 0) return null;
+          const hasCurrentSelection = sorted.some(
+            (item) => Number(item.id) === Number(currentSelectedId),
+          );
+          return hasCurrentSelection ? currentSelectedId : sorted[0].id;
+        });
       } else {
         setAboutUsList([]);
         setSelectedAboutUsId(null);
@@ -213,9 +214,6 @@ function AboutUs() {
     );
   }
 
-  // Only the latest entry
-  const latestAbout = aboutUsList[0] || null;
-
   return (
     <div className="space-y-6">
       <div className="rounded-xl border bg-card p-4 shadow-sm">
@@ -307,7 +305,7 @@ function AboutUs() {
               <div className="flex items-center justify-center py-12">
                 <Loader2 size={32} className="animate-spin text-primary" />
               </div>
-            ) : !latestAbout ? (
+            ) : aboutUsList.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Info size={48} className="text-muted-foreground/30 mb-4" />
                 <p className="text-sm font-medium text-foreground mb-1">
@@ -332,17 +330,35 @@ function AboutUs() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {aboutUsList.map((about, index) => (
+                    {aboutUsList.map((about, index) => {
+                      const isSelected =
+                        Number(selectedAboutUsId) === Number(about.id);
+
+                      return (
                       <tr
                         key={about.id}
-                        className={`cursor-default ${index === 0 ? "bg-primary/5" : ""}`}
+                        onClick={() => setSelectedAboutUsId(about.id)}
+                        className={`cursor-pointer transition-colors ${
+                          isSelected
+                            ? "bg-primary/10"
+                            : index === 0
+                              ? "bg-primary/5"
+                              : "hover:bg-muted/40"
+                        }`}
                       >
                         <td className="p-4 font-mono text-xs">
                           <span className="mr-2 text-primary">●</span>
                           #{about.id}
                         </td>
                         <td className="p-4 text-sm font-medium">
-                          {about.sectionTitle}
+                          <div className="flex items-center gap-2">
+                            <span>{about.sectionTitle}</span>
+                            {isSelected && (
+                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                                Selected
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="p-4">
                           {about.propertyTypeId ? (
@@ -372,7 +388,10 @@ function AboutUs() {
                         </td>
                         <td className="p-4 text-right flex justify-end gap-2">
                           <button
-                            onClick={() => handleOpenEdit("about", about)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEdit("about", about);
+                            }}
                             className="p-1.5 hover:bg-muted rounded-md text-primary transition-colors"
                             title="Edit"
                           >
@@ -380,7 +399,8 @@ function AboutUs() {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

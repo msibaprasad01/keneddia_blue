@@ -24,11 +24,18 @@ import {
   addGroupBooking,
   updateGroupBooking,
   updateGroupBookingActiveStatus,
+  updateGroupBookingShowOnHomepage,
   getGroupBookings,
   GetAllPropertyDetails,
   getPropertyTypes,
 } from "@/Api/Api";
-import { getAllGroupBookingEnquiries } from "@/Api/RestaurantApi";
+import {
+  getAllGroupBookingEnquiries,
+  createGroupBookingHeader,
+  updateGroupBookingHeader,
+  toggleGroupBookingHeaderActive,
+  getGroupBookingHeaderByPropertyType,
+} from "@/Api/RestaurantApi";
 import { toast } from "react-hot-toast";
 
 const EMPTY_FORM = {
@@ -78,6 +85,16 @@ function getPrimaryPropertyTypeName(propertyLike) {
   return "";
 }
 
+function normalizeHeaderRecords(payload) {
+  const list = Array.isArray(payload)
+    ? payload
+    : payload
+      ? [payload]
+      : [];
+
+  return [...list].sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
+}
+
 export default function GroupBookings() {
   const [activeTab, setActiveTab] = useState("bookings");
   const [bookings, setBookings] = useState([]);
@@ -101,6 +118,16 @@ export default function GroupBookings() {
   const [enquiriesPropertyTypeId, setEnquiriesPropertyTypeId] = useState("");
   const [enquiryPage, setEnquiryPage] = useState(1);
   const [statusUpdatingId, setStatusUpdatingId] = useState(null);
+  const [homepageUpdatingId, setHomepageUpdatingId] = useState(null);
+
+  // Extra Info tab state
+  const [selectedExtraTypeId, setSelectedExtraTypeId] = useState("");
+  const [headerItems, setHeaderItems] = useState([]);
+  const [headerItem, setHeaderItem] = useState(null);
+  const [headerLoading, setHeaderLoading] = useState(false);
+  const [headerSubmitting, setHeaderSubmitting] = useState(false);
+  const [headerTogglingActive, setHeaderTogglingActive] = useState(false);
+  const [headerForm, setHeaderForm] = useState({ header: "", description: "", ctaText: "", active: true });
 
   const fetchBookings = async () => {
     try {
@@ -405,6 +432,112 @@ export default function GroupBookings() {
     }
   };
 
+  const fetchHeaderByType = async (typeId) => {
+    if (!typeId) {
+      setHeaderItems([]);
+      setHeaderItem(null);
+      setHeaderForm({ header: "", description: "", ctaText: "", active: true });
+      return;
+    }
+    try {
+      setHeaderLoading(true);
+      const res = await getGroupBookingHeaderByPropertyType(typeId);
+      const records = normalizeHeaderRecords(res?.data);
+      const latestRecord = records[0] || null;
+      setHeaderItems(records);
+      setHeaderItem(latestRecord);
+      setHeaderForm({
+        header: latestRecord?.header || "",
+        description: latestRecord?.description || "",
+        ctaText: latestRecord?.ctaText || "",
+        active: latestRecord?.active ?? true,
+      });
+    } catch {
+      setHeaderItems([]);
+      setHeaderItem(null);
+      setHeaderForm({ header: "", description: "", ctaText: "", active: true });
+    } finally {
+      setHeaderLoading(false);
+    }
+  };
+
+  const loadHeaderIntoForm = (item) => {
+    setHeaderItem(item || null);
+    setHeaderForm({
+      header: item?.header || "",
+      description: item?.description || "",
+      ctaText: item?.ctaText || "",
+      active: item?.active ?? true,
+    });
+  };
+
+  const handleExtraTypeChange = (typeId) => {
+    setSelectedExtraTypeId(typeId);
+    fetchHeaderByType(typeId);
+  };
+
+  const handleHeaderSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedExtraTypeId) return toast.error("Select a property type first");
+    if (!headerForm.header.trim()) return toast.error("Header text is required");
+    if (!headerItem?.id && headerItems.length > 0) {
+      return toast.error("A header already exists for this property type");
+    }
+    try {
+      setHeaderSubmitting(true);
+      const payload = {
+        header: headerForm.header.trim(),
+        description: headerForm.description.trim(),
+        ctaText: headerForm.ctaText.trim(),
+        active: headerForm.active,
+        propertyTypeId: Number(selectedExtraTypeId),
+      };
+      if (headerItem?.id) {
+        await updateGroupBookingHeader(headerItem.id, payload);
+        toast.success("Header updated");
+      } else {
+        await createGroupBookingHeader(payload);
+        toast.success("Header created");
+      }
+      await fetchHeaderByType(selectedExtraTypeId);
+    } catch {
+      toast.error("Failed to save header");
+    } finally {
+      setHeaderSubmitting(false);
+    }
+  };
+
+  const handleToggleHeaderActive = async () => {
+    if (!headerItem?.id) return;
+    try {
+      setHeaderTogglingActive(true);
+      await toggleGroupBookingHeaderActive(headerItem.id);
+      toast.success("Status toggled");
+      await fetchHeaderByType(selectedExtraTypeId);
+    } catch {
+      toast.error("Failed to toggle status");
+    } finally {
+      setHeaderTogglingActive(false);
+    }
+  };
+
+  const headerSubmitDisabled =
+    headerSubmitting || (!headerItem?.id && headerItems.length > 0);
+
+  const handleToggleHomepage = async (item) => {
+    const next = !(item?.showOnHomepage === true);
+    try {
+      setHomepageUpdatingId(item.id);
+      await updateGroupBookingShowOnHomepage(item.id, next);
+      toast.success(`Homepage visibility ${next ? "enabled" : "disabled"}`);
+      await fetchBookings();
+    } catch {
+      toast.error("Failed to update homepage visibility");
+    } finally {
+      setHomepageUpdatingId(null);
+    }
+  };
+
   const handleToggleActive = async (item) => {
     const currentActive = item?.isActive ?? item?.active ?? true;
     const nextActive = !currentActive;
@@ -447,17 +580,21 @@ export default function GroupBookings() {
       </div>
 
       <div className="flex gap-2 mb-5 border-b border-gray-200">
-        {["bookings", "enquiries"].map((tab) => (
+        {[
+          { key: "bookings", label: "Bookings" },
+          { key: "extraInfo", label: "Extra Info" },
+          { key: "enquiries", label: "Enquiries" },
+        ].map(({ key, label }) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            key={key}
+            onClick={() => setActiveTab(key)}
             className={`px-4 py-3 text-sm font-bold border-b-2 transition-all ${
-              activeTab === tab
+              activeTab === key
                 ? "text-blue-600 border-blue-600"
                 : "text-gray-400 border-transparent hover:text-gray-600"
             }`}
           >
-            {tab === "bookings" ? "Bookings" : "Enquiries"}
+            {label}
           </button>
         ))}
       </div>
@@ -541,6 +678,7 @@ export default function GroupBookings() {
                         { label: "Property Type" },
                         { label: "Persons" },
                         { label: "Description" },
+                        { label: "Homepage" },
                         { label: "Action" },
                       ].map(({ label }) => (
                         <th
@@ -608,6 +746,28 @@ export default function GroupBookings() {
                         </td>
                         <td className="px-4 py-3 text-xs text-gray-600 max-w-[280px]">
                           <p className="line-clamp-2">{item.description || "—"}</p>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleHomepage(item)}
+                            disabled={homepageUpdatingId === item.id}
+                            title={item.showOnHomepage === true ? "Shown on homepage — click to hide" : "Hidden from homepage — click to show"}
+                            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
+                              homepageUpdatingId === item.id ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                            }`}
+                            style={{ backgroundColor: item.showOnHomepage === true ? colors.primary : "#D1D5DB" }}
+                          >
+                            {homepageUpdatingId === item.id ? (
+                              <Loader2 size={10} className="absolute left-1/2 -translate-x-1/2 animate-spin text-white" />
+                            ) : (
+                              <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                                  item.showOnHomepage === true ? "translate-x-6" : "translate-x-1"
+                                }`}
+                              />
+                            )}
+                          </button>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
@@ -707,6 +867,176 @@ export default function GroupBookings() {
             </div>
           )}
         </>
+      )}
+
+      {activeTab === "extraInfo" && (
+        <div className="max-w-lg space-y-5">
+          <div>
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">
+              Property Type
+            </label>
+            <select
+              value={selectedExtraTypeId}
+              onChange={(e) => handleExtraTypeChange(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm outline-none bg-white"
+            >
+              <option value="">Select property type…</option>
+              {propertyTypes.map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.typeName || type.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedExtraTypeId && (
+            headerLoading ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="animate-spin text-gray-300 w-6 h-6" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-gray-100 bg-white p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-gray-700">
+                      Existing Headers
+                    </h4>
+                    {headerItems.length > 0 && (
+                      <span className="text-xs font-semibold text-gray-400">
+                        Latest ID: #{headerItems[0].id}
+                      </span>
+                    )}
+                  </div>
+
+                  {headerItems.length > 0 ? (
+                    <div className="space-y-2">
+                      {headerItems.map((item, index) => {
+                        const isSelected = Number(headerItem?.id) === Number(item?.id);
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => loadHeaderIntoForm(item)}
+                            className={`w-full rounded-lg border px-3 py-3 text-left transition-colors ${
+                              isSelected
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 bg-white hover:bg-gray-50"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-gray-800">
+                                  {item.header || "Untitled Header"}
+                                </p>
+                                <p className="mt-1 text-xs text-gray-500">
+                                  ID #{item.id} {index === 0 ? "• Latest" : ""}
+                                </p>
+                              </div>
+                              <span
+                                className={`inline-flex min-w-[72px] justify-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                                  item.active
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-red-100 text-red-700"
+                                }`}
+                              >
+                                {item.active ? "Active" : "Inactive"}
+                              </span>
+                            </div>
+                            {item.description && (
+                              <p className="mt-2 line-clamp-2 text-xs text-gray-600">
+                                {item.description}
+                              </p>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">
+                      No header found for this property type yet.
+                    </p>
+                  )}
+                </div>
+
+                <div className="rounded-xl border border-gray-100 bg-white p-6 space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-bold text-gray-700">
+                      {headerItem?.id ? "Edit Header" : "Create Header"}
+                    </h4>
+                    {headerItem?.id && (
+                      <button
+                        type="button"
+                        onClick={handleToggleHeaderActive}
+                        disabled={headerTogglingActive}
+                        className={`inline-flex min-w-[92px] items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity ${
+                          headerTogglingActive ? "cursor-not-allowed opacity-60" : "hover:opacity-90"
+                        }`}
+                        style={{ backgroundColor: headerItem?.active ? "#16A34A" : "#DC2626" }}
+                      >
+                        {headerTogglingActive && <Loader2 size={12} className="animate-spin" />}
+                        {headerItem?.active ? "Active" : "Inactive"}
+                      </button>
+                    )}
+                  </div>
+
+                  <form onSubmit={handleHeaderSubmit} className="space-y-4">
+                    <div>
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">
+                        Header <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={headerForm.header}
+                        onChange={(e) => setHeaderForm({ ...headerForm, header: e.target.value })}
+                        placeholder="e.g. Planning something bigger?"
+                        className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">
+                        Description
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={headerForm.description}
+                        onChange={(e) => setHeaderForm({ ...headerForm, description: e.target.value })}
+                        placeholder="e.g. Reach out for private dining, festive reservations..."
+                        className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm outline-none resize-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">
+                        CTA Text
+                      </label>
+                      <input
+                        type="text"
+                        value={headerForm.ctaText}
+                        onChange={(e) => setHeaderForm({ ...headerForm, ctaText: e.target.value })}
+                        placeholder="e.g. Enquire Now"
+                        className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm outline-none"
+                      />
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={headerSubmitDisabled}
+                        className="px-6 py-2 rounded-lg text-white text-sm font-bold flex items-center gap-2 disabled:opacity-60"
+                        style={{ backgroundColor: colors.primary }}
+                      >
+                        {headerSubmitting && <Loader2 size={15} className="animate-spin" />}
+                        {headerItem?.id
+                          ? "Save Changes"
+                          : headerItems.length > 0
+                            ? "Already Added"
+                            : "Create"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )
+          )}
+        </div>
       )}
 
       {activeTab === "enquiries" && (

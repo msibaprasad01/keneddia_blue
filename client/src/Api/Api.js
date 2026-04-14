@@ -323,6 +323,10 @@ export const updateGroupBookingActiveStatus = (id, active) =>
   API.patch(`/api/v1/group-bookings/${id}/active`, null, {
     params: { active },
   });
+export const updateGroupBookingShowOnHomepage = (id, showOnHomepage) =>
+  API.patch(`/api/v1/group-bookings/${id}/show-on-homepage`, null, {
+    params: { showOnHomepage },
+  });
 
 
 // ===============================

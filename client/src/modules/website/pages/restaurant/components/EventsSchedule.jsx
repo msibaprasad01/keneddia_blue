@@ -34,9 +34,10 @@ import {
 } from "@/components/ui/dialog";
 import UiCalendar from "@/components/ui/calendar";
 import { getEventsUpdated, getGroupBookings, getPropertyTypes } from "@/Api/Api";
-import { createGroupBookingEnquiry } from "@/Api/RestaurantApi";
+import { createGroupBookingEnquiry, getGroupBookingHeaderByPropertyType } from "@/Api/RestaurantApi";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 import { toast } from "react-hot-toast";
+import { validateGroupBookingForm } from "@/lib/validation/reservationValidation";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -72,6 +73,16 @@ function formatDate(value) {
 
 function getGroupBookingIcon(index) {
   return GROUP_BOOKING_ICONS[index % GROUP_BOOKING_ICONS.length];
+}
+
+function normalizeHeaderRecords(payload) {
+  const list = Array.isArray(payload)
+    ? payload
+    : payload
+      ? [payload]
+      : [];
+
+  return [...list].sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
 }
 
 function EventCard({ event, index }) {
@@ -297,7 +308,14 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
   const [step, setStep] = useState(1);
   const [dateRange, setDateRange] = useState(null);
   const [formData, setFormData] = useState(EMPTY_FORM);
+  const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [groupBookingHeader, setGroupBookingHeader] = useState(null);
+
+  const setField = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: null }));
+  };
 
   useEffect(() => {
     if (ssrEvents || ssrBookings) return;
@@ -384,6 +402,7 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
         const mappedBookings = (Array.isArray(rawBookings) ? rawBookings : [])
           .filter((item) => {
             if (item?.isActive === false) return false;
+            if (item?.showOnHomepage !== true) return false;
             const byTypeName = isRestaurantType(item?.propertyTypeName);
             const byTypeId =
               restaurantTypeId !== null &&
@@ -395,8 +414,11 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
           .map((item) => ({
             id: item?.id,
             title: item?.title || "Group Booking",
-            description: item?.description || "Custom group dining experience.",
+            description: item?.description || null,
             ctaLink: item?.ctaLink || "",
+            imageUrl: item?.media?.[0]?.url || null,
+            propertyId: item?.propertyId || null,
+            propertyName: item?.propertyName || null,
           }));
 
         setEvents(mappedEvents);
@@ -413,7 +435,26 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
     fetchRestaurantData();
   }, []);
 
-  if (!loading && events.length === 0 && groupBookingItems.length === 0) {
+  useEffect(() => {
+    if (!restaurantTypeId) return;
+    getGroupBookingHeaderByPropertyType(restaurantTypeId)
+      .then((res) => {
+        const latestActiveRecord =
+          normalizeHeaderRecords(res?.data).find((item) => item?.active === true) ||
+          null;
+        setGroupBookingHeader(latestActiveRecord);
+      })
+      .catch(() => {
+        setGroupBookingHeader(null);
+      });
+  }, [restaurantTypeId]);
+
+  if (
+    !loading &&
+    events.length === 0 &&
+    groupBookingItems.length === 0 &&
+    !groupBookingHeader
+  ) {
     return null;
   }
 
@@ -422,6 +463,7 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
     setStep(1);
     setDateRange(null);
     setFormData(EMPTY_FORM);
+    setFormErrors({});
   };
 
   const closeGroupBookingForm = () => {
@@ -429,15 +471,19 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
     setStep(1);
     setDateRange(null);
     setFormData(EMPTY_FORM);
+    setFormErrors({});
   };
 
   const handleFinalSubmit = async () => {
-    if (!restaurantTypeId) {
-      toast.error("Restaurant type is not available. Please try again.");
+    const errs = validateGroupBookingForm(formData);
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
       return;
     }
-    if (!formData.name.trim() || !formData.phone.trim() || !formData.email.trim()) {
-      toast.error("Please fill in name, phone, and email.");
+    setFormErrors({});
+
+    if (!restaurantTypeId) {
+      toast.error("Restaurant type is not available. Please try again.");
       return;
     }
 
@@ -470,6 +516,7 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
         enquiryDate: new Date().toISOString().split("T")[0],
         propertyTypeId: Number(restaurantTypeId),
         ...(selectedOffer?.id ? { groupBookingId: selectedOffer.id } : {}),
+        ...(selectedOffer?.propertyId ? { propertyId: Number(selectedOffer.propertyId) } : {}),
       });
 
       setStep(3);
@@ -570,18 +617,28 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
                       viewport={{ once: true }}
                       className="group overflow-hidden rounded-xl border border-border bg-background transition-all duration-300 hover:border-primary/30 hover:shadow-md"
                     >
-                      <div className="flex items-start gap-3 p-3">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm">
-                          <Icon className="h-5 w-5" />
+                      <div className={`flex gap-3 p-3 ${item.description ? "items-start" : "items-center"}`}>
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm overflow-hidden">
+                          {item.imageUrl ? (
+                            <img
+                              src={item.imageUrl}
+                              alt={item.title}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <Icon className="h-5 w-5" />
+                          )}
                         </div>
 
                         <div className="min-w-0 flex-1">
                           <h4 className="line-clamp-1 text-sm font-semibold transition-colors group-hover:text-primary">
                             {item.title}
                           </h4>
-                          <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">
-                            {item.description || "Multi-purpose group booking support."}
-                          </p>
+                          {item.description && (
+                            <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">
+                              {item.description}
+                            </p>
+                          )}
                         </div>
 
                         <Button
@@ -603,37 +660,42 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
               )}
             </div>
 
-            <div className="relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-slate-900/5" />
-              <div className="absolute inset-x-0 top-0 h-px bg-white/70" />
-              <div className="absolute -left-12 top-8 h-32 w-32 rounded-full bg-rose-200/35 blur-3xl" />
-              <div className="absolute right-[-20px] top-10 h-36 w-36 rounded-full bg-slate-400/20 blur-3xl" />
-              <div className="absolute bottom-[-18px] right-8 h-36 w-36 rounded-full bg-amber-200/35 blur-3xl" />
-              <div className="absolute bottom-10 left-8 h-24 w-24 rounded-full bg-sky-200/25 blur-3xl" />
-              <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5" />
+            {groupBookingHeader && (
+              <div className="relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-slate-900/5" />
+                <div className="absolute inset-x-0 top-0 h-px bg-white/70" />
+                <div className="absolute -left-12 top-8 h-32 w-32 rounded-full bg-rose-200/35 blur-3xl" />
+                <div className="absolute right-[-20px] top-10 h-36 w-36 rounded-full bg-slate-400/20 blur-3xl" />
+                <div className="absolute bottom-[-18px] right-8 h-36 w-36 rounded-full bg-amber-200/35 blur-3xl" />
+                <div className="absolute bottom-10 left-8 h-24 w-24 rounded-full bg-sky-200/25 blur-3xl" />
+                <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5" />
 
-              <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-                <Users className="h-8 w-8 text-primary/60" />
-                <p className="font-serif text-sm font-semibold text-foreground/80">
-                  Planning something bigger?
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  Reach out for private dining, festive reservations, and custom
-                  group experiences tailored to your event.
-                </p>
-                <Button
-                  className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold"
-                  onClick={() =>
-                    openGroupBookingForm({
-                      id: null,
-                      title: "Restaurant Group Booking",
-                    })
-                  }
-                >
-                  Enquire Now
-                </Button>
+                <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                  <Users className="h-8 w-8 text-primary/60" />
+                  <p className="font-serif text-sm font-semibold text-foreground/80">
+                    {groupBookingHeader.header}
+                  </p>
+                  {groupBookingHeader.description && (
+                    <p className="text-[11px] text-muted-foreground">
+                      {groupBookingHeader.description}
+                    </p>
+                  )}
+                  {groupBookingHeader.ctaText && (
+                    <Button
+                      className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold"
+                      onClick={() =>
+                        openGroupBookingForm({
+                          id: null,
+                          title: "Restaurant Group Booking",
+                        })
+                      }
+                    >
+                      {groupBookingHeader.ctaText}
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -650,7 +712,9 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
               {selectedOffer?.title}
             </DialogTitle>
             <DialogDescription>
-              Share your preferred dates and contact details for this booking.
+              {selectedOffer?.propertyName
+                ? `Booking at ${selectedOffer.propertyName} — share your preferred dates and contact details.`
+                : "Share your preferred dates and contact details for this booking."}
             </DialogDescription>
           </DialogHeader>
           {step === 1 ? (
@@ -665,50 +729,90 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
               </Button>
             </div>
           ) : step === 2 ? (
-            <div className="space-y-4">
-              <Input
-                placeholder="Your name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="Phone number"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, phone: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="Email address"
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, email: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="No. of persons"
-                type="number"
-                min="1"
-                value={formData.persons}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, persons: e.target.value }))
-                }
-              />
-              <Textarea
-                placeholder="Additional requirements"
-                value={formData.customQuery}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    customQuery: e.target.value,
-                  }))
-                }
-                rows={4}
-              />
+            <div className="space-y-3">
+              {selectedOffer?.propertyName && (
+                <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Restaurant</span>
+                  <span className="text-xs font-semibold text-foreground">{selectedOffer.propertyName}</span>
+                </div>
+              )}
+              <p className="text-[11px] text-muted-foreground">
+                Fields marked <span className="text-red-500 font-semibold">*</span> are required.
+              </p>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold">
+                  Full Name <span className="text-red-500">*</span>
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(letters only)</span>
+                </label>
+                <Input
+                  placeholder="Your full name"
+                  value={formData.name}
+                  onChange={(e) => setField("name", e.target.value)}
+                  className={formErrors.name ? "border-red-500 focus-visible:ring-red-400" : ""}
+                />
+                {formErrors.name && <p className="text-xs text-red-500">{formErrors.name}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold">
+                  Phone Number <span className="text-red-500">*</span>
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(10 digits)</span>
+                </label>
+                <Input
+                  placeholder="10-digit mobile number"
+                  type="tel"
+                  maxLength={10}
+                  value={formData.phone}
+                  onChange={(e) => setField("phone", e.target.value.replace(/\D/g, ""))}
+                  className={formErrors.phone ? "border-red-500 focus-visible:ring-red-400" : ""}
+                />
+                {formErrors.phone && <p className="text-xs text-red-500">{formErrors.phone}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  placeholder="name@example.com"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setField("email", e.target.value)}
+                  className={formErrors.email ? "border-red-500 focus-visible:ring-red-400" : ""}
+                />
+                {formErrors.email && <p className="text-xs text-red-500">{formErrors.email}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold">
+                  No. of Persons
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(optional)</span>
+                </label>
+                <Input
+                  placeholder="e.g. 50"
+                  type="number"
+                  min="1"
+                  value={formData.persons}
+                  onChange={(e) => setField("persons", e.target.value)}
+                  className={formErrors.persons ? "border-red-500 focus-visible:ring-red-400" : ""}
+                />
+                {formErrors.persons && <p className="text-xs text-red-500">{formErrors.persons}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold">
+                  Additional Requirements
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(optional)</span>
+                </label>
+                <Textarea
+                  placeholder="Any special requirements or notes..."
+                  value={formData.customQuery}
+                  onChange={(e) => setField("customQuery", e.target.value)}
+                  rows={3}
+                />
+              </div>
+
               <Button
                 className="w-full"
                 onClick={handleFinalSubmit}

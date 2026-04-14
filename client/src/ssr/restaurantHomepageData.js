@@ -237,6 +237,7 @@ const normalizeGroupBookings = (bookingsRes, restaurantTypeId) => {
   return (Array.isArray(rawBookings) ? rawBookings : [])
     .filter((item) => {
       if (item?.isActive === false) return false;
+      if (item?.showOnHomepage !== true) return false;
       const byTypeName = isRestaurantType(item?.propertyTypeName);
       const byTypeId = restaurantTypeId != null && Number(item?.propertyTypeId) === restaurantTypeId;
       return byTypeName || byTypeId;
@@ -246,8 +247,11 @@ const normalizeGroupBookings = (bookingsRes, restaurantTypeId) => {
     .map((item) => ({
       id: item?.id,
       title: item?.title || "Group Booking",
-      description: item?.description || "Custom group dining experience.",
+      description: item?.description || null,
       ctaLink: item?.ctaLink || "",
+      imageUrl: item?.media?.[0]?.url || null,
+      propertyId: item?.propertyId || null,
+      propertyName: item?.propertyName || null,
     }));
 };
 

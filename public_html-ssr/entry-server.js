@@ -2,14 +2,14 @@ import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router";
 import * as React from "react";
-import React__default, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
+import React__default, { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva } from "class-variance-authority";
-import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight as ArrowRight$1, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, Check, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, Leaf, SunMedium, Waves, MoonStar, Gift, Map as Map$1, CalendarClock, BriefcaseBusiness, CalendarCheck2, HandPlatter, PlayCircle, Menu, ShoppingCart, LogOut, Home as Home$1, Save, Plus, Ruler, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, Filter, FilterX, Inbox, DollarSign, Newspaper, Building, Hotel as Hotel$1, Layers, LinkIcon, Zap, Tags } from "lucide-react";
+import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, UtensilsCrossed, MapPin, ChevronDown, Check, Sun, Moon, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, Building2, ArrowRight as ArrowRight$1, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, Leaf, SunMedium, Waves, MoonStar, Gift, Map as Map$1, CalendarClock, BriefcaseBusiness, CalendarCheck2, HandPlatter, PlayCircle, Menu, ShoppingCart, LogOut, Home as Home$1, Save, Plus, Ruler, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, Filter, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Zap, Tags } from "lucide-react";
 import { toast as toast$3, ToastContainer } from "react-toastify";
 import { useLocation, useNavigate, Link, useParams, useSearchParams, Route, Navigate, Routes } from "react-router-dom";
 import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
@@ -17,12 +17,12 @@ import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { Command as Command$1 } from "cmdk";
 import axios from "axios";
 import { Slot } from "@radix-ui/react-slot";
+import * as LabelPrimitive from "@radix-ui/react-label";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Navigation, Pagination as Pagination$2 } from "swiper/modules";
 import { toast as toast$2 } from "react-hot-toast";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import ReactCalendar from "react-calendar";
-import * as LabelPrimitive from "@radix-ui/react-label";
 import { addDays, format, isBefore, parseISO, startOfToday } from "date-fns";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { XMarkIcon, CurrencyRupeeIcon, UserIcon, MapPinIcon, InformationCircleIcon, PhotoIcon, StarIcon, UsersIcon, HomeIcon, MinusIcon, PlusIcon, CloudArrowUpIcon, ArrowPathIcon, TrashIcon, PencilSquareIcon, PencilIcon, CheckIcon, BoltIcon, TagIcon, XCircleIcon, MagnifyingGlassIcon, FunnelIcon, Squares2X2Icon, ListBulletIcon, BuildingStorefrontIcon, ArrowsUpDownIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, DocumentTextIcon, ShieldCheckIcon, CheckCircleIcon as CheckCircleIcon$1, ArrowLeftIcon, BuildingOffice2Icon } from "@heroicons/react/24/outline";
@@ -1024,6 +1024,9 @@ const getGroupBookings = () => API.get("/api/v1/group-bookings");
 const updateGroupBookingActiveStatus = (id, active) => API.patch(`/api/v1/group-bookings/${id}/active`, null, {
   params: { active }
 });
+const updateGroupBookingShowOnHomepage = (id, showOnHomepage) => API.patch(`/api/v1/group-bookings/${id}/show-on-homepage`, null, {
+  params: { showOnHomepage }
+});
 const createRoomType = (data) => API.post("api/v1/room-types", data);
 const getAllRoomTypes = () => API.get("api/v1/room-types");
 const deleteRoomType = (id) => API.delete(`api/v1/room-types/${id}`);
@@ -1279,6 +1282,384 @@ const Button = React.forwardRef(
   }
 );
 Button.displayName = "Button";
+const labelVariants = cva(
+  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+);
+const Label = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  LabelPrimitive.Root,
+  {
+    ref,
+    className: cn(labelVariants(), className),
+    ...props
+  }
+));
+Label.displayName = LabelPrimitive.Root.displayName;
+const createVerticalSectionHeader = (data) => API.post("api/v1/vertical-sections", data);
+const updateVerticalSectionHeader = (id, data) => API.put(`api/v1/vertical-sections/${id}`, data);
+const getAllVerticalSectionsHeader = () => API.get("api/v1/vertical-sections/showAll");
+const createVerticalCard = (data) => API.post("api/v1/vertical-cards", data);
+const updateVerticalCard = (id, data) => API.put(`api/v1/vertical-cards/${id}`, data);
+const getAllVerticalCards = () => API.get("api/v1/vertical-cards/showAll");
+const toggleVerticalCardStatus = (id, active) => API.patch(`api/v1/vertical-cards/${id}/status`, null, { params: { active } });
+const createBuffetSectionHeader = (data) => API.post("api/v1/buffet-section-headers", data);
+const updateBuffetSectionHeader = (id, data) => API.put(`api/v1/buffet-section-headers/${id}`, data);
+const getAllBuffetSectionHeaders = () => API.get("api/v1/buffet-section-headers/showAll");
+const createBuffetItem = (data) => API.post("api/v1/buffet-items", data);
+const updateBuffetItem = (id, data) => API.put(`api/v1/buffet-items/${id}`, data);
+const getAllBuffetItems = () => API.get("api/v1/buffet-items");
+const toggleBuffetItemStatus = (id, active) => API.patch(`api/v1/buffet-items/${id}/status`, null, { params: { active } });
+const createOfferHeader = (data) => API.post("api/v1/offer-sections/createOffer", data);
+const getOfferHeaderById = (id) => API.get(`api/v1/offer-sections/getOfferById/${id}`);
+const getAllOfferHeaders = (id) => API.get(`api/v1/offer-sections/getOffers`);
+const updateOfferHeader = (id, data) => API.patch(`api/v1/offer-sections/updateOffer/${id}`, data);
+const toggleOfferHeaderActive = (id, data) => API.patch(`api/v1/offer-sections/toggleActive/${id}`, data);
+const createRestaurantAbout = (data) => API.post("api/v1/restaurant-about", data);
+const updateRestaurantAbout = (id, data) => API.put(`api/v1/restaurant-about/${id}`, data);
+const getAllRestaurantAbout = () => API.get("api/v1/restaurant-about/showAll");
+const createSocialPlatform = (data) => API.post("api/v1/social-platform/create", data);
+const getAllSocialPlatforms = () => API.get("api/v1/social-platform/all");
+const createRestaurantImageSocial = (data) => API.post("api/v1/restaurant/image-social", data);
+const getRestaurantImageSocialByProperty = (propertyId) => API.get(`api/v1/restaurant/image-social/property/${propertyId}`);
+const updateRestaurantImageSocial = (propertyId, data) => API.put(`api/v1/restaurant/image-social/property/${propertyId}`, data);
+const addRestaurantSocialLink = (propertyId, data) => API.post(`api/v1/restaurant/social-link`, data, { params: { propertyId } });
+const updateRestaurantSocialLink = (id, data) => API.put(`api/v1/restaurant/social-link/${id}`, data);
+const toggleRestaurantSocialLinkStatus = (id, active) => API.patch(`api/v1/restaurant/social-link/${id}/status`, null, { params: { active } });
+const createRestaurantConnect = (data) => API.post("api/v1/restaurant/connect", data);
+const getRestaurantConnectByProperty = (propertyId) => API.get(`api/v1/restaurant/connect/property/${propertyId}`);
+const updateRestaurantConnect = (id, data) => API.put(`api/v1/restaurant/connect/${id}`, data);
+const createGalleryDropdown = (data) => API.post("api/v1/dynamic-dropdown-gallery/create", data);
+const getAllGalleryDropdown = () => API.get("api/v1/dynamic-dropdown-gallery/all");
+const updateGalleryDropdown = (id, data) => API.put(`api/v1/dynamic-dropdown-gallery/${id}`, data);
+const toggleGalleryDropdownStatus = (id, isActive) => API.patch(`api/v1/dynamic-dropdown-gallery/${id}/status`, null, { params: { isActive } });
+const createMenuItem = (formData) => API.post("api/v1/menu-items/createMenuItem", formData, { headers: { "Content-Type": "multipart/form-data" } });
+const getMenuItems = () => API.get("api/v1/menu-items/getMenuItems");
+const getMenuItemsByTopSold = (topSold) => API.get(`api/v1/menu-items/getMenuItemsByTopSold/${topSold}`);
+const updateMenuItem = (id, data) => API.patch(`api/v1/menu-items/updateMenuItem/${id}`, data);
+const toggleMenuItemStatus = (id) => API.patch(`api/v1/menu-items/toggleActive/${id}`);
+const createItemType = (data) => API.post("api/v1/item-type/createItemType", data);
+const getAllItemTypes = () => API.get("api/v1/item-type/getAllItemType");
+const updateItemType = (id, data) => API.patch(`api/v1/item-type/updateItemType/${id}`, data);
+const toggleItemTypeStatus = (id, data) => API.patch(`api/v1/item-type/toggleActive/${id}`, data);
+const createChefRemark = (formData, remarkParam) => API.post("api/v1/chef-remarks/createChefRemark", formData, { params: { remark: remarkParam }, headers: { "Content-Type": "multipart/form-data" } });
+const getChefRemarks = () => API.get("api/v1/chef-remarks/getChefRemarks");
+const updateChefRemark = (id, data) => API.patch(`api/v1/chef-remarks/updateChefRemark/${id}`, data);
+const createMenuHeaderSection = (formData) => API.post("api/v1/menu-sections/createMenu", formData, { headers: { "Content-Type": "multipart/form-data" } });
+const getMenuHeaders = () => API.get("api/v1/menu-sections/getMenus");
+const updateMenuHeadersSection = (id, data) => API.patch(`api/v1/menu-sections/updateMenu/${id}`, data);
+const createTestimonialHeader = (data) => API.post("api/v1/testimonial/createTestimonial", data);
+const getActiveTestimonialHeaders = () => API.get("api/v1/testimonial/getActiveTestimonials");
+const updateTestimonialHeader = (id, data) => API.patch(`api/v1/testimonial/updateTestimonial/${id}`, data);
+const createVisualGalleryHeader = (data) => API.post("api/v1/visual-gallery/createVisualGallery", data);
+const getVisualGallerieHeaders = () => API.get("api/v1/visual-gallery/getVisualGalleries");
+const getActiveVisualGalleriesHeader = () => API.get("api/v1/visual-gallery/getActiveVisualGalleries");
+const updateVisualGalleryHeader = (id, data) => API.patch(`api/v1/visual-gallery/updateVisualGallery/${id}`, data);
+const createPrimaryConversionHeader = (data) => API.post("api/v1/primary-conversion/createPrimaryConversion", data);
+const getPrimaryConversionsHeader = () => API.get("api/v1/primary-conversion/getVisualGalleries");
+const updatePrimaryConversionHeader = (id, data) => API.patch(`api/v1/primary-conversion/updatePrimaryConversion/${id}`, data);
+const createJoiningUs = (data) => API.post("api/v1/joining-us/createJoiningUs", data);
+const getAllJoiningUs = () => API.get("api/v1/joining-us/getAllJoiningUs");
+const createGroupBookingHeader = (data) => API.post("api/group-booking-header/create", data);
+const updateGroupBookingHeader = (id, data) => API.put(`api/group-booking-header/${id}`, data);
+const toggleGroupBookingHeaderActive = (id) => API.patch(`api/group-booking-header/${id}/toggle-active`);
+const getGroupBookingHeaderByPropertyType = (propertyTypeId) => API.get(`api/group-booking-header/property-type/${propertyTypeId}`);
+const createGroupBookingEnquiry = (data) => API.post("/api/v1/enquiry", data);
+const getAllGroupBookingEnquiries = () => API.get("/api/v1/enquiry");
+const addItemLike = (menuItemId, data) => API.post(`/api/v1/item-like/addLike/${menuItemId}`, data);
+const getItemLikes = () => API.get("/api/v1/item-like/getLikes");
+const createEventsHeader = (data) => API.post("api/v1/events-header", data);
+const updateEventsHeader = (id, data) => API.put(`api/v1/events-header/${id}`, data);
+const getEventsHeaderByProperty = (propertyId) => API.get(`api/v1/events-header/property/${propertyId}`);
+const toggleEventsHeaderStatus = (id, isActive) => API.patch(`api/v1/events-header/${id}/status`, null, {
+  params: { isActive }
+});
+const addMenuThumbnail = (propertyId, formData) => API.post(`api/v1/menu-thumbnails/addThumbnail/${propertyId}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+const getAllMenuThumbnails = () => API.get("api/v1/menu-thumbnails/getAllThumbnail");
+const getMenuThumbnailById = (id) => API.get(`api/v1/menu-thumbnails/getThumbnailById/${id}`);
+const updateMenuThumbnail = (propertyId, thumbnailId, formData) => API.patch(`api/v1/menu-thumbnails/updateThumbnail/${propertyId}/${thumbnailId}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+const getPropertiesByDineInAndTakeaway = (params) => API.get("api/v1/properties/getPropertiesByDineInAndTakeaway", { params });
+const generateSlug$2 = (text = "") => text.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
+const BOOKING_TYPES$1 = [
+  { value: "dineIn", label: "Dine In" },
+  { value: "takeaway", label: "Takeaway" }
+];
+function CustomSelect$1({ options, value, onChange, placeholder, disabled }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+  const selected = options.find((o) => o.value === value);
+  return /* @__PURE__ */ jsxs("div", { ref, className: "relative", children: [
+    /* @__PURE__ */ jsxs(
+      "button",
+      {
+        type: "button",
+        disabled,
+        onClick: () => setOpen((c) => !c),
+        className: "group flex h-12 w-full items-center justify-between rounded-md border border-border/60 bg-background/50 px-4 text-left text-sm font-normal transition-colors hover:border-primary/50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed",
+        children: [
+          /* @__PURE__ */ jsx("span", { className: selected ? "text-foreground" : "text-muted-foreground", children: selected ? selected.label : placeholder }),
+          /* @__PURE__ */ jsx(
+            ChevronDown,
+            {
+              className: `h-4 w-4 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`
+            }
+          )
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsx(AnimatePresence, { children: open && /* @__PURE__ */ jsx(
+      motion.ul,
+      {
+        initial: { opacity: 0, y: -6 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -6 },
+        transition: { duration: 0.15 },
+        className: "absolute left-0 top-[calc(100%+6px)] z-50 w-full overflow-hidden rounded-md border border-border bg-card py-1 shadow-lg",
+        children: options.map((option) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsxs(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              onChange(option.value);
+              setOpen(false);
+            },
+            className: "flex w-full items-center justify-between px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-muted",
+            children: [
+              option.label,
+              value === option.value && /* @__PURE__ */ jsx(Check, { className: "h-3.5 w-3.5 text-primary" })
+            ]
+          }
+        ) }, option.value))
+      }
+    ) })
+  ] });
+}
+const getLocationOptions = (properties) => {
+  const unique = [
+    ...new Set(
+      (Array.isArray(properties) ? properties : []).map((p) => p?.locationName?.trim()).filter(Boolean)
+    )
+  ];
+  return unique.map((name) => ({ value: name, label: name }));
+};
+function RestaurantBookingSheet({ isOpen, onOpenChange }) {
+  const navigate = useNavigate();
+  const [bookingType, setBookingType] = useState("");
+  const [location, setLocation] = useState("");
+  const [allProperties, setAllProperties] = useState([]);
+  const [locationOptions, setLocationOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [resultsOpen, setResultsOpen] = useState(false);
+  const selectedTypeLabel = BOOKING_TYPES$1.find((o) => o.value === bookingType)?.label ?? "";
+  const visibleProperties = useMemo(() => {
+    if (!location) return allProperties;
+    return allProperties.filter((p) => p.locationName === location);
+  }, [allProperties, location]);
+  const fetchProperties = async (type) => {
+    if (!type) {
+      setAllProperties([]);
+      setLocationOptions([]);
+      setResultsOpen(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const params = type === "dineIn" ? { dineIn: true } : { takeaway: true };
+      const res = await getPropertiesByDineInAndTakeaway(params);
+      const filtered = (res.data ?? []).filter(
+        (p) => p.isActive && p.propertyTypes?.some((t) => t.toLowerCase() === "restaurant")
+      );
+      setAllProperties(filtered);
+      setLocationOptions(getLocationOptions(filtered));
+      setResultsOpen(true);
+    } catch {
+      setAllProperties([]);
+      setLocationOptions([]);
+      setResultsOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleSelect = (property) => {
+    onOpenChange(false);
+    if (property.bookingEngineUrl) {
+      window.open(property.bookingEngineUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+    const citySlug = generateSlug$2(property.locationName || "");
+    const propertySlug = `${generateSlug$2(property.propertyName)}-${property.id}`;
+    navigate(`/${citySlug}/${propertySlug}`);
+  };
+  const clearAll = () => {
+    setBookingType("");
+    setLocation("");
+    setAllProperties([]);
+    setLocationOptions([]);
+    setResultsOpen(false);
+  };
+  const handleClose = (open) => {
+    if (!open) clearAll();
+    onOpenChange(open);
+  };
+  return /* @__PURE__ */ jsx(Sheet, { open: isOpen, onOpenChange: handleClose, children: /* @__PURE__ */ jsxs(
+    SheetContent,
+    {
+      side: "right",
+      className: "w-full sm:max-w-md p-0 flex flex-col bg-background text-foreground border-l border-border/10",
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "p-6 border-b border-border/10 bg-card/50 backdrop-blur-md relative", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: () => handleClose(false),
+              className: "absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-colors",
+              "aria-label": "Close",
+              children: /* @__PURE__ */ jsx(X, { className: "w-5 h-5" })
+            }
+          ),
+          /* @__PURE__ */ jsx(SheetTitle, { className: "text-xl font-serif font-medium", children: "Find Your Table" }),
+          /* @__PURE__ */ jsx(SheetDescription, { className: "text-muted-foreground text-xs mt-1", children: "Quick Restaurant Booking" })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "flex-1 overflow-y-auto p-6 space-y-5", children: [
+          /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+            /* @__PURE__ */ jsx(Label, { className: "text-[10px] font-bold uppercase tracking-wider text-muted-foreground", children: "Booking Type" }),
+            /* @__PURE__ */ jsx(
+              CustomSelect$1,
+              {
+                options: BOOKING_TYPES$1,
+                value: bookingType,
+                onChange: (val) => {
+                  setBookingType(val);
+                  setLocation("");
+                  fetchProperties(val);
+                },
+                placeholder: "Choose booking type"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+            /* @__PURE__ */ jsx(Label, { className: "text-[10px] font-bold uppercase tracking-wider text-muted-foreground", children: "Location" }),
+            /* @__PURE__ */ jsx(
+              CustomSelect$1,
+              {
+                options: locationOptions,
+                value: location,
+                onChange: (val) => {
+                  setLocation(val);
+                  setResultsOpen(true);
+                },
+                placeholder: bookingType ? "Choose location" : "Select booking type first",
+                disabled: !bookingType || loading || locationOptions.length === 0
+              }
+            )
+          ] }),
+          (bookingType || location) && /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center gap-2", children: [
+            bookingType && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary", children: [
+              /* @__PURE__ */ jsx(UtensilsCrossed, { className: "h-3 w-3" }),
+              selectedTypeLabel,
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: clearAll,
+                  className: "rounded-full p-0.5 transition-colors hover:bg-primary/20",
+                  children: /* @__PURE__ */ jsx(X, { className: "h-3 w-3" })
+                }
+              )
+            ] }),
+            location && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary", children: [
+              /* @__PURE__ */ jsx(MapPin, { className: "h-3 w-3" }),
+              location,
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => setLocation(""),
+                  className: "rounded-full p-0.5 transition-colors hover:bg-primary/20",
+                  children: /* @__PURE__ */ jsx(X, { className: "h-3 w-3" })
+                }
+              )
+            ] })
+          ] }),
+          loading && /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center py-10", children: /* @__PURE__ */ jsx(Loader2, { className: "h-6 w-6 animate-spin text-primary" }) }),
+          /* @__PURE__ */ jsx(AnimatePresence, { initial: false, children: !loading && resultsOpen && /* @__PURE__ */ jsxs(
+            motion.div,
+            {
+              initial: { opacity: 0, y: 10 },
+              animate: { opacity: 1, y: 0 },
+              exit: { opacity: 0, y: 10 },
+              transition: { duration: 0.25 },
+              className: "border-t border-border/10 pt-5 space-y-3",
+              children: [
+                /* @__PURE__ */ jsxs("div", { children: [
+                  /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold uppercase tracking-wider text-muted-foreground", children: "Available Restaurants" }),
+                  /* @__PURE__ */ jsxs("h3", { className: "mt-1 text-lg font-serif text-foreground", children: [
+                    selectedTypeLabel,
+                    " Options",
+                    location ? ` · ${location}` : ""
+                  ] }),
+                  /* @__PURE__ */ jsxs("p", { className: "text-xs text-muted-foreground mt-0.5", children: [
+                    visibleProperties.length,
+                    " option",
+                    visibleProperties.length === 1 ? "" : "s",
+                    " available"
+                  ] })
+                ] }),
+                visibleProperties.length > 0 ? /* @__PURE__ */ jsx("div", { className: "space-y-2.5", children: visibleProperties.map((property, index) => /* @__PURE__ */ jsx(
+                  motion.div,
+                  {
+                    initial: { opacity: 0, y: 16 },
+                    animate: { opacity: 1, y: 0 },
+                    transition: { delay: index * 0.07, duration: 0.25 },
+                    className: "overflow-hidden rounded-lg border border-border/50 bg-background transition-all hover:border-primary/30 hover:shadow-md",
+                    children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
+                      /* @__PURE__ */ jsxs("div", { className: "mb-1 flex flex-wrap items-center gap-2", children: [
+                        /* @__PURE__ */ jsx("h4", { className: "font-serif text-base font-medium text-foreground", children: property.propertyName }),
+                        property.dineIn && /* @__PURE__ */ jsx("span", { className: "rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase text-primary", children: "Dine In" }),
+                        property.takeaway && /* @__PURE__ */ jsx("span", { className: "rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase text-muted-foreground", children: "Takeaway" })
+                      ] }),
+                      /* @__PURE__ */ jsxs("div", { className: "mb-3 flex flex-wrap items-center gap-3", children: [
+                        property.locationName && /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1 text-[10px] text-muted-foreground", children: [
+                          /* @__PURE__ */ jsx(MapPin, { className: "h-3 w-3 text-primary" }),
+                          property.locationName
+                        ] }),
+                        property.address && /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1 text-[10px] text-muted-foreground", children: [
+                          /* @__PURE__ */ jsx(UtensilsCrossed, { className: "h-3 w-3 text-primary" }),
+                          property.address
+                        ] })
+                      ] }),
+                      /* @__PURE__ */ jsxs(
+                        Button,
+                        {
+                          size: "sm",
+                          className: "w-full",
+                          onClick: () => handleSelect(property),
+                          children: [
+                            /* @__PURE__ */ jsx(Search, { className: "mr-2 h-3.5 w-3.5" }),
+                            "View Details"
+                          ]
+                        }
+                      )
+                    ] })
+                  },
+                  property.id
+                )) }) : /* @__PURE__ */ jsxs("div", { className: "py-8 text-center text-muted-foreground", children: [
+                  /* @__PURE__ */ jsx("p", { className: "font-medium", children: "No options available." }),
+                  /* @__PURE__ */ jsx("p", { className: "mt-1 text-xs", children: "Try clearing the location filter or selecting a different booking type." })
+                ] })
+              ]
+            }
+          ) })
+        ] })
+      ]
+    }
+  ) });
+}
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1e6;
 let count = 0;
@@ -1529,6 +1910,7 @@ function Navbar$1({
   const [activeSection, setActiveSection] = useState(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingCategory, setBookingCategory] = useState(null);
+  const [restaurantBookingOpen, setRestaurantBookingOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isTransparentHeroRoute = location.pathname === "/" || location.pathname === "/hotels" || location.pathname === "/restaurant-homepage" || location.pathname === "/resturant-homepage" || location.pathname === "/cafe-homepage";
@@ -1547,7 +1929,10 @@ function Navbar$1({
     setActiveDropdown(null);
   };
   const handleQuickBookOption = (option) => {
-    if (option.category) {
+    if (option.category === "restaurant") {
+      setRestaurantBookingOpen(true);
+      setActiveDropdown(null);
+    } else if (option.category) {
       openBooking(option.category);
     } else if (option.href) {
       if (option.href.startsWith("#")) {
@@ -1779,6 +2164,13 @@ function Navbar$1({
         isOpen: bookingOpen,
         onOpenChange: setBookingOpen,
         category: bookingCategory
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      RestaurantBookingSheet,
+      {
+        isOpen: restaurantBookingOpen,
+        onOpenChange: setRestaurantBookingOpen
       }
     )
   ] });
@@ -4639,9 +5031,9 @@ function NewsCard$3({ item }) {
     }
   );
 }
-const isYoutubeUrl$3 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
+const isYoutubeUrl$4 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
 const isInstagramUrl$2 = (url) => /^(https?:\/\/)?(www\.)?instagram\.com\/(reel|p|tv)\/.+/.test(url.trim());
-const getYoutubeId$3 = (url) => {
+const getYoutubeId$4 = (url) => {
   if (!url) return null;
   const matches = [
     /youtube\.com\/shorts\/([^"&?\/\s]{11})/,
@@ -4662,10 +5054,10 @@ const getInstagramId$2 = (url) => {
   return match ? match[1] : null;
 };
 const getYoutubeThumbnail$3 = (url) => {
-  const id = getYoutubeId$3(url);
+  const id = getYoutubeId$4(url);
   return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "";
 };
-const buildMediaList$3 = (item) => {
+const buildMediaList$4 = (item) => {
   const allMedia = [];
   const seenUrls = /* @__PURE__ */ new Set();
   const add = (type, url) => {
@@ -4678,7 +5070,7 @@ const buildMediaList$3 = (item) => {
     item.mediaList.forEach((m) => {
       const url = m.url || m.imageUrl || m.videoUrl;
       if (!url) return;
-      const isVid = m.type === "VIDEO" || isYoutubeUrl$3(url) || isInstagramUrl$2(url) || url.match(/\.(mp4|webm|mov|ogg)$/i);
+      const isVid = m.type === "VIDEO" || isYoutubeUrl$4(url) || isInstagramUrl$2(url) || url.match(/\.(mp4|webm|mov|ogg)$/i);
       add(isVid ? "video" : "image", url);
     });
   }
@@ -4826,8 +5218,8 @@ function OurStoryPreview({
           idx
         );
       }
-      if (isYoutubeUrl$3(m.url)) {
-        const videoId = getYoutubeId$3(m.url);
+      if (isYoutubeUrl$4(m.url)) {
+        const videoId = getYoutubeId$4(m.url);
         return /* @__PURE__ */ jsx(
           "div",
           {
@@ -4920,7 +5312,7 @@ function OurStoryPreview({
     ] }, i)) });
   };
   const hasContent = feedbackText || mediaPreviews.length > 0 || ytLink.trim();
-  ytLink.trim() && isYoutubeUrl$3(ytLink) ? getYoutubeThumbnail$3(ytLink) : null;
+  ytLink.trim() && isYoutubeUrl$4(ytLink) ? getYoutubeThumbnail$3(ytLink) : null;
   return /* @__PURE__ */ jsxs("section", { ref: sectionRef, className: "py-12 bg-background", children: [
     /* @__PURE__ */ jsx("div", { className: "container mx-auto px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col lg:flex-row gap-6 items-stretch min-w-0", children: [
       /* @__PURE__ */ jsxs("div", { className: "lg:w-3/4 w-full min-w-0 flex flex-col bg-card border rounded-2xl p-6 shadow-sm", children: [
@@ -4958,7 +5350,7 @@ function OurStoryPreview({
             },
             className: "h-full w-full",
             children: guestExperiences.map((item) => {
-              const allMedia = buildMediaList$3(item);
+              const allMedia = buildMediaList$4(item);
               return /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsx("div", { className: "bg-background border rounded-xl overflow-hidden h-full flex flex-col group", children: /* @__PURE__ */ jsxs("div", { className: "relative aspect-[3/4] bg-muted overflow-hidden", children: [
                 renderMediaGrid(allMedia, item),
                 allMedia.length > 0 && /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none", children: [
@@ -5008,7 +5400,7 @@ function OurStoryPreview({
             Youtube,
             {
               size: 15,
-              className: ytLink && isYoutubeUrl$3(ytLink) ? "text-red-500" : "text-muted-foreground"
+              className: ytLink && isYoutubeUrl$4(ytLink) ? "text-red-500" : "text-muted-foreground"
             }
           ),
           /* @__PURE__ */ jsx(
@@ -10798,9 +11190,9 @@ function NewsCard$2({ item }) {
 }
 const normalize$a = (value = "") => String(value).trim().toLowerCase().replace(/\s+/g, " ");
 const isHotelType = (value = "") => normalize$a(value) === "hotel";
-const isYoutubeUrl$2 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
+const isYoutubeUrl$3 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
 const isInstagramUrl$1 = (url) => /^(https?:\/\/)?(www\.)?instagram\.com\/(reel|p|tv)\/.+/.test(url.trim());
-const getYoutubeId$2 = (url) => {
+const getYoutubeId$3 = (url) => {
   if (!url) return null;
   const matches = [
     /youtube\.com\/shorts\/([^"&?\/\s]{11})/,
@@ -10821,10 +11213,10 @@ const getInstagramId$1 = (url) => {
   return match ? match[1] : null;
 };
 const getYoutubeThumbnail$2 = (url) => {
-  const id = getYoutubeId$2(url);
+  const id = getYoutubeId$3(url);
   return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "";
 };
-const buildMediaList$2 = (item) => {
+const buildMediaList$3 = (item) => {
   const allMedia = [];
   const seenUrls = /* @__PURE__ */ new Set();
   const add = (type, url) => {
@@ -10837,7 +11229,7 @@ const buildMediaList$2 = (item) => {
     item.mediaList.forEach((m) => {
       const url = m.url || m.imageUrl || m.videoUrl;
       if (!url) return;
-      const isVid = m.type === "VIDEO" || isYoutubeUrl$2(url) || isInstagramUrl$1(url) || url.match(/\.(mp4|webm|mov|ogg)$/i);
+      const isVid = m.type === "VIDEO" || isYoutubeUrl$3(url) || isInstagramUrl$1(url) || url.match(/\.(mp4|webm|mov|ogg)$/i);
       add(isVid ? "video" : "image", url);
     });
   }
@@ -11021,8 +11413,8 @@ function HotelReviewsSection({
           idx
         );
       }
-      if (isYoutubeUrl$2(m.url)) {
-        const videoId = getYoutubeId$2(m.url);
+      if (isYoutubeUrl$3(m.url)) {
+        const videoId = getYoutubeId$3(m.url);
         return /* @__PURE__ */ jsx(
           "div",
           {
@@ -11115,7 +11507,7 @@ function HotelReviewsSection({
     ] }, i)) });
   };
   const hasContent = feedbackText || mediaPreviews.length > 0 || ytLink.trim();
-  ytLink.trim() && isYoutubeUrl$2(ytLink) ? getYoutubeThumbnail$2(ytLink) : null;
+  ytLink.trim() && isYoutubeUrl$3(ytLink) ? getYoutubeThumbnail$2(ytLink) : null;
   return /* @__PURE__ */ jsxs("section", { ref: sectionRef, className: "py-12 bg-background", children: [
     /* @__PURE__ */ jsx("div", { className: "container mx-auto px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col lg:flex-row gap-6 items-stretch min-w-0", children: [
       /* @__PURE__ */ jsxs("div", { className: "lg:w-3/4 w-full min-w-0 flex flex-col bg-card border rounded-2xl p-6 shadow-sm", children: [
@@ -11153,7 +11545,7 @@ function HotelReviewsSection({
             },
             className: "h-full w-full",
             children: guestExperiences.map((item) => {
-              const allMedia = buildMediaList$2(item);
+              const allMedia = buildMediaList$3(item);
               return /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsx("div", { className: "bg-background border rounded-xl overflow-hidden h-full flex flex-col group", children: /* @__PURE__ */ jsxs("div", { className: "relative aspect-[3/4] bg-muted overflow-hidden", children: [
                 renderMediaGrid(allMedia, item),
                 allMedia.length > 0 && /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none", children: [
@@ -11203,7 +11595,7 @@ function HotelReviewsSection({
             Youtube,
             {
               size: 15,
-              className: ytLink && isYoutubeUrl$2(ytLink) ? "text-red-500" : "text-muted-foreground"
+              className: ytLink && isYoutubeUrl$3(ytLink) ? "text-red-500" : "text-muted-foreground"
             }
           ),
           /* @__PURE__ */ jsx(
@@ -11374,86 +11766,97 @@ function Calendar({
     }
   );
 }
-const createVerticalSectionHeader = (data) => API.post("api/v1/vertical-sections", data);
-const updateVerticalSectionHeader = (id, data) => API.put(`api/v1/vertical-sections/${id}`, data);
-const getAllVerticalSectionsHeader = () => API.get("api/v1/vertical-sections/showAll");
-const createVerticalCard = (data) => API.post("api/v1/vertical-cards", data);
-const updateVerticalCard = (id, data) => API.put(`api/v1/vertical-cards/${id}`, data);
-const getAllVerticalCards = () => API.get("api/v1/vertical-cards/showAll");
-const toggleVerticalCardStatus = (id, active) => API.patch(`api/v1/vertical-cards/${id}/status`, null, { params: { active } });
-const createBuffetSectionHeader = (data) => API.post("api/v1/buffet-section-headers", data);
-const updateBuffetSectionHeader = (id, data) => API.put(`api/v1/buffet-section-headers/${id}`, data);
-const getAllBuffetSectionHeaders = () => API.get("api/v1/buffet-section-headers/showAll");
-const createBuffetItem = (data) => API.post("api/v1/buffet-items", data);
-const updateBuffetItem = (id, data) => API.put(`api/v1/buffet-items/${id}`, data);
-const getAllBuffetItems = () => API.get("api/v1/buffet-items");
-const toggleBuffetItemStatus = (id, active) => API.patch(`api/v1/buffet-items/${id}/status`, null, { params: { active } });
-const createOfferHeader = (data) => API.post("api/v1/offer-sections/createOffer", data);
-const getOfferHeaderById = (id) => API.get(`api/v1/offer-sections/getOfferById/${id}`);
-const getAllOfferHeaders = (id) => API.get(`api/v1/offer-sections/getOffers`);
-const updateOfferHeader = (id, data) => API.patch(`api/v1/offer-sections/updateOffer/${id}`, data);
-const toggleOfferHeaderActive = (id, data) => API.patch(`api/v1/offer-sections/toggleActive/${id}`, data);
-const createRestaurantAbout = (data) => API.post("api/v1/restaurant-about", data);
-const updateRestaurantAbout = (id, data) => API.put(`api/v1/restaurant-about/${id}`, data);
-const getAllRestaurantAbout = () => API.get("api/v1/restaurant-about/showAll");
-const createSocialPlatform = (data) => API.post("api/v1/social-platform/create", data);
-const getAllSocialPlatforms = () => API.get("api/v1/social-platform/all");
-const createRestaurantImageSocial = (data) => API.post("api/v1/restaurant/image-social", data);
-const getRestaurantImageSocialByProperty = (propertyId) => API.get(`api/v1/restaurant/image-social/property/${propertyId}`);
-const updateRestaurantImageSocial = (propertyId, data) => API.put(`api/v1/restaurant/image-social/property/${propertyId}`, data);
-const addRestaurantSocialLink = (propertyId, data) => API.post(`api/v1/restaurant/social-link`, data, { params: { propertyId } });
-const updateRestaurantSocialLink = (id, data) => API.put(`api/v1/restaurant/social-link/${id}`, data);
-const toggleRestaurantSocialLinkStatus = (id, active) => API.patch(`api/v1/restaurant/social-link/${id}/status`, null, { params: { active } });
-const createRestaurantConnect = (data) => API.post("api/v1/restaurant/connect", data);
-const getRestaurantConnectByProperty = (propertyId) => API.get(`api/v1/restaurant/connect/property/${propertyId}`);
-const updateRestaurantConnect = (id, data) => API.put(`api/v1/restaurant/connect/${id}`, data);
-const createGalleryDropdown = (data) => API.post("api/v1/dynamic-dropdown-gallery/create", data);
-const getAllGalleryDropdown = () => API.get("api/v1/dynamic-dropdown-gallery/all");
-const updateGalleryDropdown = (id, data) => API.put(`api/v1/dynamic-dropdown-gallery/${id}`, data);
-const toggleGalleryDropdownStatus = (id, isActive) => API.patch(`api/v1/dynamic-dropdown-gallery/${id}/status`, null, { params: { isActive } });
-const createMenuItem = (formData) => API.post("api/v1/menu-items/createMenuItem", formData, { headers: { "Content-Type": "multipart/form-data" } });
-const getMenuItems = () => API.get("api/v1/menu-items/getMenuItems");
-const getMenuItemsByTopSold = (topSold) => API.get(`api/v1/menu-items/getMenuItemsByTopSold/${topSold}`);
-const updateMenuItem = (id, data) => API.patch(`api/v1/menu-items/updateMenuItem/${id}`, data);
-const toggleMenuItemStatus = (id) => API.patch(`api/v1/menu-items/toggleActive/${id}`);
-const createItemType = (data) => API.post("api/v1/item-type/createItemType", data);
-const getAllItemTypes = () => API.get("api/v1/item-type/getAllItemType");
-const updateItemType = (id, data) => API.patch(`api/v1/item-type/updateItemType/${id}`, data);
-const toggleItemTypeStatus = (id, data) => API.patch(`api/v1/item-type/toggleActive/${id}`, data);
-const createChefRemark = (formData, remarkParam) => API.post("api/v1/chef-remarks/createChefRemark", formData, { params: { remark: remarkParam }, headers: { "Content-Type": "multipart/form-data" } });
-const getChefRemarks = () => API.get("api/v1/chef-remarks/getChefRemarks");
-const updateChefRemark = (id, data) => API.patch(`api/v1/chef-remarks/updateChefRemark/${id}`, data);
-const createMenuHeaderSection = (formData) => API.post("api/v1/menu-sections/createMenu", formData, { headers: { "Content-Type": "multipart/form-data" } });
-const getMenuHeaders = () => API.get("api/v1/menu-sections/getMenus");
-const updateMenuHeadersSection = (id, data) => API.patch(`api/v1/menu-sections/updateMenu/${id}`, data);
-const toggleMenuHeadersSectionStatus = (id, data) => API.patch(`api/v1/menu-sections/toggleActive/${id}`, data);
-const createTestimonialHeader = (data) => API.post("api/v1/testimonial/createTestimonial", data);
-const getActiveTestimonialHeaders = () => API.get("api/v1/testimonial/getActiveTestimonials");
-const updateTestimonialHeader = (id, data) => API.patch(`api/v1/testimonial/updateTestimonial/${id}`, data);
-const createVisualGalleryHeader = (data) => API.post("api/v1/visual-gallery/createVisualGallery", data);
-const getVisualGallerieHeaders = () => API.get("api/v1/visual-gallery/getVisualGalleries");
-const getActiveVisualGalleriesHeader = () => API.get("api/v1/visual-gallery/getActiveVisualGalleries");
-const updateVisualGalleryHeader = (id, data) => API.patch(`api/v1/visual-gallery/updateVisualGallery/${id}`, data);
-const createPrimaryConversionHeader = (data) => API.post("api/v1/primary-conversion/createPrimaryConversion", data);
-const getPrimaryConversionsHeader = () => API.get("api/v1/primary-conversion/getVisualGalleries");
-const updatePrimaryConversionHeader = (id, data) => API.patch(`api/v1/primary-conversion/updatePrimaryConversion/${id}`, data);
-const createJoiningUs = (data) => API.post("api/v1/joining-us/createJoiningUs", data);
-const getAllJoiningUs = () => API.get("api/v1/joining-us/getAllJoiningUs");
-const createGroupBookingEnquiry = (data) => API.post("/api/v1/enquiry", data);
-const getAllGroupBookingEnquiries = () => API.get("/api/v1/enquiry");
-const addItemLike = (menuItemId, data) => API.post(`/api/v1/item-like/addLike/${menuItemId}`, data);
-const getItemLikes = () => API.get("/api/v1/item-like/getLikes");
-const createEventsHeader = (data) => API.post("api/v1/events-header", data);
-const updateEventsHeader = (id, data) => API.put(`api/v1/events-header/${id}`, data);
-const getEventsHeaderByProperty = (propertyId) => API.get(`api/v1/events-header/property/${propertyId}`);
-const toggleEventsHeaderStatus = (id, isActive) => API.patch(`api/v1/events-header/${id}/status`, null, {
-  params: { isActive }
-});
-const addMenuThumbnail = (propertyId, formData) => API.post(`api/v1/menu-thumbnails/addThumbnail/${propertyId}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
-const getAllMenuThumbnails = () => API.get("api/v1/menu-thumbnails/getAllThumbnail");
-const getMenuThumbnailById = (id) => API.get(`api/v1/menu-thumbnails/getThumbnailById/${id}`);
-const updateMenuThumbnail = (propertyId, thumbnailId, formData) => API.patch(`api/v1/menu-thumbnails/updateThumbnail/${propertyId}/${thumbnailId}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
-const getPropertiesByDineInAndTakeaway = (params) => API.get("api/v1/properties/getPropertiesByDineInAndTakeaway", { params });
+const NAME_REGEX = /^[a-zA-Z\s'\-.]+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const validateName = (value = "") => {
+  const v = value.trim();
+  if (!v) return "Name is required";
+  if (v.length < 2) return "Name must be at least 2 characters";
+  if (!NAME_REGEX.test(v)) return "Name must contain only letters (no numbers or special characters)";
+  return null;
+};
+const validatePhone = (value = "") => {
+  const v = value.trim().replace(/\s/g, "");
+  if (!v) return "Phone number is required";
+  if (!/^\d+$/.test(v)) return "Phone number must contain digits only";
+  if (v.length !== 10) return "Phone number must be exactly 10 digits";
+  return null;
+};
+const validateEmail = (value = "", required = true) => {
+  const v = value.trim();
+  if (!v) return required ? "Email address is required" : null;
+  if (!EMAIL_REGEX.test(v)) return "Enter a valid email address (e.g. name@example.com)";
+  return null;
+};
+const validateDate = (value = "") => {
+  if (!value) return "Date is required";
+  const selected = new Date(value);
+  const today = /* @__PURE__ */ new Date();
+  today.setHours(0, 0, 0, 0);
+  if (isNaN(selected.getTime())) return "Enter a valid date";
+  if (selected < today) return "Date cannot be in the past";
+  return null;
+};
+const validateTime = (value = "") => {
+  if (!value) return "Time is required";
+  return null;
+};
+const validateGuests = (value = "") => {
+  if (value === "" || value === null || value === void 0) return "Number of guests is required";
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 1) return "Enter at least 1 guest";
+  if (n > 500) return "Maximum 500 guests allowed";
+  return null;
+};
+const validatePersons = (value = "") => {
+  if (value === "" || value === null || value === void 0) return null;
+  const n = Number(value);
+  if (isNaN(n) || !Number.isInteger(n) || n < 1) return "Enter a valid number of persons (min 1)";
+  if (n > 1e4) return "Maximum 10,000 persons allowed";
+  return null;
+};
+const validateReservationForm = ({ guestName, contactNumber, date, time, totalGuest }) => {
+  const errors = {};
+  const nameErr = validateName(guestName);
+  if (nameErr) errors.guestName = nameErr;
+  const phoneErr = validatePhone(contactNumber);
+  if (phoneErr) errors.contactNumber = phoneErr;
+  const dateErr = validateDate(date);
+  if (dateErr) errors.date = dateErr;
+  const timeErr = validateTime(time);
+  if (timeErr) errors.time = timeErr;
+  const guestErr = validateGuests(totalGuest);
+  if (guestErr) errors.totalGuest = guestErr;
+  return errors;
+};
+const validateReserveDialogForm = ({ guestName, contactNumber, emailAddress, date, time, totalGuest }) => {
+  const errors = {};
+  const nameErr = validateName(guestName);
+  if (nameErr) errors.guestName = nameErr;
+  const phoneErr = validatePhone(contactNumber);
+  if (phoneErr) errors.contactNumber = phoneErr;
+  const emailErr = validateEmail(emailAddress, true);
+  if (emailErr) errors.emailAddress = emailErr;
+  const dateErr = validateDate(date);
+  if (dateErr) errors.date = dateErr;
+  const timeErr = validateTime(time);
+  if (timeErr) errors.time = timeErr;
+  const guestErr = validateGuests(totalGuest);
+  if (guestErr) errors.totalGuest = guestErr;
+  return errors;
+};
+const validateGroupBookingForm = ({ name, phone, email, persons }) => {
+  const errors = {};
+  const nameErr = validateName(name);
+  if (nameErr) errors.name = nameErr;
+  const phoneErr = validatePhone(phone);
+  if (phoneErr) errors.phone = phoneErr;
+  const emailErr = validateEmail(email, true);
+  if (emailErr) errors.email = emailErr;
+  const personsErr = validatePersons(persons);
+  if (personsErr) errors.persons = personsErr;
+  return errors;
+};
 const EMPTY_FORM$7 = {
   name: "",
   phone: "",
@@ -11625,7 +12028,12 @@ function GroupBookingSection$1({
     initialPropertyTypeId
   );
   const [formData, setFormData] = useState(EMPTY_FORM$7);
+  const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const setField = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: null }));
+  };
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 4;
   useEffect(() => {
@@ -11688,10 +12096,12 @@ function GroupBookingSection$1({
       toast$2.error("Hotel type is not available. Please try again.");
       return;
     }
-    if (!formData.name.trim() || !formData.phone.trim() || !formData.email.trim()) {
-      toast$2.error("Please fill in name, phone, and email.");
+    const errs = validateGroupBookingForm(formData);
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
       return;
     }
+    setFormErrors({});
     setIsSubmitting(true);
     try {
       const formattedDates = Array.isArray(dateRange) && dateRange[0] ? `${dateRange[0].toLocaleDateString("en-IN")}${dateRange[1] ? ` to ${dateRange[1].toLocaleDateString("en-IN")}` : ""}` : null;
@@ -11903,55 +12313,98 @@ function GroupBookingSection$1({
                     children: "Confirm Dates"
                   }
                 )
-              ] }) : step === 2 ? /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-                /* @__PURE__ */ jsx(
-                  Input,
-                  {
-                    placeholder: "Your name",
-                    value: formData.name,
-                    onChange: (e) => setFormData((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                ),
-                /* @__PURE__ */ jsx(
-                  Input,
-                  {
-                    placeholder: "Phone number",
-                    type: "tel",
-                    value: formData.phone,
-                    onChange: (e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))
-                  }
-                ),
-                /* @__PURE__ */ jsx(
-                  Input,
-                  {
-                    placeholder: "Email address",
-                    type: "email",
-                    value: formData.email,
-                    onChange: (e) => setFormData((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                ),
-                /* @__PURE__ */ jsx(
-                  Input,
-                  {
-                    placeholder: "No. of persons",
-                    type: "number",
-                    min: "1",
-                    value: formData.persons,
-                    onChange: (e) => setFormData((prev) => ({ ...prev, persons: e.target.value }))
-                  }
-                ),
-                /* @__PURE__ */ jsx(
-                  Textarea,
-                  {
-                    placeholder: "Additional requirements",
-                    value: formData.customQuery,
-                    onChange: (e) => setFormData((prev) => ({
-                      ...prev,
-                      customQuery: e.target.value
-                    })),
-                    rows: 4
-                  }
-                ),
+              ] }) : step === 2 ? /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
+                /* @__PURE__ */ jsxs("p", { className: "text-[11px] text-muted-foreground", children: [
+                  "Fields marked ",
+                  /* @__PURE__ */ jsx("span", { className: "text-red-500 font-semibold", children: "*" }),
+                  " are required."
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+                  /* @__PURE__ */ jsxs("label", { className: "text-xs font-semibold", children: [
+                    "Full Name ",
+                    /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+                    /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(letters only)" })
+                  ] }),
+                  /* @__PURE__ */ jsx(
+                    Input,
+                    {
+                      placeholder: "Your full name",
+                      value: formData.name,
+                      onChange: (e) => setField("name", e.target.value),
+                      className: formErrors.name ? "border-red-500 focus-visible:ring-red-400" : ""
+                    }
+                  ),
+                  formErrors.name && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: formErrors.name })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+                  /* @__PURE__ */ jsxs("label", { className: "text-xs font-semibold", children: [
+                    "Phone Number ",
+                    /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+                    /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(10 digits)" })
+                  ] }),
+                  /* @__PURE__ */ jsx(
+                    Input,
+                    {
+                      placeholder: "10-digit mobile number",
+                      type: "tel",
+                      maxLength: 10,
+                      value: formData.phone,
+                      onChange: (e) => setField("phone", e.target.value.replace(/\D/g, "")),
+                      className: formErrors.phone ? "border-red-500 focus-visible:ring-red-400" : ""
+                    }
+                  ),
+                  formErrors.phone && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: formErrors.phone })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+                  /* @__PURE__ */ jsxs("label", { className: "text-xs font-semibold", children: [
+                    "Email Address ",
+                    /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                  ] }),
+                  /* @__PURE__ */ jsx(
+                    Input,
+                    {
+                      placeholder: "name@example.com",
+                      type: "email",
+                      value: formData.email,
+                      onChange: (e) => setField("email", e.target.value),
+                      className: formErrors.email ? "border-red-500 focus-visible:ring-red-400" : ""
+                    }
+                  ),
+                  formErrors.email && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: formErrors.email })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+                  /* @__PURE__ */ jsxs("label", { className: "text-xs font-semibold", children: [
+                    "No. of Persons",
+                    /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(optional)" })
+                  ] }),
+                  /* @__PURE__ */ jsx(
+                    Input,
+                    {
+                      placeholder: "e.g. 50",
+                      type: "number",
+                      min: "1",
+                      value: formData.persons,
+                      onChange: (e) => setField("persons", e.target.value),
+                      className: formErrors.persons ? "border-red-500 focus-visible:ring-red-400" : ""
+                    }
+                  ),
+                  formErrors.persons && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: formErrors.persons })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+                  /* @__PURE__ */ jsxs("label", { className: "text-xs font-semibold", children: [
+                    "Additional Requirements",
+                    /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(optional)" })
+                  ] }),
+                  /* @__PURE__ */ jsx(
+                    Textarea,
+                    {
+                      placeholder: "Any special requirements or notes...",
+                      value: formData.customQuery,
+                      onChange: (e) => setField("customQuery", e.target.value),
+                      rows: 3
+                    }
+                  )
+                ] }),
                 /* @__PURE__ */ jsx(
                   Button,
                   {
@@ -12684,10 +13137,10 @@ function HotelHeroSection({ slides, loading }) {
   ] });
 }
 const HotelCarouselSection = lazy(
-  () => import("./assets/HotelCarouselSection-DimFSu7d.js")
+  () => import("./assets/HotelCarouselSection-CvZ8w7ZI.js")
 );
 const QuickBooking = lazy(
-  () => import("./assets/QuickBooking-D7PnfwXz.js")
+  () => import("./assets/QuickBooking-BBHDGiHQ.js")
 );
 const HOTEL_NAV_ITEMS = [
   { type: "link", label: "OVERVIEW", key: "overview", href: "#overview" },
@@ -13458,18 +13911,6 @@ function NewsListing() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
-const labelVariants = cva(
-  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-);
-const Label = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  LabelPrimitive.Root,
-  {
-    ref,
-    className: cn(labelVariants(), className),
-    ...props
-  }
-));
-Label.displayName = LabelPrimitive.Root.displayName;
 function Checkout() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -19493,8 +19934,8 @@ function EnhancedCulinaryCuration({ propertyId }) {
     ) }) })
   ] });
 }
-const isYoutubeUrl$1 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url?.trim() ?? "");
-const getYoutubeId$1 = (url) => {
+const isYoutubeUrl$2 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url?.trim() ?? "");
+const getYoutubeId$2 = (url) => {
   if (!url) return null;
   const shortsMatch = url.match(/youtube\.com\/shorts\/([^"&?/\s]{11})/);
   if (shortsMatch) return shortsMatch[1];
@@ -19507,10 +19948,10 @@ const getYoutubeId$1 = (url) => {
   return null;
 };
 const getYoutubeThumbnail$1 = (url) => {
-  const id = getYoutubeId$1(url);
+  const id = getYoutubeId$2(url);
   return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "";
 };
-const buildMediaList$1 = (item) => {
+const buildMediaList$2 = (item) => {
   const allMedia = [];
   const seenUrls = /* @__PURE__ */ new Set();
   const add = (type, url) => {
@@ -19523,12 +19964,12 @@ const buildMediaList$1 = (item) => {
     item.mediaList.forEach((m) => {
       const url = m.url || m.imageUrl || m.videoUrl;
       if (!url) return;
-      const isVid = m.type === "VIDEO" || isYoutubeUrl$1(url) || /\.(mp4|webm|mov|ogg)$/i.test(url);
+      const isVid = m.type === "VIDEO" || isYoutubeUrl$2(url) || /\.(mp4|webm|mov|ogg)$/i.test(url);
       add(isVid ? "video" : "image", url);
     });
   }
   if (item.videoUrl) {
-    const isVid = isYoutubeUrl$1(item.videoUrl) || /\.(mp4|webm|mov|ogg)$/i.test(item.videoUrl);
+    const isVid = isYoutubeUrl$2(item.videoUrl) || /\.(mp4|webm|mov|ogg)$/i.test(item.videoUrl);
     if (isVid) add("video", item.videoUrl);
   }
   if (item.imageUrl) add("image", item.imageUrl);
@@ -19537,13 +19978,13 @@ const buildMediaList$1 = (item) => {
 const FeedbackCard = ({ item }) => {
   const [mediaErrors, setMediaErrors] = useState(/* @__PURE__ */ new Set());
   const [mutedVideos, setMutedVideos] = useState(/* @__PURE__ */ new Set());
-  const allMedia = buildMediaList$1(item);
+  const allMedia = buildMediaList$2(item);
   const renderMediaItem = (m, idx) => {
     const videoKey = `video-${m.url}`;
     const isMuted = !mutedVideos.has(videoKey);
     if (m.type === "video") {
-      if (isYoutubeUrl$1(m.url)) {
-        const videoId = getYoutubeId$1(m.url);
+      if (isYoutubeUrl$2(m.url)) {
+        const videoId = getYoutubeId$2(m.url);
         if (!videoId) return null;
         return /* @__PURE__ */ jsxs("div", { className: "w-full h-full relative group", children: [
           /* @__PURE__ */ jsx(
@@ -19780,7 +20221,7 @@ function AutoTestimonials({ propertyId }) {
   };
   const handleYtChange = (val) => {
     setFormData((p) => ({ ...p, ytLink: val }));
-    if (val.trim() && !isYoutubeUrl$1(val)) {
+    if (val.trim() && !isYoutubeUrl$2(val)) {
       setYtError("Please enter a valid YouTube URL");
     } else {
       setYtError("");
@@ -19829,7 +20270,7 @@ function AutoTestimonials({ propertyId }) {
       setIsSubmitting(false);
     }
   };
-  const ytThumb = formData.ytLink.trim() && isYoutubeUrl$1(formData.ytLink) ? getYoutubeThumbnail$1(formData.ytLink) : null;
+  const ytThumb = formData.ytLink.trim() && isYoutubeUrl$2(formData.ytLink) ? getYoutubeThumbnail$1(formData.ytLink) : null;
   experiences.filter((_, i) => i % 2 === 0);
   experiences.filter((_, i) => i % 2 === 1);
   const FALLBACK2 = [
@@ -20116,7 +20557,7 @@ function AutoTestimonials({ propertyId }) {
                         Youtube,
                         {
                           size: 14,
-                          className: `shrink-0 ${formData.ytLink && isYoutubeUrl$1(formData.ytLink) ? "text-red-500" : "text-zinc-400"}`
+                          className: `shrink-0 ${formData.ytLink && isYoutubeUrl$2(formData.ytLink) ? "text-red-500" : "text-zinc-400"}`
                         }
                       ),
                       /* @__PURE__ */ jsx(
@@ -20555,8 +20996,12 @@ function ReservationForm({ propertyId }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [formData, setFormData] = useState(EMPTY_FORM$5);
+  const [errors, setErrors] = useState({});
   const containerRef = useRef(null);
-  const setField = (k, v) => setFormData((p) => ({ ...p, [k]: v }));
+  const setField = (k, v) => {
+    setFormData((p) => ({ ...p, [k]: v }));
+    if (errors[k]) setErrors((prev) => ({ ...prev, [k]: null }));
+  };
   const [header, setHeader] = useState(FALLBACK$1);
   useEffect(() => {
     if (!propertyId) return;
@@ -20583,9 +21028,12 @@ function ReservationForm({ propertyId }) {
   const formY = useTransform(scrollYProgress, [0, 1], ["50px", "-100px"]);
   const smoothFormY = useSpring(formY, { stiffness: 100, damping: 30 });
   const handleNext = () => {
-    const { guestName, contactNumber, date, time, totalGuest } = formData;
-    if (!guestName.trim() || !contactNumber.trim() || !date || !time || !totalGuest)
+    const errs = validateReservationForm(formData);
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
       return;
+    }
+    setErrors({});
     setSubmitError(null);
     setCurrentStep(2);
   };
@@ -20611,6 +21059,7 @@ function ReservationForm({ propertyId }) {
   };
   const handleReset = () => {
     setFormData(EMPTY_FORM$5);
+    setErrors({});
     setSubmitError(null);
     setCurrentStep(1);
   };
@@ -20673,72 +21122,92 @@ function ReservationForm({ propertyId }) {
                       /* @__PURE__ */ jsx("h3", { className: "text-zinc-900 dark:text-white font-serif text-2xl mb-8 italic opacity-60", children: "Tell us about your visit" }),
                       /* @__PURE__ */ jsxs("div", { className: "grid md:grid-cols-2 gap-6", children: [
                         /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Guest Name" }),
+                          /* @__PURE__ */ jsxs(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: [
+                            "Guest Name ",
+                            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                          ] }),
                           /* @__PURE__ */ jsx(
                             Input,
                             {
-                              required: true,
                               value: formData.guestName,
                               onChange: (e) => setField("guestName", e.target.value),
-                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 transition-all focus:ring-primary",
-                              placeholder: "Full Name"
+                              className: `bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 transition-all focus:ring-primary ${errors.guestName ? "border-red-500 focus:ring-red-400" : "border-zinc-200 dark:border-white/10"}`,
+                              placeholder: "Full Name (letters only)"
                             }
-                          )
+                          ),
+                          errors.guestName && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.guestName })
                         ] }),
                         /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Contact Number" }),
+                          /* @__PURE__ */ jsxs(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: [
+                            "Contact Number ",
+                            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                          ] }),
                           /* @__PURE__ */ jsx(
                             Input,
                             {
-                              required: true,
+                              type: "tel",
+                              maxLength: 10,
                               value: formData.contactNumber,
-                              onChange: (e) => setField("contactNumber", e.target.value),
-                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 transition-all focus:ring-primary",
-                              placeholder: "+91"
+                              onChange: (e) => setField("contactNumber", e.target.value.replace(/\D/g, "")),
+                              className: `bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 transition-all focus:ring-primary ${errors.contactNumber ? "border-red-500 focus:ring-red-400" : "border-zinc-200 dark:border-white/10"}`,
+                              placeholder: "10-digit mobile number"
                             }
-                          )
+                          ),
+                          errors.contactNumber && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.contactNumber })
                         ] })
                       ] }),
                       /* @__PURE__ */ jsxs("div", { className: "grid md:grid-cols-3 gap-6", children: [
                         /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Select Date" }),
+                          /* @__PURE__ */ jsxs(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: [
+                            "Select Date ",
+                            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                          ] }),
                           /* @__PURE__ */ jsx(
                             Input,
                             {
-                              required: true,
                               type: "date",
                               value: formData.date,
+                              min: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
                               onChange: (e) => setField("date", e.target.value),
-                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                              className: `bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 dark:text-white ${errors.date ? "border-red-500" : "border-zinc-200 dark:border-white/10"}`
                             }
-                          )
+                          ),
+                          errors.date && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.date })
                         ] }),
                         /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Select Time" }),
+                          /* @__PURE__ */ jsxs(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: [
+                            "Select Time ",
+                            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                          ] }),
                           /* @__PURE__ */ jsx(
                             Input,
                             {
-                              required: true,
                               type: "time",
                               value: formData.time,
                               onChange: (e) => setField("time", e.target.value),
-                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                              className: `bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 dark:text-white ${errors.time ? "border-red-500" : "border-zinc-200 dark:border-white/10"}`
                             }
-                          )
+                          ),
+                          errors.time && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.time })
                         ] }),
                         /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Total Guests" }),
+                          /* @__PURE__ */ jsxs(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: [
+                            "Total Guests ",
+                            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                          ] }),
                           /* @__PURE__ */ jsx(
                             Input,
                             {
-                              required: true,
                               type: "number",
                               min: "1",
+                              max: "500",
                               value: formData.totalGuest,
                               onChange: (e) => setField("totalGuest", e.target.value),
-                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                              className: `bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 dark:text-white ${errors.totalGuest ? "border-red-500" : "border-zinc-200 dark:border-white/10"}`,
+                              placeholder: "1"
                             }
-                          )
+                          ),
+                          errors.totalGuest && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.totalGuest })
                         ] })
                       ] }),
                       /* @__PURE__ */ jsxs(
@@ -21562,6 +22031,7 @@ function CategoryMenu({
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   const [thumbnails, setThumbnails] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -21639,7 +22109,27 @@ function CategoryMenu({
     });
     setShowOrderModal(true);
   };
+  const setModalField = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: null }));
+  };
   const handleFinalSubmit = async () => {
+    const errs = {};
+    const nameErr = validateName(formData.name);
+    if (nameErr) errs.name = nameErr;
+    const phoneErr = validatePhone(formData.phone);
+    if (phoneErr) errs.phone = phoneErr;
+    const dateErr = validateDate(formData.date);
+    if (dateErr) errs.date = dateErr;
+    const timeErr = validateTime(formData.time);
+    if (timeErr) errs.time = timeErr;
+    const guestErr = validateGuests(formData.totalGuest);
+    if (guestErr) errs.totalGuest = guestErr;
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
+      return;
+    }
+    setFormErrors({});
     setIsSubmitting(true);
     try {
       const currentCategory = menu[activeTab]?.category || "General";
@@ -21656,6 +22146,7 @@ function CategoryMenu({
       await createJoiningUs(payload);
       toast$2.success("Request sent successfully!");
       setShowOrderModal(false);
+      setFormErrors({});
       setFormData({
         name: "",
         phone: "",
@@ -21857,73 +22348,105 @@ function CategoryMenu({
                 )
               ] }),
               /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-4", children: [
+                /* @__PURE__ */ jsxs("p", { className: "text-[10px] text-zinc-400", children: [
+                  "Fields marked ",
+                  /* @__PURE__ */ jsx("span", { className: "text-red-500 font-bold", children: "*" }),
+                  " are required."
+                ] }),
                 /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
                   /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
-                    /* @__PURE__ */ jsx("label", { className: "text-[10px] uppercase font-black tracking-widest text-primary", children: "Full Name" }),
+                    /* @__PURE__ */ jsxs("label", { className: "text-[10px] uppercase font-black tracking-widest text-primary", children: [
+                      "Full Name ",
+                      /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+                      /* @__PURE__ */ jsx("span", { className: "ml-1 font-normal normal-case tracking-normal text-zinc-400", children: "(letters only)" })
+                    ] }),
                     /* @__PURE__ */ jsxs("div", { className: "relative", children: [
                       /* @__PURE__ */ jsx(User, { className: "absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" }),
                       /* @__PURE__ */ jsx(
                         Input,
                         {
                           value: formData.name,
-                          onChange: (e) => setFormData({ ...formData, name: e.target.value }),
-                          placeholder: "Your Name",
-                          className: "pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                          onChange: (e) => setModalField("name", e.target.value),
+                          placeholder: "Full Name",
+                          className: `pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl ${formErrors.name ? "border-red-500" : "border-none"}`
                         }
                       )
-                    ] })
+                    ] }),
+                    formErrors.name && /* @__PURE__ */ jsx("p", { className: "text-[10px] text-red-500 mt-0.5", children: formErrors.name })
                   ] }),
                   /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
-                    /* @__PURE__ */ jsx("label", { className: "text-[10px] uppercase font-black tracking-widest text-primary", children: "Phone Number" }),
+                    /* @__PURE__ */ jsxs("label", { className: "text-[10px] uppercase font-black tracking-widest text-primary", children: [
+                      "Phone ",
+                      /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+                      /* @__PURE__ */ jsx("span", { className: "ml-1 font-normal normal-case tracking-normal text-zinc-400", children: "(10 digits)" })
+                    ] }),
                     /* @__PURE__ */ jsxs("div", { className: "relative", children: [
                       /* @__PURE__ */ jsx(Phone, { className: "absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" }),
                       /* @__PURE__ */ jsx(
                         Input,
                         {
+                          type: "tel",
+                          maxLength: 10,
                           value: formData.phone,
-                          onChange: (e) => setFormData({ ...formData, phone: e.target.value }),
-                          placeholder: "+91",
-                          className: "pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                          onChange: (e) => setModalField("phone", e.target.value.replace(/\D/g, "")),
+                          placeholder: "10-digit number",
+                          className: `pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl ${formErrors.phone ? "border-red-500" : "border-none"}`
                         }
                       )
-                    ] })
+                    ] }),
+                    formErrors.phone && /* @__PURE__ */ jsx("p", { className: "text-[10px] text-red-500 mt-0.5", children: formErrors.phone })
                   ] }),
                   /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
-                    /* @__PURE__ */ jsx("label", { className: "text-[10px] uppercase font-black tracking-widest text-primary", children: "Date" }),
+                    /* @__PURE__ */ jsxs("label", { className: "text-[10px] uppercase font-black tracking-widest text-primary", children: [
+                      "Date ",
+                      /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                    ] }),
                     /* @__PURE__ */ jsx(
                       Input,
                       {
                         type: "date",
                         value: formData.date,
-                        onChange: (e) => setFormData({ ...formData, date: e.target.value }),
-                        className: "h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                        min: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
+                        onChange: (e) => setModalField("date", e.target.value),
+                        className: `h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl ${formErrors.date ? "border-red-500" : "border-none"}`
                       }
-                    )
+                    ),
+                    formErrors.date && /* @__PURE__ */ jsx("p", { className: "text-[10px] text-red-500 mt-0.5", children: formErrors.date })
                   ] }),
                   /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
-                    /* @__PURE__ */ jsx("label", { className: "text-[10px] uppercase font-black tracking-widest text-primary", children: "Arrival Time" }),
+                    /* @__PURE__ */ jsxs("label", { className: "text-[10px] uppercase font-black tracking-widest text-primary", children: [
+                      "Arrival Time ",
+                      /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                    ] }),
                     /* @__PURE__ */ jsx(
                       Input,
                       {
                         type: "time",
                         value: formData.time,
-                        onChange: (e) => setFormData({ ...formData, time: e.target.value }),
-                        className: "h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                        onChange: (e) => setModalField("time", e.target.value),
+                        className: `h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl ${formErrors.time ? "border-red-500" : "border-none"}`
                       }
-                    )
+                    ),
+                    formErrors.time && /* @__PURE__ */ jsx("p", { className: "text-[10px] text-red-500 mt-0.5", children: formErrors.time })
                   ] }),
                   /* @__PURE__ */ jsxs("div", { className: "space-y-1 col-span-2", children: [
-                    /* @__PURE__ */ jsx("label", { className: "text-[10px] uppercase font-black tracking-widest text-primary", children: "Total Guests" }),
+                    /* @__PURE__ */ jsxs("label", { className: "text-[10px] uppercase font-black tracking-widest text-primary", children: [
+                      "Total Guests ",
+                      /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+                      /* @__PURE__ */ jsx("span", { className: "ml-1 font-normal normal-case tracking-normal text-zinc-400", children: "(min 1)" })
+                    ] }),
                     /* @__PURE__ */ jsx(
                       Input,
                       {
                         type: "number",
                         min: "1",
+                        max: "500",
                         value: formData.totalGuest,
-                        onChange: (e) => setFormData({ ...formData, totalGuest: e.target.value }),
-                        className: "h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                        onChange: (e) => setModalField("totalGuest", e.target.value),
+                        className: `h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl ${formErrors.totalGuest ? "border-red-500" : "border-none"}`
                       }
-                    )
+                    ),
+                    formErrors.totalGuest && /* @__PURE__ */ jsx("p", { className: "text-[10px] text-red-500 mt-0.5", children: formErrors.totalGuest })
                   ] })
                 ] }),
                 /* @__PURE__ */ jsx("div", { className: "p-3 bg-primary/5 rounded-xl border border-primary/10", children: /* @__PURE__ */ jsxs("p", { className: "text-[11px] text-zinc-500 italic leading-relaxed", children: [
@@ -21942,7 +22465,7 @@ function CategoryMenu({
                 /* @__PURE__ */ jsx(
                   Button,
                   {
-                    disabled: isSubmitting || !formData.name || !formData.phone || !formData.date || !formData.time,
+                    disabled: isSubmitting,
                     onClick: handleFinalSubmit,
                     className: "w-full h-11 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20",
                     children: isSubmitting ? /* @__PURE__ */ jsx(Loader2, { className: "animate-spin", size: 18 }) : /* @__PURE__ */ jsxs(Fragment, { children: [
@@ -21968,7 +22491,7 @@ const resturant_NAV_ITEMS = [
   { type: "link", label: "MENU", href: "#menu" },
   { type: "link", label: "CONTACT", href: "#contact" }
 ];
-const generateSlug$2 = (name) => name?.toLowerCase().trim().replace(/\s+/g, "-");
+const generateSlug$1 = (name) => name?.toLowerCase().trim().replace(/\s+/g, "-");
 const CARD_BG_COLORS$1 = [
   { bgColor: "bg-orange-50", hoverBg: "hover:bg-orange-100" },
   { bgColor: "bg-blue-50", hoverBg: "hover:bg-blue-100" },
@@ -22215,7 +22738,7 @@ function ResturantCategoryPageTemplate() {
           (c) => String(c.propertyId) === String(propertyId) && c.isActive
         ).sort((a, b) => a.displayOrder - b.displayOrder);
         const mapped = filtered.map((card, index) => {
-          const slug = generateSlug$2(card.verticalName);
+          const slug = generateSlug$1(card.verticalName);
           const fallback = CARD_BG_COLORS$1[index % CARD_BG_COLORS$1.length];
           return {
             slug,
@@ -24664,8 +25187,12 @@ function CafeReservationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [formData, setFormData] = useState(EMPTY_FORM$4);
+  const [errors, setErrors] = useState({});
   const containerRef = useRef(null);
-  const setField = (key, value) => setFormData((prev) => ({ ...prev, [key]: value }));
+  const setField = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: null }));
+  };
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
@@ -24674,10 +25201,12 @@ function CafeReservationForm() {
   const formY = useTransform(scrollYProgress, [0, 1], ["50px", "-100px"]);
   const smoothFormY = useSpring(formY, { stiffness: 100, damping: 30 });
   const handleNext = () => {
-    const { guestName, contactNumber, date, time, totalGuest } = formData;
-    if (!guestName.trim() || !contactNumber.trim() || !date || !time || !totalGuest) {
+    const errs = validateReservationForm(formData);
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
       return;
     }
+    setErrors({});
     setSubmitError(null);
     setCurrentStep(2);
   };
@@ -24758,72 +25287,92 @@ function CafeReservationForm() {
                       /* @__PURE__ */ jsx("h3", { className: "text-zinc-900 dark:text-white font-serif text-2xl mb-8 italic opacity-60", children: "Tell us about your visit" }),
                       /* @__PURE__ */ jsxs("div", { className: "grid md:grid-cols-2 gap-6", children: [
                         /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Guest Name" }),
+                          /* @__PURE__ */ jsxs(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: [
+                            "Guest Name ",
+                            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                          ] }),
                           /* @__PURE__ */ jsx(
                             Input,
                             {
-                              required: true,
                               value: formData.guestName,
                               onChange: (e) => setField("guestName", e.target.value),
-                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 transition-all focus:ring-primary",
-                              placeholder: "Full Name"
+                              className: `bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 transition-all focus:ring-primary ${errors.guestName ? "border-red-500 focus:ring-red-400" : "border-zinc-200 dark:border-white/10"}`,
+                              placeholder: "Full Name (letters only)"
                             }
-                          )
+                          ),
+                          errors.guestName && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.guestName })
                         ] }),
                         /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Contact Number" }),
+                          /* @__PURE__ */ jsxs(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: [
+                            "Contact Number ",
+                            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                          ] }),
                           /* @__PURE__ */ jsx(
                             Input,
                             {
-                              required: true,
+                              type: "tel",
+                              maxLength: 10,
                               value: formData.contactNumber,
-                              onChange: (e) => setField("contactNumber", e.target.value),
-                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 transition-all focus:ring-primary",
-                              placeholder: "+91"
+                              onChange: (e) => setField("contactNumber", e.target.value.replace(/\D/g, "")),
+                              className: `bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 transition-all focus:ring-primary ${errors.contactNumber ? "border-red-500 focus:ring-red-400" : "border-zinc-200 dark:border-white/10"}`,
+                              placeholder: "10-digit mobile number"
                             }
-                          )
+                          ),
+                          errors.contactNumber && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.contactNumber })
                         ] })
                       ] }),
                       /* @__PURE__ */ jsxs("div", { className: "grid md:grid-cols-3 gap-6", children: [
                         /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Select Date" }),
+                          /* @__PURE__ */ jsxs(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: [
+                            "Select Date ",
+                            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                          ] }),
                           /* @__PURE__ */ jsx(
                             Input,
                             {
-                              required: true,
                               type: "date",
                               value: formData.date,
+                              min: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
                               onChange: (e) => setField("date", e.target.value),
-                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                              className: `bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 dark:text-white ${errors.date ? "border-red-500" : "border-zinc-200 dark:border-white/10"}`
                             }
-                          )
+                          ),
+                          errors.date && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.date })
                         ] }),
                         /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Select Time" }),
+                          /* @__PURE__ */ jsxs(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: [
+                            "Select Time ",
+                            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                          ] }),
                           /* @__PURE__ */ jsx(
                             Input,
                             {
-                              required: true,
                               type: "time",
                               value: formData.time,
                               onChange: (e) => setField("time", e.target.value),
-                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                              className: `bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 dark:text-white ${errors.time ? "border-red-500" : "border-zinc-200 dark:border-white/10"}`
                             }
-                          )
+                          ),
+                          errors.time && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.time })
                         ] }),
                         /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Total Guests" }),
+                          /* @__PURE__ */ jsxs(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: [
+                            "Total Guests ",
+                            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+                          ] }),
                           /* @__PURE__ */ jsx(
                             Input,
                             {
-                              required: true,
                               type: "number",
                               min: "1",
+                              max: "500",
                               value: formData.totalGuest,
                               onChange: (e) => setField("totalGuest", e.target.value),
-                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                              className: `bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 dark:text-white ${errors.totalGuest ? "border-red-500" : "border-zinc-200 dark:border-white/10"}`,
+                              placeholder: "1"
                             }
-                          )
+                          ),
+                          errors.totalGuest && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.totalGuest })
                         ] })
                       ] }),
                       /* @__PURE__ */ jsxs(
@@ -25343,7 +25892,6 @@ function HeroBanner({ initialSlides }) {
     ) })
   ] });
 }
-const generateSlug$1 = (text = "") => text.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
 const EMPTY_FORM$3 = {
   guestName: "",
   contactNumber: "",
@@ -25359,25 +25907,27 @@ function RestaurantReserveDialog({
 }) {
   const [formData, setFormData] = useState(EMPTY_FORM$3);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const canSubmit = useMemo(
-    () => Boolean(
-      property?.id && formData.guestName.trim() && formData.contactNumber.trim() && formData.emailAddress.trim() && formData.date && formData.time && formData.totalGuest
-    ),
-    [formData, property?.id]
-  );
+  const [errors, setErrors] = useState({});
   const setField = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: null }));
   };
   const handleClose = (nextOpen) => {
     if (!nextOpen) {
       setFormData(EMPTY_FORM$3);
+      setErrors({});
       setIsSubmitting(false);
     }
     onOpenChange(nextOpen);
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!canSubmit || !property?.id) return;
+    if (!property?.id) return;
+    const errs = validateReserveDialogForm(formData);
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
     setIsSubmitting(true);
     try {
       await createJoiningUs({
@@ -25407,36 +25957,55 @@ function RestaurantReserveDialog({
       /* @__PURE__ */ jsx(DialogDescription, { children: property?.propertyName ? `Submit your dine-in request for ${property.propertyName}.` : "Submit your dine-in reservation request." })
     ] }),
     /* @__PURE__ */ jsxs("form", { onSubmit: handleSubmit, className: "space-y-5", children: [
+      /* @__PURE__ */ jsxs("p", { className: "text-[11px] text-muted-foreground", children: [
+        "Fields marked ",
+        /* @__PURE__ */ jsx("span", { className: "text-red-500 font-semibold", children: "*" }),
+        " are required."
+      ] }),
       /* @__PURE__ */ jsxs("div", { className: "grid gap-4 md:grid-cols-2", children: [
-        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-name", children: "Name" }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+          /* @__PURE__ */ jsxs(Label, { htmlFor: "reserve-name", children: [
+            "Name ",
+            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+            /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(letters only)" })
+          ] }),
           /* @__PURE__ */ jsx(
             Input,
             {
               id: "reserve-name",
               value: formData.guestName,
               onChange: (e) => setField("guestName", e.target.value),
-              placeholder: "Your name",
-              required: true
+              placeholder: "Full Name",
+              className: errors.guestName ? "border-red-500 focus-visible:ring-red-400" : ""
             }
-          )
+          ),
+          errors.guestName && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: errors.guestName })
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-number", children: "Number" }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+          /* @__PURE__ */ jsxs(Label, { htmlFor: "reserve-number", children: [
+            "Phone Number ",
+            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+            /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(10 digits)" })
+          ] }),
           /* @__PURE__ */ jsx(
             Input,
             {
               id: "reserve-number",
               type: "tel",
+              maxLength: 10,
               value: formData.contactNumber,
-              onChange: (e) => setField("contactNumber", e.target.value),
-              placeholder: "Phone number",
-              required: true
+              onChange: (e) => setField("contactNumber", e.target.value.replace(/\D/g, "")),
+              placeholder: "10-digit mobile number",
+              className: errors.contactNumber ? "border-red-500 focus-visible:ring-red-400" : ""
             }
-          )
+          ),
+          errors.contactNumber && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: errors.contactNumber })
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "space-y-2 md:col-span-2", children: [
-          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-email", children: "Email" }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-1.5 md:col-span-2", children: [
+          /* @__PURE__ */ jsxs(Label, { htmlFor: "reserve-email", children: [
+            "Email Address ",
+            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+          ] }),
           /* @__PURE__ */ jsx(
             Input,
             {
@@ -25444,26 +26013,36 @@ function RestaurantReserveDialog({
               type: "email",
               value: formData.emailAddress,
               onChange: (e) => setField("emailAddress", e.target.value),
-              placeholder: "Email address",
-              required: true
+              placeholder: "name@example.com",
+              className: errors.emailAddress ? "border-red-500 focus-visible:ring-red-400" : ""
             }
-          )
+          ),
+          errors.emailAddress && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: errors.emailAddress })
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-date", children: "Date" }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+          /* @__PURE__ */ jsxs(Label, { htmlFor: "reserve-date", children: [
+            "Date ",
+            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+            /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(today or future)" })
+          ] }),
           /* @__PURE__ */ jsx(
             Input,
             {
               id: "reserve-date",
               type: "date",
               value: formData.date,
+              min: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
               onChange: (e) => setField("date", e.target.value),
-              required: true
+              className: errors.date ? "border-red-500 focus-visible:ring-red-400" : ""
             }
-          )
+          ),
+          errors.date && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: errors.date })
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-time", children: "Time" }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+          /* @__PURE__ */ jsxs(Label, { htmlFor: "reserve-time", children: [
+            "Time ",
+            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+          ] }),
           /* @__PURE__ */ jsx(
             Input,
             {
@@ -25471,24 +26050,31 @@ function RestaurantReserveDialog({
               type: "time",
               value: formData.time,
               onChange: (e) => setField("time", e.target.value),
-              required: true
+              className: errors.time ? "border-red-500 focus-visible:ring-red-400" : ""
             }
-          )
+          ),
+          errors.time && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: errors.time })
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "space-y-2 md:col-span-2", children: [
-          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-guests", children: "Number of People" }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-1.5 md:col-span-2", children: [
+          /* @__PURE__ */ jsxs(Label, { htmlFor: "reserve-guests", children: [
+            "Number of Guests ",
+            /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+            /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(min 1)" })
+          ] }),
           /* @__PURE__ */ jsx(
             Input,
             {
               id: "reserve-guests",
               type: "number",
               min: "1",
+              max: "500",
               value: formData.totalGuest,
               onChange: (e) => setField("totalGuest", e.target.value),
               placeholder: "2",
-              required: true
+              className: errors.totalGuest ? "border-red-500 focus-visible:ring-red-400" : ""
             }
-          )
+          ),
+          errors.totalGuest && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: errors.totalGuest })
         ] })
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "flex justify-end gap-3", children: [
@@ -25502,7 +26088,7 @@ function RestaurantReserveDialog({
             children: "Cancel"
           }
         ),
-        /* @__PURE__ */ jsx(Button, { type: "submit", disabled: !canSubmit || isSubmitting, children: isSubmitting ? /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx(Button, { type: "submit", disabled: isSubmitting, children: isSubmitting ? /* @__PURE__ */ jsxs(Fragment, { children: [
           /* @__PURE__ */ jsx(Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
           "Sending..."
         ] }) : "Reserve" })
@@ -25632,8 +26218,8 @@ function RestaurantQuickBooking() {
       return;
     }
     if (bookingType === "dineIn") {
-      const citySlug = generateSlug$1(property.locationName || "");
-      const propertySlug = `${generateSlug$1(property.propertyName)}-${property.id}`;
+      const citySlug = generateSlug$2(property.locationName || "");
+      const propertySlug = `${generateSlug$2(property.propertyName)}-${property.id}`;
       navigate(`/${citySlug}/${propertySlug}`);
     }
   };
@@ -25844,8 +26430,8 @@ function RestaurantQuickBooking() {
                               variant: "outline",
                               className: "w-full px-6 md:w-auto",
                               onClick: () => {
-                                const citySlug = generateSlug$1(property.locationName || "");
-                                const propertySlug = `${generateSlug$1(property.propertyName)}-${property.id}`;
+                                const citySlug = generateSlug$2(property.locationName || "");
+                                const propertySlug = `${generateSlug$2(property.propertyName)}-${property.id}`;
                                 navigate(`/${citySlug}/${propertySlug}`);
                               },
                               children: "Details"
@@ -27006,6 +27592,10 @@ function formatDate$3(value) {
 function getGroupBookingIcon(index) {
   return GROUP_BOOKING_ICONS[index % GROUP_BOOKING_ICONS.length];
 }
+function normalizeHeaderRecords$1(payload) {
+  const list = Array.isArray(payload) ? payload : payload ? [payload] : [];
+  return [...list].sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
+}
 function EventCard({ event, index }) {
   const media = event.media;
   const isVideo = media?.type === "VIDEO";
@@ -27180,7 +27770,13 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
   const [step, setStep] = useState(1);
   const [dateRange, setDateRange] = useState(null);
   const [formData, setFormData] = useState(EMPTY_FORM$2);
+  const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [groupBookingHeader, setGroupBookingHeader] = useState(null);
+  const setField = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: null }));
+  };
   useEffect(() => {
     if (ssrEvents || ssrBookings) return;
     const fetchRestaurantData = async () => {
@@ -27235,14 +27831,18 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
         const rawBookings = bookingsResponse?.data || bookingsResponse || [];
         const mappedBookings = (Array.isArray(rawBookings) ? rawBookings : []).filter((item) => {
           if (item?.isActive === false) return false;
+          if (item?.showOnHomepage !== true) return false;
           const byTypeName = isRestaurantType$4(item?.propertyTypeName);
           const byTypeId = restaurantTypeId2 !== null && Number(item?.propertyTypeId) === restaurantTypeId2;
           return byTypeName || byTypeId;
         }).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0)).slice(0, 4).map((item) => ({
           id: item?.id,
           title: item?.title || "Group Booking",
-          description: item?.description || "Custom group dining experience.",
-          ctaLink: item?.ctaLink || ""
+          description: item?.description || null,
+          ctaLink: item?.ctaLink || "",
+          imageUrl: item?.media?.[0]?.url || null,
+          propertyId: item?.propertyId || null,
+          propertyName: item?.propertyName || null
         }));
         setEvents(mappedEvents);
         setGroupBookingItems(mappedBookings);
@@ -27256,7 +27856,16 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
     };
     fetchRestaurantData();
   }, []);
-  if (!loading && events.length === 0 && groupBookingItems.length === 0) {
+  useEffect(() => {
+    if (!restaurantTypeId) return;
+    getGroupBookingHeaderByPropertyType(restaurantTypeId).then((res) => {
+      const latestActiveRecord = normalizeHeaderRecords$1(res?.data).find((item) => item?.active === true) || null;
+      setGroupBookingHeader(latestActiveRecord);
+    }).catch(() => {
+      setGroupBookingHeader(null);
+    });
+  }, [restaurantTypeId]);
+  if (!loading && events.length === 0 && groupBookingItems.length === 0 && !groupBookingHeader) {
     return null;
   }
   const openGroupBookingForm = (item) => {
@@ -27264,20 +27873,24 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
     setStep(1);
     setDateRange(null);
     setFormData(EMPTY_FORM$2);
+    setFormErrors({});
   };
   const closeGroupBookingForm = () => {
     setSelectedOffer(null);
     setStep(1);
     setDateRange(null);
     setFormData(EMPTY_FORM$2);
+    setFormErrors({});
   };
   const handleFinalSubmit = async () => {
-    if (!restaurantTypeId) {
-      toast$2.error("Restaurant type is not available. Please try again.");
+    const errs = validateGroupBookingForm(formData);
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
       return;
     }
-    if (!formData.name.trim() || !formData.phone.trim() || !formData.email.trim()) {
-      toast$2.error("Please fill in name, phone, and email.");
+    setFormErrors({});
+    if (!restaurantTypeId) {
+      toast$2.error("Restaurant type is not available. Please try again.");
       return;
     }
     setIsSubmitting(true);
@@ -27299,7 +27912,8 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
         queries: queriesText || null,
         enquiryDate: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
         propertyTypeId: Number(restaurantTypeId),
-        ...selectedOffer?.id ? { groupBookingId: selectedOffer.id } : {}
+        ...selectedOffer?.id ? { groupBookingId: selectedOffer.id } : {},
+        ...selectedOffer?.propertyId ? { propertyId: Number(selectedOffer.propertyId) } : {}
       });
       setStep(3);
     } catch (error) {
@@ -27376,11 +27990,18 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
                 whileInView: { opacity: 1, y: 0 },
                 viewport: { once: true },
                 className: "group overflow-hidden rounded-xl border border-border bg-background transition-all duration-300 hover:border-primary/30 hover:shadow-md",
-                children: /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-3 p-3", children: [
-                  /* @__PURE__ */ jsx("div", { className: "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm", children: /* @__PURE__ */ jsx(Icon, { className: "h-5 w-5" }) }),
+                children: /* @__PURE__ */ jsxs("div", { className: `flex gap-3 p-3 ${item.description ? "items-start" : "items-center"}`, children: [
+                  /* @__PURE__ */ jsx("div", { className: "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm overflow-hidden", children: item.imageUrl ? /* @__PURE__ */ jsx(
+                    "img",
+                    {
+                      src: item.imageUrl,
+                      alt: item.title,
+                      className: "h-full w-full object-cover"
+                    }
+                  ) : /* @__PURE__ */ jsx(Icon, { className: "h-5 w-5" }) }),
                   /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1", children: [
                     /* @__PURE__ */ jsx("h4", { className: "line-clamp-1 text-sm font-semibold transition-colors group-hover:text-primary", children: item.title }),
-                    /* @__PURE__ */ jsx("p", { className: "mt-1 line-clamp-2 text-[11px] text-muted-foreground", children: item.description || "Multi-purpose group booking support." })
+                    item.description && /* @__PURE__ */ jsx("p", { className: "mt-1 line-clamp-2 text-[11px] text-muted-foreground", children: item.description })
                   ] }),
                   /* @__PURE__ */ jsx(
                     Button,
@@ -27397,7 +28018,7 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
               item.id
             );
           }) : /* @__PURE__ */ jsx("div", { className: "rounded-xl border border-dashed border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground", children: "Group booking packages are not available right now." }) }),
-          /* @__PURE__ */ jsxs("div", { className: "relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl", children: [
+          groupBookingHeader && /* @__PURE__ */ jsxs("div", { className: "relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl", children: [
             /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-slate-900/5" }),
             /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-px bg-white/70" }),
             /* @__PURE__ */ jsx("div", { className: "absolute -left-12 top-8 h-32 w-32 rounded-full bg-rose-200/35 blur-3xl" }),
@@ -27407,9 +28028,9 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
             /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-2xl ring-1 ring-black/5" }),
             /* @__PURE__ */ jsxs("div", { className: "relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center", children: [
               /* @__PURE__ */ jsx(Users, { className: "h-8 w-8 text-primary/60" }),
-              /* @__PURE__ */ jsx("p", { className: "font-serif text-sm font-semibold text-foreground/80", children: "Planning something bigger?" }),
-              /* @__PURE__ */ jsx("p", { className: "text-[11px] text-muted-foreground", children: "Reach out for private dining, festive reservations, and custom group experiences tailored to your event." }),
-              /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx("p", { className: "font-serif text-sm font-semibold text-foreground/80", children: groupBookingHeader.header }),
+              groupBookingHeader.description && /* @__PURE__ */ jsx("p", { className: "text-[11px] text-muted-foreground", children: groupBookingHeader.description }),
+              groupBookingHeader.ctaText && /* @__PURE__ */ jsx(
                 Button,
                 {
                   className: "mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold",
@@ -27417,7 +28038,7 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
                     id: null,
                     title: "Restaurant Group Booking"
                   }),
-                  children: "Enquire Now"
+                  children: groupBookingHeader.ctaText
                 }
               )
             ] })
@@ -27435,7 +28056,7 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
         children: /* @__PURE__ */ jsxs(DialogContent, { className: "sm:max-w-[500px]", children: [
           /* @__PURE__ */ jsxs(DialogHeader, { children: [
             /* @__PURE__ */ jsx(DialogTitle, { className: "font-serif text-2xl", children: selectedOffer?.title }),
-            /* @__PURE__ */ jsx(DialogDescription, { children: "Share your preferred dates and contact details for this booking." })
+            /* @__PURE__ */ jsx(DialogDescription, { children: selectedOffer?.propertyName ? `Booking at ${selectedOffer.propertyName} — share your preferred dates and contact details.` : "Share your preferred dates and contact details for this booking." })
           ] }),
           step === 1 ? /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
             /* @__PURE__ */ jsx(Calendar, { selectRange: true, value: dateRange, onChange: setDateRange }),
@@ -27448,55 +28069,102 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
                 children: "Confirm Dates"
               }
             )
-          ] }) : step === 2 ? /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-            /* @__PURE__ */ jsx(
-              Input,
-              {
-                placeholder: "Your name",
-                value: formData.name,
-                onChange: (e) => setFormData((prev) => ({ ...prev, name: e.target.value }))
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              Input,
-              {
-                placeholder: "Phone number",
-                type: "tel",
-                value: formData.phone,
-                onChange: (e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              Input,
-              {
-                placeholder: "Email address",
-                type: "email",
-                value: formData.email,
-                onChange: (e) => setFormData((prev) => ({ ...prev, email: e.target.value }))
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              Input,
-              {
-                placeholder: "No. of persons",
-                type: "number",
-                min: "1",
-                value: formData.persons,
-                onChange: (e) => setFormData((prev) => ({ ...prev, persons: e.target.value }))
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              Textarea,
-              {
-                placeholder: "Additional requirements",
-                value: formData.customQuery,
-                onChange: (e) => setFormData((prev) => ({
-                  ...prev,
-                  customQuery: e.target.value
-                })),
-                rows: 4
-              }
-            ),
+          ] }) : step === 2 ? /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
+            selectedOffer?.propertyName && /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2", children: [
+              /* @__PURE__ */ jsx("span", { className: "text-[10px] font-bold uppercase tracking-widest text-muted-foreground", children: "Restaurant" }),
+              /* @__PURE__ */ jsx("span", { className: "text-xs font-semibold text-foreground", children: selectedOffer.propertyName })
+            ] }),
+            /* @__PURE__ */ jsxs("p", { className: "text-[11px] text-muted-foreground", children: [
+              "Fields marked ",
+              /* @__PURE__ */ jsx("span", { className: "text-red-500 font-semibold", children: "*" }),
+              " are required."
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxs("label", { className: "text-xs font-semibold", children: [
+                "Full Name ",
+                /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+                /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(letters only)" })
+              ] }),
+              /* @__PURE__ */ jsx(
+                Input,
+                {
+                  placeholder: "Your full name",
+                  value: formData.name,
+                  onChange: (e) => setField("name", e.target.value),
+                  className: formErrors.name ? "border-red-500 focus-visible:ring-red-400" : ""
+                }
+              ),
+              formErrors.name && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: formErrors.name })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxs("label", { className: "text-xs font-semibold", children: [
+                "Phone Number ",
+                /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" }),
+                /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(10 digits)" })
+              ] }),
+              /* @__PURE__ */ jsx(
+                Input,
+                {
+                  placeholder: "10-digit mobile number",
+                  type: "tel",
+                  maxLength: 10,
+                  value: formData.phone,
+                  onChange: (e) => setField("phone", e.target.value.replace(/\D/g, "")),
+                  className: formErrors.phone ? "border-red-500 focus-visible:ring-red-400" : ""
+                }
+              ),
+              formErrors.phone && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: formErrors.phone })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxs("label", { className: "text-xs font-semibold", children: [
+                "Email Address ",
+                /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+              ] }),
+              /* @__PURE__ */ jsx(
+                Input,
+                {
+                  placeholder: "name@example.com",
+                  type: "email",
+                  value: formData.email,
+                  onChange: (e) => setField("email", e.target.value),
+                  className: formErrors.email ? "border-red-500 focus-visible:ring-red-400" : ""
+                }
+              ),
+              formErrors.email && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: formErrors.email })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxs("label", { className: "text-xs font-semibold", children: [
+                "No. of Persons",
+                /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(optional)" })
+              ] }),
+              /* @__PURE__ */ jsx(
+                Input,
+                {
+                  placeholder: "e.g. 50",
+                  type: "number",
+                  min: "1",
+                  value: formData.persons,
+                  onChange: (e) => setField("persons", e.target.value),
+                  className: formErrors.persons ? "border-red-500 focus-visible:ring-red-400" : ""
+                }
+              ),
+              formErrors.persons && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500", children: formErrors.persons })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxs("label", { className: "text-xs font-semibold", children: [
+                "Additional Requirements",
+                /* @__PURE__ */ jsx("span", { className: "ml-1 text-[10px] text-muted-foreground font-normal", children: "(optional)" })
+              ] }),
+              /* @__PURE__ */ jsx(
+                Textarea,
+                {
+                  placeholder: "Any special requirements or notes...",
+                  value: formData.customQuery,
+                  onChange: (e) => setField("customQuery", e.target.value),
+                  rows: 3
+                }
+              )
+            ] }),
             /* @__PURE__ */ jsx(
               Button,
               {
@@ -27734,9 +28402,9 @@ const DEFAULT_RATING_HEADER = {
 };
 const normalize$3 = (value = "") => String(value).trim().toLowerCase().replace(/\s+/g, " ");
 const isRestaurantType$2 = (value = "") => ["restaurant", "resturant"].includes(normalize$3(value));
-const isYoutubeUrl = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
+const isYoutubeUrl$1 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
 const isInstagramUrl = (url) => /^(https?:\/\/)?(www\.)?instagram\.com\/(reel|p|tv)\/.+/.test(url.trim());
-const getYoutubeId = (url) => {
+const getYoutubeId$1 = (url) => {
   if (!url) return null;
   const matches = [
     /youtube\.com\/shorts\/([^"&?/\s]{11})/,
@@ -27757,10 +28425,10 @@ const getInstagramId = (url) => {
   return match ? match[1] : null;
 };
 const getYoutubeThumbnail = (url) => {
-  const id = getYoutubeId(url);
+  const id = getYoutubeId$1(url);
   return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "";
 };
-const buildMediaList = (item) => {
+const buildMediaList$1 = (item) => {
   const allMedia = [];
   const seenUrls = /* @__PURE__ */ new Set();
   const add = (type, url) => {
@@ -27774,7 +28442,7 @@ const buildMediaList = (item) => {
     item.mediaList.forEach((m) => {
       const url = m?.url || m?.imageUrl || m?.videoUrl;
       if (!url) return;
-      const isVid = m?.type === "VIDEO" || isYoutubeUrl(url) || isInstagramUrl(url) || /\.(mp4|webm|mov|ogg)$/i.test(url);
+      const isVid = m?.type === "VIDEO" || isYoutubeUrl$1(url) || isInstagramUrl(url) || /\.(mp4|webm|mov|ogg)$/i.test(url);
       add(isVid ? "video" : "image", url);
     });
   }
@@ -27820,7 +28488,7 @@ function RestaurantGuestReviews({
   const [mediaErrors, setMediaErrors] = useState(/* @__PURE__ */ new Set());
   const [mutedVideos, setMutedVideos] = useState(/* @__PURE__ */ new Set());
   const hasContent = feedbackText || mediaPreviews.length > 0 || ytLink.trim();
-  const ytThumb = ytLink.trim() && isYoutubeUrl(ytLink) ? getYoutubeThumbnail(ytLink) : null;
+  const ytThumb = ytLink.trim() && isYoutubeUrl$1(ytLink) ? getYoutubeThumbnail(ytLink) : null;
   const instaId = ytLink.trim() && isInstagramUrl(ytLink) ? getInstagramId(ytLink) : null;
   const fetchExperiences = async (resolvedRestaurantTypeId) => {
     try {
@@ -27896,7 +28564,7 @@ function RestaurantGuestReviews({
       setYtError("");
       return;
     }
-    if (!isYoutubeUrl(link) && !isInstagramUrl(link)) {
+    if (!isYoutubeUrl$1(link) && !isInstagramUrl(link)) {
       setYtError("Please enter a valid YouTube or Instagram Reel URL");
       return;
     }
@@ -27976,8 +28644,8 @@ function RestaurantGuestReviews({
           idx
         );
       }
-      if (isYoutubeUrl(m.url)) {
-        const videoId = getYoutubeId(m.url);
+      if (isYoutubeUrl$1(m.url)) {
+        const videoId = getYoutubeId$1(m.url);
         if (!videoId) return null;
         return /* @__PURE__ */ jsx("div", { className: "relative h-full w-full", children: /* @__PURE__ */ jsx(
           "iframe",
@@ -28089,7 +28757,7 @@ function RestaurantGuestReviews({
             onMouseLeave: () => swiperRef.current?.autoplay?.start(),
             className: "h-full w-full",
             children: guestExperiences.map((item) => {
-              const allMedia = buildMediaList(item);
+              const allMedia = buildMediaList$1(item);
               return /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsx("div", { className: "group flex h-full flex-col overflow-hidden rounded-xl border bg-background", children: /* @__PURE__ */ jsxs("div", { className: "relative aspect-[3/4] overflow-hidden bg-muted", children: [
                 renderMediaGrid(allMedia, item),
                 allMedia.length > 0 && /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-transparent p-4", children: [
@@ -28140,7 +28808,7 @@ function RestaurantGuestReviews({
               Youtube,
               {
                 size: 15,
-                className: ytLink && (isYoutubeUrl(ytLink) || isInstagramUrl(ytLink)) ? "text-red-500" : "text-muted-foreground"
+                className: ytLink && (isYoutubeUrl$1(ytLink) || isInstagramUrl(ytLink)) ? "text-red-500" : "text-muted-foreground"
               }
             ),
             /* @__PURE__ */ jsx(
@@ -28342,7 +29010,7 @@ function RestaurantHomepage() {
           {
             navItems: RESTAURANT_NAV_ITEMS,
             logo: siteContent.brand.logo_restaurant,
-            quickBookOptions: [{ label: "Reserve Restaurant", href: "#quick-booking" }]
+            quickBookOptions: [{ label: "Reserve Restaurant", category: "restaurant" }]
           }
         ),
         /* @__PURE__ */ jsxs("main", { children: [
@@ -31151,7 +31819,7 @@ function TakeawayTreats() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
-const RoomSelection = lazy(() => import("./assets/RoomSelection-NzltMzz4.js"));
+const RoomSelection = lazy(() => import("./assets/RoomSelection-qBgY05rX.js"));
 function withRouteSuspense(element) {
   return /* @__PURE__ */ jsx(
     Suspense,
@@ -35420,11 +36088,13 @@ function AboutUs() {
       if (Array.isArray(data)) {
         const sorted = [...data].sort((a, b) => b.id - a.id);
         setAboutUsList(sorted);
-        if (sorted.length > 0) {
-          setSelectedAboutUsId(sorted[0].id);
-        } else {
-          setSelectedAboutUsId(null);
-        }
+        setSelectedAboutUsId((currentSelectedId) => {
+          if (sorted.length === 0) return null;
+          const hasCurrentSelection = sorted.some(
+            (item) => Number(item.id) === Number(currentSelectedId)
+          );
+          return hasCurrentSelection ? currentSelectedId : sorted[0].id;
+        });
       } else {
         setAboutUsList([]);
         setSelectedAboutUsId(null);
@@ -35497,7 +36167,6 @@ function AboutUs() {
       /* @__PURE__ */ jsx("p", { className: "text-sm font-medium text-muted-foreground", children: "Initializing Admin Panel..." })
     ] });
   }
-  const latestAbout = aboutUsList[0] || null;
   return /* @__PURE__ */ jsxs("div", { className: "space-y-6", children: [
     /* @__PURE__ */ jsxs("div", { className: "rounded-xl border bg-card p-4 shadow-sm", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center gap-2", children: [
@@ -35573,7 +36242,7 @@ function AboutUs() {
             }
           )
         ] }),
-        fetching ? /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center py-12", children: /* @__PURE__ */ jsx(Loader2, { size: 32, className: "animate-spin text-primary" }) }) : !latestAbout ? /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center justify-center py-12 text-center", children: [
+        fetching ? /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center py-12", children: /* @__PURE__ */ jsx(Loader2, { size: 32, className: "animate-spin text-primary" }) }) : aboutUsList.length === 0 ? /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center justify-center py-12 text-center", children: [
           /* @__PURE__ */ jsx(Info, { size: 48, className: "text-muted-foreground/30 mb-4" }),
           /* @__PURE__ */ jsx("p", { className: "text-sm font-medium text-foreground mb-1", children: "No content sections found" }),
           /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground", children: selectedPropertyTypeId !== null ? `No sections available for ${getSelectedPropertyTypeName()}` : "Create your first content section to get started" })
@@ -35585,46 +36254,56 @@ function AboutUs() {
             /* @__PURE__ */ jsx("th", { className: "p-4", children: "Status" }),
             /* @__PURE__ */ jsx("th", { className: "p-4 text-right", children: "Actions" })
           ] }) }),
-          /* @__PURE__ */ jsx("tbody", { className: "divide-y", children: aboutUsList.map((about, index) => /* @__PURE__ */ jsxs(
-            "tr",
-            {
-              className: `cursor-default ${index === 0 ? "bg-primary/5" : ""}`,
-              children: [
-                /* @__PURE__ */ jsxs("td", { className: "p-4 font-mono text-xs", children: [
-                  /* @__PURE__ */ jsx("span", { className: "mr-2 text-primary", children: "●" }),
-                  "#",
-                  about.id
-                ] }),
-                /* @__PURE__ */ jsx("td", { className: "p-4 text-sm font-medium", children: about.sectionTitle }),
-                /* @__PURE__ */ jsx("td", { className: "p-4", children: about.propertyTypeId ? /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700", children: [
-                  /* @__PURE__ */ jsx(Building2, { size: 10 }),
-                  propertyTypes.find(
-                    (pt) => pt.id === about.propertyTypeId
-                  )?.typeName || "Unknown"
-                ] }) : /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-gray-100 text-gray-600", children: [
-                  /* @__PURE__ */ jsx(Home$1, { size: 10 }),
-                  "General"
-                ] }) }),
-                /* @__PURE__ */ jsx("td", { className: "p-4", children: /* @__PURE__ */ jsx(
-                  "span",
-                  {
-                    className: `px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${about.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`,
-                    children: about.isActive ? "Active" : "Disabled"
-                  }
-                ) }),
-                /* @__PURE__ */ jsx("td", { className: "p-4 text-right flex justify-end gap-2", children: /* @__PURE__ */ jsx(
-                  "button",
-                  {
-                    onClick: () => handleOpenEdit("about", about),
-                    className: "p-1.5 hover:bg-muted rounded-md text-primary transition-colors",
-                    title: "Edit",
-                    children: /* @__PURE__ */ jsx(Pencil, { size: 14 })
-                  }
-                ) })
-              ]
-            },
-            about.id
-          )) })
+          /* @__PURE__ */ jsx("tbody", { className: "divide-y", children: aboutUsList.map((about, index) => {
+            const isSelected = Number(selectedAboutUsId) === Number(about.id);
+            return /* @__PURE__ */ jsxs(
+              "tr",
+              {
+                onClick: () => setSelectedAboutUsId(about.id),
+                className: `cursor-pointer transition-colors ${isSelected ? "bg-primary/10" : index === 0 ? "bg-primary/5" : "hover:bg-muted/40"}`,
+                children: [
+                  /* @__PURE__ */ jsxs("td", { className: "p-4 font-mono text-xs", children: [
+                    /* @__PURE__ */ jsx("span", { className: "mr-2 text-primary", children: "●" }),
+                    "#",
+                    about.id
+                  ] }),
+                  /* @__PURE__ */ jsx("td", { className: "p-4 text-sm font-medium", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsx("span", { children: about.sectionTitle }),
+                    isSelected && /* @__PURE__ */ jsx("span", { className: "rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary", children: "Selected" })
+                  ] }) }),
+                  /* @__PURE__ */ jsx("td", { className: "p-4", children: about.propertyTypeId ? /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700", children: [
+                    /* @__PURE__ */ jsx(Building2, { size: 10 }),
+                    propertyTypes.find(
+                      (pt) => pt.id === about.propertyTypeId
+                    )?.typeName || "Unknown"
+                  ] }) : /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-gray-100 text-gray-600", children: [
+                    /* @__PURE__ */ jsx(Home$1, { size: 10 }),
+                    "General"
+                  ] }) }),
+                  /* @__PURE__ */ jsx("td", { className: "p-4", children: /* @__PURE__ */ jsx(
+                    "span",
+                    {
+                      className: `px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${about.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`,
+                      children: about.isActive ? "Active" : "Disabled"
+                    }
+                  ) }),
+                  /* @__PURE__ */ jsx("td", { className: "p-4 text-right flex justify-end gap-2", children: /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      onClick: (e) => {
+                        e.stopPropagation();
+                        handleOpenEdit("about", about);
+                      },
+                      className: "p-1.5 hover:bg-muted rounded-md text-primary transition-colors",
+                      title: "Edit",
+                      children: /* @__PURE__ */ jsx(Pencil, { size: 14 })
+                    }
+                  ) })
+                ]
+              },
+              about.id
+            );
+          }) })
         ] }) })
       ] }),
       contentTab === "ventures" && /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-6", children: [
@@ -40460,6 +41139,367 @@ const formatDateTime = (isoString) => {
   });
   return { date, time };
 };
+const isYoutubeUrl = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url?.trim() ?? "");
+const getYoutubeId = (url) => {
+  if (!url) return null;
+  const shortsMatch = url.match(/youtube\.com\/shorts\/([^"&?/\s]{11})/);
+  if (shortsMatch) return shortsMatch[1];
+  const shortMatch = url.match(/youtu\.be\/([^"&?/\s]{11})/);
+  if (shortMatch) return shortMatch[1];
+  const longMatch = url.match(/[?&]v=([^"&?/\s]{11})/);
+  if (longMatch) return longMatch[1];
+  const embedMatch = url.match(/embed\/([^"&?/\s]{11})/);
+  if (embedMatch) return embedMatch[1];
+  return null;
+};
+const buildMediaList = (item) => {
+  const allMedia = [];
+  const seenUrls = /* @__PURE__ */ new Set();
+  const add = (type, url) => {
+    if (url && typeof url === "string" && url.trim() !== "" && !seenUrls.has(url)) {
+      seenUrls.add(url.trim());
+      allMedia.push({ type, url: url.trim() });
+    }
+  };
+  if (item.mediaList && Array.isArray(item.mediaList)) {
+    item.mediaList.forEach((m) => {
+      const url = m.url || m.imageUrl || m.videoUrl;
+      if (!url) return;
+      const isVid = m.type === "VIDEO" || isYoutubeUrl(url) || /\.(mp4|webm|mov|ogg)$/i.test(url);
+      add(isVid ? "video" : "image", url);
+    });
+  }
+  if (item.videoUrl) {
+    const isVid = isYoutubeUrl(item.videoUrl) || /\.(mp4|webm|mov|ogg)$/i.test(item.videoUrl);
+    if (isVid) add("video", item.videoUrl);
+  }
+  if (item.imageUrl) add("image", item.imageUrl);
+  return allMedia;
+};
+function ViewModal({ exp, onClose, properties, propertyTypes }) {
+  const [mutedVideos, setMutedVideos] = useState(/* @__PURE__ */ new Set());
+  const [mediaErrors, setMediaErrors] = useState(/* @__PURE__ */ new Set());
+  const [activeMediaIdx, setActiveMediaIdx] = useState(0);
+  const allMedia = buildMediaList(exp);
+  const validMedia = allMedia.filter((m) => !mediaErrors.has(m.url));
+  const { date, time } = formatDateTime(exp.createdAt);
+  const propertyName = properties.find((p) => p.id === exp.propertyId)?.propertyName;
+  const typeName = propertyTypes.find((t) => t.id === exp.propertyTypeId)?.typeName;
+  const toggleMute = (key) => setMutedVideos((prev) => {
+    const next = new Set(prev);
+    next.has(key) ? next.delete(key) : next.add(key);
+    return next;
+  });
+  const renderMediaItem = (m, idx) => {
+    const videoKey = `video-${m.url}`;
+    const isMuted = !mutedVideos.has(videoKey);
+    if (m.type === "video") {
+      if (isYoutubeUrl(m.url)) {
+        const videoId = getYoutubeId(m.url);
+        if (!videoId) return null;
+        return /* @__PURE__ */ jsxs("div", { className: "w-full h-full relative group", children: [
+          /* @__PURE__ */ jsx(
+            "iframe",
+            {
+              src: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&modestbranding=1`,
+              className: "w-full h-full",
+              style: { border: "none" },
+              allow: "autoplay; encrypted-media",
+              allowFullScreen: true
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                toggleMute(videoKey);
+              },
+              className: "absolute bottom-3 right-3 z-20 bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity",
+              children: isMuted ? /* @__PURE__ */ jsx(VolumeX, { className: "w-4 h-4" }) : /* @__PURE__ */ jsx(Volume2, { className: "w-4 h-4" })
+            }
+          )
+        ] }, idx);
+      }
+      return /* @__PURE__ */ jsxs("div", { className: "relative group w-full h-full", children: [
+        /* @__PURE__ */ jsx(
+          "video",
+          {
+            src: m.url,
+            className: "w-full h-full object-contain bg-black",
+            autoPlay: true,
+            muted: isMuted,
+            loop: true,
+            playsInline: true,
+            controls: true
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              toggleMute(videoKey);
+            },
+            className: "absolute bottom-3 right-3 z-20 bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity",
+            children: isMuted ? /* @__PURE__ */ jsx(VolumeX, { className: "w-4 h-4" }) : /* @__PURE__ */ jsx(Volume2, { className: "w-4 h-4" })
+          }
+        )
+      ] }, idx);
+    }
+    return /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: m.url,
+        alt: "",
+        className: "w-full h-full object-contain bg-black",
+        loading: "lazy",
+        onError: () => setMediaErrors((prev) => new Set(prev).add(m.url))
+      },
+      idx
+    );
+  };
+  return /* @__PURE__ */ jsxs("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", children: [
+    /* @__PURE__ */ jsx("div", { className: "admin-modal-overlay absolute inset-0", onClick: onClose }),
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: "relative z-10 w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]",
+        style: { backgroundColor: colors.contentBg },
+        children: [
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: "flex items-center justify-between px-5 py-4 border-b flex-shrink-0",
+              style: { borderColor: colors.border },
+              children: [
+                /* @__PURE__ */ jsx("h4", { className: "text-sm font-semibold", style: { color: colors.textPrimary }, children: "Guest Experience Details" }),
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    onClick: onClose,
+                    className: "p-1.5 rounded hover:bg-black/10 transition-colors",
+                    style: { color: colors.textSecondary },
+                    children: /* @__PURE__ */ jsx(X, { size: 16 })
+                  }
+                )
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "overflow-y-auto flex-1", children: [
+            validMedia.length > 0 ? /* @__PURE__ */ jsxs("div", { className: "relative bg-black", style: { height: "320px" }, children: [
+              renderMediaItem(validMedia[activeMediaIdx], activeMediaIdx),
+              validMedia.length > 1 && /* @__PURE__ */ jsxs(Fragment, { children: [
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    onClick: () => setActiveMediaIdx((i) => (i - 1 + validMedia.length) % validMedia.length),
+                    className: "absolute left-3 top-1/2 -translate-y-1/2 z-30 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors",
+                    children: /* @__PURE__ */ jsx(ChevronLeft, { size: 16 })
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    onClick: () => setActiveMediaIdx((i) => (i + 1) % validMedia.length),
+                    className: "absolute right-3 top-1/2 -translate-y-1/2 z-30 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors",
+                    children: /* @__PURE__ */ jsx(ChevronRight$1, { size: 16 })
+                  }
+                ),
+                /* @__PURE__ */ jsx("div", { className: "absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5", children: validMedia.map((_, i) => /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    onClick: () => setActiveMediaIdx(i),
+                    className: `rounded-full transition-all ${i === activeMediaIdx ? "w-5 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/50"}`
+                  },
+                  i
+                )) }),
+                /* @__PURE__ */ jsxs("div", { className: "absolute top-3 right-3 z-30 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded-full", children: [
+                  activeMediaIdx + 1,
+                  " / ",
+                  validMedia.length
+                ] })
+              ] }),
+              validMedia.length > 1 && /* @__PURE__ */ jsx(
+                "div",
+                {
+                  className: "absolute bottom-0 left-0 right-0 z-20 flex gap-1.5 overflow-x-auto px-3 pb-2 pt-8",
+                  style: { background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" },
+                  children: validMedia.map((m, i) => /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      onClick: () => setActiveMediaIdx(i),
+                      className: `flex-shrink-0 w-12 h-9 rounded overflow-hidden border-2 transition-all ${i === activeMediaIdx ? "border-white" : "border-transparent opacity-60 hover:opacity-90"}`,
+                      children: m.type === "video" ? isYoutubeUrl(m.url) ? /* @__PURE__ */ jsx(
+                        "img",
+                        {
+                          src: `https://img.youtube.com/vi/${getYoutubeId(m.url)}/default.jpg`,
+                          alt: "",
+                          className: "w-full h-full object-cover"
+                        }
+                      ) : /* @__PURE__ */ jsx("div", { className: "w-full h-full bg-slate-800 flex items-center justify-center", children: /* @__PURE__ */ jsx(Video, { size: 12, className: "text-white/70" }) }) : /* @__PURE__ */ jsx("img", { src: m.url, alt: "", className: "w-full h-full object-cover" })
+                    },
+                    i
+                  ))
+                }
+              )
+            ] }) : /* @__PURE__ */ jsxs(
+              "div",
+              {
+                className: "flex items-center justify-center gap-2 py-8 border-b",
+                style: { borderColor: colors.border, backgroundColor: colors.mainBg },
+                children: [
+                  /* @__PURE__ */ jsx(ImageIcon, { size: 20, style: { color: colors.textSecondary } }),
+                  /* @__PURE__ */ jsx("span", { className: "text-sm", style: { color: colors.textSecondary }, children: "No media attached" })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxs("div", { className: "p-5 space-y-4", children: [
+              /* @__PURE__ */ jsxs("div", { children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase tracking-wider mb-1", style: { color: colors.textSecondary }, children: "Title" }),
+                /* @__PURE__ */ jsx("p", { className: "text-base font-medium", style: { color: colors.textPrimary }, children: exp.title || "—" })
+              ] }),
+              /* @__PURE__ */ jsxs("div", { children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase tracking-wider mb-1", style: { color: colors.textSecondary }, children: "Description" }),
+                /* @__PURE__ */ jsx("p", { className: "text-sm leading-relaxed whitespace-pre-line", style: { color: colors.textPrimary }, children: exp.description || "—" })
+              ] }),
+              /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-3", children: [
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "flex items-start gap-2.5 p-3 rounded-lg border",
+                    style: { backgroundColor: colors.mainBg, borderColor: colors.border },
+                    children: [
+                      /* @__PURE__ */ jsx(User, { size: 14, style: { color: colors.primary }, className: "mt-0.5 flex-shrink-0" }),
+                      /* @__PURE__ */ jsxs("div", { children: [
+                        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase tracking-wide", style: { color: colors.textSecondary }, children: "Author" }),
+                        /* @__PURE__ */ jsx("p", { className: "text-sm font-medium", style: { color: colors.textPrimary }, children: exp.author || "—" })
+                      ] })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "flex items-start gap-2.5 p-3 rounded-lg border",
+                    style: { backgroundColor: colors.mainBg, borderColor: colors.border },
+                    children: [
+                      /* @__PURE__ */ jsx(Phone, { size: 14, style: { color: colors.primary }, className: "mt-0.5 flex-shrink-0" }),
+                      /* @__PURE__ */ jsxs("div", { children: [
+                        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase tracking-wide", style: { color: colors.textSecondary }, children: "Phone" }),
+                        /* @__PURE__ */ jsx("p", { className: "text-sm font-medium", style: { color: colors.textPrimary }, children: exp.authorPhone || "—" })
+                      ] })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "flex items-start gap-2.5 p-3 rounded-lg border",
+                    style: { backgroundColor: colors.mainBg, borderColor: colors.border },
+                    children: [
+                      /* @__PURE__ */ jsx(Mail, { size: 14, style: { color: colors.primary }, className: "mt-0.5 flex-shrink-0" }),
+                      /* @__PURE__ */ jsxs("div", { children: [
+                        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase tracking-wide", style: { color: colors.textSecondary }, children: "Email" }),
+                        /* @__PURE__ */ jsx("p", { className: "text-sm font-medium break-all", style: { color: colors.textPrimary }, children: exp.authorEmail || "—" })
+                      ] })
+                    ]
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3", children: [
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "flex items-start gap-2.5 p-3 rounded-lg border",
+                    style: { backgroundColor: colors.mainBg, borderColor: colors.border },
+                    children: [
+                      /* @__PURE__ */ jsx(Building2, { size: 14, style: { color: colors.primary }, className: "mt-0.5 flex-shrink-0" }),
+                      /* @__PURE__ */ jsxs("div", { children: [
+                        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase tracking-wide", style: { color: colors.textSecondary }, children: "Property" }),
+                        /* @__PURE__ */ jsx("p", { className: "text-xs font-medium", style: { color: colors.textPrimary }, children: propertyName || (exp.propertyId ? `ID: ${exp.propertyId}` : "—") })
+                      ] })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "flex items-start gap-2.5 p-3 rounded-lg border",
+                    style: { backgroundColor: colors.mainBg, borderColor: colors.border },
+                    children: [
+                      /* @__PURE__ */ jsx(Tag, { size: 14, style: { color: colors.primary }, className: "mt-0.5 flex-shrink-0" }),
+                      /* @__PURE__ */ jsxs("div", { children: [
+                        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase tracking-wide", style: { color: colors.textSecondary }, children: "Type" }),
+                        /* @__PURE__ */ jsx("p", { className: "text-xs font-medium", style: { color: colors.textPrimary }, children: typeName || (exp.propertyTypeId ? `ID: ${exp.propertyTypeId}` : "—") })
+                      ] })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "flex items-start gap-2.5 p-3 rounded-lg border",
+                    style: { backgroundColor: colors.mainBg, borderColor: colors.border },
+                    children: [
+                      /* @__PURE__ */ jsx(Calendar$1, { size: 14, style: { color: colors.primary }, className: "mt-0.5 flex-shrink-0" }),
+                      /* @__PURE__ */ jsxs("div", { children: [
+                        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase tracking-wide", style: { color: colors.textSecondary }, children: "Added On" }),
+                        /* @__PURE__ */ jsx("p", { className: "text-xs font-medium", style: { color: colors.textPrimary }, children: date }),
+                        /* @__PURE__ */ jsx("p", { className: "text-[10px]", style: { color: colors.textSecondary }, children: time })
+                      ] })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "flex items-start gap-2.5 p-3 rounded-lg border",
+                    style: { backgroundColor: colors.mainBg, borderColor: colors.border },
+                    children: [
+                      /* @__PURE__ */ jsx("div", { className: "mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full", style: { backgroundColor: exp.isActive ? "#22c55e" : "#ef4444" } }),
+                      /* @__PURE__ */ jsxs("div", { children: [
+                        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase tracking-wide", style: { color: colors.textSecondary }, children: "Status" }),
+                        /* @__PURE__ */ jsx("p", { className: "text-xs font-medium", style: { color: exp.isActive ? "#22c55e" : "#ef4444" }, children: exp.isActive ? "Active" : "Inactive" })
+                      ] })
+                    ]
+                  }
+                )
+              ] }),
+              exp.reviewNote && /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: "p-3 rounded-lg border",
+                  style: { backgroundColor: colors.mainBg, borderColor: colors.border },
+                  children: [
+                    /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase tracking-wider mb-1", style: { color: colors.textSecondary }, children: "Review Note" }),
+                    /* @__PURE__ */ jsx("p", { className: "text-sm leading-relaxed", style: { color: colors.textPrimary }, children: exp.reviewNote })
+                  ]
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: "flex items-center justify-end px-5 py-4 border-t flex-shrink-0",
+              style: { borderColor: colors.border },
+              children: /* @__PURE__ */ jsx(
+                "button",
+                {
+                  onClick: onClose,
+                  className: "px-4 py-2 rounded-lg text-xs font-medium border transition-colors hover:bg-black/5",
+                  style: { borderColor: colors.border, color: colors.textSecondary },
+                  children: "Close"
+                }
+              )
+            }
+          )
+        ]
+      }
+    )
+  ] });
+}
 function GuestExp() {
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -40478,6 +41518,7 @@ function GuestExp() {
   });
   const [savingRating, setSavingRating] = useState(false);
   const [ratingData, setRatingData] = useState(null);
+  const [viewExp, setViewExp] = useState(null);
   const [filterPropertyId, setFilterPropertyId] = useState("");
   const [filterTypeId, setFilterTypeId] = useState("");
   const [properties, setProperties] = useState([]);
@@ -41116,17 +42157,29 @@ function GuestExp() {
                         }
                       )
                     ] }),
-                    /* @__PURE__ */ jsx("td", { className: "p-4 text-right", children: /* @__PURE__ */ jsx(
-                      "button",
-                      {
-                        onClick: () => handleDelete(exp.id),
-                        disabled: loading,
-                        className: "p-2 rounded hover:bg-red-50 transition-colors disabled:opacity-50",
-                        style: { color: "#ef4444" },
-                        title: "Delete Experience",
-                        children: loading ? /* @__PURE__ */ jsx(Loader2, { size: 16, className: "animate-spin" }) : /* @__PURE__ */ jsx(Trash2, { size: 16 })
-                      }
-                    ) })
+                    /* @__PURE__ */ jsx("td", { className: "p-4 text-right", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-end gap-1", children: [
+                      /* @__PURE__ */ jsx(
+                        "button",
+                        {
+                          onClick: () => setViewExp(exp),
+                          className: "p-2 rounded hover:bg-blue-50 transition-colors",
+                          style: { color: colors.primary },
+                          title: "View Details",
+                          children: /* @__PURE__ */ jsx(Eye, { size: 16 })
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(
+                        "button",
+                        {
+                          onClick: () => handleDelete(exp.id),
+                          disabled: loading,
+                          className: "p-2 rounded hover:bg-red-50 transition-colors disabled:opacity-50",
+                          style: { color: "#ef4444" },
+                          title: "Delete Experience",
+                          children: loading ? /* @__PURE__ */ jsx(Loader2, { size: 16, className: "animate-spin" }) : /* @__PURE__ */ jsx(Trash2, { size: 16 })
+                        }
+                      )
+                    ] }) })
                   ]
                 },
                 exp.id
@@ -41186,6 +42239,15 @@ function GuestExp() {
             }
           )
         ]
+      }
+    ),
+    viewExp && /* @__PURE__ */ jsx(
+      ViewModal,
+      {
+        exp: viewExp,
+        onClose: () => setViewExp(null),
+        properties,
+        propertyTypes
       }
     ),
     modalOpen && /* @__PURE__ */ jsxs("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", children: [
@@ -41354,6 +42416,10 @@ function getPrimaryPropertyTypeName(propertyLike) {
   }
   return "";
 }
+function normalizeHeaderRecords(payload) {
+  const list = Array.isArray(payload) ? payload : payload ? [payload] : [];
+  return [...list].sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
+}
 function GroupBookings() {
   const [activeTab, setActiveTab] = useState("bookings");
   const [bookings, setBookings] = useState([]);
@@ -41377,6 +42443,14 @@ function GroupBookings() {
   const [enquiriesPropertyTypeId, setEnquiriesPropertyTypeId] = useState("");
   const [enquiryPage, setEnquiryPage] = useState(1);
   const [statusUpdatingId, setStatusUpdatingId] = useState(null);
+  const [homepageUpdatingId, setHomepageUpdatingId] = useState(null);
+  const [selectedExtraTypeId, setSelectedExtraTypeId] = useState("");
+  const [headerItems, setHeaderItems] = useState([]);
+  const [headerItem, setHeaderItem] = useState(null);
+  const [headerLoading, setHeaderLoading] = useState(false);
+  const [headerSubmitting, setHeaderSubmitting] = useState(false);
+  const [headerTogglingActive, setHeaderTogglingActive] = useState(false);
+  const [headerForm, setHeaderForm] = useState({ header: "", description: "", ctaText: "", active: true });
   const fetchBookings = async () => {
     try {
       setLoading(true);
@@ -41629,6 +42703,104 @@ function GroupBookings() {
       setSubmitting(false);
     }
   };
+  const fetchHeaderByType = async (typeId) => {
+    if (!typeId) {
+      setHeaderItems([]);
+      setHeaderItem(null);
+      setHeaderForm({ header: "", description: "", ctaText: "", active: true });
+      return;
+    }
+    try {
+      setHeaderLoading(true);
+      const res = await getGroupBookingHeaderByPropertyType(typeId);
+      const records = normalizeHeaderRecords(res?.data);
+      const latestRecord = records[0] || null;
+      setHeaderItems(records);
+      setHeaderItem(latestRecord);
+      setHeaderForm({
+        header: latestRecord?.header || "",
+        description: latestRecord?.description || "",
+        ctaText: latestRecord?.ctaText || "",
+        active: latestRecord?.active ?? true
+      });
+    } catch {
+      setHeaderItems([]);
+      setHeaderItem(null);
+      setHeaderForm({ header: "", description: "", ctaText: "", active: true });
+    } finally {
+      setHeaderLoading(false);
+    }
+  };
+  const loadHeaderIntoForm = (item) => {
+    setHeaderItem(item || null);
+    setHeaderForm({
+      header: item?.header || "",
+      description: item?.description || "",
+      ctaText: item?.ctaText || "",
+      active: item?.active ?? true
+    });
+  };
+  const handleExtraTypeChange = (typeId) => {
+    setSelectedExtraTypeId(typeId);
+    fetchHeaderByType(typeId);
+  };
+  const handleHeaderSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedExtraTypeId) return toast$2.error("Select a property type first");
+    if (!headerForm.header.trim()) return toast$2.error("Header text is required");
+    if (!headerItem?.id && headerItems.length > 0) {
+      return toast$2.error("A header already exists for this property type");
+    }
+    try {
+      setHeaderSubmitting(true);
+      const payload = {
+        header: headerForm.header.trim(),
+        description: headerForm.description.trim(),
+        ctaText: headerForm.ctaText.trim(),
+        active: headerForm.active,
+        propertyTypeId: Number(selectedExtraTypeId)
+      };
+      if (headerItem?.id) {
+        await updateGroupBookingHeader(headerItem.id, payload);
+        toast$2.success("Header updated");
+      } else {
+        await createGroupBookingHeader(payload);
+        toast$2.success("Header created");
+      }
+      await fetchHeaderByType(selectedExtraTypeId);
+    } catch {
+      toast$2.error("Failed to save header");
+    } finally {
+      setHeaderSubmitting(false);
+    }
+  };
+  const handleToggleHeaderActive = async () => {
+    if (!headerItem?.id) return;
+    try {
+      setHeaderTogglingActive(true);
+      await toggleGroupBookingHeaderActive(headerItem.id);
+      toast$2.success("Status toggled");
+      await fetchHeaderByType(selectedExtraTypeId);
+    } catch {
+      toast$2.error("Failed to toggle status");
+    } finally {
+      setHeaderTogglingActive(false);
+    }
+  };
+  const headerSubmitDisabled = headerSubmitting || !headerItem?.id && headerItems.length > 0;
+  const handleToggleHomepage = async (item) => {
+    const next = !(item?.showOnHomepage === true);
+    try {
+      setHomepageUpdatingId(item.id);
+      await updateGroupBookingShowOnHomepage(item.id, next);
+      toast$2.success(`Homepage visibility ${next ? "enabled" : "disabled"}`);
+      await fetchBookings();
+    } catch {
+      toast$2.error("Failed to update homepage visibility");
+    } finally {
+      setHomepageUpdatingId(null);
+    }
+  };
   const handleToggleActive = async (item) => {
     const currentActive = item?.isActive ?? item?.active ?? true;
     const nextActive = !currentActive;
@@ -41671,14 +42843,18 @@ function GroupBookings() {
         }
       )
     ] }),
-    /* @__PURE__ */ jsx("div", { className: "flex gap-2 mb-5 border-b border-gray-200", children: ["bookings", "enquiries"].map((tab) => /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsx("div", { className: "flex gap-2 mb-5 border-b border-gray-200", children: [
+      { key: "bookings", label: "Bookings" },
+      { key: "extraInfo", label: "Extra Info" },
+      { key: "enquiries", label: "Enquiries" }
+    ].map(({ key, label }) => /* @__PURE__ */ jsx(
       "button",
       {
-        onClick: () => setActiveTab(tab),
-        className: `px-4 py-3 text-sm font-bold border-b-2 transition-all ${activeTab === tab ? "text-blue-600 border-blue-600" : "text-gray-400 border-transparent hover:text-gray-600"}`,
-        children: tab === "bookings" ? "Bookings" : "Enquiries"
+        onClick: () => setActiveTab(key),
+        className: `px-4 py-3 text-sm font-bold border-b-2 transition-all ${activeTab === key ? "text-blue-600 border-blue-600" : "text-gray-400 border-transparent hover:text-gray-600"}`,
+        children: label
       },
-      tab
+      key
     )) }),
     activeTab === "bookings" && /* @__PURE__ */ jsxs(Fragment, { children: [
       /* @__PURE__ */ jsxs("div", { className: "flex flex-col sm:flex-row gap-3 mb-5", children: [
@@ -41757,6 +42933,7 @@ function GroupBookings() {
             { label: "Property Type" },
             { label: "Persons" },
             { label: "Description" },
+            { label: "Homepage" },
             { label: "Action" }
           ].map(({ label }) => /* @__PURE__ */ jsx(
             "th",
@@ -41783,6 +42960,23 @@ function GroupBookings() {
                     item.numberOfPersons
                   ] }) : /* @__PURE__ */ jsx("span", { className: "text-xs text-gray-400", children: "—" }) }),
                   /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs text-gray-600 max-w-[280px]", children: /* @__PURE__ */ jsx("p", { className: "line-clamp-2", children: item.description || "—" }) }),
+                  /* @__PURE__ */ jsx("td", { className: "px-4 py-3 whitespace-nowrap", children: /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => handleToggleHomepage(item),
+                      disabled: homepageUpdatingId === item.id,
+                      title: item.showOnHomepage === true ? "Shown on homepage — click to hide" : "Hidden from homepage — click to show",
+                      className: `relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none ${homepageUpdatingId === item.id ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`,
+                      style: { backgroundColor: item.showOnHomepage === true ? colors.primary : "#D1D5DB" },
+                      children: homepageUpdatingId === item.id ? /* @__PURE__ */ jsx(Loader2, { size: 10, className: "absolute left-1/2 -translate-x-1/2 animate-spin text-white" }) : /* @__PURE__ */ jsx(
+                        "span",
+                        {
+                          className: `inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${item.showOnHomepage === true ? "translate-x-6" : "translate-x-1"}`
+                        }
+                      )
+                    }
+                  ) }),
                   /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
                     /* @__PURE__ */ jsxs(
                       "button",
@@ -41873,6 +43067,143 @@ function GroupBookings() {
           ] })
         ] })
       ] })
+    ] }),
+    activeTab === "extraInfo" && /* @__PURE__ */ jsxs("div", { className: "max-w-lg space-y-5", children: [
+      /* @__PURE__ */ jsxs("div", { children: [
+        /* @__PURE__ */ jsx("label", { className: "text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block", children: "Property Type" }),
+        /* @__PURE__ */ jsxs(
+          "select",
+          {
+            value: selectedExtraTypeId,
+            onChange: (e) => handleExtraTypeChange(e.target.value),
+            className: "w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm outline-none bg-white",
+            children: [
+              /* @__PURE__ */ jsx("option", { value: "", children: "Select property type…" }),
+              propertyTypes.map((type) => /* @__PURE__ */ jsx("option", { value: type.id, children: type.typeName || type.name }, type.id))
+            ]
+          }
+        )
+      ] }),
+      selectedExtraTypeId && (headerLoading ? /* @__PURE__ */ jsx("div", { className: "flex justify-center py-10", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin text-gray-300 w-6 h-6" }) }) : /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+        /* @__PURE__ */ jsxs("div", { className: "rounded-xl border border-gray-100 bg-white p-4", children: [
+          /* @__PURE__ */ jsxs("div", { className: "mb-3 flex items-center justify-between", children: [
+            /* @__PURE__ */ jsx("h4", { className: "text-sm font-bold text-gray-700", children: "Existing Headers" }),
+            headerItems.length > 0 && /* @__PURE__ */ jsxs("span", { className: "text-xs font-semibold text-gray-400", children: [
+              "Latest ID: #",
+              headerItems[0].id
+            ] })
+          ] }),
+          headerItems.length > 0 ? /* @__PURE__ */ jsx("div", { className: "space-y-2", children: headerItems.map((item, index) => {
+            const isSelected = Number(headerItem?.id) === Number(item?.id);
+            return /* @__PURE__ */ jsxs(
+              "button",
+              {
+                type: "button",
+                onClick: () => loadHeaderIntoForm(item),
+                className: `w-full rounded-lg border px-3 py-3 text-left transition-colors ${isSelected ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:bg-gray-50"}`,
+                children: [
+                  /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-3", children: [
+                    /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                      /* @__PURE__ */ jsx("p", { className: "truncate text-sm font-semibold text-gray-800", children: item.header || "Untitled Header" }),
+                      /* @__PURE__ */ jsxs("p", { className: "mt-1 text-xs text-gray-500", children: [
+                        "ID #",
+                        item.id,
+                        " ",
+                        index === 0 ? "• Latest" : ""
+                      ] })
+                    ] }),
+                    /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: `inline-flex min-w-[72px] justify-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${item.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`,
+                        children: item.active ? "Active" : "Inactive"
+                      }
+                    )
+                  ] }),
+                  item.description && /* @__PURE__ */ jsx("p", { className: "mt-2 line-clamp-2 text-xs text-gray-600", children: item.description })
+                ]
+              },
+              item.id
+            );
+          }) }) : /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-400", children: "No header found for this property type yet." })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "rounded-xl border border-gray-100 bg-white p-6 space-y-4", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-2", children: [
+            /* @__PURE__ */ jsx("h4", { className: "text-sm font-bold text-gray-700", children: headerItem?.id ? "Edit Header" : "Create Header" }),
+            headerItem?.id && /* @__PURE__ */ jsxs(
+              "button",
+              {
+                type: "button",
+                onClick: handleToggleHeaderActive,
+                disabled: headerTogglingActive,
+                className: `inline-flex min-w-[92px] items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity ${headerTogglingActive ? "cursor-not-allowed opacity-60" : "hover:opacity-90"}`,
+                style: { backgroundColor: headerItem?.active ? "#16A34A" : "#DC2626" },
+                children: [
+                  headerTogglingActive && /* @__PURE__ */ jsx(Loader2, { size: 12, className: "animate-spin" }),
+                  headerItem?.active ? "Active" : "Inactive"
+                ]
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs("form", { onSubmit: handleHeaderSubmit, className: "space-y-4", children: [
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsxs("label", { className: "text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block", children: [
+                "Header ",
+                /* @__PURE__ */ jsx("span", { className: "text-red-400", children: "*" })
+              ] }),
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: "text",
+                  value: headerForm.header,
+                  onChange: (e) => setHeaderForm({ ...headerForm, header: e.target.value }),
+                  placeholder: "e.g. Planning something bigger?",
+                  className: "w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm outline-none"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("label", { className: "text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block", children: "Description" }),
+              /* @__PURE__ */ jsx(
+                "textarea",
+                {
+                  rows: 3,
+                  value: headerForm.description,
+                  onChange: (e) => setHeaderForm({ ...headerForm, description: e.target.value }),
+                  placeholder: "e.g. Reach out for private dining, festive reservations...",
+                  className: "w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm outline-none resize-none"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("label", { className: "text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block", children: "CTA Text" }),
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: "text",
+                  value: headerForm.ctaText,
+                  onChange: (e) => setHeaderForm({ ...headerForm, ctaText: e.target.value }),
+                  placeholder: "e.g. Enquire Now",
+                  className: "w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm outline-none"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "flex justify-end", children: /* @__PURE__ */ jsxs(
+              "button",
+              {
+                type: "submit",
+                disabled: headerSubmitDisabled,
+                className: "px-6 py-2 rounded-lg text-white text-sm font-bold flex items-center gap-2 disabled:opacity-60",
+                style: { backgroundColor: colors.primary },
+                children: [
+                  headerSubmitting && /* @__PURE__ */ jsx(Loader2, { size: 15, className: "animate-spin" }),
+                  headerItem?.id ? "Save Changes" : headerItems.length > 0 ? "Already Added" : "Create"
+                ]
+              }
+            ) })
+          ] })
+        ] })
+      ] }))
     ] }),
     activeTab === "enquiries" && /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
       /* @__PURE__ */ jsxs("div", { className: "relative", children: [
@@ -42142,662 +43473,6 @@ function GroupBookings() {
     ] }) })
   ] });
 }
-const inp$8 = "w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 transition-all";
-const Field$9 = ({ label, children, required }) => /* @__PURE__ */ jsxs("div", { children: [
-  /* @__PURE__ */ jsxs(
-    "label",
-    {
-      className: "block text-[10px] font-bold uppercase tracking-wider mb-1.5",
-      style: { color: colors.textSecondary },
-      children: [
-        label,
-        required && /* @__PURE__ */ jsx("span", { className: "text-red-500 ml-0.5", children: "*" })
-      ]
-    }
-  ),
-  children
-] });
-function ImageUpload$3({ value, onChange, onClear }) {
-  const displayUrl = typeof value === "string" && value ? value : null;
-  return /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-    /* @__PURE__ */ jsxs(
-      "label",
-      {
-        className: "flex items-center gap-2 px-3 py-1.5 rounded-lg border border-dashed text-xs font-medium cursor-pointer transition-all hover:opacity-80",
-        style: {
-          borderColor: colors.border,
-          color: colors.textSecondary,
-          backgroundColor: colors.mainBg
-        },
-        children: [
-          /* @__PURE__ */ jsx(ImageIcon, { size: 13 }),
-          displayUrl ? "Change Image" : "Upload Image",
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              type: "file",
-              accept: "image/*",
-              className: "hidden",
-              onChange: (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                onChange(URL.createObjectURL(file), file);
-              }
-            }
-          )
-        ]
-      }
-    ),
-    displayUrl && /* @__PURE__ */ jsxs(Fragment, { children: [
-      /* @__PURE__ */ jsx(
-        "img",
-        {
-          src: displayUrl,
-          alt: "preview",
-          className: "w-10 h-10 rounded-lg object-cover border",
-          style: { borderColor: colors.border }
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "button",
-        {
-          type: "button",
-          onClick: onClear,
-          className: "text-red-400 hover:text-red-600 transition-colors",
-          children: /* @__PURE__ */ jsx(X, { size: 13 })
-        }
-      )
-    ] })
-  ] });
-}
-function MenuHeaderTab() {
-  const EMPTY2 = {
-    part1: "",
-    part2: "",
-    description: "",
-    isActive: true,
-    imageUrl: "",
-    imageFile: null,
-    propertyId: "",
-    existingId: null
-  };
-  const [form, setForm] = useState(EMPTY2);
-  const [saving, setSaving] = useState(false);
-  const [fetching, setFetching] = useState(false);
-  const [headers, setHeaders] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [loadingProperties, setLoadingProperties] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [togglingId, setTogglingId] = useState(null);
-  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-  const fetchProperties = useCallback(async () => {
-    try {
-      setLoadingProperties(true);
-      const res = await getAllProperties();
-      const data = res.data?.data || res.data || res;
-      if (Array.isArray(data)) setProperties(data.filter((p) => p.isActive));
-    } catch {
-      toast$2.error("Failed to load properties");
-    } finally {
-      setLoadingProperties(false);
-    }
-  }, []);
-  const fetchHeaders = useCallback(async () => {
-    try {
-      setFetching(true);
-      const res = await getMenuHeaders();
-      setHeaders(Array.isArray(res?.data) ? res.data : []);
-    } catch {
-      toast$2.error("Failed to load menu headers");
-    } finally {
-      setFetching(false);
-    }
-  }, []);
-  useEffect(() => {
-    fetchProperties();
-    fetchHeaders();
-  }, [fetchProperties, fetchHeaders]);
-  const openAdd = () => {
-    setForm(EMPTY2);
-    setEditingId(null);
-    setShowForm(true);
-  };
-  const openEdit = (h) => {
-    setForm({
-      part1: h.part1 || "",
-      part2: h.part2 || "",
-      description: h.description || "",
-      isActive: h.isActive ?? true,
-      imageUrl: h.image?.url || h.imageUrl || "",
-      imageFile: null,
-      propertyId: h.propertyId ? String(h.propertyId) : "",
-      existingId: h.id
-    });
-    setEditingId(h.id);
-    setShowForm(true);
-  };
-  const handleSave = async () => {
-    if (!form.part1.trim()) return toast$2.error("Part 1 (heading) is required");
-    try {
-      setSaving(true);
-      const fd = new FormData();
-      fd.append("part1", form.part1.trim());
-      fd.append("part2", form.part2.trim());
-      fd.append("description", form.description.trim());
-      fd.append("isActive", String(form.isActive));
-      if (form.propertyId) fd.append("propertyId", form.propertyId);
-      if (form.imageFile) fd.append("image", form.imageFile);
-      if (form.existingId) {
-        await updateMenuHeadersSection(form.existingId, fd);
-        toast$2.success("Menu header updated");
-      } else {
-        await createMenuHeaderSection(fd);
-        toast$2.success("Menu header created");
-      }
-      setShowForm(false);
-      setEditingId(null);
-      await fetchHeaders();
-    } catch {
-      toast$2.error("Failed to save menu header");
-    } finally {
-      setSaving(false);
-    }
-  };
-  const handleToggle = async (h) => {
-    try {
-      setTogglingId(h.id);
-      await toggleMenuHeadersSectionStatus(h.id, { isActive: !h.isActive });
-      toast$2.success(`Header ${h.isActive ? "deactivated" : "activated"}`);
-      await fetchHeaders();
-    } catch {
-      toast$2.error("Failed to toggle status");
-    } finally {
-      setTogglingId(null);
-    }
-  };
-  return /* @__PURE__ */ jsxs("div", { className: "space-y-5", children: [
-    /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsx("h3", { className: "text-sm font-bold", style: { color: colors.textPrimary }, children: "Menu Section Headers" }),
-      /* @__PURE__ */ jsxs(
-        "button",
-        {
-          onClick: openAdd,
-          className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white hover:opacity-90 transition-all",
-          children: [
-            /* @__PURE__ */ jsx(Plus, { size: 14 }),
-            " Add Header"
-          ]
-        }
-      )
-    ] }),
-    showForm && /* @__PURE__ */ jsxs(
-      "div",
-      {
-        className: "rounded-xl border p-5 space-y-4",
-        style: { borderColor: colors.border, backgroundColor: colors.mainBg },
-        children: [
-          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-1", children: [
-            /* @__PURE__ */ jsx("span", { className: "text-xs font-bold", style: { color: colors.textPrimary }, children: editingId ? "Edit Menu Header" : "New Menu Header" }),
-            /* @__PURE__ */ jsx(
-              "button",
-              {
-                onClick: () => setShowForm(false),
-                className: "p-1 rounded hover:bg-black/10 transition-colors",
-                style: { color: colors.textSecondary },
-                children: /* @__PURE__ */ jsx(X, { size: 14 })
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ jsx(Field$9, { label: "Heading Part 1", required: true, children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: inp$8,
-                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-                placeholder: "e.g. Our",
-                value: form.part1,
-                onChange: (e) => set("part1", e.target.value)
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field$9, { label: "Heading Part 2", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: inp$8,
-                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-                placeholder: "e.g. Menu",
-                value: form.part2,
-                onChange: (e) => set("part2", e.target.value)
-              }
-            ) })
-          ] }),
-          /* @__PURE__ */ jsx(Field$9, { label: "Description", children: /* @__PURE__ */ jsx(
-            "textarea",
-            {
-              rows: 3,
-              className: inp$8,
-              style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-              placeholder: "Brief description for the menu section...",
-              value: form.description,
-              onChange: (e) => set("description", e.target.value)
-            }
-          ) }),
-          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ jsx(Field$9, { label: "Property", children: /* @__PURE__ */ jsxs(
-              "select",
-              {
-                className: inp$8,
-                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-                value: form.propertyId,
-                onChange: (e) => set("propertyId", e.target.value),
-                disabled: loadingProperties,
-                children: [
-                  /* @__PURE__ */ jsx("option", { value: "", children: "— Select Property (optional) —" }),
-                  properties.map((p) => /* @__PURE__ */ jsx("option", { value: p.id, children: p.propertyName }, p.id))
-                ]
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field$9, { label: "Active Status", children: /* @__PURE__ */ jsxs("label", { className: "flex items-center gap-2 mt-2 cursor-pointer", children: [
-              /* @__PURE__ */ jsx(
-                "input",
-                {
-                  type: "checkbox",
-                  checked: form.isActive,
-                  onChange: (e) => set("isActive", e.target.checked),
-                  className: "w-4 h-4 rounded",
-                  style: { accentColor: colors.primary }
-                }
-              ),
-              /* @__PURE__ */ jsx("span", { className: "text-sm", style: { color: colors.textPrimary }, children: "Is Active" })
-            ] }) })
-          ] }),
-          /* @__PURE__ */ jsx(Field$9, { label: "Section Image", children: /* @__PURE__ */ jsx(
-            ImageUpload$3,
-            {
-              value: form.imageUrl,
-              onChange: (url, file) => {
-                set("imageUrl", url);
-                set("imageFile", file);
-              },
-              onClear: () => {
-                set("imageUrl", "");
-                set("imageFile", null);
-              }
-            }
-          ) }),
-          /* @__PURE__ */ jsxs("div", { className: "flex justify-end gap-2 pt-2", children: [
-            /* @__PURE__ */ jsx(
-              "button",
-              {
-                onClick: () => setShowForm(false),
-                className: "px-4 py-2 rounded-lg text-xs border transition-colors",
-                style: { borderColor: colors.border, color: colors.textSecondary },
-                children: "Cancel"
-              }
-            ),
-            /* @__PURE__ */ jsxs(
-              "button",
-              {
-                onClick: handleSave,
-                disabled: saving,
-                className: "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold bg-primary text-white disabled:opacity-50 transition-all",
-                children: [
-                  saving ? /* @__PURE__ */ jsx(Loader2, { size: 13, className: "animate-spin" }) : /* @__PURE__ */ jsx(Save, { size: 13 }),
-                  editingId ? "Update" : "Save"
-                ]
-              }
-            )
-          ] })
-        ]
-      }
-    ),
-    fetching ? /* @__PURE__ */ jsx("div", { className: "flex justify-center py-10", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin", style: { color: colors.primary }, size: 28 }) }) : headers.length === 0 ? /* @__PURE__ */ jsxs("div", { className: "text-center py-12 text-sm", style: { color: colors.textSecondary }, children: [
-      "No menu headers yet. Click ",
-      /* @__PURE__ */ jsx("strong", { children: "Add Header" }),
-      " to create one."
-    ] }) : /* @__PURE__ */ jsx("div", { className: "overflow-x-auto rounded-xl border", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsxs("table", { className: "w-full text-left", children: [
-      /* @__PURE__ */ jsx("thead", { style: { backgroundColor: colors.mainBg }, children: /* @__PURE__ */ jsx("tr", { children: ["Part 1", "Part 2", "Property", "Status", "Actions"].map((h) => /* @__PURE__ */ jsx("th", { className: "px-4 py-3 text-[10px] font-bold uppercase tracking-wider", style: { color: colors.textSecondary }, children: h }, h)) }) }),
-      /* @__PURE__ */ jsx("tbody", { className: "divide-y", style: { backgroundColor: colors.contentBg }, children: headers.map((h) => {
-        const prop = properties.find((p) => p.id === h.propertyId);
-        return /* @__PURE__ */ jsxs("tr", { className: "transition-colors hover:bg-black/5", children: [
-          /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-sm font-medium", style: { color: colors.textPrimary }, children: h.part1 || "—" }),
-          /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-sm", style: { color: colors.textSecondary }, children: h.part2 || "—" }),
-          /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: prop?.propertyName || "Global" }),
-          /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx("span", { className: `px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${h.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`, children: h.isActive ? "Active" : "Inactive" }) }),
-          /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsx("button", { onClick: () => openEdit(h), className: "p-1.5 rounded hover:bg-muted transition-colors", style: { color: colors.primary }, title: "Edit", children: /* @__PURE__ */ jsx(Pencil, { size: 13 }) }),
-            /* @__PURE__ */ jsx(
-              "button",
-              {
-                onClick: () => handleToggle(h),
-                disabled: togglingId === h.id,
-                className: "p-1.5 rounded transition-colors",
-                style: { color: h.isActive ? "#ef4444" : "#22c55e" },
-                title: h.isActive ? "Deactivate" : "Activate",
-                children: togglingId === h.id ? /* @__PURE__ */ jsx(Loader2, { size: 13, className: "animate-spin" }) : h.isActive ? /* @__PURE__ */ jsx(ToggleRight, { size: 15 }) : /* @__PURE__ */ jsx(ToggleLeft, { size: 15 })
-              }
-            )
-          ] }) })
-        ] }, h.id);
-      }) })
-    ] }) })
-  ] });
-}
-function GroupBookingHeaderTab() {
-  const EMPTY2 = {
-    title: "",
-    description: "",
-    ctaText: "",
-    ctaLink: "",
-    numberOfPersons: "",
-    propertyId: "",
-    propertyTypeId: "",
-    existingId: null
-  };
-  const [form, setForm] = useState(EMPTY2);
-  const [saving, setSaving] = useState(false);
-  const [fetching, setFetching] = useState(false);
-  const [bookings, setBookings] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [propertyTypes, setPropertyTypes] = useState([]);
-  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-  const fetchDropdowns = useCallback(async () => {
-    try {
-      setLoadingDropdowns(true);
-      const [propRes, typeRes] = await Promise.all([getAllProperties(), getPropertyTypes()]);
-      const props = propRes.data?.data || propRes.data || propRes;
-      const types = typeRes.data?.data || typeRes.data || typeRes;
-      if (Array.isArray(props)) setProperties(props.filter((p) => p.isActive));
-      if (Array.isArray(types)) setPropertyTypes(types.filter((t) => t.isActive));
-    } catch {
-      toast$2.error("Failed to load properties/types");
-    } finally {
-      setLoadingDropdowns(false);
-    }
-  }, []);
-  const fetchBookings = useCallback(async () => {
-    try {
-      setFetching(true);
-      const res = await getGroupBookings();
-      const data = res?.data || [];
-      setBookings(Array.isArray(data) ? data : []);
-    } catch {
-      toast$2.error("Failed to load group bookings");
-    } finally {
-      setFetching(false);
-    }
-  }, []);
-  useEffect(() => {
-    fetchDropdowns();
-    fetchBookings();
-  }, [fetchDropdowns, fetchBookings]);
-  const openAdd = () => {
-    setForm(EMPTY2);
-    setEditingId(null);
-    setShowForm(true);
-  };
-  const openEdit = (b) => {
-    setForm({
-      title: b.title || "",
-      description: b.description || "",
-      ctaText: b.ctaText || "",
-      ctaLink: b.ctaLink || "",
-      numberOfPersons: b.numberOfPersons ? String(b.numberOfPersons) : "",
-      propertyId: b.propertyId ? String(b.propertyId) : "",
-      propertyTypeId: b.propertyTypeId ? String(b.propertyTypeId) : "",
-      existingId: b.id
-    });
-    setEditingId(b.id);
-    setShowForm(true);
-  };
-  const handleSave = async () => {
-    if (!form.title.trim()) return toast$2.error("Title is required");
-    try {
-      setSaving(true);
-      const payload = {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        ctaText: form.ctaText.trim(),
-        ctaLink: form.ctaLink.trim(),
-        numberOfPersons: form.numberOfPersons ? Number(form.numberOfPersons) : null,
-        propertyId: form.propertyId ? Number(form.propertyId) : null,
-        propertyTypeId: form.propertyTypeId ? Number(form.propertyTypeId) : null
-      };
-      if (form.existingId) {
-        await updateGroupBooking(form.existingId, payload);
-        toast$2.success("Group booking header updated");
-      } else {
-        await addGroupBooking(payload);
-        toast$2.success("Group booking header created");
-      }
-      setShowForm(false);
-      setEditingId(null);
-      await fetchBookings();
-    } catch {
-      toast$2.error("Failed to save group booking header");
-    } finally {
-      setSaving(false);
-    }
-  };
-  const getPropertyName = (id) => properties.find((p) => p.id === Number(id))?.propertyName || "—";
-  const getTypeName = (id) => propertyTypes.find((t) => t.id === Number(id))?.typeName || "—";
-  return /* @__PURE__ */ jsxs("div", { className: "space-y-5", children: [
-    /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsx("h3", { className: "text-sm font-bold", style: { color: colors.textPrimary }, children: "Group Booking Headers" }),
-      /* @__PURE__ */ jsxs(
-        "button",
-        {
-          onClick: openAdd,
-          className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white hover:opacity-90 transition-all",
-          children: [
-            /* @__PURE__ */ jsx(Plus, { size: 14 }),
-            " Add Header"
-          ]
-        }
-      )
-    ] }),
-    showForm && /* @__PURE__ */ jsxs(
-      "div",
-      {
-        className: "rounded-xl border p-5 space-y-4",
-        style: { borderColor: colors.border, backgroundColor: colors.mainBg },
-        children: [
-          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-1", children: [
-            /* @__PURE__ */ jsx("span", { className: "text-xs font-bold", style: { color: colors.textPrimary }, children: editingId ? "Edit Group Booking Header" : "New Group Booking Header" }),
-            /* @__PURE__ */ jsx(
-              "button",
-              {
-                onClick: () => setShowForm(false),
-                className: "p-1 rounded hover:bg-black/10 transition-colors",
-                style: { color: colors.textSecondary },
-                children: /* @__PURE__ */ jsx(X, { size: 14 })
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsx(Field$9, { label: "Title", required: true, children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: inp$8,
-              style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-              placeholder: "e.g. Plan Your Group Event",
-              value: form.title,
-              onChange: (e) => set("title", e.target.value)
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field$9, { label: "Description", children: /* @__PURE__ */ jsx(
-            "textarea",
-            {
-              rows: 3,
-              className: inp$8,
-              style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-              placeholder: "Brief description for the group booking section...",
-              value: form.description,
-              onChange: (e) => set("description", e.target.value)
-            }
-          ) }),
-          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-4", children: [
-            /* @__PURE__ */ jsx(Field$9, { label: "CTA Button Text", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: inp$8,
-                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-                placeholder: "e.g. Book Now",
-                value: form.ctaText,
-                onChange: (e) => set("ctaText", e.target.value)
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field$9, { label: "CTA Link", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: inp$8,
-                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-                placeholder: "e.g. /contact",
-                value: form.ctaLink,
-                onChange: (e) => set("ctaLink", e.target.value)
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field$9, { label: "Min. Persons", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                type: "number",
-                min: "1",
-                className: inp$8,
-                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-                placeholder: "e.g. 10",
-                value: form.numberOfPersons,
-                onChange: (e) => set("numberOfPersons", e.target.value)
-              }
-            ) })
-          ] }),
-          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ jsx(Field$9, { label: "Property", children: /* @__PURE__ */ jsxs(
-              "select",
-              {
-                className: inp$8,
-                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-                value: form.propertyId,
-                onChange: (e) => set("propertyId", e.target.value),
-                disabled: loadingDropdowns,
-                children: [
-                  /* @__PURE__ */ jsx("option", { value: "", children: "— Select Property (optional) —" }),
-                  properties.map((p) => /* @__PURE__ */ jsx("option", { value: p.id, children: p.propertyName }, p.id))
-                ]
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field$9, { label: "Property Type", children: /* @__PURE__ */ jsxs(
-              "select",
-              {
-                className: inp$8,
-                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
-                value: form.propertyTypeId,
-                onChange: (e) => set("propertyTypeId", e.target.value),
-                disabled: loadingDropdowns,
-                children: [
-                  /* @__PURE__ */ jsx("option", { value: "", children: "— Select Type (optional) —" }),
-                  propertyTypes.map((t) => /* @__PURE__ */ jsx("option", { value: t.id, children: t.typeName }, t.id))
-                ]
-              }
-            ) })
-          ] }),
-          /* @__PURE__ */ jsxs("div", { className: "flex justify-end gap-2 pt-2", children: [
-            /* @__PURE__ */ jsx(
-              "button",
-              {
-                onClick: () => setShowForm(false),
-                className: "px-4 py-2 rounded-lg text-xs border transition-colors",
-                style: { borderColor: colors.border, color: colors.textSecondary },
-                children: "Cancel"
-              }
-            ),
-            /* @__PURE__ */ jsxs(
-              "button",
-              {
-                onClick: handleSave,
-                disabled: saving,
-                className: "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold bg-primary text-white disabled:opacity-50 transition-all",
-                children: [
-                  saving ? /* @__PURE__ */ jsx(Loader2, { size: 13, className: "animate-spin" }) : /* @__PURE__ */ jsx(Save, { size: 13 }),
-                  editingId ? "Update" : "Save"
-                ]
-              }
-            )
-          ] })
-        ]
-      }
-    ),
-    fetching ? /* @__PURE__ */ jsx("div", { className: "flex justify-center py-10", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin", style: { color: colors.primary }, size: 28 }) }) : bookings.length === 0 ? /* @__PURE__ */ jsxs("div", { className: "text-center py-12 text-sm", style: { color: colors.textSecondary }, children: [
-      "No group booking headers yet. Click ",
-      /* @__PURE__ */ jsx("strong", { children: "Add Header" }),
-      " to create one."
-    ] }) : /* @__PURE__ */ jsx("div", { className: "overflow-x-auto rounded-xl border", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsxs("table", { className: "w-full text-left", children: [
-      /* @__PURE__ */ jsx("thead", { style: { backgroundColor: colors.mainBg }, children: /* @__PURE__ */ jsx("tr", { children: ["Title", "CTA Text", "Min. Persons", "Property", "Type", "Actions"].map((h) => /* @__PURE__ */ jsx("th", { className: "px-4 py-3 text-[10px] font-bold uppercase tracking-wider", style: { color: colors.textSecondary }, children: h }, h)) }) }),
-      /* @__PURE__ */ jsx("tbody", { className: "divide-y", style: { backgroundColor: colors.contentBg }, children: bookings.map((b) => /* @__PURE__ */ jsxs("tr", { className: "transition-colors hover:bg-black/5", children: [
-        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-sm font-medium max-w-[200px]", style: { color: colors.textPrimary }, children: /* @__PURE__ */ jsx("span", { className: "line-clamp-1", children: b.title || "—" }) }),
-        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.ctaText || "—" }),
-        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.numberOfPersons ?? "—" }),
-        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.propertyId ? getPropertyName(b.propertyId) : "Global" }),
-        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.propertyTypeId ? getTypeName(b.propertyTypeId) : "—" }),
-        /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx(
-          "button",
-          {
-            onClick: () => openEdit(b),
-            className: "p-1.5 rounded hover:bg-muted transition-colors",
-            style: { color: colors.primary },
-            title: "Edit",
-            children: /* @__PURE__ */ jsx(Pencil, { size: 13 })
-          }
-        ) })
-      ] }, b.id)) })
-    ] }) })
-  ] });
-}
-const SUB_TABS = [
-  { id: "menu", label: "Menu Header", icon: BookOpen, component: MenuHeaderTab },
-  { id: "group", label: "Group Booking Header", icon: Users, component: GroupBookingHeaderTab }
-];
-function HotelHomepage$1() {
-  const [activeSubTab, setActiveSubTab] = useState("menu");
-  const ActiveComponent = SUB_TABS.find((t) => t.id === activeSubTab)?.component;
-  return /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: "flex gap-1 p-1 rounded-xl border",
-        style: { backgroundColor: colors.contentBg, borderColor: colors.border },
-        children: SUB_TABS.map((tab) => {
-          const isActive = activeSubTab === tab.id;
-          return /* @__PURE__ */ jsxs(
-            "button",
-            {
-              onClick: () => setActiveSubTab(tab.id),
-              className: "flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex-1 justify-center",
-              style: {
-                backgroundColor: isActive ? colors.primary : "transparent",
-                color: isActive ? "#fff" : colors.textSecondary
-              },
-              children: [
-                /* @__PURE__ */ jsx(tab.icon, { size: 14 }),
-                tab.label
-              ]
-            },
-            tab.id
-          );
-        })
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: "rounded-xl border p-5",
-        style: { backgroundColor: colors.contentBg, borderColor: colors.border },
-        children: ActiveComponent && /* @__PURE__ */ jsx(ActiveComponent, {})
-      }
-    )
-  ] });
-}
 function HomePageDashboard() {
   const [activeTab, setActiveTab] = useState("hero");
   const tabs = [
@@ -42809,8 +43484,8 @@ function HomePageDashboard() {
     { id: "news", label: "News & Press", icon: Newspaper, component: NewsPress },
     { id: "guest", label: "Guest Exp", icon: Star, component: GuestExp },
     { id: "presence", label: "Our Presence", icon: Building, component: OurPresence },
-    { id: "group", label: "Group Bookings", icon: Users, component: GroupBookings },
-    { id: "hotel-homepage", label: "Hotel Homepage", icon: Hotel$1, component: HotelHomepage$1 }
+    { id: "group", label: "Group Bookings", icon: Users, component: GroupBookings }
+    // { id: 'hotel-homepage', label: 'Hotel Homepage', icon: Hotel, component: HotelHomepage },
   ];
   const ActiveComponent = tabs.find((tab) => tab.id === activeTab)?.component || HeroSection;
   return /* @__PURE__ */ jsx(
@@ -57985,6 +58660,8 @@ const PropertyDetail = ({ property, onBack }) => {
       "gallery",
       "verticals",
       "buffet section",
+      "amenities",
+      "policies",
       "offers section",
       "menu",
       "about",
@@ -61261,6 +61938,7 @@ const normalizeProperties$1 = (response) => {
       cuisines: amenities.slice(0, 6),
       highlightedAmenities: highlightedAmenities.filter(Boolean),
       nearbyLocation: parent?.nearbyLocations?.[0]?.nearbyLocationName || parent?.locationName || "",
+      area: parent?.area || null,
       serviceHours: "Open Daily",
       googleMapLink: parent?.nearbyLocations?.[0]?.googleMapLink || parent?.addressUrl || "",
       isActive: parent?.isActive && (listing ? listing?.isActive : true)
@@ -61332,14 +62010,18 @@ const normalizeGroupBookings = (bookingsRes, restaurantTypeId) => {
   const rawBookings = bookingsRes?.data || bookingsRes || [];
   return (Array.isArray(rawBookings) ? rawBookings : []).filter((item) => {
     if (item?.isActive === false) return false;
+    if (item?.showOnHomepage !== true) return false;
     const byTypeName = isRestaurantType$1(item?.propertyTypeName);
     const byTypeId = restaurantTypeId != null && Number(item?.propertyTypeId) === restaurantTypeId;
     return byTypeName || byTypeId;
   }).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0)).slice(0, 4).map((item) => ({
     id: item?.id,
     title: item?.title || "Group Booking",
-    description: item?.description || "Custom group dining experience.",
-    ctaLink: item?.ctaLink || ""
+    description: item?.description || null,
+    ctaLink: item?.ctaLink || "",
+    imageUrl: item?.media?.[0]?.url || null,
+    propertyId: item?.propertyId || null,
+    propertyName: item?.propertyName || null
   }));
 };
 const mapSection = (section, recognitions = []) => ({

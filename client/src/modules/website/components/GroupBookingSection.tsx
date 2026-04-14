@@ -34,6 +34,7 @@ import { getEventsUpdated, getGroupBookings, getPropertyTypes } from "@/Api/Api"
 import { createGroupBookingEnquiry } from "@/Api/RestaurantApi";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 import { toast } from "react-hot-toast";
+import { validateGroupBookingForm } from "@/lib/validation/reservationValidation";
 
 /* ================= TYPES ================= */
 type ValuePiece = Date | null;
@@ -281,7 +282,13 @@ export default function GroupBookingSection({
     initialPropertyTypeId,
   );
   const [formData, setFormData] = useState(EMPTY_FORM);
+  const [formErrors, setFormErrors] = useState<Record<string, string | null>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const setField = (key: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: null }));
+  };
 
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 4;
@@ -384,14 +391,12 @@ export default function GroupBookingSection({
       return;
     }
 
-    if (
-      !formData.name.trim() ||
-      !formData.phone.trim() ||
-      !formData.email.trim()
-    ) {
-      toast.error("Please fill in name, phone, and email.");
+    const errs = validateGroupBookingForm(formData);
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
       return;
     }
+    setFormErrors({});
 
     setIsSubmitting(true);
     try {
@@ -660,50 +665,84 @@ export default function GroupBookingSection({
               </Button>
             </div>
           ) : step === 2 ? (
-            <div className="space-y-4">
-              <Input
-                placeholder="Your name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="Phone number"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, phone: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="Email address"
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, email: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="No. of persons"
-                type="number"
-                min="1"
-                value={formData.persons}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, persons: e.target.value }))
-                }
-              />
-              <Textarea
-                placeholder="Additional requirements"
-                value={formData.customQuery}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    customQuery: e.target.value,
-                  }))
-                }
-                rows={4}
-              />
+            <div className="space-y-3">
+              <p className="text-[11px] text-muted-foreground">
+                Fields marked <span className="text-red-500 font-semibold">*</span> are required.
+              </p>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold">
+                  Full Name <span className="text-red-500">*</span>
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(letters only)</span>
+                </label>
+                <Input
+                  placeholder="Your full name"
+                  value={formData.name}
+                  onChange={(e) => setField("name", e.target.value)}
+                  className={formErrors.name ? "border-red-500 focus-visible:ring-red-400" : ""}
+                />
+                {formErrors.name && <p className="text-xs text-red-500">{formErrors.name}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold">
+                  Phone Number <span className="text-red-500">*</span>
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(10 digits)</span>
+                </label>
+                <Input
+                  placeholder="10-digit mobile number"
+                  type="tel"
+                  maxLength={10}
+                  value={formData.phone}
+                  onChange={(e) => setField("phone", e.target.value.replace(/\D/g, ""))}
+                  className={formErrors.phone ? "border-red-500 focus-visible:ring-red-400" : ""}
+                />
+                {formErrors.phone && <p className="text-xs text-red-500">{formErrors.phone}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  placeholder="name@example.com"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setField("email", e.target.value)}
+                  className={formErrors.email ? "border-red-500 focus-visible:ring-red-400" : ""}
+                />
+                {formErrors.email && <p className="text-xs text-red-500">{formErrors.email}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold">
+                  No. of Persons
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(optional)</span>
+                </label>
+                <Input
+                  placeholder="e.g. 50"
+                  type="number"
+                  min="1"
+                  value={formData.persons}
+                  onChange={(e) => setField("persons", e.target.value)}
+                  className={formErrors.persons ? "border-red-500 focus-visible:ring-red-400" : ""}
+                />
+                {formErrors.persons && <p className="text-xs text-red-500">{formErrors.persons}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold">
+                  Additional Requirements
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(optional)</span>
+                </label>
+                <Textarea
+                  placeholder="Any special requirements or notes..."
+                  value={formData.customQuery}
+                  onChange={(e) => setField("customQuery", e.target.value)}
+                  rows={3}
+                />
+              </div>
+
               <Button
                 className="w-full"
                 onClick={handleFinalSubmit}

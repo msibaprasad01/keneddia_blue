@@ -161,6 +161,14 @@ export const getJoiningUsById = (id) =>API.get(`api/v1/joining-us/getJoiningUsBy
 export const updateJoiningUs = (id, data) =>API.patch(`api/v1/joining-us/updateJoiningUs/${id}`, data);
 
 // ─────────────────────────────
+// GROUP BOOKING HEADER
+// ─────────────────────────────
+export const createGroupBookingHeader = (data) => API.post("api/group-booking-header/create", data);
+export const updateGroupBookingHeader = (id, data) => API.put(`api/group-booking-header/${id}`, data);
+export const toggleGroupBookingHeaderActive = (id) => API.patch(`api/group-booking-header/${id}/toggle-active`);
+export const getGroupBookingHeaderByPropertyType = (propertyTypeId) => API.get(`api/group-booking-header/property-type/${propertyTypeId}`);
+
+// ─────────────────────────────
 // GROUP BOOKING ENQUIRY
 // ─────────────────────────────
 export const createGroupBookingEnquiry = (data) =>API.post("/api/v1/enquiry", data);
