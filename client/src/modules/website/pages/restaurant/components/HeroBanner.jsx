@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Menu, ChevronRight, ChevronLeft } from "lucide-react";
+import { Calendar, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getHotelHomepageHeroSection, getPropertyTypes } from "@/Api/Api";
 
@@ -18,17 +18,17 @@ const transformApiDataToSlides = (content) =>
 
       if (!backgroundMedia?.url) return null;
 
-      const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "DINING";
+      const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "";
 
       return {
         id: item.id,
-        tag: item.ctaText || "Dining Experience",
-        title: item.mainTitle || "",
-        desc: item.subTitle || "",
+        tag: item.ctaText || null,
+        title: item.mainTitle || null,
+        desc: item.subTitle || null,
         img: backgroundMedia.url,
         isVideo: backgroundMedia.type === "VIDEO",
         bgTitle: primaryWord.toUpperCase(),
-        ctaText: item.ctaText || "Reserve",
+        ctaText: item.ctaText || null,
       };
     })
     .filter(Boolean);
@@ -141,40 +141,46 @@ export default function HeroBanner({ initialSlides }) {
       <div className="relative z-10 hidden h-full items-center md:flex">
         <div className="container mx-auto flex h-full items-center px-8 md:px-16 lg:px-24">
           <div className="w-full md:w-[70%] xl:w-[60%]">
-            <motion.h1
-              key={`title-${activeSlide.id}`}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8 }}
-              className="mb-3 text-3xl font-serif font-medium leading-[1.06] tracking-tight text-white drop-shadow-lg md:text-4xl lg:text-5xl"
-            >
-              {activeSlide.title}
-            </motion.h1>
+            {activeSlide.title && (
+              <motion.h1
+                key={`title-${activeSlide.id}`}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.8 }}
+                className="mb-3 text-3xl font-serif font-medium leading-[1.06] tracking-tight text-white drop-shadow-lg md:text-4xl lg:text-5xl"
+              >
+                {activeSlide.title}
+              </motion.h1>
+            )}
 
-            <motion.p
-              key={`desc-${activeSlide.id}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.8 }}
-              className="mb-6 max-w-2xl text-sm font-light capitalize tracking-normal text-white/90 drop-shadow-md md:text-base"
-            >
-              {activeSlide.desc}
-            </motion.p>
+            {activeSlide.desc && (
+              <motion.p
+                key={`desc-${activeSlide.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.8 }}
+                className="mb-6 max-w-2xl text-sm font-light capitalize tracking-normal text-white/90 drop-shadow-md md:text-base"
+              >
+                {activeSlide.desc}
+              </motion.p>
+            )}
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.94 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 0.7 }}
-              className="flex flex-wrap items-center gap-3"
-            >
-              <Button className="group relative h-auto overflow-hidden rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-6 py-2.5 text-sm font-semibold text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] transition-all duration-500 ease-out hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)]">
-                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
-                <span className="relative z-10 flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {activeSlide.ctaText || "Reserve"}
-                </span>
-              </Button>
-            </motion.div>
+            {activeSlide.ctaText && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.94 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5, duration: 0.7 }}
+                className="flex flex-wrap items-center gap-3"
+              >
+                <Button className="group relative h-auto overflow-hidden rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-6 py-2.5 text-sm font-semibold text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] transition-all duration-500 ease-out hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)]">
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    {activeSlide.ctaText}
+                  </span>
+                </Button>
+              </motion.div>
+            )}
           </div>
         </div>
       </div>
@@ -219,54 +225,55 @@ export default function HeroBanner({ initialSlides }) {
             className="absolute inset-x-0 z-20 flex flex-col items-center justify-center px-5 text-center"
             style={{ top: "64px", bottom: "2.5rem" }}
           >
-            <motion.span
-              key={`m-tag-${activeSlide.id}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mb-2 inline-flex rounded-full bg-white/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur-md"
-            >
-              {activeSlide.tag}
-            </motion.span>
-
-            <motion.h1
-              key={`m-title-${activeSlide.id}`}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.6 }}
-              className="mb-1.5 text-lg font-serif font-semibold leading-[1.08] tracking-tight text-white drop-shadow-md"
-            >
-              {activeSlide.title}
-            </motion.h1>
-
-            <motion.p
-              key={`m-desc-${activeSlide.id}`}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="mb-3 text-[10px] font-light capitalize tracking-normal text-white/80"
-            >
-              {activeSlide.desc}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.45, duration: 0.6 }}
-              className="flex flex-wrap items-center justify-center gap-3"
-            >
-              <Button className="h-auto rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-5 py-2 text-xs font-semibold text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)]">
-                <Calendar className="mr-2 h-3.5 w-3.5" />
-                {activeSlide.ctaText || "Reserve"}
-              </Button>
-              <Button
-                variant="outline"
-                className="h-auto rounded-full border-white/30 bg-white/5 px-5 py-2 text-xs font-semibold text-white backdrop-blur-md"
+            {activeSlide.tag && (
+              <motion.span
+                key={`m-tag-${activeSlide.id}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="mb-2 inline-flex rounded-full bg-white/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur-md"
               >
-                <Menu className="mr-2 h-3.5 w-3.5" />
-                Menu
-              </Button>
-            </motion.div>
+                {activeSlide.tag}
+              </motion.span>
+            )}
+
+            {activeSlide.title && (
+              <motion.h1
+                key={`m-title-${activeSlide.id}`}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15, duration: 0.6 }}
+                className="mb-1.5 text-lg font-serif font-semibold leading-[1.08] tracking-tight text-white drop-shadow-md"
+              >
+                {activeSlide.title}
+              </motion.h1>
+            )}
+
+            {activeSlide.desc && (
+              <motion.p
+                key={`m-desc-${activeSlide.id}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="mb-3 text-[10px] font-light capitalize tracking-normal text-white/80"
+              >
+                {activeSlide.desc}
+              </motion.p>
+            )}
+
+            {activeSlide.ctaText && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.45, duration: 0.6 }}
+                className="flex flex-wrap items-center justify-center gap-3"
+              >
+                <Button className="h-auto rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-5 py-2 text-xs font-semibold text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)]">
+                  <Calendar className="mr-2 h-3.5 w-3.5" />
+                  {activeSlide.ctaText}
+                </Button>
+              </motion.div>
+            )}
           </div>
 
           <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
@@ -361,11 +368,13 @@ export default function HeroBanner({ initialSlides }) {
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
               )}
-              <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-2 md:p-3">
-                <p className="truncate text-[10px] font-medium text-white/90 md:text-xs">
-                  {slide.tag}
-                </p>
-              </div>
+              {slide.tag && (
+                <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-2 md:p-3">
+                  <p className="truncate text-[10px] font-medium text-white/90 md:text-xs">
+                    {slide.tag}
+                  </p>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>

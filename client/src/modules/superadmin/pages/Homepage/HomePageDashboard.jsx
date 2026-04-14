@@ -10,7 +10,8 @@ import {
   Calendar,
   Newspaper,
   Star,
-  Users
+  Users,
+  Hotel
 } from 'lucide-react';
 import HeroSection from '../tabPages/HeroSection';
 import DailyOffers from '../tabPages/DailyOffers';
@@ -21,6 +22,7 @@ import UpcomingEvents from '../tabPages/UpcomingEvents';
 import NewsPress from '../tabPages/NewsPress';
 import GuestExp from '../tabPages/GuestExp';
 import GroupBookings from '../tabPages/GroupBookings';
+import HotelHomepage from '../tabPages/HotelHomepage';
 function HomePageDashboard() {
   const [activeTab, setActiveTab] = useState('hero');
 
@@ -34,6 +36,7 @@ function HomePageDashboard() {
     { id: 'guest', label: 'Guest Exp', icon: Star, component: GuestExp },
     { id: 'presence', label: 'Our Presence', icon: Building, component: OurPresence },
     { id: 'group', label: 'Group Bookings', icon: Users, component: GroupBookings },
+    { id: 'hotel-homepage', label: 'Hotel Homepage', icon: Hotel, component: HotelHomepage },
   ];
 
 
