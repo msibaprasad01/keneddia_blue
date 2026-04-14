@@ -9,7 +9,7 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva } from "class-variance-authority";
-import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight as ArrowRight$1, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, Check, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, Leaf, SunMedium, Waves, MoonStar, Gift, Menu, Map as Map$1, CalendarClock, BriefcaseBusiness, CalendarCheck2, HandPlatter, PlayCircle, ShoppingCart, LogOut, Home as Home$1, Save, Plus, Ruler, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Filter, Zap, Tags } from "lucide-react";
+import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight as ArrowRight$1, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, Check, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, Leaf, SunMedium, Waves, MoonStar, Gift, Map as Map$1, CalendarClock, BriefcaseBusiness, CalendarCheck2, HandPlatter, PlayCircle, Menu, ShoppingCart, LogOut, Home as Home$1, Save, Plus, Ruler, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, Filter, FilterX, Inbox, DollarSign, Newspaper, Building, Hotel as Hotel$1, Layers, LinkIcon, Zap, Tags } from "lucide-react";
 import { toast as toast$3, ToastContainer } from "react-toastify";
 import { useLocation, useNavigate, Link, useParams, useSearchParams, Route, Navigate, Routes } from "react-router-dom";
 import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
@@ -1513,7 +1513,9 @@ const NAVBAR_CONFIG = {
 };
 function Navbar$1({
   navItems = NAV_ITEMS,
-  logo
+  logo,
+  quickBookOptions,
+  showQuickBook: showQuickBookProp
 }) {
   const brandLogo = logo || siteContent.brand.logo;
   const darkLogo = brandLogo.darkImage || brandLogo.image;
@@ -1530,7 +1532,8 @@ function Navbar$1({
   const location = useLocation();
   const navigate = useNavigate();
   const isTransparentHeroRoute = location.pathname === "/" || location.pathname === "/hotels" || location.pathname === "/restaurant-homepage" || location.pathname === "/resturant-homepage" || location.pathname === "/cafe-homepage";
-  const showQuickBook = isTransparentHeroRoute;
+  const showQuickBook = showQuickBookProp !== void 0 ? showQuickBookProp : isTransparentHeroRoute;
+  const effectiveQuickBookOptions = quickBookOptions || QUICK_BOOKING_OPTIONS;
   const useWhiteTextOnTransparent = isTransparentHeroRoute;
   const transparentMode = !scrolled;
   const shouldUseDarkLogoOnTransparentInLightMode = isTransparentHeroRoute && transparentMode;
@@ -1542,6 +1545,22 @@ function Navbar$1({
     setBookingCategory(category);
     setBookingOpen(true);
     setActiveDropdown(null);
+  };
+  const handleQuickBookOption = (option) => {
+    if (option.category) {
+      openBooking(option.category);
+    } else if (option.href) {
+      if (option.href.startsWith("#")) {
+        const el = document.getElementById(option.href.slice(1));
+        if (el) {
+          const offsetPosition = el.getBoundingClientRect().top + window.scrollY - NAVBAR_CONFIG.navbarHeight;
+          window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+        }
+      } else {
+        navigate(option.href);
+      }
+      setActiveDropdown(null);
+    }
   };
   useEffect(() => {
     let ticking = false;
@@ -1657,10 +1676,10 @@ function Navbar$1({
                 ]
               }
             ),
-            /* @__PURE__ */ jsx("div", { className: "site-nav-quickbook-panel", children: /* @__PURE__ */ jsx("div", { className: "py-1", children: QUICK_BOOKING_OPTIONS.map((option, index) => /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx("div", { className: "site-nav-quickbook-panel", children: /* @__PURE__ */ jsx("div", { className: "py-1", children: effectiveQuickBookOptions.map((option, index) => /* @__PURE__ */ jsx(
               "button",
               {
-                onClick: () => openBooking(option.category),
+                onClick: () => handleQuickBookOption(option),
                 className: "site-nav-quickbook-option",
                 children: option.label
               },
@@ -1689,7 +1708,7 @@ function Navbar$1({
           showQuickBook && /* @__PURE__ */ jsx(
             "button",
             {
-              onClick: () => openBooking("hotel"),
+              onClick: () => handleQuickBookOption(effectiveQuickBookOptions[0]),
               className: `transition-colors cursor-pointer rounded-full p-2 ${transparentMode ? `${transparentTextClass} ${transparentActionOverlayClass}` : "text-foreground hover:text-primary"}`,
               "aria-label": "Quick Book",
               children: /* @__PURE__ */ jsx(Calendar$1, { className: "w-5 h-5" })
@@ -11407,6 +11426,7 @@ const updateChefRemark = (id, data) => API.patch(`api/v1/chef-remarks/updateChef
 const createMenuHeaderSection = (formData) => API.post("api/v1/menu-sections/createMenu", formData, { headers: { "Content-Type": "multipart/form-data" } });
 const getMenuHeaders = () => API.get("api/v1/menu-sections/getMenus");
 const updateMenuHeadersSection = (id, data) => API.patch(`api/v1/menu-sections/updateMenu/${id}`, data);
+const toggleMenuHeadersSectionStatus = (id, data) => API.patch(`api/v1/menu-sections/toggleActive/${id}`, data);
 const createTestimonialHeader = (data) => API.post("api/v1/testimonial/createTestimonial", data);
 const getActiveTestimonialHeaders = () => API.get("api/v1/testimonial/getActiveTestimonials");
 const updateTestimonialHeader = (id, data) => API.patch(`api/v1/testimonial/updateTestimonial/${id}`, data);
@@ -16994,11 +17014,9 @@ function ResturantBanner({
         alt: propertyData.propertyName ?? FALLBACK_RESTAURANT.name
       },
       nearbyPlaces: propertyData.nearbyLocations?.length > 0 ? propertyData.nearbyLocations.map((n) => ({
-        nearbyLocationName: n.nearbyLocationName,
+        nearbyLocationName: typeof n.nearbyLocationName === "string" ? n.nearbyLocationName : String(n.nearbyLocationName ?? ""),
         googleMapLink: n.googleMapLink
-      })) : FALLBACK_RESTAURANT.nearbyPlaces?.map((name) => ({
-        nearbyLocationName: name
-      }))
+      })) : FALLBACK_RESTAURANT.nearbyPlaces ?? []
     };
   }, [propertyData]);
   const galleryItems = useMemo(() => {
@@ -17212,9 +17230,9 @@ function ResturantBanner({
                                   target: "_blank",
                                   rel: "noopener noreferrer",
                                   className: "hover:text-primary hover:underline transition cursor-pointer",
-                                  children: place.nearbyLocationName
+                                  children: typeof place.nearbyLocationName === "string" ? place.nearbyLocationName : String(place.nearbyLocationName ?? "")
                                 }
-                              ) : /* @__PURE__ */ jsx("span", { children: place.nearbyLocationName })
+                              ) : /* @__PURE__ */ jsx("span", { children: typeof place.nearbyLocationName === "string" ? place.nearbyLocationName : String(place.nearbyLocationName ?? "") })
                             ]
                           },
                           i
@@ -19931,12 +19949,21 @@ function AutoTestimonials({ propertyId }) {
               ] })
             ] })
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "lg:col-span-7 h-[650px] relative rounded-[2.5rem] overflow-hidden border border-zinc-100 dark:border-white/10 bg-zinc-50/50 dark:bg-white/[0.02] backdrop-blur-2xl", children: loading ? /* @__PURE__ */ jsx("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin text-primary", size: 28 }) }) : /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-6 h-full p-6 overflow-hidden relative group", children: [
-            /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-6 animate-marquee-up marquee-col", children: [...displayCol1, ...displayCol1].map((item, i) => /* @__PURE__ */ jsx(FeedbackCard, { item }, `up-${item.id}-${i}`)) }),
-            /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-6 animate-marquee-down marquee-col", children: [...displayCol2, ...displayCol2].map((item, i) => /* @__PURE__ */ jsx(FeedbackCard, { item }, `dn-${item.id}-${i}`)) }),
-            /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" }),
-            /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" })
-          ] }) })
+          /* @__PURE__ */ jsx("div", { className: "lg:col-span-7 h-[650px] relative rounded-[2.5rem] overflow-hidden border border-zinc-100 dark:border-white/10 bg-zinc-50/50 dark:bg-white/[0.02] backdrop-blur-2xl", children: loading ? /* @__PURE__ */ jsx("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin text-primary", size: 28 }) }) : (() => {
+            const useMarquee = displayData.length > 4;
+            if (useMarquee) {
+              return /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-6 h-full p-6 overflow-hidden relative group", children: [
+                /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-6 animate-marquee-up marquee-col", children: [...displayCol1, ...displayCol1].map((item, i) => /* @__PURE__ */ jsx(FeedbackCard, { item }, `up-${item.id}-${i}`)) }),
+                /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-6 animate-marquee-down marquee-col", children: [...displayCol2, ...displayCol2].map((item, i) => /* @__PURE__ */ jsx(FeedbackCard, { item }, `dn-${item.id}-${i}`)) }),
+                /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" }),
+                /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" })
+              ] });
+            }
+            return /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-6 h-full p-6 overflow-y-auto relative", children: [
+              /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-6", children: displayCol1.map((item) => /* @__PURE__ */ jsx(FeedbackCard, { item }, `s1-${item.id}`)) }),
+              /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-6", children: displayCol2.map((item) => /* @__PURE__ */ jsx(FeedbackCard, { item }, `s2-${item.id}`)) })
+            ] });
+          })() })
         ] }) }),
         /* @__PURE__ */ jsx(AnimatePresence, { children: showReviewModal && /* @__PURE__ */ jsx("div", { className: "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm", children: /* @__PURE__ */ jsxs(
           motion.div,
@@ -20976,7 +21003,9 @@ function RestaurantHomepage$1() {
       Navbar$1,
       {
         navItems: RESTAURANT_NAV_ITEMS$1,
-        logo: siteContent.brand.logo_restaurant
+        logo: siteContent.brand.logo_restaurant,
+        showQuickBook: true,
+        quickBookOptions: [{ label: "Reserve Restaurant", href: "#reservation" }]
       }
     ),
     /* @__PURE__ */ jsxs("main", { children: [
@@ -21002,7 +21031,7 @@ function RestaurantHomepage$1() {
       /* @__PURE__ */ jsx("div", { id: "events", children: /* @__PURE__ */ jsx(ResturantpageEvents, { propertyId: numericPropertyId }) }),
       /* @__PURE__ */ jsx(AutoTestimonials, { propertyId: numericPropertyId }),
       /* @__PURE__ */ jsx("div", { id: "gallery", children: /* @__PURE__ */ jsx(RestaurantGalleryPage, { propertyId: numericPropertyId }) }),
-      /* @__PURE__ */ jsx(ReservationForm, { propertyId: numericPropertyId })
+      /* @__PURE__ */ jsx("div", { id: "reservation", children: /* @__PURE__ */ jsx(ReservationForm, { propertyId: numericPropertyId }) })
     ] }),
     /* @__PURE__ */ jsx("div", { id: "contact", children: /* @__PURE__ */ jsx(Footer, {}) })
   ] });
@@ -21284,9 +21313,9 @@ function CategoryHero({
                                   target: "_blank",
                                   rel: "noopener noreferrer",
                                   className: "hover:text-primary hover:underline transition cursor-pointer",
-                                  children: place.nearbyLocationName
+                                  children: typeof place.nearbyLocationName === "string" ? place.nearbyLocationName : String(place.nearbyLocationName ?? "")
                                 }
-                              ) : /* @__PURE__ */ jsx("span", { children: place.nearbyLocationName })
+                              ) : /* @__PURE__ */ jsx("span", { children: typeof place.nearbyLocationName === "string" ? place.nearbyLocationName : String(place.nearbyLocationName ?? "") })
                             ]
                           },
                           i
@@ -24987,16 +25016,16 @@ function CafePage() {
 const transformApiDataToSlides = (content) => (Array.isArray(content) ? content : []).filter((item) => item.active === true).sort((a, b) => b.id - a.id).slice(0, 3).map((item) => {
   const backgroundMedia = item.backgroundAll?.[0] || item.backgroundLight?.[0] || item.backgroundDark?.[0] || null;
   if (!backgroundMedia?.url) return null;
-  const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "DINING";
+  const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "";
   return {
     id: item.id,
-    tag: item.ctaText || "Dining Experience",
-    title: item.mainTitle || "",
-    desc: item.subTitle || "",
+    tag: item.ctaText || null,
+    title: item.mainTitle || null,
+    desc: item.subTitle || null,
     img: backgroundMedia.url,
     isVideo: backgroundMedia.type === "VIDEO",
     bgTitle: primaryWord.toUpperCase(),
-    ctaText: item.ctaText || "Reserve"
+    ctaText: item.ctaText || null
   };
 }).filter(Boolean);
 const HeroMedia = ({ slide }) => {
@@ -25076,7 +25105,7 @@ function HeroBanner({ initialSlides }) {
     /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/15 md:hidden" }),
     /* @__PURE__ */ jsx("div", { className: "absolute left-0 top-1/4 hidden whitespace-nowrap text-[16rem] font-black italic text-white/[0.03] pointer-events-none md:block", children: activeSlide.bgTitle }),
     /* @__PURE__ */ jsx("div", { className: "relative z-10 hidden h-full items-center md:flex", children: /* @__PURE__ */ jsx("div", { className: "container mx-auto flex h-full items-center px-8 md:px-16 lg:px-24", children: /* @__PURE__ */ jsxs("div", { className: "w-full md:w-[70%] xl:w-[60%]", children: [
-      /* @__PURE__ */ jsx(
+      activeSlide.title && /* @__PURE__ */ jsx(
         motion.h1,
         {
           initial: { opacity: 0, y: 30 },
@@ -25087,7 +25116,7 @@ function HeroBanner({ initialSlides }) {
         },
         `title-${activeSlide.id}`
       ),
-      /* @__PURE__ */ jsx(
+      activeSlide.desc && /* @__PURE__ */ jsx(
         motion.p,
         {
           initial: { opacity: 0, y: 20 },
@@ -25098,7 +25127,7 @@ function HeroBanner({ initialSlides }) {
         },
         `desc-${activeSlide.id}`
       ),
-      /* @__PURE__ */ jsx(
+      activeSlide.ctaText && /* @__PURE__ */ jsx(
         motion.div,
         {
           initial: { opacity: 0, scale: 0.94 },
@@ -25109,7 +25138,7 @@ function HeroBanner({ initialSlides }) {
             /* @__PURE__ */ jsx("span", { className: "absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" }),
             /* @__PURE__ */ jsxs("span", { className: "relative z-10 flex items-center gap-2", children: [
               /* @__PURE__ */ jsx(Calendar$1, { className: "h-4 w-4" }),
-              activeSlide.ctaText || "Reserve"
+              activeSlide.ctaText
             ] })
           ] })
         }
@@ -25159,7 +25188,7 @@ function HeroBanner({ initialSlides }) {
               className: "absolute inset-x-0 z-20 flex flex-col items-center justify-center px-5 text-center",
               style: { top: "64px", bottom: "2.5rem" },
               children: [
-                /* @__PURE__ */ jsx(
+                activeSlide.tag && /* @__PURE__ */ jsx(
                   motion.span,
                   {
                     initial: { opacity: 0, y: 10 },
@@ -25170,7 +25199,7 @@ function HeroBanner({ initialSlides }) {
                   },
                   `m-tag-${activeSlide.id}`
                 ),
-                /* @__PURE__ */ jsx(
+                activeSlide.title && /* @__PURE__ */ jsx(
                   motion.h1,
                   {
                     initial: { opacity: 0, y: 14 },
@@ -25181,7 +25210,7 @@ function HeroBanner({ initialSlides }) {
                   },
                   `m-title-${activeSlide.id}`
                 ),
-                /* @__PURE__ */ jsx(
+                activeSlide.desc && /* @__PURE__ */ jsx(
                   motion.p,
                   {
                     initial: { opacity: 0, y: 8 },
@@ -25192,30 +25221,17 @@ function HeroBanner({ initialSlides }) {
                   },
                   `m-desc-${activeSlide.id}`
                 ),
-                /* @__PURE__ */ jsxs(
+                activeSlide.ctaText && /* @__PURE__ */ jsx(
                   motion.div,
                   {
                     initial: { opacity: 0, scale: 0.92 },
                     animate: { opacity: 1, scale: 1 },
                     transition: { delay: 0.45, duration: 0.6 },
                     className: "flex flex-wrap items-center justify-center gap-3",
-                    children: [
-                      /* @__PURE__ */ jsxs(Button, { className: "h-auto rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-5 py-2 text-xs font-semibold text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)]", children: [
-                        /* @__PURE__ */ jsx(Calendar$1, { className: "mr-2 h-3.5 w-3.5" }),
-                        activeSlide.ctaText || "Reserve"
-                      ] }),
-                      /* @__PURE__ */ jsxs(
-                        Button,
-                        {
-                          variant: "outline",
-                          className: "h-auto rounded-full border-white/30 bg-white/5 px-5 py-2 text-xs font-semibold text-white backdrop-blur-md",
-                          children: [
-                            /* @__PURE__ */ jsx(Menu, { className: "mr-2 h-3.5 w-3.5" }),
-                            "Menu"
-                          ]
-                        }
-                      )
-                    ]
+                    children: /* @__PURE__ */ jsxs(Button, { className: "h-auto rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-5 py-2 text-xs font-semibold text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)]", children: [
+                      /* @__PURE__ */ jsx(Calendar$1, { className: "mr-2 h-3.5 w-3.5" }),
+                      activeSlide.ctaText
+                    ] })
                   }
                 )
               ]
@@ -25304,7 +25320,7 @@ function HeroBanner({ initialSlides }) {
                 className: "h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
               }
             ),
-            /* @__PURE__ */ jsx("div", { className: "absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-2 md:p-3", children: /* @__PURE__ */ jsx("p", { className: "truncate text-[10px] font-medium text-white/90 md:text-xs", children: slide.tag }) })
+            slide.tag && /* @__PURE__ */ jsx("div", { className: "absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-2 md:p-3", children: /* @__PURE__ */ jsx("p", { className: "truncate text-[10px] font-medium text-white/90 md:text-xs", children: slide.tag }) })
           ]
         },
         `thumbnail-${slide.id}`
@@ -25887,6 +25903,7 @@ const mapApiToRestaurantUI = (item) => {
     cuisines: amenities.slice(0, 6),
     highlightedAmenities: highlightedAmenities.filter(Boolean),
     nearbyLocation: parent?.nearbyLocations?.[0]?.nearbyLocationName || listing?.landmark || parent?.locationName || "Prime location",
+    area: parent?.area || null,
     serviceHours: "Open Daily",
     googleMapLink: parent?.nearbyLocations?.[0]?.googleMapLink || parent?.addressUrl || "",
     isActive: parent?.isActive && (listing ? listing?.isActive : true)
@@ -26050,9 +26067,9 @@ function RestaurantProperties({ initialRestaurants }) {
                   /* @__PURE__ */ jsx("p", { className: "text-xs font-bold text-foreground", children: activeRestaurant.city })
                 ] }),
                 /* @__PURE__ */ jsxs("div", { className: "rounded-xl border border-border bg-muted/30 px-3 py-3 text-center", children: [
-                  /* @__PURE__ */ jsx(Building2, { className: "mx-auto mb-1 h-4 w-4 text-primary" }),
-                  /* @__PURE__ */ jsx("p", { className: "text-[10px] text-muted-foreground", children: "Type" }),
-                  /* @__PURE__ */ jsx("p", { className: "text-xs font-bold text-foreground", children: activeRestaurant.type })
+                  /* @__PURE__ */ jsx(Map$1, { className: "mx-auto mb-1 h-4 w-4 text-primary" }),
+                  /* @__PURE__ */ jsx("p", { className: "text-[10px] text-muted-foreground", children: "Area" }),
+                  /* @__PURE__ */ jsx("p", { className: "text-xs font-bold text-foreground", children: activeRestaurant.area || "N/A" })
                 ] }),
                 /* @__PURE__ */ jsxs("div", { className: "rounded-xl border border-border bg-muted/30 px-3 py-3 text-center", children: [
                   /* @__PURE__ */ jsx(CalendarClock, { className: "mx-auto mb-1 h-4 w-4 text-primary" }),
@@ -26119,9 +26136,9 @@ function RestaurantProperties({ initialRestaurants }) {
                   /* @__PURE__ */ jsx("p", { className: "text-xs font-bold text-foreground", children: activeRestaurant.city })
                 ] }),
                 /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
-                  /* @__PURE__ */ jsx(Building2, { className: "mx-auto mb-0.5 h-4 w-4 text-primary" }),
-                  /* @__PURE__ */ jsx("p", { className: "text-[10px] text-muted-foreground", children: "Type" }),
-                  /* @__PURE__ */ jsx("p", { className: "text-xs font-bold text-foreground", children: activeRestaurant.type })
+                  /* @__PURE__ */ jsx(Map$1, { className: "mx-auto mb-0.5 h-4 w-4 text-primary" }),
+                  /* @__PURE__ */ jsx("p", { className: "text-[10px] text-muted-foreground", children: "Area" }),
+                  /* @__PURE__ */ jsx("p", { className: "text-xs font-bold text-foreground", children: activeRestaurant.area || "N/A" })
                 ] }),
                 /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
                   /* @__PURE__ */ jsx(Star, { className: "mx-auto mb-0.5 h-4 w-4 fill-current text-primary" }),
@@ -26788,56 +26805,92 @@ function AboutRestaurant({ initialSections }) {
               /* @__PURE__ */ jsx("h2", { className: "mb-3 text-3xl font-serif leading-tight text-zinc-900 dark:text-white md:text-4xl", children: activeSection.sectionTitle })
             ] }),
             /* @__PURE__ */ jsx("p", { className: "text-base font-light leading-relaxed text-zinc-500 dark:text-white/60", children: activeSection.description }),
-            recognitions.length > 0 && /* @__PURE__ */ jsxs("div", { className: "space-y-4 border-t border-zinc-200 pt-4 dark:border-white/10", children: [
-              /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-x-10 gap-y-3", children: recognitions.map((item, index) => /* @__PURE__ */ jsxs(
-                "button",
-                {
-                  onClick: () => setCurrentRecognitionIndex(index),
-                  className: "group flex flex-col gap-0.5 text-left",
-                  children: [
-                    /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: index === currentRecognitionIndex ? /* @__PURE__ */ jsx(
-                      motion.span,
-                      {
-                        initial: { opacity: 0, y: 6 },
-                        animate: { opacity: 1, y: 0 },
-                        exit: { opacity: 0, y: -6 },
-                        transition: { duration: 0.35 },
-                        className: "text-2xl font-serif font-bold leading-none text-primary md:text-3xl",
-                        children: item.value
-                      },
-                      `active-${item.id}`
-                    ) : /* @__PURE__ */ jsx(
-                      motion.span,
-                      {
-                        initial: { opacity: 0 },
-                        animate: { opacity: 1 },
-                        className: "text-2xl font-serif font-bold leading-none text-zinc-900/40 transition-colors group-hover:text-zinc-900/60 dark:text-white/40 dark:group-hover:text-white/60 md:text-3xl",
-                        children: item.value
-                      },
-                      `inactive-${item.id}`
-                    ) }),
-                    /* @__PURE__ */ jsx(
-                      "span",
-                      {
-                        className: `text-[10px] font-bold uppercase tracking-widest transition-colors ${index === currentRecognitionIndex ? "text-zinc-500 dark:text-white/60" : "text-zinc-400 group-hover:text-zinc-500 dark:text-white/30 dark:group-hover:text-white/50"}`,
-                        children: item.title
-                      }
-                    )
-                  ]
-                },
-                item.id
-              )) }),
-              recognitions[currentRecognitionIndex]?.subTitle && /* @__PURE__ */ jsx(
-                motion.p,
-                {
-                  initial: { opacity: 0, y: 6 },
-                  animate: { opacity: 1, y: 0 },
-                  className: "text-sm leading-relaxed text-zinc-500 dark:text-white/60",
-                  children: recognitions[currentRecognitionIndex].subTitle
-                },
-                `recognition-copy-${recognitions[currentRecognitionIndex]?.id}`
-              )
-            ] })
+            recognitions.length > 0 && (() => {
+              const availabilityItem = recognitions.find(
+                (r) => normalize$6(r.value).includes("availability")
+              );
+              const contactItem = recognitions.find(
+                (r) => normalize$6(r.value).includes("connect") || normalize$6(r.value).includes("contact")
+              );
+              const standardItems = recognitions.filter(
+                (r) => !normalize$6(r.value).includes("availability") && !normalize$6(r.value).includes("connect") && !normalize$6(r.value).includes("contact")
+              );
+              const hasSpecial = availabilityItem || contactItem;
+              return /* @__PURE__ */ jsxs("div", { className: "space-y-4 border-t border-zinc-200 pt-4 dark:border-white/10", children: [
+                hasSpecial && /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-8", children: [
+                  availabilityItem && /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-1.5", children: [
+                    /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
+                      /* @__PURE__ */ jsx(Clock, { className: "h-3 w-3 text-zinc-400 dark:text-white/40" }),
+                      /* @__PURE__ */ jsx("span", { className: "text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-400 dark:text-white/40", children: availabilityItem.value })
+                    ] }),
+                    /* @__PURE__ */ jsx("p", { className: "font-serif italic text-primary text-lg leading-snug", children: availabilityItem.title }),
+                    availabilityItem.subTitle && /* @__PURE__ */ jsx("p", { className: "text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-400 dark:text-white/40", children: availabilityItem.subTitle })
+                  ] }),
+                  contactItem && /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-1.5", children: [
+                    /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
+                      /* @__PURE__ */ jsx(Phone, { className: "h-3 w-3 text-zinc-400 dark:text-white/40" }),
+                      /* @__PURE__ */ jsx("span", { className: "text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-400 dark:text-white/40", children: contactItem.value })
+                    ] }),
+                    /* @__PURE__ */ jsx("p", { className: "font-serif text-primary text-lg leading-snug", children: contactItem.title }),
+                    contactItem.subTitle && /* @__PURE__ */ jsx("p", { className: "text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-400 dark:text-white/40", children: contactItem.subTitle })
+                  ] })
+                ] }),
+                hasSpecial && /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 pt-0.5", children: [
+                  /* @__PURE__ */ jsx("span", { className: "h-0.5 w-5 rounded-full bg-primary" }),
+                  /* @__PURE__ */ jsx("span", { className: "h-0.5 w-3 rounded-full bg-zinc-300 dark:bg-white/20" })
+                ] }),
+                standardItems.length > 0 && /* @__PURE__ */ jsxs(Fragment, { children: [
+                  /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-x-10 gap-y-3", children: standardItems.map((item, index) => /* @__PURE__ */ jsxs(
+                    "button",
+                    {
+                      onClick: () => setCurrentRecognitionIndex(index),
+                      className: "group flex flex-col gap-0.5 text-left",
+                      children: [
+                        /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: index === currentRecognitionIndex ? /* @__PURE__ */ jsx(
+                          motion.span,
+                          {
+                            initial: { opacity: 0, y: 6 },
+                            animate: { opacity: 1, y: 0 },
+                            exit: { opacity: 0, y: -6 },
+                            transition: { duration: 0.35 },
+                            className: "text-2xl font-serif font-bold leading-none text-primary md:text-3xl",
+                            children: item.value
+                          },
+                          `active-${item.id}`
+                        ) : /* @__PURE__ */ jsx(
+                          motion.span,
+                          {
+                            initial: { opacity: 0 },
+                            animate: { opacity: 1 },
+                            className: "text-2xl font-serif font-bold leading-none text-zinc-900/40 transition-colors group-hover:text-zinc-900/60 dark:text-white/40 dark:group-hover:text-white/60 md:text-3xl",
+                            children: item.value
+                          },
+                          `inactive-${item.id}`
+                        ) }),
+                        /* @__PURE__ */ jsx(
+                          "span",
+                          {
+                            className: `text-[10px] font-bold uppercase tracking-widest transition-colors ${index === currentRecognitionIndex ? "text-zinc-500 dark:text-white/60" : "text-zinc-400 group-hover:text-zinc-500 dark:text-white/30 dark:group-hover:text-white/50"}`,
+                            children: item.title
+                          }
+                        )
+                      ]
+                    },
+                    item.id
+                  )) }),
+                  standardItems[currentRecognitionIndex]?.subTitle && /* @__PURE__ */ jsx(
+                    motion.p,
+                    {
+                      initial: { opacity: 0, y: 6 },
+                      animate: { opacity: 1, y: 0 },
+                      className: "text-sm leading-relaxed text-zinc-500 dark:text-white/60",
+                      children: standardItems[currentRecognitionIndex].subTitle
+                    },
+                    `recognition-copy-${standardItems[currentRecognitionIndex]?.id}`
+                  )
+                ] })
+              ] });
+            })()
           ]
         },
         activeSection.id
@@ -28288,12 +28341,13 @@ function RestaurantHomepage() {
           Navbar$1,
           {
             navItems: RESTAURANT_NAV_ITEMS,
-            logo: siteContent.brand.logo_restaurant
+            logo: siteContent.brand.logo_restaurant,
+            quickBookOptions: [{ label: "Reserve Restaurant", href: "#quick-booking" }]
           }
         ),
         /* @__PURE__ */ jsxs("main", { children: [
           /* @__PURE__ */ jsx("div", { id: "home", children: /* @__PURE__ */ jsx(HeroBanner, { initialSlides: ssr?.heroSlides }) }),
-          /* @__PURE__ */ jsx(RestaurantQuickBooking, {}),
+          /* @__PURE__ */ jsx("div", { id: "quick-booking", children: /* @__PURE__ */ jsx(RestaurantQuickBooking, {}) }),
           /* @__PURE__ */ jsx(RestaurantOffers, { initialOffers: ssr?.restaurantOffers }),
           /* @__PURE__ */ jsx(RestaurantProperties, { initialRestaurants: ssr?.restaurantProperties }),
           /* @__PURE__ */ jsx(RestaurantBestSellers, { initialItems: ssr?.bestSellers }),
@@ -35423,6 +35477,9 @@ function AboutUs() {
     const type = propertyTypes.find((pt) => pt.id === selectedPropertyTypeId);
     return type ? type.typeName : "Unknown";
   };
+  const isRestaurantTab = activeTab !== "homepage" && propertyTypes.some(
+    (pt) => String(pt.id) === activeTab && normalize2(pt.typeName) === "restaurant"
+  );
   const propertyTypeTabs = useMemo(
     () => [
       { id: "homepage", label: "Homepage", icon: Home$1 },
@@ -35477,7 +35534,7 @@ function AboutUs() {
     /* @__PURE__ */ jsx("div", { className: "flex bg-card border rounded-xl overflow-hidden p-1 gap-1", children: [
       { id: "about", label: "About Sections", icon: Info },
       { id: "ventures", label: "Ventures", icon: Briefcase },
-      { id: "recognitions", label: "Recognitions", icon: Award }
+      { id: "recognitions", label: isRestaurantTab ? "Section 3" : "Recognitions", icon: Award }
     ].map((tab) => /* @__PURE__ */ jsxs(
       "button",
       {
@@ -35501,7 +35558,7 @@ function AboutUs() {
               getSelectedPropertyTypeName()
             ] })
           ] }),
-          aboutUsList.length === 0 && /* @__PURE__ */ jsxs(
+          aboutUsList.length < 2 && /* @__PURE__ */ jsxs(
             "button",
             {
               onClick: () => {
@@ -35528,21 +35585,21 @@ function AboutUs() {
             /* @__PURE__ */ jsx("th", { className: "p-4", children: "Status" }),
             /* @__PURE__ */ jsx("th", { className: "p-4 text-right", children: "Actions" })
           ] }) }),
-          /* @__PURE__ */ jsx("tbody", { className: "divide-y", children: /* @__PURE__ */ jsxs(
+          /* @__PURE__ */ jsx("tbody", { className: "divide-y", children: aboutUsList.map((about, index) => /* @__PURE__ */ jsxs(
             "tr",
             {
-              className: "bg-primary/5 cursor-default",
+              className: `cursor-default ${index === 0 ? "bg-primary/5" : ""}`,
               children: [
                 /* @__PURE__ */ jsxs("td", { className: "p-4 font-mono text-xs", children: [
                   /* @__PURE__ */ jsx("span", { className: "mr-2 text-primary", children: "●" }),
                   "#",
-                  latestAbout.id
+                  about.id
                 ] }),
-                /* @__PURE__ */ jsx("td", { className: "p-4 text-sm font-medium", children: latestAbout.sectionTitle }),
-                /* @__PURE__ */ jsx("td", { className: "p-4", children: latestAbout.propertyTypeId ? /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700", children: [
+                /* @__PURE__ */ jsx("td", { className: "p-4 text-sm font-medium", children: about.sectionTitle }),
+                /* @__PURE__ */ jsx("td", { className: "p-4", children: about.propertyTypeId ? /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700", children: [
                   /* @__PURE__ */ jsx(Building2, { size: 10 }),
                   propertyTypes.find(
-                    (pt) => pt.id === latestAbout.propertyTypeId
+                    (pt) => pt.id === about.propertyTypeId
                   )?.typeName || "Unknown"
                 ] }) : /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-gray-100 text-gray-600", children: [
                   /* @__PURE__ */ jsx(Home$1, { size: 10 }),
@@ -35551,14 +35608,14 @@ function AboutUs() {
                 /* @__PURE__ */ jsx("td", { className: "p-4", children: /* @__PURE__ */ jsx(
                   "span",
                   {
-                    className: `px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${latestAbout.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`,
-                    children: latestAbout.isActive ? "Active" : "Disabled"
+                    className: `px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${about.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`,
+                    children: about.isActive ? "Active" : "Disabled"
                   }
                 ) }),
                 /* @__PURE__ */ jsx("td", { className: "p-4 text-right flex justify-end gap-2", children: /* @__PURE__ */ jsx(
                   "button",
                   {
-                    onClick: () => handleOpenEdit("about", latestAbout),
+                    onClick: () => handleOpenEdit("about", about),
                     className: "p-1.5 hover:bg-muted rounded-md text-primary transition-colors",
                     title: "Edit",
                     children: /* @__PURE__ */ jsx(Pencil, { size: 14 })
@@ -35566,8 +35623,8 @@ function AboutUs() {
                 ) })
               ]
             },
-            latestAbout.id
-          ) })
+            about.id
+          )) })
         ] }) })
       ] }),
       contentTab === "ventures" && /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-6", children: [
@@ -40421,6 +40478,10 @@ function GuestExp() {
   });
   const [savingRating, setSavingRating] = useState(false);
   const [ratingData, setRatingData] = useState(null);
+  const [filterPropertyId, setFilterPropertyId] = useState("");
+  const [filterTypeId, setFilterTypeId] = useState("");
+  const [properties, setProperties] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
   const fetchHeader = useCallback(async () => {
     try {
       setHeaderFetching(true);
@@ -40490,11 +40551,36 @@ function GuestExp() {
       setFetching(false);
     }
   }, []);
+  const fetchProperties = useCallback(async () => {
+    try {
+      const res = await getAllProperties();
+      const data = res.data?.data || res.data || res;
+      if (Array.isArray(data))
+        setProperties(data.filter((p) => p.isActive));
+    } catch (err) {
+      console.error("Failed to load properties", err);
+    }
+  }, []);
+  const fetchPropertyTypes = useCallback(async () => {
+    try {
+      const res = await getPropertyTypes();
+      const data = res.data?.data || res.data || res;
+      if (Array.isArray(data))
+        setPropertyTypes(data.filter((t) => t.isActive));
+    } catch (err) {
+      console.error("Failed to load property types", err);
+    }
+  }, []);
   useEffect(() => {
     fetchHeader();
     fetchRating();
     fetchGuestExperience();
-  }, [fetchHeader, fetchGuestExperience]);
+    fetchProperties();
+    fetchPropertyTypes();
+  }, [fetchHeader, fetchGuestExperience, fetchProperties, fetchPropertyTypes]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterPropertyId, filterTypeId]);
   const openModal = () => {
     setForm({
       sectionTag: headerData?.sectionTag || "",
@@ -40543,8 +40629,15 @@ function GuestExp() {
       setLoading(false);
     }
   };
-  const totalPages = Math.ceil(experiences.length / itemsPerPage);
-  const currentExperiences = experiences.slice(
+  const filteredExperiences = useMemo(() => {
+    return experiences.filter((exp) => {
+      const matchProperty = filterPropertyId === "" || exp.propertyId === Number(filterPropertyId);
+      const matchType = filterTypeId === "" || exp.propertyTypeId === Number(filterTypeId);
+      return matchProperty && matchType;
+    });
+  }, [experiences, filterPropertyId, filterTypeId]);
+  const totalPages = Math.ceil(filteredExperiences.length / itemsPerPage);
+  const currentExperiences = filteredExperiences.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -40772,14 +40865,96 @@ function GuestExp() {
         className: "rounded-lg shadow-sm overflow-hidden",
         style: { backgroundColor: colors.contentBg },
         children: [
-          /* @__PURE__ */ jsx("div", { className: "p-5 border-b", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsx(
-            "h3",
+          /* @__PURE__ */ jsxs(
+            "div",
             {
-              className: "text-sm font-semibold",
-              style: { color: colors.textPrimary },
-              children: "Guest Experiences List"
+              className: "p-5 border-b flex flex-col sm:flex-row sm:items-center gap-3",
+              style: { borderColor: colors.border },
+              children: [
+                /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 flex-1", children: [
+                  /* @__PURE__ */ jsx(Filter, { size: 14, style: { color: colors.primary } }),
+                  /* @__PURE__ */ jsx(
+                    "h3",
+                    {
+                      className: "text-sm font-semibold",
+                      style: { color: colors.textPrimary },
+                      children: "Guest Experiences"
+                    }
+                  ),
+                  /* @__PURE__ */ jsxs(
+                    "span",
+                    {
+                      className: "ml-1 text-[10px] font-semibold px-2 py-0.5 rounded-full",
+                      style: {
+                        backgroundColor: colors.primary + "18",
+                        color: colors.primary
+                      },
+                      children: [
+                        filteredExperiences.length,
+                        " of ",
+                        experiences.length
+                      ]
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center gap-2", children: [
+                  /* @__PURE__ */ jsxs(
+                    "select",
+                    {
+                      value: filterPropertyId,
+                      onChange: (e) => setFilterPropertyId(e.target.value),
+                      className: "text-xs px-2.5 py-1.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/30 min-w-[150px]",
+                      style: {
+                        backgroundColor: colors.mainBg,
+                        borderColor: filterPropertyId ? colors.primary : colors.border,
+                        color: colors.textPrimary
+                      },
+                      children: [
+                        /* @__PURE__ */ jsx("option", { value: "", children: "All Properties" }),
+                        properties.map((p) => /* @__PURE__ */ jsx("option", { value: p.id, children: p.propertyName }, p.id))
+                      ]
+                    }
+                  ),
+                  /* @__PURE__ */ jsxs(
+                    "select",
+                    {
+                      value: filterTypeId,
+                      onChange: (e) => setFilterTypeId(e.target.value),
+                      className: "text-xs px-2.5 py-1.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/30 min-w-[130px]",
+                      style: {
+                        backgroundColor: colors.mainBg,
+                        borderColor: filterTypeId ? colors.primary : colors.border,
+                        color: colors.textPrimary
+                      },
+                      children: [
+                        /* @__PURE__ */ jsx("option", { value: "", children: "All Types" }),
+                        propertyTypes.map((t) => /* @__PURE__ */ jsx("option", { value: t.id, children: t.typeName }, t.id))
+                      ]
+                    }
+                  ),
+                  (filterPropertyId || filterTypeId) && /* @__PURE__ */ jsxs(
+                    "button",
+                    {
+                      onClick: () => {
+                        setFilterPropertyId("");
+                        setFilterTypeId("");
+                      },
+                      className: "flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border transition-colors hover:bg-red-50",
+                      style: {
+                        borderColor: "#ef4444",
+                        color: "#ef4444"
+                      },
+                      title: "Clear filters",
+                      children: [
+                        /* @__PURE__ */ jsx(X, { size: 12 }),
+                        " Clear"
+                      ]
+                    }
+                  )
+                ] })
+              ]
             }
-          ) }),
+          ),
           /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs("table", { className: "w-full text-left border-collapse", children: [
             /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { style: { backgroundColor: colors.mainBg }, children: [
               /* @__PURE__ */ jsx(
@@ -40968,8 +41143,9 @@ function GuestExp() {
                   "Showing ",
                   currentExperiences.length,
                   " of ",
-                  experiences.length,
-                  " items"
+                  filteredExperiences.length,
+                  " items",
+                  (filterPropertyId || filterTypeId) && /* @__PURE__ */ jsx("span", { style: { color: colors.primary }, children: " (filtered)" })
                 ] }),
                 /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
                   /* @__PURE__ */ jsx(
@@ -41966,6 +42142,662 @@ function GroupBookings() {
     ] }) })
   ] });
 }
+const inp$8 = "w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 transition-all";
+const Field$9 = ({ label, children, required }) => /* @__PURE__ */ jsxs("div", { children: [
+  /* @__PURE__ */ jsxs(
+    "label",
+    {
+      className: "block text-[10px] font-bold uppercase tracking-wider mb-1.5",
+      style: { color: colors.textSecondary },
+      children: [
+        label,
+        required && /* @__PURE__ */ jsx("span", { className: "text-red-500 ml-0.5", children: "*" })
+      ]
+    }
+  ),
+  children
+] });
+function ImageUpload$3({ value, onChange, onClear }) {
+  const displayUrl = typeof value === "string" && value ? value : null;
+  return /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
+    /* @__PURE__ */ jsxs(
+      "label",
+      {
+        className: "flex items-center gap-2 px-3 py-1.5 rounded-lg border border-dashed text-xs font-medium cursor-pointer transition-all hover:opacity-80",
+        style: {
+          borderColor: colors.border,
+          color: colors.textSecondary,
+          backgroundColor: colors.mainBg
+        },
+        children: [
+          /* @__PURE__ */ jsx(ImageIcon, { size: 13 }),
+          displayUrl ? "Change Image" : "Upload Image",
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "file",
+              accept: "image/*",
+              className: "hidden",
+              onChange: (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                onChange(URL.createObjectURL(file), file);
+              }
+            }
+          )
+        ]
+      }
+    ),
+    displayUrl && /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: displayUrl,
+          alt: "preview",
+          className: "w-10 h-10 rounded-lg object-cover border",
+          style: { borderColor: colors.border }
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "button",
+        {
+          type: "button",
+          onClick: onClear,
+          className: "text-red-400 hover:text-red-600 transition-colors",
+          children: /* @__PURE__ */ jsx(X, { size: 13 })
+        }
+      )
+    ] })
+  ] });
+}
+function MenuHeaderTab() {
+  const EMPTY2 = {
+    part1: "",
+    part2: "",
+    description: "",
+    isActive: true,
+    imageUrl: "",
+    imageFile: null,
+    propertyId: "",
+    existingId: null
+  };
+  const [form, setForm] = useState(EMPTY2);
+  const [saving, setSaving] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [headers, setHeaders] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [loadingProperties, setLoadingProperties] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
+  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+  const fetchProperties = useCallback(async () => {
+    try {
+      setLoadingProperties(true);
+      const res = await getAllProperties();
+      const data = res.data?.data || res.data || res;
+      if (Array.isArray(data)) setProperties(data.filter((p) => p.isActive));
+    } catch {
+      toast$2.error("Failed to load properties");
+    } finally {
+      setLoadingProperties(false);
+    }
+  }, []);
+  const fetchHeaders = useCallback(async () => {
+    try {
+      setFetching(true);
+      const res = await getMenuHeaders();
+      setHeaders(Array.isArray(res?.data) ? res.data : []);
+    } catch {
+      toast$2.error("Failed to load menu headers");
+    } finally {
+      setFetching(false);
+    }
+  }, []);
+  useEffect(() => {
+    fetchProperties();
+    fetchHeaders();
+  }, [fetchProperties, fetchHeaders]);
+  const openAdd = () => {
+    setForm(EMPTY2);
+    setEditingId(null);
+    setShowForm(true);
+  };
+  const openEdit = (h) => {
+    setForm({
+      part1: h.part1 || "",
+      part2: h.part2 || "",
+      description: h.description || "",
+      isActive: h.isActive ?? true,
+      imageUrl: h.image?.url || h.imageUrl || "",
+      imageFile: null,
+      propertyId: h.propertyId ? String(h.propertyId) : "",
+      existingId: h.id
+    });
+    setEditingId(h.id);
+    setShowForm(true);
+  };
+  const handleSave = async () => {
+    if (!form.part1.trim()) return toast$2.error("Part 1 (heading) is required");
+    try {
+      setSaving(true);
+      const fd = new FormData();
+      fd.append("part1", form.part1.trim());
+      fd.append("part2", form.part2.trim());
+      fd.append("description", form.description.trim());
+      fd.append("isActive", String(form.isActive));
+      if (form.propertyId) fd.append("propertyId", form.propertyId);
+      if (form.imageFile) fd.append("image", form.imageFile);
+      if (form.existingId) {
+        await updateMenuHeadersSection(form.existingId, fd);
+        toast$2.success("Menu header updated");
+      } else {
+        await createMenuHeaderSection(fd);
+        toast$2.success("Menu header created");
+      }
+      setShowForm(false);
+      setEditingId(null);
+      await fetchHeaders();
+    } catch {
+      toast$2.error("Failed to save menu header");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const handleToggle = async (h) => {
+    try {
+      setTogglingId(h.id);
+      await toggleMenuHeadersSectionStatus(h.id, { isActive: !h.isActive });
+      toast$2.success(`Header ${h.isActive ? "deactivated" : "activated"}`);
+      await fetchHeaders();
+    } catch {
+      toast$2.error("Failed to toggle status");
+    } finally {
+      setTogglingId(null);
+    }
+  };
+  return /* @__PURE__ */ jsxs("div", { className: "space-y-5", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx("h3", { className: "text-sm font-bold", style: { color: colors.textPrimary }, children: "Menu Section Headers" }),
+      /* @__PURE__ */ jsxs(
+        "button",
+        {
+          onClick: openAdd,
+          className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white hover:opacity-90 transition-all",
+          children: [
+            /* @__PURE__ */ jsx(Plus, { size: 14 }),
+            " Add Header"
+          ]
+        }
+      )
+    ] }),
+    showForm && /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: "rounded-xl border p-5 space-y-4",
+        style: { borderColor: colors.border, backgroundColor: colors.mainBg },
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-1", children: [
+            /* @__PURE__ */ jsx("span", { className: "text-xs font-bold", style: { color: colors.textPrimary }, children: editingId ? "Edit Menu Header" : "New Menu Header" }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => setShowForm(false),
+                className: "p-1 rounded hover:bg-black/10 transition-colors",
+                style: { color: colors.textSecondary },
+                children: /* @__PURE__ */ jsx(X, { size: 14 })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4", children: [
+            /* @__PURE__ */ jsx(Field$9, { label: "Heading Part 1", required: true, children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                placeholder: "e.g. Our",
+                value: form.part1,
+                onChange: (e) => set("part1", e.target.value)
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field$9, { label: "Heading Part 2", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                placeholder: "e.g. Menu",
+                value: form.part2,
+                onChange: (e) => set("part2", e.target.value)
+              }
+            ) })
+          ] }),
+          /* @__PURE__ */ jsx(Field$9, { label: "Description", children: /* @__PURE__ */ jsx(
+            "textarea",
+            {
+              rows: 3,
+              className: inp$8,
+              style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+              placeholder: "Brief description for the menu section...",
+              value: form.description,
+              onChange: (e) => set("description", e.target.value)
+            }
+          ) }),
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4", children: [
+            /* @__PURE__ */ jsx(Field$9, { label: "Property", children: /* @__PURE__ */ jsxs(
+              "select",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                value: form.propertyId,
+                onChange: (e) => set("propertyId", e.target.value),
+                disabled: loadingProperties,
+                children: [
+                  /* @__PURE__ */ jsx("option", { value: "", children: "— Select Property (optional) —" }),
+                  properties.map((p) => /* @__PURE__ */ jsx("option", { value: p.id, children: p.propertyName }, p.id))
+                ]
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field$9, { label: "Active Status", children: /* @__PURE__ */ jsxs("label", { className: "flex items-center gap-2 mt-2 cursor-pointer", children: [
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: form.isActive,
+                  onChange: (e) => set("isActive", e.target.checked),
+                  className: "w-4 h-4 rounded",
+                  style: { accentColor: colors.primary }
+                }
+              ),
+              /* @__PURE__ */ jsx("span", { className: "text-sm", style: { color: colors.textPrimary }, children: "Is Active" })
+            ] }) })
+          ] }),
+          /* @__PURE__ */ jsx(Field$9, { label: "Section Image", children: /* @__PURE__ */ jsx(
+            ImageUpload$3,
+            {
+              value: form.imageUrl,
+              onChange: (url, file) => {
+                set("imageUrl", url);
+                set("imageFile", file);
+              },
+              onClear: () => {
+                set("imageUrl", "");
+                set("imageFile", null);
+              }
+            }
+          ) }),
+          /* @__PURE__ */ jsxs("div", { className: "flex justify-end gap-2 pt-2", children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => setShowForm(false),
+                className: "px-4 py-2 rounded-lg text-xs border transition-colors",
+                style: { borderColor: colors.border, color: colors.textSecondary },
+                children: "Cancel"
+              }
+            ),
+            /* @__PURE__ */ jsxs(
+              "button",
+              {
+                onClick: handleSave,
+                disabled: saving,
+                className: "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold bg-primary text-white disabled:opacity-50 transition-all",
+                children: [
+                  saving ? /* @__PURE__ */ jsx(Loader2, { size: 13, className: "animate-spin" }) : /* @__PURE__ */ jsx(Save, { size: 13 }),
+                  editingId ? "Update" : "Save"
+                ]
+              }
+            )
+          ] })
+        ]
+      }
+    ),
+    fetching ? /* @__PURE__ */ jsx("div", { className: "flex justify-center py-10", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin", style: { color: colors.primary }, size: 28 }) }) : headers.length === 0 ? /* @__PURE__ */ jsxs("div", { className: "text-center py-12 text-sm", style: { color: colors.textSecondary }, children: [
+      "No menu headers yet. Click ",
+      /* @__PURE__ */ jsx("strong", { children: "Add Header" }),
+      " to create one."
+    ] }) : /* @__PURE__ */ jsx("div", { className: "overflow-x-auto rounded-xl border", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsxs("table", { className: "w-full text-left", children: [
+      /* @__PURE__ */ jsx("thead", { style: { backgroundColor: colors.mainBg }, children: /* @__PURE__ */ jsx("tr", { children: ["Part 1", "Part 2", "Property", "Status", "Actions"].map((h) => /* @__PURE__ */ jsx("th", { className: "px-4 py-3 text-[10px] font-bold uppercase tracking-wider", style: { color: colors.textSecondary }, children: h }, h)) }) }),
+      /* @__PURE__ */ jsx("tbody", { className: "divide-y", style: { backgroundColor: colors.contentBg }, children: headers.map((h) => {
+        const prop = properties.find((p) => p.id === h.propertyId);
+        return /* @__PURE__ */ jsxs("tr", { className: "transition-colors hover:bg-black/5", children: [
+          /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-sm font-medium", style: { color: colors.textPrimary }, children: h.part1 || "—" }),
+          /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-sm", style: { color: colors.textSecondary }, children: h.part2 || "—" }),
+          /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: prop?.propertyName || "Global" }),
+          /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx("span", { className: `px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${h.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`, children: h.isActive ? "Active" : "Inactive" }) }),
+          /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx("button", { onClick: () => openEdit(h), className: "p-1.5 rounded hover:bg-muted transition-colors", style: { color: colors.primary }, title: "Edit", children: /* @__PURE__ */ jsx(Pencil, { size: 13 }) }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => handleToggle(h),
+                disabled: togglingId === h.id,
+                className: "p-1.5 rounded transition-colors",
+                style: { color: h.isActive ? "#ef4444" : "#22c55e" },
+                title: h.isActive ? "Deactivate" : "Activate",
+                children: togglingId === h.id ? /* @__PURE__ */ jsx(Loader2, { size: 13, className: "animate-spin" }) : h.isActive ? /* @__PURE__ */ jsx(ToggleRight, { size: 15 }) : /* @__PURE__ */ jsx(ToggleLeft, { size: 15 })
+              }
+            )
+          ] }) })
+        ] }, h.id);
+      }) })
+    ] }) })
+  ] });
+}
+function GroupBookingHeaderTab() {
+  const EMPTY2 = {
+    title: "",
+    description: "",
+    ctaText: "",
+    ctaLink: "",
+    numberOfPersons: "",
+    propertyId: "",
+    propertyTypeId: "",
+    existingId: null
+  };
+  const [form, setForm] = useState(EMPTY2);
+  const [saving, setSaving] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
+  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+  const fetchDropdowns = useCallback(async () => {
+    try {
+      setLoadingDropdowns(true);
+      const [propRes, typeRes] = await Promise.all([getAllProperties(), getPropertyTypes()]);
+      const props = propRes.data?.data || propRes.data || propRes;
+      const types = typeRes.data?.data || typeRes.data || typeRes;
+      if (Array.isArray(props)) setProperties(props.filter((p) => p.isActive));
+      if (Array.isArray(types)) setPropertyTypes(types.filter((t) => t.isActive));
+    } catch {
+      toast$2.error("Failed to load properties/types");
+    } finally {
+      setLoadingDropdowns(false);
+    }
+  }, []);
+  const fetchBookings = useCallback(async () => {
+    try {
+      setFetching(true);
+      const res = await getGroupBookings();
+      const data = res?.data || [];
+      setBookings(Array.isArray(data) ? data : []);
+    } catch {
+      toast$2.error("Failed to load group bookings");
+    } finally {
+      setFetching(false);
+    }
+  }, []);
+  useEffect(() => {
+    fetchDropdowns();
+    fetchBookings();
+  }, [fetchDropdowns, fetchBookings]);
+  const openAdd = () => {
+    setForm(EMPTY2);
+    setEditingId(null);
+    setShowForm(true);
+  };
+  const openEdit = (b) => {
+    setForm({
+      title: b.title || "",
+      description: b.description || "",
+      ctaText: b.ctaText || "",
+      ctaLink: b.ctaLink || "",
+      numberOfPersons: b.numberOfPersons ? String(b.numberOfPersons) : "",
+      propertyId: b.propertyId ? String(b.propertyId) : "",
+      propertyTypeId: b.propertyTypeId ? String(b.propertyTypeId) : "",
+      existingId: b.id
+    });
+    setEditingId(b.id);
+    setShowForm(true);
+  };
+  const handleSave = async () => {
+    if (!form.title.trim()) return toast$2.error("Title is required");
+    try {
+      setSaving(true);
+      const payload = {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        ctaText: form.ctaText.trim(),
+        ctaLink: form.ctaLink.trim(),
+        numberOfPersons: form.numberOfPersons ? Number(form.numberOfPersons) : null,
+        propertyId: form.propertyId ? Number(form.propertyId) : null,
+        propertyTypeId: form.propertyTypeId ? Number(form.propertyTypeId) : null
+      };
+      if (form.existingId) {
+        await updateGroupBooking(form.existingId, payload);
+        toast$2.success("Group booking header updated");
+      } else {
+        await addGroupBooking(payload);
+        toast$2.success("Group booking header created");
+      }
+      setShowForm(false);
+      setEditingId(null);
+      await fetchBookings();
+    } catch {
+      toast$2.error("Failed to save group booking header");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const getPropertyName = (id) => properties.find((p) => p.id === Number(id))?.propertyName || "—";
+  const getTypeName = (id) => propertyTypes.find((t) => t.id === Number(id))?.typeName || "—";
+  return /* @__PURE__ */ jsxs("div", { className: "space-y-5", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx("h3", { className: "text-sm font-bold", style: { color: colors.textPrimary }, children: "Group Booking Headers" }),
+      /* @__PURE__ */ jsxs(
+        "button",
+        {
+          onClick: openAdd,
+          className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white hover:opacity-90 transition-all",
+          children: [
+            /* @__PURE__ */ jsx(Plus, { size: 14 }),
+            " Add Header"
+          ]
+        }
+      )
+    ] }),
+    showForm && /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: "rounded-xl border p-5 space-y-4",
+        style: { borderColor: colors.border, backgroundColor: colors.mainBg },
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-1", children: [
+            /* @__PURE__ */ jsx("span", { className: "text-xs font-bold", style: { color: colors.textPrimary }, children: editingId ? "Edit Group Booking Header" : "New Group Booking Header" }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => setShowForm(false),
+                className: "p-1 rounded hover:bg-black/10 transition-colors",
+                style: { color: colors.textSecondary },
+                children: /* @__PURE__ */ jsx(X, { size: 14 })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsx(Field$9, { label: "Title", required: true, children: /* @__PURE__ */ jsx(
+            "input",
+            {
+              className: inp$8,
+              style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+              placeholder: "e.g. Plan Your Group Event",
+              value: form.title,
+              onChange: (e) => set("title", e.target.value)
+            }
+          ) }),
+          /* @__PURE__ */ jsx(Field$9, { label: "Description", children: /* @__PURE__ */ jsx(
+            "textarea",
+            {
+              rows: 3,
+              className: inp$8,
+              style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+              placeholder: "Brief description for the group booking section...",
+              value: form.description,
+              onChange: (e) => set("description", e.target.value)
+            }
+          ) }),
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-4", children: [
+            /* @__PURE__ */ jsx(Field$9, { label: "CTA Button Text", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                placeholder: "e.g. Book Now",
+                value: form.ctaText,
+                onChange: (e) => set("ctaText", e.target.value)
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field$9, { label: "CTA Link", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                placeholder: "e.g. /contact",
+                value: form.ctaLink,
+                onChange: (e) => set("ctaLink", e.target.value)
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field$9, { label: "Min. Persons", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                type: "number",
+                min: "1",
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                placeholder: "e.g. 10",
+                value: form.numberOfPersons,
+                onChange: (e) => set("numberOfPersons", e.target.value)
+              }
+            ) })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4", children: [
+            /* @__PURE__ */ jsx(Field$9, { label: "Property", children: /* @__PURE__ */ jsxs(
+              "select",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                value: form.propertyId,
+                onChange: (e) => set("propertyId", e.target.value),
+                disabled: loadingDropdowns,
+                children: [
+                  /* @__PURE__ */ jsx("option", { value: "", children: "— Select Property (optional) —" }),
+                  properties.map((p) => /* @__PURE__ */ jsx("option", { value: p.id, children: p.propertyName }, p.id))
+                ]
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field$9, { label: "Property Type", children: /* @__PURE__ */ jsxs(
+              "select",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                value: form.propertyTypeId,
+                onChange: (e) => set("propertyTypeId", e.target.value),
+                disabled: loadingDropdowns,
+                children: [
+                  /* @__PURE__ */ jsx("option", { value: "", children: "— Select Type (optional) —" }),
+                  propertyTypes.map((t) => /* @__PURE__ */ jsx("option", { value: t.id, children: t.typeName }, t.id))
+                ]
+              }
+            ) })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "flex justify-end gap-2 pt-2", children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => setShowForm(false),
+                className: "px-4 py-2 rounded-lg text-xs border transition-colors",
+                style: { borderColor: colors.border, color: colors.textSecondary },
+                children: "Cancel"
+              }
+            ),
+            /* @__PURE__ */ jsxs(
+              "button",
+              {
+                onClick: handleSave,
+                disabled: saving,
+                className: "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold bg-primary text-white disabled:opacity-50 transition-all",
+                children: [
+                  saving ? /* @__PURE__ */ jsx(Loader2, { size: 13, className: "animate-spin" }) : /* @__PURE__ */ jsx(Save, { size: 13 }),
+                  editingId ? "Update" : "Save"
+                ]
+              }
+            )
+          ] })
+        ]
+      }
+    ),
+    fetching ? /* @__PURE__ */ jsx("div", { className: "flex justify-center py-10", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin", style: { color: colors.primary }, size: 28 }) }) : bookings.length === 0 ? /* @__PURE__ */ jsxs("div", { className: "text-center py-12 text-sm", style: { color: colors.textSecondary }, children: [
+      "No group booking headers yet. Click ",
+      /* @__PURE__ */ jsx("strong", { children: "Add Header" }),
+      " to create one."
+    ] }) : /* @__PURE__ */ jsx("div", { className: "overflow-x-auto rounded-xl border", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsxs("table", { className: "w-full text-left", children: [
+      /* @__PURE__ */ jsx("thead", { style: { backgroundColor: colors.mainBg }, children: /* @__PURE__ */ jsx("tr", { children: ["Title", "CTA Text", "Min. Persons", "Property", "Type", "Actions"].map((h) => /* @__PURE__ */ jsx("th", { className: "px-4 py-3 text-[10px] font-bold uppercase tracking-wider", style: { color: colors.textSecondary }, children: h }, h)) }) }),
+      /* @__PURE__ */ jsx("tbody", { className: "divide-y", style: { backgroundColor: colors.contentBg }, children: bookings.map((b) => /* @__PURE__ */ jsxs("tr", { className: "transition-colors hover:bg-black/5", children: [
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-sm font-medium max-w-[200px]", style: { color: colors.textPrimary }, children: /* @__PURE__ */ jsx("span", { className: "line-clamp-1", children: b.title || "—" }) }),
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.ctaText || "—" }),
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.numberOfPersons ?? "—" }),
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.propertyId ? getPropertyName(b.propertyId) : "Global" }),
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.propertyTypeId ? getTypeName(b.propertyTypeId) : "—" }),
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx(
+          "button",
+          {
+            onClick: () => openEdit(b),
+            className: "p-1.5 rounded hover:bg-muted transition-colors",
+            style: { color: colors.primary },
+            title: "Edit",
+            children: /* @__PURE__ */ jsx(Pencil, { size: 13 })
+          }
+        ) })
+      ] }, b.id)) })
+    ] }) })
+  ] });
+}
+const SUB_TABS = [
+  { id: "menu", label: "Menu Header", icon: BookOpen, component: MenuHeaderTab },
+  { id: "group", label: "Group Booking Header", icon: Users, component: GroupBookingHeaderTab }
+];
+function HotelHomepage$1() {
+  const [activeSubTab, setActiveSubTab] = useState("menu");
+  const ActiveComponent = SUB_TABS.find((t) => t.id === activeSubTab)?.component;
+  return /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "flex gap-1 p-1 rounded-xl border",
+        style: { backgroundColor: colors.contentBg, borderColor: colors.border },
+        children: SUB_TABS.map((tab) => {
+          const isActive = activeSubTab === tab.id;
+          return /* @__PURE__ */ jsxs(
+            "button",
+            {
+              onClick: () => setActiveSubTab(tab.id),
+              className: "flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex-1 justify-center",
+              style: {
+                backgroundColor: isActive ? colors.primary : "transparent",
+                color: isActive ? "#fff" : colors.textSecondary
+              },
+              children: [
+                /* @__PURE__ */ jsx(tab.icon, { size: 14 }),
+                tab.label
+              ]
+            },
+            tab.id
+          );
+        })
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "rounded-xl border p-5",
+        style: { backgroundColor: colors.contentBg, borderColor: colors.border },
+        children: ActiveComponent && /* @__PURE__ */ jsx(ActiveComponent, {})
+      }
+    )
+  ] });
+}
 function HomePageDashboard() {
   const [activeTab, setActiveTab] = useState("hero");
   const tabs = [
@@ -41977,7 +42809,8 @@ function HomePageDashboard() {
     { id: "news", label: "News & Press", icon: Newspaper, component: NewsPress },
     { id: "guest", label: "Guest Exp", icon: Star, component: GuestExp },
     { id: "presence", label: "Our Presence", icon: Building, component: OurPresence },
-    { id: "group", label: "Group Bookings", icon: Users, component: GroupBookings }
+    { id: "group", label: "Group Bookings", icon: Users, component: GroupBookings },
+    { id: "hotel-homepage", label: "Hotel Homepage", icon: Hotel$1, component: HotelHomepage$1 }
   ];
   const ActiveComponent = tabs.find((tab) => tab.id === activeTab)?.component || HeroSection;
   return /* @__PURE__ */ jsx(
@@ -44495,6 +45328,19 @@ const Section$3 = ({ label, icon: Icon }) => /* @__PURE__ */ jsxs("div", { class
   /* @__PURE__ */ jsx("div", { className: "flex-1 h-px bg-gray-100" })
 ] });
 const VERIFIED_USERS_SCALE = 1e6;
+const isValidOptionalUrl = (value) => {
+  if (!value) return true;
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+const isValidOptionalEmail = (value) => {
+  if (!value) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+};
 const parseCombinedRating = (value) => {
   if (value === null || value === void 0 || value === "") {
     return { rating: "", verifiedUsers: "" };
@@ -44681,6 +45527,41 @@ function EditPropertyModal({
     });
     setSaving(true);
     try {
+      if (!isValidOptionalEmail(form.email)) {
+        toast$2.error("Enter a valid email address");
+        console.warn("[EditPropertyModal] Submit blocked: invalid email", {
+          email: form.email
+        });
+        return;
+      }
+      if (locationInputMode === "addressUrl" && !isValidOptionalUrl(form.addressUrl)) {
+        toast$2.error("Enter a valid address URL");
+        console.warn("[EditPropertyModal] Submit blocked: invalid address URL", {
+          addressUrl: form.addressUrl
+        });
+        return;
+      }
+      if (!isValidOptionalUrl(form.bookingEngineUrl)) {
+        toast$2.error("Enter a valid booking engine URL");
+        console.warn(
+          "[EditPropertyModal] Submit blocked: invalid booking engine URL",
+          {
+            bookingEngineUrl: form.bookingEngineUrl
+          }
+        );
+        return;
+      }
+      const invalidNearbyLocation = form.nearbyLocations.find(
+        (loc) => loc.googleMapLink && !isValidOptionalUrl(loc.googleMapLink)
+      );
+      if (invalidNearbyLocation) {
+        toast$2.error("Enter a valid nearby location map link");
+        console.warn(
+          "[EditPropertyModal] Submit blocked: invalid nearby map link",
+          invalidNearbyLocation
+        );
+        return;
+      }
       if (locationInputMode === "coordinates") {
         const hasLatitude = form.latitude !== "" && form.latitude !== null;
         const hasLongitude = form.longitude !== "" && form.longitude !== null;
@@ -44795,6 +45676,7 @@ function EditPropertyModal({
       "form",
       {
         onSubmit: handleSubmit,
+        noValidate: true,
         className: "flex flex-col flex-1 overflow-hidden",
         children: [
           /* @__PURE__ */ jsx("div", { className: "flex-1 overflow-y-auto px-7 py-6", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-x-5 gap-y-4", children: [
@@ -44921,7 +45803,7 @@ function EditPropertyModal({
             locationInputMode === "addressUrl" && /* @__PURE__ */ jsx(Field$8, { label: "Main Address URL", icon: LinkIcon, span: 2, children: /* @__PURE__ */ jsx(
               "input",
               {
-                type: "url",
+                type: "text",
                 value: form.addressUrl,
                 onChange: (e) => set("addressUrl", e.target.value),
                 placeholder: "https://maps.google.com/...",
@@ -44982,7 +45864,7 @@ function EditPropertyModal({
             /* @__PURE__ */ jsx(Field$8, { label: "Email", icon: LinkIcon, children: /* @__PURE__ */ jsx(
               "input",
               {
-                type: "email",
+                type: "text",
                 value: form.email,
                 onChange: (e) => set("email", e.target.value),
                 placeholder: "hello@gmail.com",
@@ -45012,7 +45894,7 @@ function EditPropertyModal({
             /* @__PURE__ */ jsx(Field$8, { label: "Booking Engine URL", icon: LinkIcon, span: 2, children: /* @__PURE__ */ jsx(
               "input",
               {
-                type: "url",
+                type: "text",
                 value: form.bookingEngineUrl,
                 onChange: (e) => set("bookingEngineUrl", e.target.value),
                 placeholder: "https://book.example.com/property",
@@ -45069,7 +45951,7 @@ function EditPropertyModal({
                       /* @__PURE__ */ jsx(
                         "input",
                         {
-                          type: "url",
+                          type: "text",
                           placeholder: "Google Map Link (optional)",
                           className: `${inputCls} flex-1`,
                           value: loc.googleMapLink,
@@ -60303,16 +61185,16 @@ const isRestaurantType$1 = (value) => ["restaurant", "resturant"].includes(norma
 const normalizeHeroSlides = (data) => (Array.isArray(data) ? data : []).filter((item) => item.active === true).sort((a, b) => b.id - a.id).slice(0, 3).map((item) => {
   const backgroundMedia = item.backgroundAll?.[0] || item.backgroundLight?.[0] || item.backgroundDark?.[0] || null;
   if (!backgroundMedia?.url) return null;
-  const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "DINING";
+  const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "";
   return {
     id: item.id,
-    tag: item.ctaText || "Dining Experience",
-    title: item.mainTitle || "",
-    desc: item.subTitle || "",
+    tag: item.ctaText || null,
+    title: item.mainTitle || null,
+    desc: item.subTitle || null,
     img: backgroundMedia.url,
     isVideo: backgroundMedia.type === "VIDEO",
     bgTitle: primaryWord.toUpperCase(),
-    ctaText: item.ctaText || "Reserve"
+    ctaText: item.ctaText || null
   };
 }).filter(Boolean);
 const normalizeOffers$1 = async (offersRes) => {

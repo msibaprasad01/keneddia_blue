@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { colors } from "@/lib/colors/colors";
 import {
   ChevronLeft,
   ChevronRight,
+  Filter,
   Loader2,
   Trash2,
   Video,
@@ -21,6 +22,8 @@ import {
   addGuestExperineceRatingHeader,
   getGuestExperineceRatingHeader,
   EditGuestExperineceRatingHeader,
+  getAllProperties,
+  getPropertyTypes,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 
@@ -61,6 +64,12 @@ function GuestExp() {
   });
   const [savingRating, setSavingRating] = useState(false);
   const [ratingData, setRatingData] = useState(null);
+
+  // Filter state
+  const [filterPropertyId, setFilterPropertyId] = useState("");
+  const [filterTypeId, setFilterTypeId] = useState("");
+  const [properties, setProperties] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
 
   // Fetch header
   const fetchHeader = useCallback(async () => {
@@ -140,11 +149,42 @@ function GuestExp() {
     }
   }, []);
 
+  // Fetch properties for the filter dropdown
+  const fetchProperties = useCallback(async () => {
+    try {
+      const res = await getAllProperties();
+      const data = res.data?.data || res.data || res;
+      if (Array.isArray(data))
+        setProperties(data.filter((p) => p.isActive));
+    } catch (err) {
+      console.error("Failed to load properties", err);
+    }
+  }, []);
+
+  // Fetch property types for the filter dropdown
+  const fetchPropertyTypes = useCallback(async () => {
+    try {
+      const res = await getPropertyTypes();
+      const data = res.data?.data || res.data || res;
+      if (Array.isArray(data))
+        setPropertyTypes(data.filter((t) => t.isActive));
+    } catch (err) {
+      console.error("Failed to load property types", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchHeader();
     fetchRating();
     fetchGuestExperience();
-  }, [fetchHeader, fetchGuestExperience]);
+    fetchProperties();
+    fetchPropertyTypes();
+  }, [fetchHeader, fetchGuestExperience, fetchProperties, fetchPropertyTypes]);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterPropertyId, filterTypeId]);
 
   const openModal = () => {
     setForm({
@@ -200,8 +240,20 @@ function GuestExp() {
     }
   };
 
-  const totalPages = Math.ceil(experiences.length / itemsPerPage);
-  const currentExperiences = experiences.slice(
+  const filteredExperiences = useMemo(() => {
+    return experiences.filter((exp) => {
+      const matchProperty =
+        filterPropertyId === "" ||
+        exp.propertyId === Number(filterPropertyId);
+      const matchType =
+        filterTypeId === "" ||
+        exp.propertyTypeId === Number(filterTypeId);
+      return matchProperty && matchType;
+    });
+  }, [experiences, filterPropertyId, filterTypeId]);
+
+  const totalPages = Math.ceil(filteredExperiences.length / itemsPerPage);
+  const currentExperiences = filteredExperiences.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
@@ -399,13 +451,87 @@ function GuestExp() {
         className="rounded-lg shadow-sm overflow-hidden"
         style={{ backgroundColor: colors.contentBg }}
       >
-        <div className="p-5 border-b" style={{ borderColor: colors.border }}>
-          <h3
-            className="text-sm font-semibold"
-            style={{ color: colors.textPrimary }}
-          >
-            Guest Experiences List
-          </h3>
+        <div
+          className="p-5 border-b flex flex-col sm:flex-row sm:items-center gap-3"
+          style={{ borderColor: colors.border }}
+        >
+          <div className="flex items-center gap-2 flex-1">
+            <Filter size={14} style={{ color: colors.primary }} />
+            <h3
+              className="text-sm font-semibold"
+              style={{ color: colors.textPrimary }}
+            >
+              Guest Experiences
+            </h3>
+            <span
+              className="ml-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+              style={{
+                backgroundColor: colors.primary + "18",
+                color: colors.primary,
+              }}
+            >
+              {filteredExperiences.length} of {experiences.length}
+            </span>
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Property filter */}
+            <select
+              value={filterPropertyId}
+              onChange={(e) => setFilterPropertyId(e.target.value)}
+              className="text-xs px-2.5 py-1.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/30 min-w-[150px]"
+              style={{
+                backgroundColor: colors.mainBg,
+                borderColor: filterPropertyId ? colors.primary : colors.border,
+                color: colors.textPrimary,
+              }}
+            >
+              <option value="">All Properties</option>
+              {properties.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.propertyName}
+                </option>
+              ))}
+            </select>
+
+            {/* Type filter */}
+            <select
+              value={filterTypeId}
+              onChange={(e) => setFilterTypeId(e.target.value)}
+              className="text-xs px-2.5 py-1.5 rounded-lg border outline-none focus:ring-2 focus:ring-primary/30 min-w-[130px]"
+              style={{
+                backgroundColor: colors.mainBg,
+                borderColor: filterTypeId ? colors.primary : colors.border,
+                color: colors.textPrimary,
+              }}
+            >
+              <option value="">All Types</option>
+              {propertyTypes.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.typeName}
+                </option>
+              ))}
+            </select>
+
+            {/* Clear filters */}
+            {(filterPropertyId || filterTypeId) && (
+              <button
+                onClick={() => {
+                  setFilterPropertyId("");
+                  setFilterTypeId("");
+                }}
+                className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border transition-colors hover:bg-red-50"
+                style={{
+                  borderColor: "#ef4444",
+                  color: "#ef4444",
+                }}
+                title="Clear filters"
+              >
+                <X size={12} /> Clear
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -590,7 +716,10 @@ function GuestExp() {
           style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}
         >
           <span className="text-xs" style={{ color: colors.textSecondary }}>
-            Showing {currentExperiences.length} of {experiences.length} items
+            Showing {currentExperiences.length} of {filteredExperiences.length} items
+            {(filterPropertyId || filterTypeId) && (
+              <span style={{ color: colors.primary }}> (filtered)</span>
+            )}
           </span>
           <div className="flex items-center gap-2">
             <button

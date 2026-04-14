@@ -654,28 +654,53 @@ export default function AutoTestimonials({ propertyId }) {
             </div>
           </div>
 
-          {/* RIGHT: Marquee carousel */}
+          {/* RIGHT: Marquee carousel / static grid */}
           <div className="lg:col-span-7 h-[650px] relative rounded-[2.5rem] overflow-hidden border border-zinc-100 dark:border-white/10 bg-zinc-50/50 dark:bg-white/[0.02] backdrop-blur-2xl">
             {loading ? (
               <div className="h-full flex items-center justify-center">
                 <Loader2 className="animate-spin text-primary" size={28} />
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-6 h-full p-6 overflow-hidden relative group">
-                <div className="flex flex-col gap-6 animate-marquee-up marquee-col">
-                  {[...displayCol1, ...displayCol1].map((item, i) => (
-                    <FeedbackCard key={`up-${item.id}-${i}`} item={item} />
-                  ))}
+            ) : (() => {
+              // Only animate (and duplicate for infinite scroll) when there are
+              // enough items that both copies won't be visible at the same time.
+              // Threshold: > 4 total items (> 2 per column).
+              const useMarquee = displayData.length > 4;
+
+              if (useMarquee) {
+                return (
+                  <div className="grid grid-cols-2 gap-6 h-full p-6 overflow-hidden relative group">
+                    <div className="flex flex-col gap-6 animate-marquee-up marquee-col">
+                      {[...displayCol1, ...displayCol1].map((item, i) => (
+                        <FeedbackCard key={`up-${item.id}-${i}`} item={item} />
+                      ))}
+                    </div>
+                    <div className="flex flex-col gap-6 animate-marquee-down marquee-col">
+                      {[...displayCol2, ...displayCol2].map((item, i) => (
+                        <FeedbackCard key={`dn-${item.id}-${i}`} item={item} />
+                      ))}
+                    </div>
+                    <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" />
+                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" />
+                  </div>
+                );
+              }
+
+              // Static grid — no animation, no duplication
+              return (
+                <div className="grid grid-cols-2 gap-6 h-full p-6 overflow-y-auto relative">
+                  <div className="flex flex-col gap-6">
+                    {displayCol1.map((item) => (
+                      <FeedbackCard key={`s1-${item.id}`} item={item} />
+                    ))}
+                  </div>
+                  <div className="flex flex-col gap-6">
+                    {displayCol2.map((item) => (
+                      <FeedbackCard key={`s2-${item.id}`} item={item} />
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-col gap-6 animate-marquee-down marquee-col">
-                  {[...displayCol2, ...displayCol2].map((item, i) => (
-                    <FeedbackCard key={`dn-${item.id}-${i}`} item={item} />
-                  ))}
-                </div>
-                <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" />
-                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" />
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </div>

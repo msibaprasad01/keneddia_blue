@@ -43,16 +43,16 @@ const normalizeHeroSlides = (data) =>
         item.backgroundDark?.[0] ||
         null;
       if (!backgroundMedia?.url) return null;
-      const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "DINING";
+      const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "";
       return {
         id: item.id,
-        tag: item.ctaText || "Dining Experience",
-        title: item.mainTitle || "",
-        desc: item.subTitle || "",
+        tag: item.ctaText || null,
+        title: item.mainTitle || null,
+        desc: item.subTitle || null,
         img: backgroundMedia.url,
         isVideo: backgroundMedia.type === "VIDEO",
         bgTitle: primaryWord.toUpperCase(),
-        ctaText: item.ctaText || "Reserve",
+        ctaText: item.ctaText || null,
       };
     })
     .filter(Boolean);
@@ -136,6 +136,7 @@ const normalizeProperties = (response) => {
         cuisines: amenities.slice(0, 6),
         highlightedAmenities: highlightedAmenities.filter(Boolean),
         nearbyLocation: parent?.nearbyLocations?.[0]?.nearbyLocationName || parent?.locationName || "",
+        area: parent?.area || null,
         serviceHours: "Open Daily",
         googleMapLink: parent?.nearbyLocations?.[0]?.googleMapLink || parent?.addressUrl || "",
         isActive: parent?.isActive && (listing ? listing?.isActive : true),
