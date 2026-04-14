@@ -10,6 +10,7 @@ import { ChevronRight, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { validateReservationForm } from "@/lib/validation/reservationValidation";
 
 const FALLBACK = {
   header1: "Reserve Your",
@@ -32,10 +33,13 @@ export default function CafeReservationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [formData, setFormData] = useState(EMPTY_FORM);
+  const [errors, setErrors] = useState({});
   const containerRef = useRef(null);
 
-  const setField = (key, value) =>
+  const setField = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: null }));
+  };
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -46,16 +50,12 @@ export default function CafeReservationForm() {
   const smoothFormY = useSpring(formY, { stiffness: 100, damping: 30 });
 
   const handleNext = () => {
-    const { guestName, contactNumber, date, time, totalGuest } = formData;
-    if (
-      !guestName.trim() ||
-      !contactNumber.trim() ||
-      !date ||
-      !time ||
-      !totalGuest
-    ) {
+    const errs = validateReservationForm(formData);
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
       return;
     }
+    setErrors({});
     setSubmitError(null);
     setCurrentStep(2);
   };
@@ -150,73 +150,72 @@ export default function CafeReservationForm() {
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label className="text-[10px] uppercase tracking-widest text-primary">
-                            Guest Name
+                            Guest Name <span className="text-red-500">*</span>
                           </Label>
                           <Input
-                            required
                             value={formData.guestName}
-                            onChange={(e) =>
-                              setField("guestName", e.target.value)
-                            }
-                            className="bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 transition-all focus:ring-primary"
-                            placeholder="Full Name"
+                            onChange={(e) => setField("guestName", e.target.value)}
+                            className={`bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 transition-all focus:ring-primary ${errors.guestName ? "border-red-500 focus:ring-red-400" : "border-zinc-200 dark:border-white/10"}`}
+                            placeholder="Full Name (letters only)"
                           />
+                          {errors.guestName && <p className="text-xs text-red-500 mt-1">{errors.guestName}</p>}
                         </div>
                         <div className="space-y-2">
                           <Label className="text-[10px] uppercase tracking-widest text-primary">
-                            Contact Number
+                            Contact Number <span className="text-red-500">*</span>
                           </Label>
                           <Input
-                            required
+                            type="tel"
+                            maxLength={10}
                             value={formData.contactNumber}
-                            onChange={(e) =>
-                              setField("contactNumber", e.target.value)
-                            }
-                            className="bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 transition-all focus:ring-primary"
-                            placeholder="+91"
+                            onChange={(e) => setField("contactNumber", e.target.value.replace(/\D/g, ""))}
+                            className={`bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 transition-all focus:ring-primary ${errors.contactNumber ? "border-red-500 focus:ring-red-400" : "border-zinc-200 dark:border-white/10"}`}
+                            placeholder="10-digit mobile number"
                           />
+                          {errors.contactNumber && <p className="text-xs text-red-500 mt-1">{errors.contactNumber}</p>}
                         </div>
                       </div>
 
                       <div className="grid md:grid-cols-3 gap-6">
                         <div className="space-y-2">
                           <Label className="text-[10px] uppercase tracking-widest text-primary">
-                            Select Date
+                            Select Date <span className="text-red-500">*</span>
                           </Label>
                           <Input
-                            required
                             type="date"
                             value={formData.date}
+                            min={new Date().toISOString().split("T")[0]}
                             onChange={(e) => setField("date", e.target.value)}
-                            className="bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                            className={`bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 dark:text-white ${errors.date ? "border-red-500" : "border-zinc-200 dark:border-white/10"}`}
                           />
+                          {errors.date && <p className="text-xs text-red-500 mt-1">{errors.date}</p>}
                         </div>
                         <div className="space-y-2">
                           <Label className="text-[10px] uppercase tracking-widest text-primary">
-                            Select Time
+                            Select Time <span className="text-red-500">*</span>
                           </Label>
                           <Input
-                            required
                             type="time"
                             value={formData.time}
                             onChange={(e) => setField("time", e.target.value)}
-                            className="bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                            className={`bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 dark:text-white ${errors.time ? "border-red-500" : "border-zinc-200 dark:border-white/10"}`}
                           />
+                          {errors.time && <p className="text-xs text-red-500 mt-1">{errors.time}</p>}
                         </div>
                         <div className="space-y-2">
                           <Label className="text-[10px] uppercase tracking-widest text-primary">
-                            Total Guests
+                            Total Guests <span className="text-red-500">*</span>
                           </Label>
                           <Input
-                            required
                             type="number"
                             min="1"
+                            max="500"
                             value={formData.totalGuest}
-                            onChange={(e) =>
-                              setField("totalGuest", e.target.value)
-                            }
-                            className="bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                            onChange={(e) => setField("totalGuest", e.target.value)}
+                            className={`bg-zinc-100/50 dark:bg-white/5 rounded-xl h-14 dark:text-white ${errors.totalGuest ? "border-red-500" : "border-zinc-200 dark:border-white/10"}`}
+                            placeholder="1"
                           />
+                          {errors.totalGuest && <p className="text-xs text-red-500 mt-1">{errors.totalGuest}</p>}
                         </div>
                       </div>
 

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
 import { createJoiningUs, getAllMenuThumbnails } from "@/Api/RestaurantApi";
+import { validateName, validatePhone, validateDate, validateTime, validateGuests } from "@/lib/validation/reservationValidation";
 
 export default function CategoryMenu({
   menu,
@@ -31,6 +32,7 @@ export default function CategoryMenu({
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   const [thumbnails, setThumbnails] = useState([]);
 
@@ -145,7 +147,28 @@ export default function CategoryMenu({
     setShowOrderModal(true);
   };
 
+  const setModalField = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: null }));
+  };
+
   const handleFinalSubmit = async () => {
+    const errs = {};
+    const nameErr = validateName(formData.name);
+    if (nameErr) errs.name = nameErr;
+    const phoneErr = validatePhone(formData.phone);
+    if (phoneErr) errs.phone = phoneErr;
+    const dateErr = validateDate(formData.date);
+    if (dateErr) errs.date = dateErr;
+    const timeErr = validateTime(formData.time);
+    if (timeErr) errs.time = timeErr;
+    const guestErr = validateGuests(formData.totalGuest);
+    if (guestErr) errs.totalGuest = guestErr;
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
+      return;
+    }
+    setFormErrors({});
     setIsSubmitting(true);
     try {
       const currentCategory = menu[activeTab]?.category || "General";
@@ -164,6 +187,7 @@ export default function CategoryMenu({
       await createJoiningUs(payload);
       toast.success("Request sent successfully!");
       setShowOrderModal(false);
+      setFormErrors({});
       setFormData({
         name: "",
         phone: "",
@@ -417,62 +441,87 @@ export default function CategoryMenu({
               </div>
 
               <div className="p-6 space-y-4">
+                <p className="text-[10px] text-zinc-400">
+                  Fields marked <span className="text-red-500 font-bold">*</span> are required.
+                </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">Full Name</label>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                      Full Name <span className="text-red-500">*</span>
+                      <span className="ml-1 font-normal normal-case tracking-normal text-zinc-400">(letters only)</span>
+                    </label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
                       <Input
                         value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Your Name"
-                        className="pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                        onChange={(e) => setModalField("name", e.target.value)}
+                        placeholder="Full Name"
+                        className={`pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl ${formErrors.name ? "border-red-500" : "border-none"}`}
                       />
                     </div>
+                    {formErrors.name && <p className="text-[10px] text-red-500 mt-0.5">{formErrors.name}</p>}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">Phone Number</label>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                      Phone <span className="text-red-500">*</span>
+                      <span className="ml-1 font-normal normal-case tracking-normal text-zinc-400">(10 digits)</span>
+                    </label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
                       <Input
+                        type="tel"
+                        maxLength={10}
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="+91"
-                        className="pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                        onChange={(e) => setModalField("phone", e.target.value.replace(/\D/g, ""))}
+                        placeholder="10-digit number"
+                        className={`pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl ${formErrors.phone ? "border-red-500" : "border-none"}`}
                       />
                     </div>
+                    {formErrors.phone && <p className="text-[10px] text-red-500 mt-0.5">{formErrors.phone}</p>}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">Date</label>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                      Date <span className="text-red-500">*</span>
+                    </label>
                     <Input
                       type="date"
                       value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => setModalField("date", e.target.value)}
+                      className={`h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl ${formErrors.date ? "border-red-500" : "border-none"}`}
                     />
+                    {formErrors.date && <p className="text-[10px] text-red-500 mt-0.5">{formErrors.date}</p>}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">Arrival Time</label>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                      Arrival Time <span className="text-red-500">*</span>
+                    </label>
                     <Input
                       type="time"
                       value={formData.time}
-                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                      className="h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                      onChange={(e) => setModalField("time", e.target.value)}
+                      className={`h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl ${formErrors.time ? "border-red-500" : "border-none"}`}
                     />
+                    {formErrors.time && <p className="text-[10px] text-red-500 mt-0.5">{formErrors.time}</p>}
                   </div>
 
                   <div className="space-y-1 col-span-2">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">Total Guests</label>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                      Total Guests <span className="text-red-500">*</span>
+                      <span className="ml-1 font-normal normal-case tracking-normal text-zinc-400">(min 1)</span>
+                    </label>
                     <Input
                       type="number"
                       min="1"
+                      max="500"
                       value={formData.totalGuest}
-                      onChange={(e) => setFormData({ ...formData, totalGuest: e.target.value })}
-                      className="h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                      onChange={(e) => setModalField("totalGuest", e.target.value)}
+                      className={`h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl ${formErrors.totalGuest ? "border-red-500" : "border-none"}`}
                     />
+                    {formErrors.totalGuest && <p className="text-[10px] text-red-500 mt-0.5">{formErrors.totalGuest}</p>}
                   </div>
                 </div>
 
@@ -484,7 +533,7 @@ export default function CategoryMenu({
                 </div>
 
                 <Button
-                  disabled={isSubmitting || !formData.name || !formData.phone || !formData.date || !formData.time}
+                  disabled={isSubmitting}
                   onClick={handleFinalSubmit}
                   className="w-full h-11 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
                 >
