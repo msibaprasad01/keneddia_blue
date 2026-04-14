@@ -627,7 +627,7 @@ function GroupBookingHeaderTab() {
 // ══════════════════════════════════════════════════════════════════════════════
 const SUB_TABS = [
   { id: "menu", label: "Menu Header", icon: BookOpen, component: MenuHeaderTab },
-  { id: "group", label: "Group Booking Header", icon: Users, component: GroupBookingHeaderTab },
+  // { id: "group", label: "Group Booking Header", icon: Users, component: GroupBookingHeaderTab },
 ];
 
 function HotelHomepage() {
