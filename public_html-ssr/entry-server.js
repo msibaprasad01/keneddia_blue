@@ -9,7 +9,7 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva } from "class-variance-authority";
-import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, UtensilsCrossed, MapPin, ChevronDown, Check, Sun, Moon, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, Building2, ArrowRight as ArrowRight$1, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, Leaf, SunMedium, Waves, MoonStar, Gift, Map as Map$1, CalendarClock, BriefcaseBusiness, CalendarCheck2, HandPlatter, PlayCircle, Menu, ShoppingCart, LogOut, Home as Home$1, Save, Plus, Ruler, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, Filter, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Zap, Tags } from "lucide-react";
+import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, UtensilsCrossed, MapPin, ChevronDown, Check, Sun, Moon, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, Building2, ArrowRight as ArrowRight$1, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, Leaf, SunMedium, Waves, MoonStar, Gift, Map as Map$1, CalendarClock, BriefcaseBusiness, CalendarCheck2, HandPlatter, PlayCircle, Menu, ShoppingCart, LogOut, Home as Home$1, Save, Plus, Ruler, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, Filter, FilterX, Inbox, DollarSign, Newspaper, Building, Hotel as Hotel$1, Layers, LinkIcon, Zap, Tags } from "lucide-react";
 import { toast as toast$3, ToastContainer } from "react-toastify";
 import { useLocation, useNavigate, Link, useParams, useSearchParams, Route, Navigate, Routes } from "react-router-dom";
 import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
@@ -21,6 +21,7 @@ import * as LabelPrimitive from "@radix-ui/react-label";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Navigation, Pagination as Pagination$2 } from "swiper/modules";
 import { toast as toast$2 } from "react-hot-toast";
+import { InstagramEmbed } from "react-social-media-embed";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import ReactCalendar from "react-calendar";
 import { addDays, format, isBefore, parseISO, startOfToday } from "date-fns";
@@ -1345,6 +1346,7 @@ const getChefRemarks = () => API.get("api/v1/chef-remarks/getChefRemarks");
 const updateChefRemark = (id, data) => API.patch(`api/v1/chef-remarks/updateChefRemark/${id}`, data);
 const createMenuHeaderSection = (formData) => API.post("api/v1/menu-sections/createMenu", formData, { headers: { "Content-Type": "multipart/form-data" } });
 const getMenuHeaders = () => API.get("api/v1/menu-sections/getMenus");
+const getMenuSectionsByPropertyTypeId = (typeId) => API.get(`api/v1/menu-sections/getMenuSectionsByPropertyTypeId/${typeId}`);
 const updateMenuHeadersSection = (id, data) => API.patch(`api/v1/menu-sections/updateMenu/${id}`, data);
 const createTestimonialHeader = (data) => API.post("api/v1/testimonial/createTestimonial", data);
 const getActiveTestimonialHeaders = () => API.get("api/v1/testimonial/getActiveTestimonials");
@@ -5181,26 +5183,13 @@ function OurStoryPreview({
       if (isInstagramUrl$2(m.url)) {
         const id = getInstagramId$2(m.url);
         if (!id) return null;
-        const embedUrl = `https://www.instagram.com/reel/${id}/embed/?autoplay=1&muted=1`;
         return /* @__PURE__ */ jsxs(
           "div",
           {
             className: "relative w-full h-full bg-black overflow-hidden flex items-center justify-center group",
             onClick: () => console.log("Container Tapped for Reel:", id),
             children: [
-              /* @__PURE__ */ jsx(
-                "iframe",
-                {
-                  src: embedUrl,
-                  title: "Instagram Reel",
-                  className: "absolute w-full h-[145%] pointer-events-auto",
-                  style: {
-                    // border: "2px solid red", // DEBUG: Red border = The actual Iframe
-                    top: "-22.5%"
-                  },
-                  allow: "autoplay; encrypted-media"
-                }
-              ),
+              /* @__PURE__ */ jsx("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]", children: /* @__PURE__ */ jsx(InstagramEmbed, { url: `https://www.instagram.com/p/${id}/`, width: 328 }) }),
               /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-0 pointer-events-none" }),
               /* @__PURE__ */ jsx(
                 "a",
@@ -11376,26 +11365,13 @@ function HotelReviewsSection({
       if (isInstagramUrl$1(m.url)) {
         const id = getInstagramId$1(m.url);
         if (!id) return null;
-        const embedUrl = `https://www.instagram.com/reel/${id}/embed/?autoplay=1&muted=1`;
         return /* @__PURE__ */ jsxs(
           "div",
           {
             className: "relative w-full h-full bg-black overflow-hidden flex items-center justify-center group",
             onClick: () => console.log("Container Tapped for Reel:", id),
             children: [
-              /* @__PURE__ */ jsx(
-                "iframe",
-                {
-                  src: embedUrl,
-                  title: "Instagram Reel",
-                  className: "absolute w-full h-[145%] pointer-events-auto",
-                  style: {
-                    // border: "2px solid red", // DEBUG: Red border = The actual Iframe
-                    top: "-22.5%"
-                  },
-                  allow: "autoplay; encrypted-media"
-                }
-              ),
+              /* @__PURE__ */ jsx("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]", children: /* @__PURE__ */ jsx(InstagramEmbed, { url: `https://www.instagram.com/p/${id}/`, width: 328 }) }),
               /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-0 pointer-events-none" }),
               /* @__PURE__ */ jsx(
                 "a",
@@ -13137,10 +13113,10 @@ function HotelHeroSection({ slides, loading }) {
   ] });
 }
 const HotelCarouselSection = lazy(
-  () => import("./assets/HotelCarouselSection-CvZ8w7ZI.js")
+  () => import("./assets/HotelCarouselSection-BqIx1pYw.js")
 );
 const QuickBooking = lazy(
-  () => import("./assets/QuickBooking-BBHDGiHQ.js")
+  () => import("./assets/QuickBooking-GSn7HUxo.js")
 );
 const HOTEL_NAV_ITEMS = [
   { type: "link", label: "OVERVIEW", key: "overview", href: "#overview" },
@@ -20273,49 +20249,7 @@ function AutoTestimonials({ propertyId }) {
   const ytThumb = formData.ytLink.trim() && isYoutubeUrl$2(formData.ytLink) ? getYoutubeThumbnail$1(formData.ytLink) : null;
   experiences.filter((_, i) => i % 2 === 0);
   experiences.filter((_, i) => i % 2 === 1);
-  const FALLBACK2 = [
-    {
-      id: "f1",
-      author: "Arjun Mehta",
-      description: "The Signature Butter Chicken is easily the best in town. Incredible atmosphere!",
-      rating: 5,
-      mediaList: [],
-      imageUrl: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=400"
-    },
-    {
-      id: "f2",
-      author: "Sarah Khan",
-      description: "A perfect spot for family gatherings. The staff is exceptionally polite.",
-      rating: 5,
-      mediaList: [],
-      imageUrl: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=400"
-    },
-    {
-      id: "f3",
-      author: "Priya Das",
-      description: "Love the Dim Sum platter. Flavors are authentic and presentation top-notch.",
-      rating: 4,
-      mediaList: [],
-      imageUrl: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?q=80&w=400"
-    },
-    {
-      id: "f4",
-      author: "Rohan V.",
-      description: "The live music on weekends pairs perfectly with their Tandoori Jhinga.",
-      rating: 5,
-      mediaList: [],
-      imageUrl: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=400"
-    },
-    {
-      id: "f5",
-      author: "Elena G.",
-      description: "Sophisticated settings and very clean. Highly recommend for corporate dinners.",
-      rating: 5,
-      mediaList: [],
-      imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=400"
-    }
-  ];
-  const displayData = experiences.length > 0 ? experiences : FALLBACK2;
+  const displayData = experiences;
   const displayCol1 = displayData.filter((_, i) => i % 2 === 0);
   const displayCol2 = displayData.filter((_, i) => i % 2 === 1);
   const extractRatingFromTitle = (title = "") => {
@@ -27017,7 +26951,7 @@ function AnimatedCounter$1({ target }) {
   }, [target]);
   return /* @__PURE__ */ jsx("span", { children: count2.toLocaleString() });
 }
-function RestaurantBestSellers({ initialItems }) {
+function RestaurantBestSellers({ initialItems, restaurantTypeId }) {
   const ssrLoaded = Array.isArray(initialItems) && initialItems.length > 0;
   const [activeFilter, setActiveFilter] = useState("Veg");
   const [expanded, setExpanded] = useState(false);
@@ -27034,6 +26968,20 @@ function RestaurantBestSellers({ initialItems }) {
     mobileNumber: "",
     description: ""
   });
+  const [headerData, setHeaderData] = useState(null);
+  useEffect(() => {
+    const typeId = restaurantTypeId || 1;
+    getMenuSectionsByPropertyTypeId(typeId).then((res) => {
+      const data = res.data?.data || res.data;
+      if (Array.isArray(data)) {
+        const activeHeader = data.find((h) => h.isActive);
+        if (activeHeader) setHeaderData(activeHeader);
+        else if (data.length > 0) setHeaderData(data[0]);
+      } else if (data) {
+        setHeaderData(data);
+      }
+    }).catch((err) => console.error(err));
+  }, [restaurantTypeId]);
   useEffect(() => {
     if (ssrLoaded) return;
     getMenuItemsByTopSold(true).then((res) => {
@@ -27141,10 +27089,11 @@ function RestaurantBestSellers({ initialItems }) {
             "Menu Spotlight"
           ] }),
           /* @__PURE__ */ jsxs("h2", { className: "mb-2 text-3xl font-serif text-foreground md:text-4xl", children: [
-            "Best Seller ",
-            /* @__PURE__ */ jsx("span", { className: "italic text-primary", children: "Dishes" })
+            headerData ? headerData.part1 : "Best Seller",
+            " ",
+            /* @__PURE__ */ jsx("span", { className: "italic text-primary", children: headerData ? headerData.part2 : "Dishes" })
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "max-w-[80%]", children: /* @__PURE__ */ jsx("p", { className: "text-sm font-light leading-relaxed text-muted-foreground", children: "Discover our best seller selection, then browse it by veg and non-veg in the same signature menu showcase format as the restaurant detail page." }) })
+          /* @__PURE__ */ jsx("div", { className: "max-w-[80%]", children: /* @__PURE__ */ jsx("p", { className: "text-sm font-light leading-relaxed text-muted-foreground whitespace-pre-line", children: headerData ? headerData.description : "Discover our best seller selection, then browse it by veg and\nnon-veg in the same signature menu showcase format as the\nrestaurant detail page." }) })
         ] }),
         /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center gap-2", children: FILTERS$1.map((filter) => /* @__PURE__ */ jsx(
           "button",
@@ -28613,22 +28562,12 @@ function RestaurantGuestReviews({
       if (isInstagramUrl(m.url)) {
         const id = getInstagramId(m.url);
         if (!id) return null;
-        const embedUrl = `https://www.instagram.com/reel/${id}/embed/?autoplay=1&muted=1`;
         return /* @__PURE__ */ jsxs(
           "div",
           {
             className: "relative flex h-full w-full items-center justify-center overflow-hidden bg-black group",
             children: [
-              /* @__PURE__ */ jsx(
-                "iframe",
-                {
-                  src: embedUrl,
-                  title: "Instagram Reel",
-                  className: "absolute h-[145%] w-full pointer-events-auto",
-                  style: { top: "-22.5%" },
-                  allow: "autoplay; encrypted-media"
-                }
-              ),
+              /* @__PURE__ */ jsx("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]", children: /* @__PURE__ */ jsx(InstagramEmbed, { url: `https://www.instagram.com/p/${id}/`, width: 328 }) }),
               /* @__PURE__ */ jsx(
                 "a",
                 {
@@ -28844,16 +28783,7 @@ function RestaurantGuestReviews({
             }
           ),
           /* @__PURE__ */ jsx("div", { className: "absolute inset-0 flex items-center justify-center bg-black/25", children: /* @__PURE__ */ jsx(PlayCircle, { className: "h-8 w-8 text-white drop-shadow" }) })
-        ] }) : instaId ? /* @__PURE__ */ jsx("div", { className: "relative h-44 w-full overflow-hidden bg-black", children: /* @__PURE__ */ jsx(
-          "iframe",
-          {
-            src: `https://www.instagram.com/reel/${instaId}/embed/?autoplay=1&muted=1`,
-            title: "Instagram Reel Preview",
-            className: "absolute h-[145%] w-full",
-            style: { top: "-22.5%" },
-            allow: "autoplay; encrypted-media"
-          }
-        ) }) : null }),
+        ] }) : instaId ? /* @__PURE__ */ jsx("div", { className: "relative h-44 w-full overflow-hidden bg-black flex justify-center items-center", children: /* @__PURE__ */ jsx("div", { className: "absolute top-0 scale-[0.45] origin-top min-w-[328px] mt-2", children: /* @__PURE__ */ jsx(InstagramEmbed, { url: `https://www.instagram.com/p/${instaId}/`, width: 328 }) }) }) : null }),
         mediaPreviews.length > 0 && /* @__PURE__ */ jsx("div", { className: "mb-3 grid grid-cols-4 gap-2", children: mediaPreviews.map((m, i) => /* @__PURE__ */ jsxs(
           "div",
           {
@@ -29018,7 +28948,7 @@ function RestaurantHomepage() {
           /* @__PURE__ */ jsx("div", { id: "quick-booking", children: /* @__PURE__ */ jsx(RestaurantQuickBooking, {}) }),
           /* @__PURE__ */ jsx(RestaurantOffers, { initialOffers: ssr?.restaurantOffers }),
           /* @__PURE__ */ jsx(RestaurantProperties, { initialRestaurants: ssr?.restaurantProperties }),
-          /* @__PURE__ */ jsx(RestaurantBestSellers, { initialItems: ssr?.bestSellers }),
+          /* @__PURE__ */ jsx(RestaurantBestSellers, { initialItems: ssr?.bestSellers, restaurantTypeId: ssr?.restaurantTypeId }),
           /* @__PURE__ */ jsx(AboutRestaurant, { initialSections: ssr?.aboutSections }),
           /* @__PURE__ */ jsx(
             EventsSchedule,
@@ -31819,7 +31749,7 @@ function TakeawayTreats() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
-const RoomSelection = lazy(() => import("./assets/RoomSelection-qBgY05rX.js"));
+const RoomSelection = lazy(() => import("./assets/RoomSelection-S_Ieq-jq.js"));
 function withRouteSuspense(element) {
   return /* @__PURE__ */ jsx(
     Suspense,
@@ -43473,6 +43403,536 @@ function GroupBookings() {
     ] }) })
   ] });
 }
+const inp$8 = "w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 transition-all";
+const Field$9 = ({ label, children, required }) => /* @__PURE__ */ jsxs("div", { children: [
+  /* @__PURE__ */ jsxs(
+    "label",
+    {
+      className: "block text-[10px] font-bold uppercase tracking-wider mb-1.5",
+      style: { color: colors.textSecondary },
+      children: [
+        label,
+        required && /* @__PURE__ */ jsx("span", { className: "text-red-500 ml-0.5", children: "*" })
+      ]
+    }
+  ),
+  children
+] });
+function MenuHeaderTab() {
+  const [form, setForm] = useState({
+    part1: "",
+    part2: "",
+    description: "",
+    isActive: true,
+    propertyTypeId: "",
+    existingId: null
+  });
+  const [saving, setSaving] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [propertyTypes, setPropertyTypes] = useState([]);
+  const [loadingPropertyTypes, setLoadingPropertyTypes] = useState(false);
+  useEffect(() => {
+    const fetchInit = async () => {
+      setLoadingPropertyTypes(true);
+      try {
+        const pRes = await getPropertyTypes();
+        const pData = pRes.data?.data || pRes.data || pRes;
+        if (Array.isArray(pData)) setPropertyTypes(pData.filter((p) => p.isActive));
+      } catch {
+        toast$2.error("Failed to load property types");
+      } finally {
+        setLoadingPropertyTypes(false);
+      }
+    };
+    fetchInit();
+  }, []);
+  useEffect(() => {
+    if (!form.propertyTypeId) {
+      setForm((p) => ({
+        ...p,
+        part1: "",
+        part2: "",
+        description: "",
+        isActive: true,
+        existingId: null
+      }));
+      return;
+    }
+    const fetchHeader = async () => {
+      setFetching(true);
+      try {
+        const res = await getMenuSectionsByPropertyTypeId(form.propertyTypeId);
+        const data = res?.data?.data || res?.data;
+        let latest = null;
+        if (Array.isArray(data) && data.length > 0) {
+          latest = data.find((h) => h.isActive) || data[data.length - 1];
+        } else if (data && typeof data === "object" && !Array.isArray(data)) {
+          latest = data;
+        }
+        if (latest && latest.id) {
+          setForm((p) => ({
+            ...p,
+            part1: latest.part1 || "",
+            part2: latest.part2 || "",
+            description: latest.description || "",
+            isActive: latest.isActive ?? true,
+            existingId: latest.id
+          }));
+        } else {
+          setForm((p) => ({
+            ...p,
+            part1: "",
+            part2: "",
+            description: "",
+            isActive: true,
+            existingId: null
+          }));
+        }
+      } catch (error) {
+        toast$2.error("Failed to fetch menu section for this type");
+        setForm((p) => ({
+          ...p,
+          part1: "",
+          part2: "",
+          description: "",
+          isActive: true,
+          existingId: null
+        }));
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchHeader();
+  }, [form.propertyTypeId]);
+  const handleSave = async () => {
+    if (!form.propertyTypeId) return toast$2.error("Please select a Property Type");
+    if (!form.part1.trim()) return toast$2.error("Part 1 (heading) is required");
+    try {
+      setSaving(true);
+      const fd = new FormData();
+      fd.append("part1", form.part1.trim());
+      fd.append("part2", form.part2.trim());
+      fd.append("description", form.description.trim());
+      fd.append("isActive", String(form.isActive));
+      fd.append("propertyTypeId", form.propertyTypeId);
+      if (form.existingId) {
+        await updateMenuHeadersSection(form.existingId, fd);
+        toast$2.success("Menu header updated");
+      } else {
+        await createMenuHeaderSection(fd);
+        toast$2.success("Menu header created");
+      }
+      setForm((p) => ({ ...p }));
+    } catch {
+      toast$2.error("Failed to save menu header");
+    } finally {
+      setSaving(false);
+    }
+  };
+  return /* @__PURE__ */ jsx("div", { className: "space-y-4", children: /* @__PURE__ */ jsxs("div", { className: "border border-gray-100 rounded-xl overflow-hidden bg-white", children: [
+    /* @__PURE__ */ jsxs("div", { className: "bg-gray-50 px-4 py-3 border-b border-gray-100 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx("h3", { className: "text-xs font-black uppercase tracking-widest text-gray-400", children: "Menu Section Headline" }),
+      form.existingId && /* @__PURE__ */ jsx("span", { className: "text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded", children: "Editing existing" })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "p-4 space-y-4", children: [
+      /* @__PURE__ */ jsx("div", { className: "w-1/2", children: /* @__PURE__ */ jsx(Field$9, { label: "Property Type", half: true, children: /* @__PURE__ */ jsxs(
+        "select",
+        {
+          className: inp$8,
+          value: form.propertyTypeId,
+          onChange: (e) => setForm((p) => ({ ...p, propertyTypeId: e.target.value })),
+          disabled: loadingPropertyTypes || fetching,
+          children: [
+            /* @__PURE__ */ jsx("option", { value: "", children: "— Select Property Type —" }),
+            propertyTypes.map((t) => /* @__PURE__ */ jsx("option", { value: t.id, children: t.typeName }, t.id))
+          ]
+        }
+      ) }) }),
+      /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
+        /* @__PURE__ */ jsx(Field$9, { label: 'Part 1 (e.g. "Main Menu")', half: true, children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inp$8,
+            value: form.part1,
+            onChange: (e) => setForm((p) => ({ ...p, part1: e.target.value })),
+            placeholder: "Main Menu"
+          }
+        ) }),
+        /* @__PURE__ */ jsx(Field$9, { label: 'Part 2 (e.g. "South Indian")', half: true, children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inp$8,
+            value: form.part2,
+            onChange: (e) => setForm((p) => ({ ...p, part2: e.target.value })),
+            placeholder: "South Indian"
+          }
+        ) })
+      ] }),
+      /* @__PURE__ */ jsx(Field$9, { label: "Description", children: /* @__PURE__ */ jsx(
+        "textarea",
+        {
+          className: inp$8,
+          rows: 2,
+          value: form.description,
+          onChange: (e) => setForm((p) => ({ ...p, description: e.target.value })),
+          placeholder: "Short description here..."
+        }
+      ) }),
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsx(
+          "input",
+          {
+            type: "checkbox",
+            id: "headerActive",
+            checked: form.isActive,
+            onChange: (e) => setForm((p) => ({ ...p, isActive: e.target.checked })),
+            className: "rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          }
+        ),
+        /* @__PURE__ */ jsx("label", { htmlFor: "headerActive", className: "text-xs font-semibold text-gray-600", children: "Active" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "p-4 rounded-xl bg-gray-50 border border-gray-100 mt-2", children: [
+        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1", children: "Preview" }),
+        /* @__PURE__ */ jsxs("p", { className: "text-xl font-serif text-gray-900", children: [
+          form.part1 || "Part 1",
+          " ",
+          /* @__PURE__ */ jsx("em", { className: "text-rose-600 not-italic font-serif", children: form.part2 || "Part 2" })
+        ] }),
+        /* @__PURE__ */ jsx("p", { className: "text-xs text-gray-400 mt-1", children: form.description || "Description preview" })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "flex justify-end pt-1", children: /* @__PURE__ */ jsx(
+        "button",
+        {
+          onClick: handleSave,
+          disabled: saving,
+          className: "flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-bold bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-60",
+          children: saving ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(Loader2, { size: 14, className: "animate-spin" }),
+            " Saving…"
+          ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(Save, { size: 14 }),
+            " Save Headline"
+          ] })
+        }
+      ) })
+    ] })
+  ] }) });
+}
+function GroupBookingHeaderTab() {
+  const EMPTY2 = {
+    title: "",
+    description: "",
+    ctaText: "",
+    ctaLink: "",
+    numberOfPersons: "",
+    propertyId: "",
+    propertyTypeId: "",
+    existingId: null
+  };
+  const [form, setForm] = useState(EMPTY2);
+  const [saving, setSaving] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
+  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+  const fetchDropdowns = useCallback(async () => {
+    try {
+      setLoadingDropdowns(true);
+      const [propRes, typeRes] = await Promise.all([getAllProperties(), getPropertyTypes()]);
+      const props = propRes.data?.data || propRes.data || propRes;
+      const types = typeRes.data?.data || typeRes.data || typeRes;
+      if (Array.isArray(props)) setProperties(props.filter((p) => p.isActive));
+      if (Array.isArray(types)) setPropertyTypes(types.filter((t) => t.isActive));
+    } catch {
+      toast$2.error("Failed to load properties/types");
+    } finally {
+      setLoadingDropdowns(false);
+    }
+  }, []);
+  const fetchBookings = useCallback(async () => {
+    try {
+      setFetching(true);
+      const res = await getGroupBookings();
+      const data = res?.data || [];
+      setBookings(Array.isArray(data) ? data : []);
+    } catch {
+      toast$2.error("Failed to load group bookings");
+    } finally {
+      setFetching(false);
+    }
+  }, []);
+  useEffect(() => {
+    fetchDropdowns();
+    fetchBookings();
+  }, [fetchDropdowns, fetchBookings]);
+  const openAdd = () => {
+    setForm(EMPTY2);
+    setEditingId(null);
+    setShowForm(true);
+  };
+  const openEdit = (b) => {
+    setForm({
+      title: b.title || "",
+      description: b.description || "",
+      ctaText: b.ctaText || "",
+      ctaLink: b.ctaLink || "",
+      numberOfPersons: b.numberOfPersons ? String(b.numberOfPersons) : "",
+      propertyId: b.propertyId ? String(b.propertyId) : "",
+      propertyTypeId: b.propertyTypeId ? String(b.propertyTypeId) : "",
+      existingId: b.id
+    });
+    setEditingId(b.id);
+    setShowForm(true);
+  };
+  const handleSave = async () => {
+    if (!form.title.trim()) return toast$2.error("Title is required");
+    try {
+      setSaving(true);
+      const payload = {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        ctaText: form.ctaText.trim(),
+        ctaLink: form.ctaLink.trim(),
+        numberOfPersons: form.numberOfPersons ? Number(form.numberOfPersons) : null,
+        propertyId: form.propertyId ? Number(form.propertyId) : null,
+        propertyTypeId: form.propertyTypeId ? Number(form.propertyTypeId) : null
+      };
+      if (form.existingId) {
+        await updateGroupBooking(form.existingId, payload);
+        toast$2.success("Group booking header updated");
+      } else {
+        await addGroupBooking(payload);
+        toast$2.success("Group booking header created");
+      }
+      setShowForm(false);
+      setEditingId(null);
+      await fetchBookings();
+    } catch {
+      toast$2.error("Failed to save group booking header");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const getPropertyName = (id) => properties.find((p) => p.id === Number(id))?.propertyName || "—";
+  const getTypeName = (id) => propertyTypes.find((t) => t.id === Number(id))?.typeName || "—";
+  return /* @__PURE__ */ jsxs("div", { className: "space-y-5", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx("h3", { className: "text-sm font-bold", style: { color: colors.textPrimary }, children: "Group Booking Headers" }),
+      /* @__PURE__ */ jsxs(
+        "button",
+        {
+          onClick: openAdd,
+          className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white hover:opacity-90 transition-all",
+          children: [
+            /* @__PURE__ */ jsx(Plus, { size: 14 }),
+            " Add Header"
+          ]
+        }
+      )
+    ] }),
+    showForm && /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: "rounded-xl border p-5 space-y-4",
+        style: { borderColor: colors.border, backgroundColor: colors.mainBg },
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-1", children: [
+            /* @__PURE__ */ jsx("span", { className: "text-xs font-bold", style: { color: colors.textPrimary }, children: editingId ? "Edit Group Booking Header" : "New Group Booking Header" }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => setShowForm(false),
+                className: "p-1 rounded hover:bg-black/10 transition-colors",
+                style: { color: colors.textSecondary },
+                children: /* @__PURE__ */ jsx(X, { size: 14 })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsx(Field$9, { label: "Title", required: true, children: /* @__PURE__ */ jsx(
+            "input",
+            {
+              className: inp$8,
+              style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+              placeholder: "e.g. Plan Your Group Event",
+              value: form.title,
+              onChange: (e) => set("title", e.target.value)
+            }
+          ) }),
+          /* @__PURE__ */ jsx(Field$9, { label: "Description", children: /* @__PURE__ */ jsx(
+            "textarea",
+            {
+              rows: 3,
+              className: inp$8,
+              style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+              placeholder: "Brief description for the group booking section...",
+              value: form.description,
+              onChange: (e) => set("description", e.target.value)
+            }
+          ) }),
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-4", children: [
+            /* @__PURE__ */ jsx(Field$9, { label: "CTA Button Text", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                placeholder: "e.g. Book Now",
+                value: form.ctaText,
+                onChange: (e) => set("ctaText", e.target.value)
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field$9, { label: "CTA Link", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                placeholder: "e.g. /contact",
+                value: form.ctaLink,
+                onChange: (e) => set("ctaLink", e.target.value)
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field$9, { label: "Min. Persons", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                type: "number",
+                min: "1",
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                placeholder: "e.g. 10",
+                value: form.numberOfPersons,
+                onChange: (e) => set("numberOfPersons", e.target.value)
+              }
+            ) })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4", children: [
+            /* @__PURE__ */ jsx(Field$9, { label: "Property", children: /* @__PURE__ */ jsxs(
+              "select",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                value: form.propertyId,
+                onChange: (e) => set("propertyId", e.target.value),
+                disabled: loadingDropdowns,
+                children: [
+                  /* @__PURE__ */ jsx("option", { value: "", children: "— Select Property (optional) —" }),
+                  properties.map((p) => /* @__PURE__ */ jsx("option", { value: p.id, children: p.propertyName }, p.id))
+                ]
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field$9, { label: "Property Type", children: /* @__PURE__ */ jsxs(
+              "select",
+              {
+                className: inp$8,
+                style: { borderColor: colors.border, backgroundColor: colors.contentBg, color: colors.textPrimary },
+                value: form.propertyTypeId,
+                onChange: (e) => set("propertyTypeId", e.target.value),
+                disabled: loadingDropdowns,
+                children: [
+                  /* @__PURE__ */ jsx("option", { value: "", children: "— Select Type (optional) —" }),
+                  propertyTypes.map((t) => /* @__PURE__ */ jsx("option", { value: t.id, children: t.typeName }, t.id))
+                ]
+              }
+            ) })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "flex justify-end gap-2 pt-2", children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => setShowForm(false),
+                className: "px-4 py-2 rounded-lg text-xs border transition-colors",
+                style: { borderColor: colors.border, color: colors.textSecondary },
+                children: "Cancel"
+              }
+            ),
+            /* @__PURE__ */ jsxs(
+              "button",
+              {
+                onClick: handleSave,
+                disabled: saving,
+                className: "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold bg-primary text-white disabled:opacity-50 transition-all",
+                children: [
+                  saving ? /* @__PURE__ */ jsx(Loader2, { size: 13, className: "animate-spin" }) : /* @__PURE__ */ jsx(Save, { size: 13 }),
+                  editingId ? "Update" : "Save"
+                ]
+              }
+            )
+          ] })
+        ]
+      }
+    ),
+    fetching ? /* @__PURE__ */ jsx("div", { className: "flex justify-center py-10", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin", style: { color: colors.primary }, size: 28 }) }) : bookings.length === 0 ? /* @__PURE__ */ jsxs("div", { className: "text-center py-12 text-sm", style: { color: colors.textSecondary }, children: [
+      "No group booking headers yet. Click ",
+      /* @__PURE__ */ jsx("strong", { children: "Add Header" }),
+      " to create one."
+    ] }) : /* @__PURE__ */ jsx("div", { className: "overflow-x-auto rounded-xl border", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsxs("table", { className: "w-full text-left", children: [
+      /* @__PURE__ */ jsx("thead", { style: { backgroundColor: colors.mainBg }, children: /* @__PURE__ */ jsx("tr", { children: ["Title", "CTA Text", "Min. Persons", "Property", "Type", "Actions"].map((h) => /* @__PURE__ */ jsx("th", { className: "px-4 py-3 text-[10px] font-bold uppercase tracking-wider", style: { color: colors.textSecondary }, children: h }, h)) }) }),
+      /* @__PURE__ */ jsx("tbody", { className: "divide-y", style: { backgroundColor: colors.contentBg }, children: bookings.map((b) => /* @__PURE__ */ jsxs("tr", { className: "transition-colors hover:bg-black/5", children: [
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-sm font-medium max-w-[200px]", style: { color: colors.textPrimary }, children: /* @__PURE__ */ jsx("span", { className: "line-clamp-1", children: b.title || "—" }) }),
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.ctaText || "—" }),
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.numberOfPersons ?? "—" }),
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.propertyId ? getPropertyName(b.propertyId) : "Global" }),
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs", style: { color: colors.textSecondary }, children: b.propertyTypeId ? getTypeName(b.propertyTypeId) : "—" }),
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx(
+          "button",
+          {
+            onClick: () => openEdit(b),
+            className: "p-1.5 rounded hover:bg-muted transition-colors",
+            style: { color: colors.primary },
+            title: "Edit",
+            children: /* @__PURE__ */ jsx(Pencil, { size: 13 })
+          }
+        ) })
+      ] }, b.id)) })
+    ] }) })
+  ] });
+}
+const SUB_TABS = [
+  { id: "menu", label: "Menu Header", icon: BookOpen, component: MenuHeaderTab },
+  { id: "group", label: "Group Booking Header", icon: Users, component: GroupBookingHeaderTab }
+];
+function HotelHomepage$1() {
+  const [activeSubTab, setActiveSubTab] = useState("menu");
+  const ActiveComponent = SUB_TABS.find((t) => t.id === activeSubTab)?.component;
+  return /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "flex gap-1 p-1 rounded-xl border",
+        style: { backgroundColor: colors.contentBg, borderColor: colors.border },
+        children: SUB_TABS.map((tab) => {
+          const isActive = activeSubTab === tab.id;
+          return /* @__PURE__ */ jsxs(
+            "button",
+            {
+              onClick: () => setActiveSubTab(tab.id),
+              className: "flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex-1 justify-center",
+              style: {
+                backgroundColor: isActive ? colors.primary : "transparent",
+                color: isActive ? "#fff" : colors.textSecondary
+              },
+              children: [
+                /* @__PURE__ */ jsx(tab.icon, { size: 14 }),
+                tab.label
+              ]
+            },
+            tab.id
+          );
+        })
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "rounded-xl border p-5",
+        style: { backgroundColor: colors.contentBg, borderColor: colors.border },
+        children: ActiveComponent && /* @__PURE__ */ jsx(ActiveComponent, {})
+      }
+    )
+  ] });
+}
 function HomePageDashboard() {
   const [activeTab, setActiveTab] = useState("hero");
   const tabs = [
@@ -43484,8 +43944,8 @@ function HomePageDashboard() {
     { id: "news", label: "News & Press", icon: Newspaper, component: NewsPress },
     { id: "guest", label: "Guest Exp", icon: Star, component: GuestExp },
     { id: "presence", label: "Our Presence", icon: Building, component: OurPresence },
-    { id: "group", label: "Group Bookings", icon: Users, component: GroupBookings }
-    // { id: 'hotel-homepage', label: 'Hotel Homepage', icon: Hotel, component: HotelHomepage },
+    { id: "group", label: "Group Bookings", icon: Users, component: GroupBookings },
+    { id: "hotel-homepage", label: "Hotel Homepage", icon: Hotel$1, component: HotelHomepage$1 }
   ];
   const ActiveComponent = tabs.find((tab) => tab.id === activeTab)?.component || HeroSection;
   return /* @__PURE__ */ jsx(
