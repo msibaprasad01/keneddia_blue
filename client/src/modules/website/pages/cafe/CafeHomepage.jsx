@@ -75,26 +75,37 @@ export default function CafeHomepage() {
       try {
         const search = new SearchBoxCore({ accessToken: MAPBOX_ACCESS_TOKEN });
 
-        // Mapbox proximity expects [longitude, latitude]
-        const result = await search.category("cafe", {
+        // Search nearby airports — valid Mapbox category, used to derive nearby city names
+        const result = await search.category("airport", {
           proximity: [longitude, latitude],
           limit: 10,
         });
 
         console.log("Found:", result.features);
 
-        // Streamlined nearby places: "Name — X.XXkm | Name — X.XXkm | ..."
-        const nearbyList = result.features
-          .map((f) => `${f.properties.name} — ${(f.properties.distance / 1000).toFixed(2)}km`)
+        // Deduplicate city names (context.place.name), sorted by nearest distance
+        const seenCities = new Set();
+        const nearbyCities = result.features
+          .map((f) => ({
+            city: f.properties.context?.place?.name || null,
+            distanceKm: (f.properties.distance / 1000).toFixed(2),
+          }))
+          .filter((entry) => {
+            if (!entry.city || seenCities.has(entry.city)) return false;
+            seenCities.add(entry.city);
+            return true;
+          })
+          .map((entry) => `${entry.city} — ${entry.distanceKm}km`)
           .join(" | ");
-        console.log("Nearby Cafes:", nearbyList);
+
+        console.log("Nearby Cities:", nearbyCities);
 
         setPlaces(result.features);
-
       } catch (error) {
         console.error("Mapbox search failed:", error);
       }
     };
+
 
     fetchNearby();
     // eslint-disable-next-line react-hooks/exhaustive-deps
