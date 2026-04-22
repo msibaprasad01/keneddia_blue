@@ -299,6 +299,11 @@ export default function GroupBookingSection({
     if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: null }));
   };
 
+  const setField = (key: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: null }));
+  };
+
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 4;
 
