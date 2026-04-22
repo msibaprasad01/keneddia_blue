@@ -278,6 +278,7 @@ export const getHeroSectionsPaginated = ({ page = 0, size = 10 }) =>API.get("api
 export const updateHeroSectionById = (id, data) =>API.put(`api/v1/hero-sections/${id}`, data);
 export const toggleHeroSectionActive = (id, active) =>API.patch(`api/v1/hero-sections/${id}/active`, null, { params: { active } });
 export const toggleHeroSectionHomepage = (id, show) =>API.patch(`api/v1/hero-sections/${id}/homepage`, null, { params: { show } });
+export const toggleHeroSectionMobile = (id, show) =>API.patch(`api/v1/hero-sections/${id}/mobile`, null, { params: { show } });
 
 // property detail page
 // ===============================
