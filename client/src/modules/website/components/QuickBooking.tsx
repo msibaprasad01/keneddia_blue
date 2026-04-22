@@ -325,7 +325,7 @@ export default function QuickBooking() {
   );
 
   return (
-    <div className="container mx-auto px-4 -mt-10 relative z-30 mb-12">
+    <div className="container mx-auto px-4 mt-6 md:-mt-10 relative z-30 mb-12">
       <motion.div
         layout
         className="bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-md"

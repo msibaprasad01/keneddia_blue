@@ -46,6 +46,7 @@ const normalizeHeroSlides = (data) =>
         isVideo: backgroundMedia.type === "VIDEO",
         bgTitle: primaryWord.toUpperCase(),
         ctaText: item.ctaText || null,
+        showOnMobilePage: item.showOnMobilePage ?? null,
       };
     })
     .filter(Boolean);

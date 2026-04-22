@@ -91,6 +91,7 @@ function AddHeroSectionModal({
     ctaLink: "",
     active: false,
     showOnHomepage: false,
+    showOnMobilePage: false,
     propertyTypeId: null,
   });
 
@@ -179,6 +180,7 @@ function AddHeroSectionModal({
         ctaLink: "",
         active: false,
         showOnHomepage: false,
+        showOnMobilePage: false,
         propertyTypeId: null,
       });
       const resetMedia = {
@@ -216,6 +218,7 @@ function AddHeroSectionModal({
         ctaLink: "",
         active: false,
         showOnHomepage: false,
+        showOnMobilePage: false,
         propertyTypeId: defaultPropertyTypeId,
       });
     }
@@ -231,6 +234,7 @@ function AddHeroSectionModal({
         ctaLink: editData.ctaLink || "",
         active: editData.active ?? false,
         showOnHomepage: editData.showOnHomepage ?? false,
+        showOnMobilePage: editData.showOnMobilePage ?? false,
         propertyTypeId: editData.propertyTypeId || null,
       });
 
@@ -579,6 +583,7 @@ function AddHeroSectionModal({
         ctaLink: formData.ctaLink || null,
         active: formData.active,
         showOnHomepage: formData.showOnHomepage,
+        showOnMobilePage: formData.showOnMobilePage,
         propertyTypeId: formData.propertyTypeId,
         backgroundAll:
           backgroundMedia.theme === "ALL"
@@ -981,6 +986,21 @@ function AddHeroSectionModal({
                     </span>
                   </label>
                 )} */}
+
+                {/* Show on Mobile Page toggle */}
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={formData.showOnMobilePage}
+                    onChange={(e) =>
+                      handleInputChange("showOnMobilePage", e.target.checked)
+                    }
+                    className="w-4 h-4 rounded accent-primary cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
+                    Show on Mobile View
+                  </span>
+                </label>
               </div>
             </div>
 

@@ -14,6 +14,7 @@ import {
   getHeroSectionsPaginated,
   toggleHeroSectionActive,
   toggleHeroSectionHomepage,
+  toggleHeroSectionMobile,
   getHotelHomepageHeroSection,
   getPropertyTypes,
 } from "@/Api/Api";
@@ -140,6 +141,7 @@ function HeroSection() {
       ctaLink: section.ctaLink,
       active: section.active,
       showOnHomepage: section.showOnHomepage,
+      showOnMobilePage: section.showOnMobilePage,
       propertyTypeId: section.propertyTypeId || null,
       backgroundMediaAll: section.backgroundAll || [],
       backgroundMediaLight: section.backgroundLight || [],
@@ -225,6 +227,31 @@ function HeroSection() {
     }
   };
 
+  const handleToggleMobile = async (id, currentMobileStatus, sectionActive) => {
+    const nextMobileState = !currentMobileStatus;
+
+    if (sectionActive !== true && nextMobileState === true) {
+      showError(
+        "To enable Mobile visibility, please set the Action Status to Active/On.",
+      );
+      return;
+    }
+
+    const key = `mobile-${id}`;
+
+    try {
+      setTogglingStatus((prev) => ({ ...prev, [key]: true }));
+      await toggleHeroSectionMobile(id, nextMobileState);
+      showSuccess("Mobile visibility updated");
+      refetchActiveTab();
+    } catch (error) {
+      console.log("Mobile toggle failed:", error?.response?.data);
+      showError(error?.response?.data?.message || "Update failed");
+    } finally {
+      setTogglingStatus((prev) => ({ ...prev, [key]: false }));
+    }
+  };
+
   const truncateText = (text, limit = 50) => {
     if (!text) return "";
     return text.length > limit ? `${text.substring(0, limit)}...` : text;
@@ -253,6 +280,9 @@ function HeroSection() {
               </th>
             )}
             <th className="text-center px-4 py-3 text-xs font-semibold">
+              Mobile
+            </th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">
               Status Action
             </th>
             <th className="text-center px-4 py-3 text-xs font-semibold">
@@ -268,6 +298,7 @@ function HeroSection() {
               section.backgroundDark?.[0];
             const isTogglingActive = togglingStatus[`active-${section.id}`];
             const isTogglingHome = togglingStatus[`homepage-${section.id}`];
+            const isTogglingMobile = togglingStatus[`mobile-${section.id}`];
 
             return (
               <tr
@@ -336,6 +367,32 @@ function HeroSection() {
                     </button>
                   </td>
                 )}
+                <td className="px-4 py-3 text-center">
+                  <button
+                    onClick={() =>
+                      handleToggleMobile(
+                        section.id,
+                        section.showOnMobilePage,
+                        section.active,
+                      )
+                    }
+                    disabled={isTogglingMobile}
+                    className="relative inline-flex items-center h-5 w-10 rounded-full transition-colors cursor-pointer outline-none"
+                    style={{
+                      backgroundColor: section.showOnMobilePage
+                        ? colors.primary
+                        : colors.border,
+                    }}
+                  >
+                    <span
+                      className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                        section.showOnMobilePage
+                          ? "translate-x-6"
+                          : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </td>
                 <td className="px-4 py-3 text-center">
                   <div className="flex flex-col items-center gap-1">
                     <button

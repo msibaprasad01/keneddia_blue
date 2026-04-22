@@ -143,9 +143,15 @@ const normalizeHeroSlides = (data) =>
         media: mediaObj?.url || "",
         title: item.mainTitle || "",
         subtitle: item.subTitle || "",
+        ctaText: item.ctaText || null,
+        ctaLink: item.ctaLink || null,
+        showOnMobilePage: item.showOnMobilePage ?? null,
         backgroundAll: item.backgroundAll || [],
         backgroundLight: item.backgroundLight || [],
         backgroundDark: item.backgroundDark || [],
+        subAll: item.subAll || [],
+        subLight: item.subLight || [],
+        subDark: item.subDark || [],
       };
     });
 

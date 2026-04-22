@@ -48,10 +48,16 @@ interface ApiHeroItem {
   id: number;
   mainTitle: string;
   subTitle: string | null;
+  ctaText: string | null;
+  ctaLink: string | null;
   backgroundAll: MediaItem[];
   backgroundLight: MediaItem[];
   backgroundDark: MediaItem[];
+  subAll: MediaItem[];
+  subLight: MediaItem[];
+  subDark: MediaItem[];
   active: boolean;
+  showOnMobilePage: boolean | null;
 }
 
 interface HeroSlide {
@@ -60,9 +66,15 @@ interface HeroSlide {
   media: string;
   title: string;
   subtitle: string;
+  ctaText?: string | null;
+  ctaLink?: string | null;
+  showOnMobilePage?: boolean | null;
   backgroundAll: MediaItem[];
   backgroundLight: MediaItem[];
   backgroundDark: MediaItem[];
+  subAll?: MediaItem[];
+  subLight?: MediaItem[];
+  subDark?: MediaItem[];
 }
 
 interface AboutUsMedia {
@@ -119,9 +131,15 @@ const transformApiDataToSlides = (content: ApiHeroItem[]): HeroSlide[] => {
       media: mediaObj?.url || "",
       title: item.mainTitle || "",
       subtitle: item.subTitle || "",
+      ctaText: item.ctaText || null,
+      ctaLink: item.ctaLink || null,
+      showOnMobilePage: item.showOnMobilePage ?? null,
       backgroundAll: item.backgroundAll || [],
       backgroundLight: item.backgroundLight || [],
       backgroundDark: item.backgroundDark || [],
+      subAll: item.subAll || [],
+      subLight: item.subLight || [],
+      subDark: item.subDark || [],
     };
   });
 };
@@ -298,7 +316,7 @@ export default function Hotels() {
       {isClient ? (
         <Suspense
           fallback={
-            <div className="container mx-auto px-4 -mt-10 relative z-30 mb-12">
+            <div className="container mx-auto px-4 mt-6 md:-mt-10 relative z-30 mb-12">
               <div className="bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-md">
                 <div className="p-8">
                   <div className="h-20 flex items-center justify-center text-muted-foreground">
@@ -312,7 +330,7 @@ export default function Hotels() {
           <QuickBooking />
         </Suspense>
       ) : (
-        <div className="container mx-auto px-4 -mt-10 relative z-30 mb-12">
+        <div className="container mx-auto px-4 mt-6 md:-mt-10 relative z-30 mb-12">
           <div className="bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-md">
             <div className="p-8">
               <div className="h-20 flex items-center justify-center text-muted-foreground">

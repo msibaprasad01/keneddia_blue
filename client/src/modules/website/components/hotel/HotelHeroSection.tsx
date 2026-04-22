@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Navigation } from "swiper/modules";
 import { motion } from "framer-motion";
@@ -27,6 +27,7 @@ export interface HeroSlide {
   subtitle: string;
   ctaText?: string;
   ctaLink?: string;
+  showOnMobilePage?: boolean | null;
   backgroundAll: MediaItem[];
   backgroundLight: MediaItem[];
   backgroundDark: MediaItem[];
@@ -62,9 +63,16 @@ const selectMediaByTheme = (
 export default function HotelHeroSection({ slides, loading }: HotelHeroSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
+  const [mobileSwiperInstance, setMobileSwiperInstance] = useState<SwiperType | null>(null);
+  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark">(getCurrentTheme());
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [loadedSlides, setLoadedSlides] = useState<Set<number>>(new Set());
+
+  const mobileSlides = useMemo(
+    () => slides.filter((s) => s.showOnMobilePage === true),
+    [slides],
+  );
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -371,112 +379,118 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
               </svg>
             </div>
 
-            <div
-              className="block md:hidden relative w-full bg-black overflow-hidden"
-              style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
-            >
-              <div className="absolute inset-x-0 bottom-0 overflow-hidden" style={{ top: "64px" }}>
-                {renderMobileMedia(slide, index)}
-              </div>
-
-              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ top: "64px" }}>
-                <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-              </div>
-
-              <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10" />
-
-              <div
-                className="absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center"
-                style={{ top: "64px", bottom: "6.5rem" }}
-              >
-                <motion.h1
-                  key={`m-title-${index}-${activeIndex}`}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  className="text-xl font-serif font-semibold text-white leading-snug mb-1 drop-shadow-md"
-                >
-                  {slide.title}
-                </motion.h1>
-
-                {slide.subtitle && (
-                  <motion.p
-                    key={`m-sub-${index}-${activeIndex}`}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.45, duration: 0.6 }}
-                    className="text-[11px] text-white/75 font-light tracking-widest uppercase mb-3"
-                  >
-                    {slide.subtitle}
-                  </motion.p>
-                )}
-
-                {slide.ctaText && (
-                  <motion.button
-                    key={`m-cta-${index}-${activeIndex}`}
-                    initial={{ opacity: 0, scale: 0.92 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.6, duration: 0.6 }}
-                    disabled={!slide.ctaLink}
-                    onClick={() => {
-                      if (slide.ctaLink) window.location.href = slide.ctaLink;
-                    }}
-                    className={`group relative px-5 py-2 font-semibold text-xs rounded-full overflow-hidden transition-all duration-500 ease-out inline-flex items-center gap-2 border ${
-                      !slide.ctaLink
-                        ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
-                        : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40"
-                    }`}
-                  >
-                    {slide.ctaLink && (
-                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-                    )}
-                    <span className="relative z-10">{slide.ctaText}</span>
-                  </motion.button>
-                )}
-              </div>
-
-              <div className="absolute inset-x-0 bottom-16 z-20 flex items-center justify-center gap-3">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    swiperInstance?.slidePrev();
-                  }}
-                  className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-
-                <div className="flex items-center gap-1.5">
-                  {slides.map((_, i) => (
-                    <div
-                      key={`mob-dot-${i}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleThumbnailClick(i);
-                      }}
-                      className={`h-[3px] rounded-full transition-all duration-500 cursor-pointer ${
-                        activeIndex === i
-                          ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
-                          : "w-4 bg-white/40 hover:bg-white/70"
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    swiperInstance?.slideNext();
-                  }}
-                  className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
           </SwiperSlide>
         ))}
       </Swiper>
+
+      {/* ══════════════ MOBILE SWIPER ══════════════ */}
+      <div className="block md:hidden">
+        {mobileSlides.length === 0 ? (
+          <div
+            className="relative w-full overflow-hidden bg-neutral-900 flex items-center justify-center"
+            style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
+          >
+            <div className="text-center px-6">
+              <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/40 inline-block">
+                Not Available on Mobile
+              </div>
+            </div>
+          </div>
+        ) : (
+          <Swiper
+            modules={[EffectFade, Autoplay, Navigation]}
+            effect="fade"
+            speed={1200}
+            autoplay={{ delay: 6000, disableOnInteraction: false }}
+            loop={mobileSlides.length > 1}
+            onSwiper={setMobileSwiperInstance}
+            onSlideChange={(swiper) => setMobileActiveIndex(swiper.realIndex)}
+            className="w-full"
+            style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
+          >
+            {mobileSlides.map((slide, index) => (
+              <SwiperSlide key={`mobile-${slide.id}-${currentTheme}`} className="relative w-full h-full bg-black overflow-hidden">
+                <div className="absolute inset-x-0 bottom-0 overflow-hidden" style={{ top: "64px" }}>
+                  {renderMobileMedia(slide, index)}
+                </div>
+                <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ top: "64px" }}>
+                  <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                </div>
+                <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10" />
+                <div className="absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center" style={{ top: "64px", bottom: "6.5rem" }}>
+                  <motion.h1
+                    key={`m-title-${index}-${mobileActiveIndex}`}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.6 }}
+                    className="text-xl font-serif font-semibold text-white leading-snug mb-1 drop-shadow-md"
+                  >
+                    {slide.title}
+                  </motion.h1>
+                  {slide.subtitle && (
+                    <motion.p
+                      key={`m-sub-${index}-${mobileActiveIndex}`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.45, duration: 0.6 }}
+                      className="text-[11px] text-white/75 font-light tracking-widest uppercase mb-3"
+                    >
+                      {slide.subtitle}
+                    </motion.p>
+                  )}
+                  {slide.ctaText && (
+                    <motion.button
+                      key={`m-cta-${index}-${mobileActiveIndex}`}
+                      initial={{ opacity: 0, scale: 0.92 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6, duration: 0.6 }}
+                      disabled={!slide.ctaLink}
+                      onClick={() => { if (slide.ctaLink) window.location.href = slide.ctaLink; }}
+                      className={`group relative px-5 py-2 font-semibold text-xs rounded-full overflow-hidden transition-all duration-500 ease-out inline-flex items-center gap-2 border ${
+                        !slide.ctaLink
+                          ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+                          : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40"
+                      }`}
+                    >
+                      {slide.ctaLink && (
+                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                      )}
+                      <span className="relative z-10">{slide.ctaText}</span>
+                    </motion.button>
+                  )}
+                </div>
+                <div className="absolute inset-x-0 bottom-16 z-20 flex items-center justify-center gap-3">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); mobileSwiperInstance?.slidePrev(); }}
+                    className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <div className="flex items-center gap-1.5">
+                    {mobileSlides.map((_, i) => (
+                      <div
+                        key={`mob-dot-${i}`}
+                        onClick={(e) => { e.stopPropagation(); mobileSwiperInstance?.slideToLoop(i); }}
+                        className={`h-[3px] rounded-full transition-all duration-500 cursor-pointer ${
+                          mobileActiveIndex === i
+                            ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                            : "w-4 bg-white/40 hover:bg-white/70"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); mobileSwiperInstance?.slideNext(); }}
+                    className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )}
+      </div>
 
       <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4 max-w-[calc(100vw-2rem)]">
         <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4 overflow-hidden">
