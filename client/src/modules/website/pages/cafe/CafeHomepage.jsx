@@ -193,7 +193,11 @@ export default function CafeHomepage() {
   };
 
   return (
-    <div className="min-h-screen bg-background [scrollbar-gutter:stable]">
+    <div
+      className="min-h-screen bg-background [scrollbar-gutter:stable]"
+      data-ssr-hero={ssr?.heroSlides?.length ?? 0}
+      data-ssr-properties={ssr?.cafeProperties?.length ?? 0}
+    >
       <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
 
       {/* ── Location match popup ─────────────────────────────────────────── */}
@@ -272,7 +276,10 @@ export default function CafeHomepage() {
           <div className="h-px bg-[#A2663C]/20" />
         </div>
         <div id="cafe-properties">
-          <CafeProperties locationMatch={locationMatch} />
+          <CafeProperties
+            locationMatch={locationMatch}
+            initialCafes={ssr?.cafeProperties}
+          />
         </div>
         <div className="dark:hidden">
           <div className="h-px bg-[#A2663C]/20" />

@@ -255,7 +255,7 @@ function NewsCard({ item }: { item: NewsItem }) {
         <OptimizedImage
           src={item.imageUrl}
           alt={item.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute top-3 left-3">
           <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] uppercase font-bold tracking-wider rounded">
