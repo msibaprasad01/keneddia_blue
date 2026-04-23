@@ -140,24 +140,23 @@ function BuffetCarousel({ items, onBook }) {
             transition={{ duration: 0.4 }}
             className="flex flex-col items-center text-center space-y-4"
           >
-            {activeItem.price > 0 && (
-              <div className="bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full">
-                <span className="text-primary font-black text-sm tracking-tighter">
-                  ₹{activeItem.price}{" "}
-                  {/* <span className="text-[10px] font-medium text-zinc-400">
-                
-                  </span> */}
-                </span>
-              </div>
-            )}
-
             <div className="max-w-2xl">
-              <h3 className="text-3xl font-serif dark:text-white mb-2 uppercase tracking-tight">
-                {activeItem.itemName}
-              </h3>
+              <div className="mb-2 flex flex-wrap items-center justify-center gap-3">
+                <h3 className="text-3xl font-serif dark:text-white uppercase tracking-tight">
+                  {activeItem.itemName}
+                </h3>
+                {activeItem.price > 0 && (
+                  <div className="bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full">
+                    <span className="text-primary font-black text-sm tracking-tighter">
+                      ₹{activeItem.price}
+                    </span>
+                  </div>
+                )}
+              </div>
               <p className="text-zinc-500 dark:text-zinc-400 text-sm italic font-light leading-relaxed">
                 {activeItem.description}
               </p>
+              
             </div>
 
             <div className="pt-2">
@@ -232,6 +231,7 @@ function DishImage({ src, alt }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function EnhancedCulinaryCuration({ propertyId }) {
   const navigate = useNavigate();
+  const today = new Date().toISOString().split("T")[0];
 
   const [buffetHeader, setBuffetHeader] = useState(BUFFET_HEADER_FALLBACK);
   const [buffetItems, setBuffetItems] = useState(BUFFET_DATA_FALLBACK);
@@ -257,10 +257,11 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
     name: "",
     phone: "",
     description: "",
-    date: new Date().toISOString().split("T")[0],
+    date: today,
     time: "19:00",
-    totalGuest: "2",
+    totalGuest: "",
   });
+  const [formErrors, setFormErrors] = useState({});
   const [likeSubmitting, setLikeSubmitting] = useState(false);
 
   const formatChefRemarkText = (text) => {
@@ -394,6 +395,33 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
 
   const handleBookingSubmit = async () => {
     if (!bookingModal.item) return;
+
+    const trimmedName = likeForm.name.trim();
+    const trimmedPhone = likeForm.phone.trim();
+    const errors = {};
+
+    if (!/^[A-Za-z\s]+$/.test(trimmedName)) {
+      errors.name = "Name should contain characters only.";
+    }
+
+    if (!/^\d{10}$/.test(trimmedPhone)) {
+      errors.phone = "Phone number should be exactly 10 digits.";
+    }
+
+    if (!likeForm.date || likeForm.date < today) {
+      errors.date = "Please select today or a future date.";
+    }
+
+    if (likeForm.totalGuest && Number(likeForm.totalGuest) < 1) {
+      errors.totalGuest = "Number of guests cannot be negative or zero.";
+    }
+
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      toast.error("Please fix the highlighted fields.");
+      return;
+    }
+
     setLikeSubmitting(true);
 
     try {
@@ -401,11 +429,11 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
       const currentCategory = buffetHeader.headlinePart1 || "Buffet";
 
       await createJoiningUs({
-        guestName: likeForm.name.trim(),
-        contactNumber: likeForm.phone.trim(),
+        guestName: trimmedName,
+        contactNumber: trimmedPhone,
         date: likeForm.date,
         time: likeForm.time,
-        totalGuest: Number(likeForm.totalGuest),
+        totalGuest: Number(likeForm.totalGuest || 2),
         propertyId: Number(propertyId),
         description: `Category: ${currentCategory} | Request: ${itemType} | Email: ${likeForm.email || "N/A"}`,
       });
@@ -416,11 +444,12 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
         name: "",
         phone: "",
         email: "",
-        date: new Date().toISOString().split("T")[0],
+        date: today,
         time: "19:00",
-        totalGuest: "2",
+        totalGuest: "",
         description: "",
       });
+      setFormErrors({});
     } catch (error) {
       toast.error("Submission failed. Please try again.");
     } finally {
@@ -430,11 +459,30 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
 
   const handleLikeSubmit = async () => {
     if (!bookingModal.item) return;
+
+    const trimmedName = likeForm.name.trim();
+    const trimmedPhone = likeForm.phone.trim();
+    const errors = {};
+
+    if (!/^[A-Za-z\s]+$/.test(trimmedName)) {
+      errors.name = "Name should contain characters only.";
+    }
+
+    if (!/^\d{10}$/.test(trimmedPhone)) {
+      errors.phone = "Phone number should be exactly 10 digits.";
+    }
+
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      toast.error("Please fix the highlighted fields.");
+      return;
+    }
+
     setLikeSubmitting(true);
     try {
       const res = await addItemLike(bookingModal.item.id, {
-        name: likeForm.name,
-        mobileNumber: likeForm.phone,
+        name: trimmedName,
+        mobileNumber: trimmedPhone,
         description: likeForm.description || "Great taste!",
       });
       const updated = res?.data || res;
@@ -451,10 +499,11 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
         name: "",
         phone: "",
         description: "",
-        date: new Date().toISOString().split("T")[0],
+        date: today,
         time: "19:00",
-        totalGuest: "2",
+        totalGuest: "",
       });
+      setFormErrors({});
     } catch {
       setLikedItems((prev) => ({ ...prev, [bookingModal.item.id]: true }));
       setBookingModal({ isOpen: false, item: null, type: "book" });
@@ -679,9 +728,10 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
               className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl relative text-left border border-zinc-100 dark:border-white/5"
             >
               <button
-                onClick={() =>
-                  setBookingModal({ isOpen: false, item: null, type: "book" })
-                }
+                onClick={() => {
+                  setBookingModal({ isOpen: false, item: null, type: "book" });
+                  setFormErrors({});
+                }}
                 className="absolute top-6 right-6 p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
               >
                 <X size={20} />
@@ -700,22 +750,49 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
 
               <div className="space-y-4">
                 <div className="space-y-4">
-                  <Input
-                    placeholder="Your Name"
-                    value={likeForm.name}
-                    onChange={(e) =>
-                      setLikeForm((f) => ({ ...f, name: e.target.value }))
-                    }
-                    className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
-                  />
-                  <Input
-                    placeholder="Phone Number"
-                    value={likeForm.phone}
-                    onChange={(e) =>
-                      setLikeForm((f) => ({ ...f, phone: e.target.value }))
-                    }
-                    className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
-                  />
+                  <div>
+                    <Input
+                      placeholder="Your Name"
+                      value={likeForm.name}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^A-Za-z\s]/g, "");
+                        setLikeForm((f) => ({ ...f, name: value }));
+                        setFormErrors((prev) => ({ ...prev, name: "" }));
+                      }}
+                      className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
+                    />
+                    {formErrors.name && (
+                      <p className="mt-1 px-1 text-xs font-medium text-red-500">
+                        {formErrors.name}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Input
+                      placeholder="Phone Number"
+                      value={likeForm.phone}
+                      inputMode="numeric"
+                      maxLength={10}
+                      onChange={(e) => {
+                        const rawValue = e.target.value;
+                        const value = rawValue.replace(/\D/g, "").slice(0, 10);
+                        setLikeForm((f) => ({ ...f, phone: value }));
+                        setFormErrors((prev) => ({
+                          ...prev,
+                          phone: rawValue.includes("-")
+                            ? "Phone number cannot be negative."
+                            : "",
+                        }));
+                      }}
+                      className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
+                    />
+                    {formErrors.phone && (
+                      <p className="mt-1 px-1 text-xs font-medium text-red-500">
+                        {formErrors.phone}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {bookingModal.type === "book" && (
@@ -727,15 +804,26 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                         </label>
                         <Input
                           type="date"
-                          value={
-                            likeForm.date ||
-                            new Date().toISOString().split("T")[0]
-                          }
-                          onChange={(e) =>
-                            setLikeForm((f) => ({ ...f, date: e.target.value }))
-                          }
+                          min={today}
+                          value={likeForm.date || today}
+                          onChange={(e) => {
+                            const value = e.target.value < today ? today : e.target.value;
+                            setLikeForm((f) => ({ ...f, date: value }));
+                            setFormErrors((prev) => ({
+                              ...prev,
+                              date:
+                                e.target.value < today
+                                  ? "Please select today or a future date."
+                                  : "",
+                            }));
+                          }}
                           className="h-12 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                         />
+                        {formErrors.date && (
+                          <p className="mt-1 px-1 text-xs font-medium text-red-500">
+                            {formErrors.date}
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] uppercase font-bold text-primary px-1">
@@ -757,17 +845,33 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                       </label>
                       <Input
                         type="number"
+                        inputMode="numeric"
                         min="1"
-                        placeholder="Total Guests"
-                        value={likeForm.totalGuest || "2"}
-                        onChange={(e) =>
+                        placeholder="2"
+                        value={likeForm.totalGuest}
+                        onChange={(e) => {
+                          const rawValue = e.target.value;
+                          const value = rawValue.replace(/\D/g, "");
                           setLikeForm((f) => ({
                             ...f,
-                            totalGuest: e.target.value,
-                          }))
-                        }
+                            totalGuest: value,
+                          }));
+                          setFormErrors((prev) => ({
+                            ...prev,
+                            totalGuest: rawValue.includes("-")
+                              ? "Number of guests cannot be negative."
+                              : value && Number(value) < 1
+                                ? "Number of guests should be at least 1."
+                              : "",
+                          }));
+                        }}
                         className="h-12 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                       />
+                      {formErrors.totalGuest && (
+                        <p className="mt-1 px-1 text-xs font-medium text-red-500">
+                          {formErrors.totalGuest}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -786,7 +890,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                 /> */}
 
                 <Button
-                  disabled={!likeForm.name || !likeForm.phone || likeSubmitting}
+                  disabled={likeSubmitting}
                   onClick={
                     bookingModal.type === "like"
                       ? handleLikeSubmit

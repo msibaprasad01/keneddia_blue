@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Maximize2,
   Loader2,
+  X,
 } from "lucide-react";
 import { getAllGalleries } from "@/Api/Api";
 import { getActiveVisualGalleriesHeader } from "@/Api/RestaurantApi";
@@ -35,6 +36,7 @@ export default function RestaurantGalleryPage({ propertyId }) {
   const [manualOffset, setManualOffset] = useState(0);
   const [galleryItems, setGalleryItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
 
   // --- Parallax Logic (Must be defined at top level) ---
   const { scrollYProgress } = useScroll({
@@ -149,6 +151,25 @@ export default function RestaurantGalleryPage({ propertyId }) {
     setManualOffset((prev) => prev + (dir === "next" ? -150 : 150));
   };
 
+  const openLightbox = (item) => {
+    const index = galleryItems.findIndex((galleryItem) => galleryItem.id === item.id);
+    setLightboxIndex(index >= 0 ? index : 0);
+  };
+
+  const closeLightbox = () => setLightboxIndex(null);
+
+  const lightboxPrev = () => {
+    setLightboxIndex((current) =>
+      current === 0 ? galleryItems.length - 1 : current - 1,
+    );
+  };
+
+  const lightboxNext = () => {
+    setLightboxIndex((current) =>
+      current === galleryItems.length - 1 ? 0 : current + 1,
+    );
+  };
+
   return (
     <section
       ref={containerRef}
@@ -220,7 +241,11 @@ export default function RestaurantGalleryPage({ propertyId }) {
                   className="absolute flex gap-8 p-10 whitespace-nowrap"
                 >
                   {[...galleryItems, ...galleryItems].map((item, i) => (
-                    <GalleryItem key={`tlbr-${i}`} item={item} />
+                    <GalleryItem
+                      key={`tlbr-${i}`}
+                      item={item}
+                      onOpen={openLightbox}
+                    />
                   ))}
                 </motion.div>
 
@@ -234,7 +259,11 @@ export default function RestaurantGalleryPage({ propertyId }) {
                   {[...galleryItems, ...galleryItems]
                     .reverse()
                     .map((item, i) => (
-                      <GalleryItem key={`trbl-${i}`} item={item} />
+                      <GalleryItem
+                        key={`trbl-${i}`}
+                        item={item}
+                        onOpen={openLightbox}
+                      />
                     ))}
                 </motion.div>
 
@@ -247,13 +276,72 @@ export default function RestaurantGalleryPage({ propertyId }) {
           </div>
         </div>
       </div>
+
+      {lightboxIndex !== null && galleryItems.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 px-4"
+          onClick={closeLightbox}
+        >
+          <button
+            type="button"
+            onClick={closeLightbox}
+            className="absolute right-5 top-5 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            aria-label="Close gallery image"
+          >
+            <X className="h-6 w-6" />
+          </button>
+
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              lightboxPrev();
+            }}
+            className="absolute left-5 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
+            aria-label="Previous gallery image"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+
+          <motion.img
+            key={galleryItems[lightboxIndex]?.id}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.25 }}
+            src={galleryItems[lightboxIndex]?.img}
+            alt={galleryItems[lightboxIndex]?.title || "Restaurant gallery image"}
+            className="max-h-[85vh] max-w-[85vw] rounded-2xl object-contain shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          />
+
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              lightboxNext();
+            }}
+            className="absolute right-5 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
+            aria-label="Next gallery image"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+
+          <div className="absolute bottom-5 text-sm text-white/60">
+            {lightboxIndex + 1} / {galleryItems.length}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
 
-function GalleryItem({ item }) {
+function GalleryItem({ item, onOpen }) {
   return (
-    <div className="relative group w-[280px] h-[380px] shrink-0 rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-zinc-100 dark:bg-zinc-800 transition-transform duration-500 hover:scale-105">
+    <button
+      type="button"
+      onClick={() => onOpen(item)}
+      className="relative group w-[280px] h-[380px] shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-zinc-100 text-left shadow-2xl transition-transform duration-500 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-zinc-800"
+    >
       <img
         src={item.img}
         alt={item.title}
@@ -268,6 +356,6 @@ function GalleryItem({ item }) {
       <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
         <Maximize2 size={16} className="text-white" />
       </div>
-    </div>
+    </button>
   );
 }
