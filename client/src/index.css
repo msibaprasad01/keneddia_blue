@@ -117,6 +117,31 @@
 .admin-shell {
   color-scheme: light;
   forced-color-adjust: none;
+
+  /* Scope light-mode CSS variables so .dark on <html> doesn't bleed into admin */
+  --background: 0 0% 100%;
+  --foreground: 220 13% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 13% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 13% 10%;
+  --primary: 0 78% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 40 10% 90%;
+  --secondary-foreground: 220 13% 10%;
+  --muted: 40 10% 94%;
+  --muted-foreground: 220 8% 40%;
+  --accent: 0 78% 92%;
+  --accent-foreground: 220 13% 10%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 13% 90%;
+  --input: 220 13% 90%;
+  --ring: 0 78% 55%;
+
+  /* Reset the inherited text color from dark-mode body so inputs/elements
+     without explicit color classes don't inherit near-white text */
+  color: hsl(var(--foreground));
 }
 
 .admin-shell input,

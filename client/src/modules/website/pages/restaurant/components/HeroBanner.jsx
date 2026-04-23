@@ -61,6 +61,9 @@ export default function HeroBanner({ initialSlides, onReady }) {
       ? initialSlides
       : [],
   );
+  const [isFetchingHero, setIsFetchingHero] = useState(
+    !(Array.isArray(initialSlides) && initialSlides.length > 0),
+  );
 
   const mobileSlides = useMemo(
     () => slides.filter((s) => s.showOnMobilePage === true),
@@ -75,13 +78,24 @@ export default function HeroBanner({ initialSlides, onReady }) {
   }, [slides.length, onReady]);
 
   useEffect(() => {
+    if (!isFetchingHero && slides.length === 0 && !onReadyCalled.current) {
+      onReadyCalled.current = true;
+      onReady?.();
+    }
+  }, [isFetchingHero, slides.length, onReady]);
+
+  useEffect(() => {
     // Skip client fetch if SSR already provided slides
-    if (Array.isArray(initialSlides) && initialSlides.length > 0) return;
+    if (Array.isArray(initialSlides) && initialSlides.length > 0) {
+      setIsFetchingHero(false);
+      return;
+    }
 
     let isMounted = true;
 
     const fetchRestaurantHero = async () => {
       try {
+        setIsFetchingHero(true);
         const typeResponse = await getPropertyTypes();
         const types = typeResponse?.data || typeResponse;
         const restaurantType = Array.isArray(types)
@@ -104,6 +118,8 @@ export default function HeroBanner({ initialSlides, onReady }) {
         }
       } catch (error) {
         console.error("Error fetching restaurant hero sections:", error);
+      } finally {
+        if (isMounted) setIsFetchingHero(false);
       }
     };
 

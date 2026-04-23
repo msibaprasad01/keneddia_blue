@@ -570,8 +570,8 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
       <StatusBanner status={saveStatus} message={saveMsg} />
 
       {/* Event Meta */}
-      <div className="rounded-2xl border border-blue-200 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-800/30 p-5 space-y-4">
-        <p className="text-sm font-bold text-blue-800 dark:text-blue-400">
+      <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-5 space-y-4">
+        <p className="text-sm font-bold text-blue-800">
           Event Details
         </p>
 
@@ -640,12 +640,12 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
       </div>
 
       {/* Card 1 */}
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 dark:border-amber-800/30 p-5 space-y-4">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 space-y-4">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+          <div className="p-1.5 rounded-lg bg-amber-100">
             <Info className="w-4 h-4 text-amber-600" />
           </div>
-          <span className="text-sm font-bold text-amber-800 dark:text-amber-400">
+          <span className="text-sm font-bold text-amber-800">
             Card 1 — Info
           </span>
         </div>
@@ -680,12 +680,12 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
       </div>
 
       {/* Card 2 */}
-      <div className="rounded-2xl border border-green-200 bg-green-50/50 dark:bg-green-900/10 dark:border-green-800/30 p-5 space-y-4">
+      <div className="rounded-2xl border border-green-200 bg-green-50/50 p-5 space-y-4">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30">
+          <div className="p-1.5 rounded-lg bg-green-100">
             <Ticket className="w-4 h-4 text-green-600" />
           </div>
-          <span className="text-sm font-bold text-green-800 dark:text-green-400">
+          <span className="text-sm font-bold text-green-800">
             Card 2 — Ticket Info
           </span>
         </div>
@@ -773,7 +773,7 @@ function EventExtraInfoModal({
 
   return (
     <div className="admin-modal-overlay fixed inset-0 z-[150] flex items-center justify-center p-4">
-      <div className="admin-modal-surface relative w-full max-w-4xl max-h-[95vh] flex flex-col bg-background rounded-2xl shadow-2xl border border-border">
+      <div className="admin-modal-surface relative w-full max-w-4xl max-h-[95vh] flex flex-col rounded-2xl shadow-2xl" style={{ backgroundColor: '#ffffff', border: '1px solid #e0e0e0' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
           <div>

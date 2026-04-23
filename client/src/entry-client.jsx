@@ -3,7 +3,6 @@ import { createRoot, hydrateRoot } from "react-dom/client";
 import App from "./App";
 import "@/lib/leafletIconFix";
 import "./index.css";
-import { loadInitialDataForUrl } from "@/ssr/loadInitialData";
 
 const container = document.getElementById("root");
 
@@ -13,15 +12,7 @@ async function bootstrap() {
   }
 
   const hasSsrMarkup = container.hasChildNodes();
-  let initialData = null;
-
-  if (hasSsrMarkup) {
-    try {
-      initialData = await loadInitialDataForUrl(window.location.href);
-    } catch {
-      initialData = null;
-    }
-  }
+  const initialData = hasSsrMarkup ? window.__SSR_INITIAL_DATA__ || {} : {};
   const app = (
     <BrowserRouter>
       <App initialData={initialData} />
