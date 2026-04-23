@@ -59,6 +59,9 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
   const [slides, setSlides] = useState(
     Array.isArray(initialSlides) && initialSlides.length > 0 ? initialSlides : [],
   );
+  const [isFetchingHero, setIsFetchingHero] = useState(
+    !(Array.isArray(initialSlides) && initialSlides.length > 0),
+  );
 
   const mobileSlides = useMemo(
     () => slides.filter((s) => s.showOnMobilePage === true),
@@ -73,12 +76,23 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
   }, [slides.length, onReady]);
 
   useEffect(() => {
-    if (Array.isArray(initialSlides) && initialSlides.length > 0) return;
+    if (!isFetchingHero && slides.length === 0 && !onReadyCalled.current) {
+      onReadyCalled.current = true;
+      onReady?.();
+    }
+  }, [isFetchingHero, slides.length, onReady]);
+
+  useEffect(() => {
+    if (Array.isArray(initialSlides) && initialSlides.length > 0) {
+      setIsFetchingHero(false);
+      return;
+    }
 
     let isMounted = true;
 
     const fetchCafeHero = async () => {
       try {
+        setIsFetchingHero(true);
         const typeResponse = await getPropertyTypes();
         const types = typeResponse?.data || typeResponse;
         const cafeType = Array.isArray(types)
@@ -99,6 +113,8 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
         }
       } catch (error) {
         console.error("Error fetching cafe hero sections:", error);
+      } finally {
+        if (isMounted) setIsFetchingHero(false);
       }
     };
 
