@@ -57,6 +57,9 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
   const [slides, setSlides] = useState(
     Array.isArray(initialSlides) && initialSlides.length > 0 ? initialSlides : [],
   );
+  const [isLoading, setIsLoading] = useState(
+    !(Array.isArray(initialSlides) && initialSlides.length > 0),
+  );
 
   useEffect(() => {
     if (slides.length > 0 && !onReadyCalled.current) {
@@ -66,7 +69,10 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
   }, [slides.length, onReady]);
 
   useEffect(() => {
-    if (Array.isArray(initialSlides) && initialSlides.length > 0) return;
+    if (Array.isArray(initialSlides) && initialSlides.length > 0) {
+      setIsLoading(false);
+      return;
+    }
 
     let isMounted = true;
 
@@ -92,6 +98,10 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
         }
       } catch (error) {
         console.error("Error fetching Wine hero sections:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -117,6 +127,14 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
   };
 
   const activeSlide = useMemo(() => slides[activeIndex] || null, [activeIndex, slides]);
+
+  if (isLoading) {
+    return (
+      <section className="relative h-[90vh] w-full overflow-hidden bg-neutral-900">
+        <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.15),_rgba(23,23,23,1))]" />
+      </section>
+    );
+  }
 
   if (!activeSlide) {
     return (

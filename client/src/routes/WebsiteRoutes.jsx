@@ -23,7 +23,6 @@ import HotelDetail from "@/modules/website/pages/HotelDetail";
 import ResturantPage from "@/modules/website/pages/restaurant/ResturantPage";
 import ResturantCategoryPageTemplate from "@/modules/website/pages/restaurant/ResturantCategoryPageTemplate";
 import CafePage from "@/modules/website/pages/cafe/CafePage";
-import WinePage from "@/modules/website/pages/wine/WinePage";
 import Italian from "@/modules/website/pages/restaurant/pages/verticals/Italian";
 import LuxuryLounge from "@/modules/website/pages/restaurant/pages/verticals/LuxuryLounge";
 import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/SpicyDarbar";
@@ -37,6 +36,7 @@ const Hotels = lazy(() => import("@/modules/website/pages/Hotels"));
 const RestaurantHomepage = lazy(() => import("@/modules/website/pages/restaurant/RestaurantHomepage"));
 const CafeHomepage = lazy(() => import("@/modules/website/pages/cafe/CafeHomepage"));
 const WineHomepage = lazy(() => import("@/modules/website/pages/wine/WineHomepage"));
+const WinePage = lazy(() => import("@/modules/website/pages/wine/WinePage"));
 const RoomSelection = lazy(() => import("@/modules/website/pages/RoomSelection"));
 
 function withRouteSuspense(element) {
@@ -166,7 +166,7 @@ const WebsiteRoutes = [
   <Route key="cafe-homepage" path="/cafe-homepage" element={withRouteSuspense(<CafeHomepage />)} />,
   <Route key="cafe-page-preview" path="/cafe-page" element={<CafePage />} />,
   <Route key="wine-homepage" path="/wine-homepage" element={withRouteSuspense(<WineHomepage />)} />,
-  <Route key="wine-page-preview" path="/wine-page" element={<WinePage />} />,
+  <Route key="wine-page-preview" path="/wine-page" element={withRouteSuspense(<WinePage />)} />,
 
   <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={withRouteSuspense(<ResturantPage />)} />,
 
