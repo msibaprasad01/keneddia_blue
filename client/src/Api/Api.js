@@ -1,13 +1,16 @@
 import axios from "axios";
 import AuthService from "@/modules/auth/authService";
 
-// DEV
+// QA / DEV URL options. Uncomment and use whichever is needed.
 const apiUrl = "http://192.168.0.135:6090/";
-
-// QA (commented as requested)
-// https://backend.kennediablu.com
 // const apiUrl = "http://103.152.79.63:6090/";
 // const apiUrl = "https://backend.kennediablu.com/";
+
+// Active SSR config required by the server team.
+// const apiUrl =
+//   typeof window === "undefined"
+//     ? "http://127.0.0.1:6090"
+//     : "https://backend.kennediablu.com";
 
 const API = axios.create({ baseURL: apiUrl });
 const isBrowser = typeof window !== "undefined";
