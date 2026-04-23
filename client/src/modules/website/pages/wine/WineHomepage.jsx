@@ -259,23 +259,20 @@ export default function WineHomepage() {
         <div id="home">
           <WineHeroBanner initialSlides={ssr?.heroSlides} />
         </div>
-        <div id="quick-booking">
-          <WineQuickBooking />
-        </div>
-        <div className="h-12 bg-linear-to-b from-white to-[#E6E2D7] dark:hidden" />
-        <WineCoffeeStory />
+      <WineBestSellers />
+     
         <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-white dark:hidden" />
         <div id="wine-properties">
           <WineProperties locationMatch={locationMatch} />
         </div>
         <div className="h-12 bg-linear-to-b from-white to-[#E4CDB0] dark:hidden" />
-        <WineBestSellers />
+    
         <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-white dark:hidden" />
         <WineAbout />
         <div className="h-12 bg-linear-to-b from-white to-[#E6E2D7] dark:hidden" />
         <WineShowcaseSlider />
         <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0] dark:hidden" />
-        <WineNewsSection />
+      
         <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-[#ABBF9B] dark:hidden" />
         <WineGuestReviews />
       </main>

@@ -413,7 +413,7 @@ const PropertyDetail = ({ property, onBack }) => {
       <div className="flex-1 overflow-hidden flex flex-col">
         {/* Tab Switcher */}
         <div className="max-w-7xl w-full mx-auto px-6 pt-6 flex-shrink-0">
-          <div className="flex gap-2 overflow-x-auto border-b pb-1 flex-nowrap scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto border-b pb-3 flex-nowrap">
             {currentTabs.map((tab) => (
               <button
                 key={tab}
