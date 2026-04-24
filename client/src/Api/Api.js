@@ -1,13 +1,16 @@
 import axios from "axios";
 import AuthService from "@/modules/auth/authService";
 
-// DEV
+// QA / DEV URL options. Uncomment and use whichever is needed.
 const apiUrl = "http://192.168.0.135:6090/";
-
-// QA (commented as requested)
-// https://backend.kennediablu.com
 // const apiUrl = "http://103.152.79.63:6090/";
 // const apiUrl = "https://backend.kennediablu.com/";
+
+// Active SSR config required by the server team.
+// const apiUrl =
+//   typeof window === "undefined"
+//     ? "http://127.0.0.1:6090"
+//     : "https://backend.kennediablu.com";
 
 const API = axios.create({ baseURL: apiUrl });
 const isBrowser = typeof window !== "undefined";
@@ -473,6 +476,10 @@ export const replaceEventGalleryMedia = (galleryUploadId, mediaId, payload) =>
     `api/v1/event-gallery-upload/replaceMedia/${galleryUploadId}/${mediaId}`,
     payload
   );
+export const deleteEventGalleryMedia = (galleryUploadId, mediaId) =>
+  API.delete(
+    `api/v1/event-gallery-upload/deleteMedia/${galleryUploadId}/${mediaId}`
+  );
 // ─────────────────────────────
 // EVENT DETAIL CARD INFO
 // ─────────────────────────────
@@ -511,6 +518,8 @@ export const updateDining = (id, formData) =>API.put(`api/v1/dining/updateDining
 export const createBookingChannelPartner = (data) =>API.post("api/v1/booking-channel-partners", data);
 // GET ALL
 export const getAllBookingChannelPartners = () =>API.get("api/v1/booking-channel-partners");
+// GET BY PROPERTY
+export const getBookingChannelPartnersByPropertyId = (propertyId) =>API.get(`api/v1/booking-channel-partners/property/${propertyId}`);
 // UPDATE
 export const updateBookingChannelPartner = (id, data) =>API.put(`api/v1/booking-channel-partners/${id}`, data);
 // TOGGLE STATUS (Active / Inactive)

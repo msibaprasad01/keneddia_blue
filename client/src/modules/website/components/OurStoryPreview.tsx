@@ -162,9 +162,12 @@ export default function OurStoryPreview({
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isSectionVisible, setIsSectionVisible] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Persistence & Effects
+  useEffect(() => { setIsClient(true); }, []);
+
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 1024);
     check();
@@ -257,27 +260,32 @@ export default function OurStoryPreview({
         const id = getInstagramId(m.url);
         if (!id) return null;
 
+        if (!isClient) {
+          return (
+            <div key={idx} className="relative flex h-full w-full items-center justify-center bg-black">
+              <a href={m.url} target="_blank" rel="noreferrer" className="text-white text-xs font-bold underline">
+                View on Instagram
+              </a>
+            </div>
+          );
+        }
+
         return (
           <div
             key={idx}
             className="relative w-full h-full bg-black overflow-hidden flex items-center justify-center group"
-            onClick={() => console.log("Container Tapped for Reel:", id)}
-            // style={{ border: "2px solid green" }} // DEBUG: Green border = Container
           >
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]">
               <InstagramEmbed url={`https://www.instagram.com/p/${id}/`} width={328} />
             </div>
 
-            {/* We use a smaller overlay that doesn't cover the whole thing. 
-            If this overlay is z-20 and full-screen, the iframe NEVER gets the tap.
-          */}
             <div className="absolute inset-0 z-0 pointer-events-none" />
 
             <a
               href={m.url}
               target="_blank"
               rel="noreferrer"
-              onClick={(e) => e.stopPropagation()} // Prevents debug log on link click
+              onClick={(e) => e.stopPropagation()}
               className="absolute bottom-3 right-3 z-20 bg-black/60 hover:bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded-full transition-opacity opacity-0 group-hover:opacity-100"
             >
               Open
@@ -310,7 +318,6 @@ export default function OurStoryPreview({
         <div
           key={idx}
           className="relative group w-full h-full"
-          style={{ border: "2px solid yellow" }}
         >
           <video
             src={m.url}
@@ -522,13 +529,13 @@ export default function OurStoryPreview({
               <div className="relative mb-3 flex flex-col grow">
                 <textarea
                   value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value.slice(0, 100))}
+                  onChange={(e) => setFeedbackText(e.target.value.slice(0, 300))}
                   placeholder="Tell us about your stay..."
-                  maxLength={100}
+                  maxLength={300}
                   className="w-full grow bg-secondary/20 border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-primary outline-none resize-none"
                 />
-                <span className={`self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 100 ? "text-red-500" : "text-muted-foreground"}`}>
-                  {feedbackText.length}/100
+                <span className={`self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 300 ? "text-red-500" : "text-muted-foreground"}`}>
+                  {feedbackText.length}/300
                 </span>
               </div>
 

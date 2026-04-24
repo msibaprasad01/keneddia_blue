@@ -132,6 +132,10 @@ interface InterestEntry {
   phoneNumber: number;
   emailId: string;
   guestNumber: number | null;
+  bookingDate?: string | null;
+  date?: string | null;
+  selectedDate?: string | null;
+  createdAt?: string | null;
 }
 
 type ModalMode = "book" | "interest";
@@ -329,6 +333,11 @@ function BookingModal({
     phone: "",
     email: "",
     totalGuest: "2",
+    bookingDate: event.eventDate?.slice(0, 10) || "",
+  });
+  const [formErrors, setFormErrors] = useState({
+    name: "",
+    phone: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -336,13 +345,70 @@ function BookingModal({
   // Reset form whenever modal opens or mode changes
   useEffect(() => {
     if (isOpen) {
-      setForm({ name: "", phone: "", email: "", totalGuest: "2" });
+      setForm({
+        name: "",
+        phone: "",
+        email: "",
+        totalGuest: "2",
+        bookingDate: event.eventDate?.slice(0, 10) || "",
+      });
+      setFormErrors({ name: "", phone: "" });
       setSubmitted(false);
     }
-  }, [isOpen, mode]);
+  }, [event.eventDate, isOpen, mode]);
+
+  const handleNameChange = (value: string) => {
+    const sanitized = value.replace(/[0-9]/g, "");
+    setForm((f) => ({ ...f, name: sanitized }));
+    setFormErrors((errors) => ({
+      ...errors,
+      name:
+        sanitized.trim().length === 0
+          ? "Name is required."
+          : value !== sanitized
+            ? "Numbers are not allowed in the name."
+            : "",
+    }));
+  };
+
+  const handlePhoneChange = (value: string) => {
+    const sanitized = value.replace(/\D/g, "").slice(0, 10);
+    setForm((f) => ({ ...f, phone: sanitized }));
+    setFormErrors((errors) => ({
+      ...errors,
+      phone:
+        sanitized.length === 0
+          ? "Phone number is required."
+          : sanitized.length < 10
+            ? "Enter a 10 digit phone number."
+            : "",
+    }));
+  };
+
+  const validateForm = () => {
+    const nextErrors = {
+      name: "",
+      phone: "",
+    };
+
+    if (!form.name.trim()) {
+      nextErrors.name = "Name is required.";
+    } else if (/[0-9]/.test(form.name)) {
+      nextErrors.name = "Numbers are not allowed in the name.";
+    }
+
+    if (!form.phone) {
+      nextErrors.phone = "Phone number is required.";
+    } else if (!/^\d{10}$/.test(form.phone)) {
+      nextErrors.phone = "Enter a 10 digit phone number.";
+    }
+
+    setFormErrors(nextErrors);
+    return !nextErrors.name && !nextErrors.phone;
+  };
 
   const handleSubmit = async () => {
-    if (!form.name || !form.phone) return;
+    if (!validateForm()) return;
     setSubmitting(true);
     try {
       const base = {
@@ -351,9 +417,10 @@ function BookingModal({
           ? Number(event.propertyTypeId)
           : undefined,
         eventId: Number(event.id),
-        name: form.name,
+        name: form.name.trim(),
         phoneNumber: Number(form.phone),
         emailId: form.email || undefined,
+        bookingDate: form.bookingDate || undefined,
       };
 
       if (mode === "interest") {
@@ -380,6 +447,7 @@ function BookingModal({
   if (!isOpen) return null;
 
   const isBook = mode === "book";
+  const isFormValid = form.name.trim() && /^\d{10}$/.test(form.phone);
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -425,20 +493,28 @@ function BookingModal({
               <Input
                 placeholder="Your Name *"
                 value={form.name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, name: e.target.value }))
-                }
+                onChange={(e) => handleNameChange(e.target.value)}
                 className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
               />
+              {formErrors.name && (
+                <p className="-mt-3 px-1 text-xs font-medium text-[#E33E33]">
+                  {formErrors.name}
+                </p>
+              )}
               <Input
                 placeholder="Phone Number *"
                 type="tel"
+                inputMode="numeric"
+                maxLength={10}
                 value={form.phone}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, phone: e.target.value }))
-                }
+                onChange={(e) => handlePhoneChange(e.target.value)}
                 className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
               />
+              {formErrors.phone && (
+                <p className="-mt-3 px-1 text-xs font-medium text-[#E33E33]">
+                  {formErrors.phone}
+                </p>
+              )}
               <Input
                 type="email"
                 placeholder="Email Address"
@@ -450,6 +526,20 @@ function BookingModal({
               />
 
               {/* Guest count — only for booking */}
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-[#E33E33] px-1">
+                  Preferred Date
+                </label>
+                <Input
+                  type="date"
+                  value={form.bookingDate}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, bookingDate: e.target.value }))
+                  }
+                  className="h-12 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
+                />
+              </div>
+
               {isBook && (
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase font-bold text-[#E33E33] px-1">
@@ -469,7 +559,7 @@ function BookingModal({
               )}
 
               <button
-                disabled={!form.name || !form.phone || submitting}
+                disabled={!isFormValid || submitting}
                 onClick={handleSubmit}
                 className="w-full h-14 bg-[#E33E33] disabled:opacity-50 text-white rounded-2xl font-black uppercase shadow-lg hover:bg-[#E33E33]/90 transition-all active:scale-95 text-xs tracking-widest flex items-center justify-center"
               >
@@ -564,21 +654,25 @@ export default function EventDetails() {
 
   // ── Fetch event base info ──
   useEffect(() => {
+    let isCurrentRequest = true;
+
     const fetchEventBase = async () => {
       try {
-        if (!hasInitialEvent) {
+        if (!hasInitialEvent && !event) {
           setLoading(true);
         }
         const response = await getEventsUpdated({});
+        if (!isCurrentRequest) return;
+
         const rawEvents: ApiEvent[] = response?.data || response || [];
         const foundEvent = rawEvents.find((e) => e.id.toString() === id);
         setEvent(foundEvent || null);
       } catch {
-        if (!hasInitialEvent) {
+        if (!hasInitialEvent && isCurrentRequest) {
           setEvent(null);
         }
       } finally {
-        if (!hasInitialEvent) {
+        if (!hasInitialEvent && isCurrentRequest) {
           setLoading(false);
         }
       }
@@ -588,24 +682,28 @@ export default function EventDetails() {
       return;
     }
     fetchEventBase();
+
+    return () => {
+      isCurrentRequest = false;
+    };
   }, [hasInitialEvent, id]);
 
   useEffect(() => {
     if (!event || !eventSlug) return;
+    if (String(event.id) !== String(id)) return;
+
     const canonicalPath = buildEventDetailPath(event);
     if (canonicalPath !== `/events/${eventSlug}`) {
       navigate(canonicalPath, { replace: true });
     }
-  }, [event, eventSlug, navigate]);
+  }, [event, eventSlug, id, navigate]);
 
   // ── Fetch detail info + media + interest list ──
   useEffect(() => {
     if (!id) return;
+    let isCurrentRequest = true;
 
     const fetchDetails = async () => {
-      if (!hasInitialEvent) {
-        setLoading(true);
-      }
       try {
         let detailRes: any = null;
         let filesRes: any = null;
@@ -630,6 +728,7 @@ export default function EventDetails() {
           : rawList
             ? [rawList]
             : [];
+        if (!isCurrentRequest) return;
         setDetailInfoList([...list].sort((a, b) => b.id - a.id));
 
         // MEDIA FILE GROUPS
@@ -646,31 +745,29 @@ export default function EventDetails() {
           if (cat === "past_event") pastMedias.push(...(group.medias || []));
         });
 
-        setHeroSlides(
-          heroMedias
-            .filter((m) => m.url)
-            .map((m) => ({
-              url: m.url,
-              type: m.type,
-              alt: m.alt || "event-media",
-            })),
-        );
-        setPastEventImages(
-          pastMedias
-            .filter((m) => m.url)
-            .map((m) => ({
-              url: m.url,
-              type: m.type,
-              alt: m.alt || "past-event",
-            })),
-        );
+        const nextHeroSlides = heroMedias
+          .filter((m) => m.url)
+          .map((m) => ({
+            url: m.url,
+            type: m.type,
+            alt: m.alt || "event-media",
+          }));
+        const nextPastEventImages = pastMedias
+          .filter((m) => m.url)
+          .map((m) => ({
+            url: m.url,
+            type: m.type,
+            alt: m.alt || "past-event",
+          }));
+
+        if (!isCurrentRequest) return;
+        setHeroSlides(nextHeroSlides);
+        setPastEventImages(nextPastEventImages);
       } catch (err) {
         console.error("Failed to fetch event details:", err);
-        if (!hasInitialEvent) {
+        if (!hasInitialEvent && isCurrentRequest) {
           setDetailInfoList([]);
         }
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -678,6 +775,10 @@ export default function EventDetails() {
     if (!hasInitialEvent) {
       fetchInterestList(id);
     }
+
+    return () => {
+      isCurrentRequest = false;
+    };
   }, [hasInitialEvent, id]);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
