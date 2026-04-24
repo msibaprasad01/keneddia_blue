@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { colors } from "@/lib/colors/colors";
 import Layout from "@/modules/layout/Layout";
 import {
@@ -20,7 +20,11 @@ import {
 } from "@/Api/Api";
 import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 
+const sortLatestFirst = (userList) =>
+  [...userList].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+
 function ManageUsers() {
+  const itemsPerPage = 10;
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("All Roles");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -35,10 +39,10 @@ function ManageUsers() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
-  const itemsPerPage = 5;
+  const [lastId, setLastId] = useState(null);
 
   const roleOptions = [
-    // "All Roles",
+    "All Roles",
     "ROLE_SUPERADMIN",
     "ROLE_ADMIN",
     // "ROLE_MANAGER",
@@ -46,51 +50,43 @@ function ManageUsers() {
   ];
   const statusOptions = ["All Status", "Active", "Inactive"];
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async (page = currentPage) => {
     setLoading(true);
     try {
       const response = await getUsersPaginated({
-        page: currentPage,
+        page,
         size: itemsPerPage,
       });
 
-      console.log("Full API Response:", response);
-
-      // Handle different response structures
-      let data = response;
-
-      // If response is wrapped in data property (axios)
-      if (response?.data) {
-        data = response.data;
-      }
-
-      console.log("Parsed data:", data);
+      const data = response?.data ?? response;
 
       if (data && data.content) {
-        setUsers(data.content);
-        setHasNext(data.hasNext || false);
-        console.log("Users set:", data.content);
+        setUsers(sortLatestFirst(data.content));
+        setHasNext(Boolean(data.hasNext));
+        setLastId(data.lastId ?? null);
       } else if (Array.isArray(data)) {
-        // If API returns array directly
-        setUsers(data);
+        setUsers(sortLatestFirst(data).slice(0, itemsPerPage));
         setHasNext(false);
+        setLastId(null);
       } else {
-        console.warn("Unexpected response structure:", data);
         setUsers([]);
         setHasNext(false);
+        setLastId(null);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
+      showError(error?.response?.data?.message || "Failed to fetch users");
       setUsers([]);
       setHasNext(false);
+      setLastId(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [currentPage]);
+    fetchUsers(currentPage);
+  }, [currentPage, fetchUsers]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -148,7 +144,9 @@ function ManageUsers() {
   const displayUsers = getFilteredUsers();
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1) setCurrentPage(newPage);
+    if (newPage < 1 || loading) return;
+    if (newPage > currentPage && !hasNext) return;
+    setCurrentPage(newPage);
   };
 
   const setUserActionLoading = (userId, action, value) => {
@@ -177,7 +175,7 @@ function ManageUsers() {
         showSuccess("User activated successfully");
       }
 
-      await fetchUsers();
+      await fetchUsers(currentPage);
     } catch (error) {
       showError(
         error?.response?.data?.message || "Failed to update user status",
@@ -194,7 +192,11 @@ function ManageUsers() {
       await deleteUser(userId);
       showSuccess("User deleted successfully");
       setShowDeleteConfirm(null);
-      await fetchUsers();
+      if (users.length === 1 && currentPage > 1) {
+        setCurrentPage((page) => page - 1);
+      } else {
+        await fetchUsers(currentPage);
+      }
     } catch (error) {
       showError(error?.response?.data?.message || "Failed to delete user");
     } finally {
@@ -237,7 +239,7 @@ function ManageUsers() {
                 className="text-base font-semibold"
                 style={{ color: colors.textPrimary }}
               >
-                All Users ({users.length})
+                All Users ({displayUsers.length})
               </h3>
               <div className="flex items-center gap-3">
                 {/* Search Input */}
@@ -527,7 +529,8 @@ function ManageUsers() {
             style={{ borderColor: colors.border }}
           >
             <p className="text-sm" style={{ color: colors.textSecondary }}>
-              Page {currentPage} • Showing {displayUsers.length} users
+              Page {currentPage} | Showing {displayUsers.length} of {itemsPerPage}
+              {lastId ? ` | Last ID ${lastId}` : ""}
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -601,7 +604,7 @@ function ManageUsers() {
         <AddUserModal
           onClose={() => setShowAddModal(false)}
           onSuccess={() => {
-            fetchUsers();
+            fetchUsers(currentPage);
             setShowAddModal(false);
           }}
         />
@@ -612,7 +615,7 @@ function ManageUsers() {
           editUser={editingUser}
           onClose={() => setEditingUser(null)}
           onSuccess={() => {
-            fetchUsers();
+            fetchUsers(currentPage);
             setEditingUser(null);
           }}
         />

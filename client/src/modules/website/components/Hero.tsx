@@ -359,7 +359,10 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
   }, [activeIndex, loadedSlides, slides.length, swiperInstance]);
 
   const upcomingThumbnailSlides = useMemo(() => {
-    if (slides.length <= 1) return [];
+    if (slides.length === 0) return [];
+    if (slides.length === 1) {
+      return [{ slide: slides[0], index: 0 }];
+    }
 
     return Array.from({ length: slides.length - 1 }, (_, offset) => {
       const index = (activeIndex + offset + 1) % slides.length;
