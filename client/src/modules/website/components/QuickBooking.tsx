@@ -35,7 +35,12 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { getAllLocations, searchRooms, getLocationsByType } from "@/Api/Api";
+import {
+  GetAllPropertyDetails,
+  getAllLocations,
+  searchRooms,
+  getLocationsByType,
+} from "@/Api/Api";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -84,6 +89,7 @@ interface Room {
   // Optional fields that might come from API
   propertyName?: string;
   locationName?: string;
+  bookingEngineUrl?: string | null;
   coordinates?: { lat: number; lng: number };
   image?: string;
 }
@@ -135,6 +141,9 @@ export default function QuickBooking() {
   // Locations State
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
+  const [propertyBookingUrls, setPropertyBookingUrls] = useState<
+    Record<number, string>
+  >({});
 
   // Fetch locations on mount
   useEffect(() => {
@@ -159,46 +168,38 @@ export default function QuickBooking() {
     fetchLocations();
   }, []);
 
+  useEffect(() => {
+    const fetchPropertyBookingUrls = async () => {
+      try {
+        const response = await GetAllPropertyDetails();
+        const rawData = response?.data?.data || response?.data || [];
+        if (!Array.isArray(rawData)) return;
+
+        const nextMap: Record<number, string> = {};
+        rawData.forEach((item: any) => {
+          const parent = item?.propertyResponseDTO;
+          const propertyId = Number(parent?.id);
+          const bookingEngineUrl = String(parent?.bookingEngineUrl || "").trim();
+
+          if (propertyId && bookingEngineUrl) {
+            nextMap[propertyId] = bookingEngineUrl;
+          }
+        });
+
+        setPropertyBookingUrls(nextMap);
+      } catch (err) {
+        console.error("Failed to load hotel booking engine URLs", err);
+        setPropertyBookingUrls({});
+      }
+    };
+
+    fetchPropertyBookingUrls();
+  }, []);
+
   // Handlers with auto-close
   const handleLocationSelect = (location: Location | null) => {
     setSelectedLocation(location);
     setLocationOpen(false);
-  };
-
-  const RESAVENUE_CONFIG = {
-    baseUrl: "https://bookings.resavenue.com/resBooking4/searchRooms",
-    defaultRegCode: "TXGZ0113",
-    dateFormat: "dd/MM/yyyy",
-  };
-
-  const generateResAvenueUrl = ({
-    checkIn,
-    checkOut,
-    adults,
-    regCode = RESAVENUE_CONFIG.defaultRegCode,
-  }: {
-    checkIn?: Date;
-    checkOut?: Date;
-    adults: number;
-    regCode?: string;
-  }) => {
-    if (!checkIn || !checkOut) return null;
-
-    const arrDate = format(checkIn, RESAVENUE_CONFIG.dateFormat);
-    const depDate = format(checkOut, RESAVENUE_CONFIG.dateFormat);
-
-    const params = new URLSearchParams({
-      targetTemplate: "4",
-      regCode,
-      curr: "INR",
-      arrDate,
-      depDate,
-      arr_date: arrDate,
-      dep_date: depDate,
-      adult_1: String(adults ?? 1),
-    });
-
-    return `${RESAVENUE_CONFIG.baseUrl}?${params.toString()}`;
   };
 
   const handleCheckInSelect = (date: Date | undefined) => {
@@ -276,30 +277,59 @@ export default function QuickBooking() {
     }
   };
 
-  const handleBook = (room: Room) => {
-    const bookingUrl = generateResAvenueUrl({
-      checkIn,
-      checkOut,
-      adults: guests.adults,
-      regCode: RESAVENUE_CONFIG.defaultRegCode,
-    });
+  const getHotelDetailPath = (room: Room) => {
+    const cityName = selectedLocation?.locationName || room.locationName;
 
-    if (!bookingUrl) {
-      const cityName = selectedLocation?.locationName || room.locationName;
-
-      if (!cityName) {
-        console.error("No location found for hotel navigation.");
-        return;
-      }
-
-      const citySlug = createCitySlug(cityName);
-
-      const propertyPath = `/${citySlug}/${createHotelSlug(room.propertyName || cityName || "property", room.propertyId)}`;
-      navigate(propertyPath);
-      return;
+    if (!cityName) {
+      console.error("No location found for hotel navigation.");
+      return null;
     }
 
-    window.open(bookingUrl, "_blank", "noopener,noreferrer");
+    return `/${createCitySlug(cityName)}/${createHotelSlug(
+      room.propertyName || cityName || "property",
+      room.propertyId,
+    )}`;
+  };
+
+  const buildBookingEngineUrl = (baseUrl: string) => {
+    const trimmedUrl = baseUrl.trim();
+    if (!trimmedUrl) return null;
+
+    try {
+      const url = new URL(trimmedUrl);
+
+      if (url.searchParams.has("checkin") || url.searchParams.has("checkout")) {
+        return url.toString();
+      }
+
+      if (checkIn && checkOut) {
+        url.searchParams.set("checkin", checkIn.toISOString().split("T")[0]);
+        url.searchParams.set("checkout", checkOut.toISOString().split("T")[0]);
+        url.searchParams.set("adults", String(guests.adults));
+        url.searchParams.set("children", String(guests.children));
+        url.searchParams.set("rooms", String(guests.rooms));
+      }
+
+      return url.toString();
+    } catch {
+      return trimmedUrl;
+    }
+  };
+
+  const handleBook = (room: Room) => {
+    const bookingEngineUrl =
+      room.bookingEngineUrl || propertyBookingUrls[Number(room.propertyId)];
+
+    if (bookingEngineUrl) {
+      const finalUrl = buildBookingEngineUrl(bookingEngineUrl);
+      if (finalUrl) {
+        window.open(finalUrl, "_blank", "noopener,noreferrer");
+        return;
+      }
+    }
+
+    const propertyPath = getHotelDetailPath(room);
+    if (propertyPath) navigate(propertyPath);
   };
   // Get room type badge color
   const getRoomTypeBadgeColor = (type: string) => {
