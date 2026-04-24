@@ -482,7 +482,7 @@ export default function WineProperties({ locationMatch }) {
                         </div>
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center">
                           <Building2 className="mx-auto mb-1 h-4 w-4 text-primary" />
-                          <p className="text-[10px] text-muted-foreground">Type</p>
+                          <p className="text-[10px] text-muted-foreground">Area</p>
                           <p className="text-xs font-bold text-foreground">
                             {activeWine.type}
                           </p>
@@ -500,22 +500,7 @@ export default function WineProperties({ locationMatch }) {
                         <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground">
                           Available Highlights
                         </h4>
-                        <div className="mb-3 flex flex-wrap gap-2">
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
-                            <Building2 className="h-3 w-3" />
-                            {activeWine.serviceTag || "Wine"}
-                          </span>
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${activeWine.reservationAvailable
-                              ? "border-sky-200 bg-sky-50 text-sky-700"
-                              : "border-zinc-200 bg-zinc-100 text-zinc-500"
-                              }`}
-                          >
-                            {activeWine.reservationAvailable
-                              ? "Reservation Available"
-                              : "Walk-in Only"}
-                          </span>
-                        </div>
+                        
 
                         <div className="grid grid-cols-2 gap-2">
                           {(activeWine.cuisines.length > 0
