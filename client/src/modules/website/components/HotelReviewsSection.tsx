@@ -513,8 +513,8 @@ export default function HotelReviewsSection({
                       const allMedia = buildMediaList(item);
                       return (
                         <SwiperSlide key={item.id}>
-                          <div className="bg-background border rounded-xl overflow-hidden h-full flex flex-col group">
-                            <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                          <div className="bg-background border rounded-xl overflow-hidden h-[520px] flex flex-col group">
+                            <div className="relative h-full bg-muted overflow-hidden">
                               {renderMediaGrid(allMedia, item)}
                               {allMedia.length > 0 && (
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none">

@@ -500,8 +500,8 @@ export default function RestaurantGuestReviews({
                       const allMedia = buildMediaList(item);
                       return (
                         <SwiperSlide key={item.id}>
-                          <div className="group flex h-full flex-col overflow-hidden rounded-xl border bg-background">
-                            <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                          <div className="group flex h-[520px] flex-col overflow-hidden rounded-xl border bg-background">
+                            <div className="relative h-full overflow-hidden bg-muted">
                               {renderMediaGrid(allMedia, item)}
                               {allMedia.length > 0 && (
                                 <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-transparent p-4">

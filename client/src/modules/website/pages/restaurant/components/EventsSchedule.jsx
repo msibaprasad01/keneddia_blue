@@ -93,9 +93,9 @@ function EventCard({ event, index }) {
     media?.width && media?.height ? media.width / media.height : null,
   );
   const videoRef = useRef(null);
-  const TARGET_RATIO = 1080 / 1350;
+  const TARGET_RATIO = 1080 / 1920;
   const showFullMedia =
-    naturalRatio === null || naturalRatio <= TARGET_RATIO + 0.05;
+    naturalRatio === null || naturalRatio <= TARGET_RATIO + 0.1;
 
   const handleImageLoad = (e) => {
     const { naturalWidth, naturalHeight } = e.currentTarget;
@@ -573,7 +573,8 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
                   spaceBetween={16}
                   breakpoints={{
                     640: { slidesPerView: 2 },
-                    1024: { slidesPerView: 2.2 },
+                    768: { slidesPerView: 3 },
+                    1200: { slidesPerView: 4 },
                   }}
                   autoplay={{
                     delay: 5000,

@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import {
   getHeroSectionsPaginated,
-  toggleHeroSectionActive,
   getHotelHomepageHeroSection,
   getPropertyTypes,
 } from "@/Api/Api";
@@ -28,7 +27,6 @@ function HeroSection() {
   const [fetching, setFetching] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
-  const [togglingStatus, setTogglingStatus] = useState({});
   const [heroPropertyTypes, setHeroPropertyTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -151,6 +149,28 @@ function HeroSection() {
     setIsModalOpen(true);
   };
 
+  const truncateText = (text, limit = 50) => {
+    if (!text) return "";
+    return text.length > limit ? `${text.substring(0, limit)}...` : text;
+  };
+
+  const renderStatusBadge = (value, activeLabel = "On", inactiveLabel = "Off") => (
+    <span
+      className={`inline-flex min-w-[88px] justify-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
+        value
+          ? "bg-green-100 text-green-700"
+          : "bg-gray-100 text-gray-500"
+      }`}
+    >
+      {value ? activeLabel : inactiveLabel}
+    </span>
+  );
+
+  const activeTableData = useMemo(() => {
+    if (activeTab === "homepage") return heroSections;
+    return propertyHeroSections[Number(activeTab)] || [];
+  }, [activeTab, heroSections, propertyHeroSections]);
+
   const refetchActiveTab = useCallback(() => {
     if (activeTab === "homepage") {
       fetchHomepageHero(currentPage);
@@ -159,52 +179,6 @@ function HeroSection() {
 
     fetchPropertyTypeHero(Number(activeTab));
   }, [activeTab, currentPage, fetchHomepageHero, fetchPropertyTypeHero]);
-
-  const handleToggleActive = async (id, currentStatus, showOnHomepage) => {
-    const nextStatus = !currentStatus;
-
-    if (nextStatus === false && showOnHomepage === true) {
-      showError(
-        "Please disable Homepage visibility before turning off Action Status.",
-      );
-      return;
-    }
-
-    const actionName = currentStatus ? "Disable" : "Enable";
-    if (
-      !window.confirm(
-        `Are you sure you want to ${actionName} this hero section?`,
-      )
-    ) {
-      return;
-    }
-
-    const key = `active-${id}`;
-
-    try {
-      setTogglingStatus((prev) => ({ ...prev, [key]: true }));
-      await toggleHeroSectionActive(id, nextStatus);
-      showSuccess(
-        `Hero section successfully ${currentStatus ? "disabled" : "enabled"}`,
-      );
-      refetchActiveTab();
-    } catch (error) {
-      console.log("Active toggle failed:", error?.response?.data);
-      showError(error?.response?.data?.message || "Update failed");
-    } finally {
-      setTogglingStatus((prev) => ({ ...prev, [key]: false }));
-    }
-  };
-
-  const truncateText = (text, limit = 50) => {
-    if (!text) return "";
-    return text.length > limit ? `${text.substring(0, limit)}...` : text;
-  };
-
-  const activeTableData = useMemo(() => {
-    if (activeTab === "homepage") return heroSections;
-    return propertyHeroSections[Number(activeTab)] || [];
-  }, [activeTab, heroSections, propertyHeroSections]);
 
   const renderTable = (data) => (
     <div className="overflow-x-auto">
@@ -219,7 +193,13 @@ function HeroSection() {
               Titles
             </th>
             <th className="text-center px-4 py-3 text-xs font-semibold">
-              Status Action
+              Active Status
+            </th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">
+              Desktop View
+            </th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">
+              Mobile View
             </th>
             <th className="text-center px-4 py-3 text-xs font-semibold">
               Actions
@@ -232,7 +212,6 @@ function HeroSection() {
               section.backgroundAll?.[0] ||
               section.backgroundLight?.[0] ||
               section.backgroundDark?.[0];
-            const isTogglingActive = togglingStatus[`active-${section.id}`];
             return (
               <tr
                 key={section.id}
@@ -273,65 +252,13 @@ function HeroSection() {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-center">
-                  <div className="flex flex-col items-center gap-1">
-                    <button
-                      onClick={() =>
-                        handleToggleActive(
-                          section.id,
-                          section.active,
-                          section.showOnHomepage,
-                        )
-                      }
-                      disabled={isTogglingActive}
-                      className="relative inline-flex items-center h-6 w-12 rounded-full transition-all cursor-pointer outline-none border-2"
-                      style={{
-                        backgroundColor: section.active ? "#059669" : "#9CA3AF",
-                        borderColor: section.active ? "#059669" : "#9CA3AF",
-                      }}
-                    >
-                      {isTogglingActive ? (
-                        <Loader2
-                          className="animate-spin text-white mx-auto"
-                          size={12}
-                        />
-                      ) : (
-                        <>
-                          <span
-                            className={`absolute text-[8px] font-bold text-white transition-opacity ${
-                              section.active
-                                ? "left-1.5 opacity-100"
-                                : "opacity-0"
-                            }`}
-                          >
-                            ON
-                          </span>
-                          <span
-                            className={`absolute text-[8px] font-bold text-white transition-opacity ${
-                              !section.active
-                                ? "right-1.5 opacity-100"
-                                : "opacity-0"
-                            }`}
-                          >
-                            OFF
-                          </span>
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
-                              section.active
-                                ? "translate-x-6"
-                                : "translate-x-0.5"
-                            }`}
-                          />
-                        </>
-                      )}
-                    </button>
-                    <span
-                      className={`text-[9px] font-bold uppercase ${
-                        section.active ? "text-green-600" : "text-gray-400"
-                      }`}
-                    >
-                      {section.active ? "Active" : "Inactive"}
-                    </span>
-                  </div>
+                  {renderStatusBadge(section.active, "Active", "Inactive")}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {renderStatusBadge(section.showOnHomepage, "Visible", "Hidden")}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {renderStatusBadge(section.showOnMobilePage, "Visible", "Hidden")}
                 </td>
                 <td className="px-4 py-3 text-center">
                   <button

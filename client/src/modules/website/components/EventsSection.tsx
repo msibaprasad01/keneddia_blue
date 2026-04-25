@@ -150,8 +150,8 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
   const [naturalRatio, setNaturalRatio] = useState<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // 1080×1350 portrait target ratio ≈ 0.8
-  const TARGET_RATIO = 1080 / 1350;
+  // Offer-style portrait target ratio (1080x1920)
+  const TARGET_RATIO = 1080 / 1920;
 
   const isVideo = event.image?.type === "VIDEO" || event.image?.url?.includes(".mp4");
   const imageUrl = event.image?.url || "";
@@ -188,7 +188,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
 
   // Portrait/tall images (ratio ≤ TARGET + buffer) → full-frame mode
   // Wider images → split mode (image top + info panel below)
-  const isFullFrame = naturalRatio === null || naturalRatio <= TARGET_RATIO + 0.05;
+  const isFullFrame = naturalRatio === null || naturalRatio <= TARGET_RATIO + 0.1;
 
   return (
     <motion.div

@@ -53,6 +53,7 @@ const EventMedia = ({
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const OFFER_STYLE_PORTRAIT_RATIO = 1080 / 1920;
 
   const isVideo =
     event.image?.type === "VIDEO" || event.image?.url?.includes(".mp4");
@@ -60,7 +61,7 @@ const EventMedia = ({
   const analyzeMediaSize = (w: number, h: number) => {
     if (!isListView) {
       const ratio = w / h;
-      if (ratio <= 0.85) setIsBanner(true);
+      if (ratio <= OFFER_STYLE_PORTRAIT_RATIO + 0.1) setIsBanner(true);
     }
   };
 

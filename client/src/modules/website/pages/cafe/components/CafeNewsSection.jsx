@@ -52,9 +52,9 @@ function NewsCard({ item }) {
   });
 
   return (
-    <div className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-primary/50">
-      <div className="relative w-full overflow-hidden bg-black">
-        <img src={item.imageUrl} alt={item.title} className="block h-auto w-full object-contain transition-transform duration-700 group-hover:scale-105" style={{ maxHeight: "280px", minHeight: "140px" }} />
+    <div className="group flex h-[520px] cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-primary/50">
+      <div className="relative h-[280px] w-full shrink-0 overflow-hidden bg-black">
+        <img src={item.imageUrl} alt={item.title} className="block h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
         <div className="absolute left-3 top-3">
           <span className="rounded bg-black/60 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">{date}</span>
         </div>

@@ -81,8 +81,8 @@ function NewsCard({ item }) {
   });
 
   return (
-    <div className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-primary/50">
-      <div className="relative h-[220px] w-full overflow-hidden bg-black md:h-[240px]">
+    <div className="group flex h-[520px] cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-primary/50">
+      <div className="relative h-[280px] w-full shrink-0 overflow-hidden bg-black">
         {item.imageUrl ? (
           <img
             src={item.imageUrl}
