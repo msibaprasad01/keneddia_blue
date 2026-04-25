@@ -16,7 +16,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { Button } from "@/components/ui/button";
 import { siteContent } from "@/data/siteContent";
-
+import img from '../../../../../assets/wine_images/news.jpeg'
 import "swiper/css";
 
 const EVENTS = [
@@ -66,7 +66,7 @@ const WINE_NEWS_ITEMS = [
     badgeType: "Press Release",
     ctaText: "Read Story",
     ctaLink: "/news/kennedia-wine-cellar-selection",
-    imageUrl: siteContent.images.cafes.library.src,
+    imageUrl: img,
   },
   {
     id: 2,

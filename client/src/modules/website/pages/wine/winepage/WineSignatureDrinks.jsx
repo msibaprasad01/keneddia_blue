@@ -1,582 +1,373 @@
-import { useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  CalendarCheck,
-  ChevronLeft,
-  ChevronRight,
-  Flame,
-  Loader2,
-  Phone,
-  Send,
-  User,
-  Utensils,
-  X,
-} from "lucide-react";
-import { toast } from "react-hot-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { siteContent } from "@/data/siteContent";
 
-const MENU = [
+import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowUpRight, X, MapPin, Percent, ChevronRight } from "lucide-react";
+
+// ─── FONTS (injected once) ────────────────────────────────────────────────────
+const FONT_LINK = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap";
+
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const WHATSAPP_NUMBER = "919999999999";
+
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+const CATEGORIES = [
   {
-    category: "Brews",
-    categoryImage: siteContent.images.cafes.minimalist.src,
+    id: "whiskey",
+    name: "Whiskey",
+    subtitle: "Single Malts & Blends",
+    image: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=1200&q=90",
+    accentColor: "#C9922A",
+    number: "01",
     items: [
-      {
-        id: 1,
-        name: "Single Origin Pour-Over",
-        description:
-          "Hand-poured through a single filter, this brew highlights the natural clarity and fruit tones of its origin bean.",
-        image: siteContent.images.cafes.minimalist.src,
-        foodType: "VEG",
-        price: "₹280",
-      },
-      {
-        id: 2,
-        name: "Iced Matcha Latte",
-        description:
-          "Ceremonial-grade matcha whisked into cold oat milk for a smooth, grassy, and lightly sweet glass.",
-        image: siteContent.images.cafes.library.src,
-        foodType: "VEG",
-        price: "₹320",
-      },
-      {
-        id: 3,
-        name: "Classic Cold Brew",
-        description:
-          "Slow-steeped overnight for 18 hours. Low acid, high clarity, cocoa and malt undertones.",
-        image: siteContent.images.cafes.garden.src,
-        foodType: "VEG",
-        price: "₹260",
-      },
-      {
-        id: 4,
-        name: "Hazelnut Cappuccino",
-        description:
-          "Toasted nut sweetness folded into velvet milk foam and a warm aromatic espresso base.",
-        image: siteContent.images.cafes.parisian.src,
-        foodType: "VEG",
-        price: "₹240",
-      },
-      {
-        id: 5,
-        name: "Espresso Tonic",
-        description:
-          "Bright tonic sparkle, fresh espresso, and a citrus wedge — a sharper modern coffee serve.",
-        image: siteContent.images.cafes.highTea.src,
-        foodType: "VEG",
-        price: "₹220",
-      },
-      {
-        id: 6,
-        name: "Salted Caramel Frappe",
-        description:
-          "Blended coffee, cream, and caramel in a frozen profile made for long slow Wine hours.",
-        image: siteContent.images.cafes.bakery.src,
-        foodType: "VEG",
-        price: "₹300",
-      },
+      { id: 101, brand: "Glenfiddich", title: "12 Year Old", tag: "Single Malt", origin: "Speyside, Scotland", abv: "40%", description: "Fresh pear, vanilla oak and a long clean finish.", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=600&q=85", accent: "#C9922A" },
+      { id: 102, brand: "Johnnie Walker", title: "Black Label", tag: "Blended Scotch", origin: "Scotland", abv: "40%", description: "Dark fruit and vanilla with a rich signature smokiness.", image: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=600&q=85", accent: "#8B7355" },
+      { id: 103, brand: "Maker's Mark", title: "Bourbon", tag: "Bourbon", origin: "Kentucky, USA", abv: "45%", description: "Caramel, red winter wheat softness and toasted oak.", image: "https://images.unsplash.com/photo-1602523961358-f9f03dd557db?w=600&q=85", accent: "#8B1A1A" },
+      { id: 104, brand: "Jameson", title: "Irish Whiskey", tag: "Irish", origin: "Dublin, Ireland", abv: "40%", description: "Triple-distilled, silky light body with a gentle nutty finish.", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=600&q=85", accent: "#2D5A27" },
+      { id: 105, brand: "Laphroaig", title: "10 Year Old", tag: "Islay Single Malt", origin: "Islay, Scotland", abv: "40%", description: "Intense peat smoke, iodine, and a long maritime finish.", image: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=600&q=85", accent: "#1E3A5F" },
+      { id: 106, brand: "Bulleit", title: "Frontier Rye", tag: "Rye Whiskey", origin: "Kentucky, USA", abv: "45%", description: "Bold rye spice, dried fruit, and a clean dry close.", image: "https://images.unsplash.com/photo-1602523961358-f9f03dd557db?w=600&q=85", accent: "#8B6914" },
     ],
   },
   {
-    category: "Bites",
-    categoryImage: siteContent.images.cafes.highTea.src,
+    id: "wine",
+    name: "Wine",
+    subtitle: "Reds, Whites & Champagne",
+    image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=1200&q=90",
+    accentColor: "#7B2D3E",
+    number: "02",
     items: [
-      {
-        id: 7,
-        name: "Avocado Toast & Poached Egg",
-        description:
-          "Thick-cut sourdough, smashed avocado, two poached eggs, chilli flakes, and a drizzle of herb oil.",
-        image: siteContent.images.cafes.minimalist.src,
-        foodType: "VEG",
-        price: "₹380",
-      },
-      {
-        id: 8,
-        name: "High Tea Platter for Two",
-        description:
-          "A tiered selection of finger sandwiches, petit fours, scones, and seasonal preserves.",
-        image: siteContent.images.cafes.highTea.src,
-        foodType: "VEG",
-        price: "₹680",
-      },
-      {
-        id: 9,
-        name: "Garden Brunch Board",
-        description:
-          "Cold cuts, artisan cheeses, seasonal fruit, house hummus, and warm flatbread on a sharing board.",
-        image: siteContent.images.cafes.garden.src,
-        foodType: "NON_VEG",
-        price: "₹580",
-      },
-      {
-        id: 10,
-        name: "Smashed Banana Pancakes",
-        description:
-          "Fluffy banana pancakes topped with honey yoghurt, toasted granola, and a cocoa dust finish.",
-        image: siteContent.images.cafes.library.src,
-        foodType: "VEG",
-        price: "₹320",
-      },
-      {
-        id: 11,
-        name: "Chicken Tikka Bruschetta",
-        description:
-          "Tandoor-spiced chicken tikka on toasted sourdough with mint chutney, pickled onion, and cheddar melt.",
-        image: siteContent.images.cafes.parisian.src,
-        foodType: "NON_VEG",
-        price: "₹360",
-        isSpicy: true,
-      },
-      {
-        id: 12,
-        name: "Pulled Lamb Slider",
-        description:
-          "Slow-braised lamb with harissa mayo, pickled cucumber, and sesame brioche — a bold two-bite serve.",
-        image: siteContent.images.cafes.bakery.src,
-        foodType: "NON_VEG",
-        price: "₹420",
-        isSpicy: true,
-      },
+      { id: 201, brand: "Château Margaux", title: "Premier Grand Cru", tag: "Red Bordeaux", origin: "Bordeaux, France", abv: "13.5%", description: "Dark berry, cedar, violet and perfectly polished tannins.", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85", accent: "#6B1A2A" },
+      { id: 202, brand: "Cloudy Bay", title: "Sauvignon Blanc", tag: "White Wine", origin: "Marlborough, NZ", abv: "13%", description: "Zesty passionfruit, citrus and crisp mineral finish.", image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?w=600&q=85", accent: "#C8A951" },
+      { id: 203, brand: "Veuve Clicquot", title: "Yellow Label Brut", tag: "Champagne", origin: "Reims, France", abv: "12%", description: "Toasty brioche, fresh apple and a persistent mousse.", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85", accent: "#E8B84B" },
+      { id: 204, brand: "Antinori", title: "Tignanello", tag: "Super Tuscan", origin: "Tuscany, Italy", abv: "14%", description: "Dark plum, tobacco and earthy Sangiovese depth.", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85", accent: "#A0291E" },
+      { id: 205, brand: "Whispering Angel", title: "Côtes de Provence", tag: "Rosé", origin: "Provence, France", abv: "13%", description: "Pale, elegant rosé with strawberry, peach, bone-dry.", image: "https://images.unsplash.com/photo-1547595628-c61a29f496f0?w=600&q=85", accent: "#C47A8A" },
+      { id: 206, brand: "Caymus", title: "Special Selection", tag: "Napa Cabernet", origin: "Napa Valley, USA", abv: "14.5%", description: "Plush blackcurrant, mocha and a seamless velvet finish.", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85", accent: "#3D1A0E" },
     ],
   },
   {
-    category: "Bakes",
-    categoryImage: siteContent.images.cafes.parisian.src,
+    id: "beers",
+    name: "Beers",
+    subtitle: "Craft, Stout & Lager",
+    image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=1200&q=90",
+    accentColor: "#B8860B",
+    number: "03",
     items: [
-      {
-        id: 13,
-        name: "Croissant & Jam",
-        description:
-          "Freshly baked butter croissant served warm with house-made seasonal jam and French-style cultured butter.",
-        image: siteContent.images.cafes.parisian.src,
-        foodType: "VEG",
-        price: "₹180",
-      },
-      {
-        id: 14,
-        name: "Belgian Waffle Stack",
-        description:
-          "Crisp on the outside, fluffy inside, topped with mascarpone, berries, and maple drizzle.",
-        image: siteContent.images.cafes.bakery.src,
-        foodType: "VEG",
-        price: "₹340",
-      },
-      {
-        id: 15,
-        name: "Almond Danish",
-        description:
-          "Flaky laminated dough filled with almond cream, glazed with apricot and toasted flaked almonds.",
-        image: siteContent.images.cafes.minimalist.src,
-        foodType: "VEG",
-        price: "₹200",
-      },
-      {
-        id: 16,
-        name: "Sourdough Loaf",
-        description:
-          "Long-fermented sourdough with a deep crust and open crumb, baked fresh every morning from 5 AM.",
-        image: siteContent.images.cafes.library.src,
-        foodType: "VEG",
-        price: "₹260",
-      },
-      {
-        id: 17,
-        name: "Cinnamon Scroll",
-        description:
-          "Soft enriched dough rolled with cinnamon butter and brown sugar, finished with a cream cheese glaze.",
-        image: siteContent.images.cafes.garden.src,
-        foodType: "VEG",
-        price: "₹220",
-      },
+      { id: 301, brand: "Weihenstephaner", title: "Hefeweissbier", tag: "Wheat Beer", origin: "Bavaria, Germany", abv: "5.4%", description: "Banana, clove and a beautifully hazy golden body.", image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=85", accent: "#D4A017" },
+      { id: 302, brand: "Guinness", title: "Draught", tag: "Irish Stout", origin: "Dublin, Ireland", abv: "4.2%", description: "Silky nitrogen cascade with roasted coffee and chocolate.", image: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&q=85", accent: "#3A3A3A" },
+      { id: 303, brand: "Sierra Nevada", title: "Pale Ale", tag: "American Pale Ale", origin: "California, USA", abv: "5.6%", description: "Resinous pine, citrus hops and a clean bitter finish.", image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=85", accent: "#2E7D32" },
+      { id: 304, brand: "Hoegaarden", title: "Witbier", tag: "Belgian White", origin: "Belgium", abv: "4.9%", description: "Orange peel, coriander and a dreamy hazy glow.", image: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&q=85", accent: "#C8A951" },
+      { id: 305, brand: "Duvel", title: "Golden Strong", tag: "Belgian Strong Ale", origin: "Breendonk, Belgium", abv: "8.5%", description: "Dry-hopped, effervescent and powerfully smooth.", image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=85", accent: "#E8B84B" },
+      { id: 306, brand: "Modelo", title: "Especial", tag: "Mexican Lager", origin: "Mexico City, Mexico", abv: "4.4%", description: "Clean, crisp with a gentle malt sweetness.", image: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&q=85", accent: "#C8960C" },
+    ],
+  },
+  {
+    id: "tasting-events",
+    name: "Tastings",
+    subtitle: "Guided Sensory Journeys",
+    image: "https://images.unsplash.com/photo-1543158181-e6f9f6712055?w=1200&q=90",
+    accentColor: "#556B5E",
+    number: "04",
+    items: [
+      { id: 401, brand: "House Experience", title: "Whiskey Master Class", tag: "Monthly", origin: "In-House", abv: "Varies", description: "Five single malts, one sommelier, one hour of discovery.", image: "https://images.unsplash.com/photo-1543158181-e6f9f6712055?w=600&q=85", accent: "#C9922A" },
+      { id: 402, brand: "House Experience", title: "New World Wine Tour", tag: "Bi-Monthly", origin: "In-House", abv: "Varies", description: "Six pours across South America and Oceania.", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85", accent: "#7B2D3E" },
+      { id: 403, brand: "House Experience", title: "Craft Beer Lab", tag: "Weekly", origin: "In-House", abv: "Varies", description: "Eight blind ales with food pairings and brewing history.", image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=85", accent: "#2E7D32" },
+      { id: 404, brand: "House Experience", title: "Champagne & Canapés", tag: "Special", origin: "In-House", abv: "Varies", description: "Prestige cuvées with chef-crafted bites — pure elegance.", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85", accent: "#E8B84B" },
     ],
   },
 ];
 
-export default function WineSignatureDrinks() {
-  const [activeTab, setActiveTab] = useState(0);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    date: new Date().toISOString().split("T")[0],
-    time: "19:00",
-    totalGuest: "2",
-  });
-  const scrollRef = useRef(null);
-
-  const handleTabClick = (idx) => {
-    setActiveTab(idx);
-    const container = scrollRef.current;
-    if (container) {
-      const tab = container.children[idx];
-      if (tab) {
-        container.scrollTo({
-          left: tab.offsetLeft - container.offsetWidth / 2 + tab.offsetWidth / 2,
-          behavior: "smooth",
-        });
-      }
-    }
-  };
-
-  const handlePrev = () => {
-    if (activeTab > 0) handleTabClick(activeTab - 1);
-  };
-
-  const handleNext = () => {
-    if (activeTab < MENU.length - 1) handleTabClick(activeTab + 1);
-  };
-
-  const openReserve = (item = null) => {
-    setSelectedItem(
-      item ?? { name: "Table Reservation", category: MENU[activeTab].category },
-    );
-    setShowModal(true);
-  };
-
-  const setField = (key, value) =>
-    setFormData((prev) => ({ ...prev, [key]: value }));
-
-  const handleSubmit = () => {
-    if (!formData.name || !formData.phone) {
-      toast.error("Please fill in your name and phone number.");
-      return;
-    }
-    setIsSubmitting(true);
-    setTimeout(() => {
-      toast.success("Reservation request sent!");
-      setShowModal(false);
-      setFormData({
-        name: "",
-        phone: "",
-        date: new Date().toISOString().split("T")[0],
-        time: "19:00",
-        totalGuest: "2",
-      });
-      setIsSubmitting(false);
-    }, 600);
-  };
-
-  const activeSection = MENU[activeTab];
-
-  // 1 thumbnail per 4 items — first uses categoryImage, rest use every 4th item's image
-  const getThumbnails = (section) => {
-    const count = Math.ceil(section.items.length / 4);
-    return Array.from({ length: count }, (_, i) => ({
-      image: i === 0 ? section.categoryImage : (section.items[i * 4 - 1]?.image ?? section.categoryImage),
-      label: i === 0 ? section.category : section.items[i * 4 - 1]?.name ?? section.category,
-    }));
-  };
-
-  const thumbnails = getThumbnails(activeSection);
-
+// ─── WHATSAPP ──────────────────────────────────────────────────────────────────
+function WhatsAppBtn({ item, catName }) {
+  const [hover, setHover] = useState(false);
+  const msg = encodeURIComponent(`Hi! Interested in *${item.brand} – ${item.title}* (${catName}). Could you share details?`);
   return (
-    <section
-      id="menu"
-      className="py-8 bg-[#E4CDB0] dark:bg-[#050505] transition-colors duration-500"
-    >
-      <div className="container mx-auto px-6 max-w-[1200px]">
-        {/* ── HEADER ──────────────────────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-full">
-              <Utensils className="w-5 h-5 text-primary" />
-            </div>
-            <h2 className="text-3xl font-serif dark:text-white">
-              The <span className="italic text-primary">Menu</span>
-            </h2>
-          </div>
-
-          <div className="flex flex-row-reverse items-center gap-6">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handlePrev}
-                disabled={activeTab === 0}
-                className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
-              >
-                <ChevronLeft className="w-5 h-5 dark:text-white" />
-              </button>
-              <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                {activeTab + 1} / {MENU.length}
-              </div>
-              <button
-                onClick={handleNext}
-                disabled={activeTab === MENU.length - 1}
-                className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
-              >
-                <ChevronRight className="w-5 h-5 dark:text-white" />
-              </button>
-            </div>
-
-            <button
-              onClick={() => openReserve()}
-              className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-all active:scale-95 shadow-lg shadow-zinc-200 dark:shadow-none"
-            >
-              <CalendarCheck size={14} /> Reserve Now
-            </button>
-          </div>
-        </div>
-
-        {/* ── TAB SCROLLER ─────────────────────────────────────────────────── */}
-        <div
-          ref={scrollRef}
-          className="flex gap-4 overflow-x-auto pb-8 snap-x"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {MENU.map((section, idx) => (
-            <motion.button
-              key={idx}
-              onClick={() => handleTabClick(idx)}
-              className={`relative shrink-0 px-6 py-3 rounded-full border text-xs font-bold uppercase tracking-widest transition-all snap-center ${
-                activeTab === idx
-                  ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
-                  : "bg-transparent border-zinc-100 dark:border-white/5 text-zinc-500 hover:border-primary/50 dark:text-zinc-400"
-              }`}
-            >
-              {section.category}
-            </motion.button>
-          ))}
-        </div>
-
-        {/* ── CONTENT AREA ─────────────────────────────────────────────────── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            className="grid lg:grid-cols-12 gap-8 items-start"
-          >
-            {/* LEFT: thumbnails — 1 per 4 items */}
-            <div className="lg:col-span-5 hidden lg:block">
-              <div className="space-y-4">
-                {thumbnails.map((thumb, i) => (
-                  <div
-                    key={i}
-                    className="relative w-full aspect-4/3 rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5 bg-black"
-                  >
-                    <img
-                      src={thumb.image}
-                      alt={thumb.label}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-6 left-6 text-white">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">
-                        {i === 0 ? "Featured" : `Items ${i * 4 + 1}–${Math.min((i + 1) * 4, activeSection.items.length)}`}
-                      </p>
-                      <h3 className="text-2xl font-serif uppercase tracking-tight line-clamp-1">
-                        {i === 0 ? activeSection.category : thumb.label}
-                      </h3>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* RIGHT: item list */}
-            <div className="lg:col-span-7 space-y-2">
-              {activeSection.items.map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="group flex items-start gap-5 p-4 rounded-2xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
-                >
-                  <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                    {item.image ? (
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-zinc-300">
-                        <Utensils size={20} />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex-1 border-b border-zinc-100 dark:border-white/5 pb-4 group-last:border-none">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-base font-extrabold tracking-tight text-zinc-900 dark:text-white">
-                          {item.name}
-                        </h4>
-
-                        {item.foodType === "VEG" && (
-                          <span className="w-3.5 h-3.5 border border-green-600 flex items-center justify-center shrink-0">
-                            <span className="w-2 h-2 rounded-full bg-green-600 block" />
-                          </span>
-                        )}
-                        {item.foodType === "NON_VEG" && (
-                          <span className="w-3.5 h-3.5 border border-red-600 flex items-center justify-center shrink-0">
-                            <span className="w-2 h-2 rounded-full bg-red-600 block" />
-                          </span>
-                        )}
-                        {item.isSpicy && (
-                          <Flame size={14} className="text-red-500 fill-red-500" />
-                        )}
-                      </div>
-                    </div>
-
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2">
-                      {item.description}
-                    </p>
-
-                    {item.price && (
-                      <p className="text-xs font-bold text-primary mt-1">
-                        {item.price}
-                      </p>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* ── RESERVE MODAL ────────────────────────────────────────────────── */}
+    <div className="flex items-center gap-2" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       <AnimatePresence>
-        {showModal && (
-          <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-4xl overflow-hidden shadow-2xl relative border border-zinc-100 dark:border-white/5"
-            >
-              <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-800/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <CalendarCheck size={18} />
-                  </div>
-                  <h3 className="font-serif text-xl dark:text-white">
-                    {selectedItem?.name?.includes("Table")
-                      ? "Reservation"
-                      : `Reserve for: ${selectedItem?.name}`}
-                  </h3>
-                </div>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                      Full Name <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                      <Input
-                        value={formData.name}
-                        onChange={(e) => setField("name", e.target.value)}
-                        placeholder="Full Name"
-                        className="pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                      Phone <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                      <Input
-                        type="tel"
-                        maxLength={10}
-                        value={formData.phone}
-                        onChange={(e) =>
-                          setField("phone", e.target.value.replace(/\D/g, ""))
-                        }
-                        placeholder="10-digit number"
-                        className="pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                      Date <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      type="date"
-                      value={formData.date}
-                      min={new Date().toISOString().split("T")[0]}
-                      onChange={(e) => setField("date", e.target.value)}
-                      className="h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                      Arrival Time <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      type="time"
-                      value={formData.time}
-                      onChange={(e) => setField("time", e.target.value)}
-                      className="h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1 col-span-2">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                      Total Guests <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="500"
-                      value={formData.totalGuest}
-                      onChange={(e) => setField("totalGuest", e.target.value)}
-                      className="h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-3 bg-primary/5 rounded-xl border border-primary/10">
-                  <p className="text-[11px] text-zinc-500 italic leading-relaxed">
-                    Requesting <b>{selectedItem?.name}</b> for{" "}
-                    <b>{formData.totalGuest} guests</b> at{" "}
-                    <b>{formData.time}</b>.
-                  </p>
-                </div>
-
-                <Button
-                  disabled={isSubmitting}
-                  onClick={handleSubmit}
-                  className="w-full h-11 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
-                >
-                  {isSubmitting ? (
-                    <Loader2 className="animate-spin" size={18} />
-                  ) : (
-                    <>
-                      Confirm Reservation{" "}
-                      <Send size={14} className="ml-2" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </motion.div>
-          </div>
+        {hover && (
+          <motion.span initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}
+            className="text-[11px] font-mono font-semibold text-[#25D366] tracking-wide whitespace-nowrap">
+            Query on WhatsApp
+          </motion.span>
         )}
       </AnimatePresence>
+      <motion.a
+        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`}
+        target="_blank" rel="noopener noreferrer"
+        onClick={e => e.stopPropagation()}
+        whileHover={{ scale: 1.12 }} whileTap={{ scale: 0.94 }}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#25D366] shadow-lg shadow-green-900/50"
+        aria-label="WhatsApp Query"
+      >
+        <svg viewBox="0 0 32 32" fill="white" className="h-[18px] w-[18px]">
+          <path d="M16 2C8.268 2 2 8.268 2 16c0 2.52.663 4.882 1.818 6.932L2 30l7.302-1.784A13.93 13.93 0 0016 30c7.732 0 14-6.268 14-14S23.732 2 16 2zm0 25.6a11.56 11.56 0 01-5.892-1.607l-.422-.25-4.333 1.059 1.098-4.205-.275-.434A11.543 11.543 0 014.4 16C4.4 9.59 9.59 4.4 16 4.4S27.6 9.59 27.6 16 22.41 27.6 16 27.6zm6.344-8.656c-.347-.174-2.055-1.014-2.375-1.13-.32-.115-.552-.173-.784.174-.232.347-.9 1.13-1.102 1.362-.202.232-.405.26-.752.086-.347-.174-1.464-.539-2.788-1.719-1.031-.917-1.726-2.05-1.929-2.397-.202-.347-.022-.534.152-.706.156-.155.347-.405.52-.607.174-.202.232-.347.347-.579.116-.232.058-.434-.029-.607-.087-.174-.784-1.89-1.074-2.59-.283-.68-.57-.588-.784-.598-.202-.01-.434-.012-.666-.012-.232 0-.607.087-.925.434-.318.347-1.216 1.188-1.216 2.897s1.245 3.36 1.418 3.592c.174.231 2.449 3.738 5.934 5.24.83.358 1.477.572 1.982.732.832.265 1.59.228 2.188.138.667-.1 2.055-.84 2.346-1.652.29-.812.29-1.508.202-1.652-.086-.144-.318-.231-.665-.405z" />
+        </svg>
+      </motion.a>
+    </div>
+  );
+}
 
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-    </section>
+// ─── PRODUCT DRAWER ───────────────────────────────────────────────────────────
+function ProductDrawer({ category, onClose }) {
+  const [activeFilter, setActiveFilter] = useState("all");
+  const tags = useMemo(() => ["all", ...new Set(category.items.map(i => i.tag))], [category]);
+  const filtered = useMemo(() => activeFilter === "all" ? category.items : category.items.filter(i => i.tag === activeFilter), [category, activeFilter]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex"
+      style={{ fontFamily: "'DM Mono', monospace" }}
+    >
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Drawer panel */}
+      <motion.div
+        initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+        transition={{ type: "spring", stiffness: 300, damping: 35 }}
+        className="relative ml-auto flex h-full w-full max-w-[780px] flex-col overflow-hidden bg-[#111008]"
+      >
+        {/* Drawer header */}
+        <div className="relative h-40 shrink-0 overflow-hidden sm:h-48">
+          <img src={category.image} alt={category.name} className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-[#111008]" />
+          <div className="absolute inset-0 flex items-end p-5 sm:p-8">
+            <div>
+              {/* <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.3em] text-amber-400/80">{category.subtitle}</p> */}
+              <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl font-light italic text-white sm:text-5xl">
+                {category.name}
+              </h2>
+            </div>
+          </div>
+          <button onClick={onClose}
+            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20 sm:right-5 sm:top-5">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Tag filters */}
+        <div className="shrink-0 px-4 py-4 sm:px-8">
+          <div className="flex flex-wrap gap-2">
+            {tags.map(t => (
+              <button key={t} onClick={() => setActiveFilter(t)}
+                className="rounded-full border px-3 py-1 text-[10px] font-mono font-semibold uppercase tracking-widest transition-all"
+                style={activeFilter === t
+                  ? { borderColor: category.accentColor, backgroundColor: category.accentColor + "22", color: category.accentColor }
+                  : { borderColor: "#333", color: "#666", backgroundColor: "transparent" }
+                }
+              >
+                {t === "all" ? "All" : t}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="mx-4 h-px shrink-0 sm:mx-8" style={{ background: `linear-gradient(to right, ${category.accentColor}44, transparent)` }} />
+
+        {/* Scrollable product list */}
+        <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-8 sm:py-6">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((item, i) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ delay: i * 0.05 }}
+                className="group relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-white/5 bg-white/[0.03] p-4 transition-all hover:border-white/10 hover:bg-white/[0.06] sm:flex-row sm:gap-4"
+              >
+                {/* Left: image */}
+                <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-xl bg-black sm:h-24 sm:w-24 sm:aspect-auto">
+                  <img
+                    src={item.image}
+                    alt={item.brand}
+                    className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105 sm:object-cover sm:group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 rounded-xl" style={{ boxShadow: `inset 0 0 0 1px ${item.accent}33` }} />
+                </div>
+
+                {/* Center: info */}
+                <div className="flex flex-1 flex-col justify-between min-w-0">
+                  <div>
+                    <div className="mb-1 flex items-center gap-2">
+                      <span className="text-[9px] font-mono font-bold uppercase tracking-[0.25em]" style={{ color: item.accent }}>{item.brand}</span>
+                      <span className="rounded-full border px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider" style={{ borderColor: item.accent + "44", color: item.accent + "cc" }}>{item.tag}</span>
+                    </div>
+                    <h4 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-xl font-semibold leading-tight text-white">{item.title}</h4>
+                    <p className="mt-1 line-clamp-1 text-[11px] text-zinc-500 italic">{item.description}</p>
+                  </div>
+                  <div className="mt-2 flex items-center gap-3 text-[10px] text-zinc-600">
+                    <span className="flex items-center gap-1"><MapPin size={10} />{item.origin}</span>
+
+                  </div>
+                </div>
+
+                {/* Right: WhatsApp */}
+                <div className="flex shrink-0 items-center self-end sm:self-auto">
+                  <WhatsAppBtn item={item} catName={category.name} />
+                </div>
+
+                {/* Accent left border */}
+                <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ backgroundColor: item.accent }} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── CATEGORY TILE ────────────────────────────────────────────────────────────
+function CategoryTile({ category, index, onClick }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="group relative cursor-pointer overflow-hidden"
+      style={{ borderRadius: 24 }}
+    >
+      {/* Image */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden" style={{ borderRadius: 24 }}>
+        <motion.img
+          src={category.image}
+          alt={category.name}
+          className="h-full w-full object-cover"
+          animate={{ scale: hovered ? 1.06 : 1 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        />
+        {/* Base gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+        {/* Accent overlay */}
+        <motion.div
+          className="absolute inset-0"
+          animate={{ opacity: hovered ? 0.18 : 0 }}
+          transition={{ duration: 0.4 }}
+          style={{ background: `radial-gradient(ellipse at bottom left, ${category.accentColor}, transparent 70%)` }}
+        />
+
+        {/* Issue number — top left */}
+        <div className="absolute left-5 top-5">
+          <span style={{ fontFamily: "'DM Mono', monospace", color: category.accentColor + "cc" }}
+            className="text-[11px] font-semibold tracking-[0.3em]">№ {category.number}</span>
+        </div>
+
+        {/* Top-right arrow */}
+        <motion.div
+          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border"
+          style={{ borderColor: category.accentColor + "55", backgroundColor: category.accentColor + "11" }}
+          animate={{ rotate: hovered ? 45 : 0, opacity: hovered ? 1 : 0.5 }}
+          transition={{ duration: 0.3 }}
+        >
+          <ArrowUpRight size={16} style={{ color: category.accentColor }} />
+        </motion.div>
+
+        {/* Bottom content */}
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          {/* Thin accent rule */}
+          <motion.div
+            className="mb-3 h-[1px]"
+            style={{ backgroundColor: category.accentColor }}
+            animate={{ width: hovered ? "100%" : "32px" }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          />
+          {/* <p style={{ fontFamily: "'DM Mono', monospace" }} className="mb-1 text-[9px] uppercase tracking-[0.3em] text-white/50">{category.subtitle}</p> */}
+          <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl font-light italic leading-none text-white">{category.name}</h3>
+          {/* <motion.div
+            className="mt-3 flex items-center gap-1.5"
+            animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 6 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span style={{ fontFamily: "'DM Mono', monospace", color: category.accentColor }} className="text-[10px] font-semibold tracking-widest uppercase">{category.items.length} Selections</span>
+            <ChevronRight size={12} style={{ color: category.accentColor }} />
+          </motion.div> */}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── ROOT ─────────────────────────────────────────────────────────────────────
+export default function BestSellers() {
+  const [activeCategory, setActiveCategory] = useState(null);
+
+  return (
+    <>
+      {/* Google Fonts */}
+      <link href={FONT_LINK} rel="stylesheet" />
+
+      <section
+        className="relative min-h-screen overflow-hidden bg-[#0C0B08] py-14 sm:py-20"
+        style={{ fontFamily: "'DM Mono', monospace" }}
+      >
+        {/* Subtle noise texture overlay */}
+        <div className="pointer-events-none absolute inset-0 opacity-[0.025]"
+          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")", backgroundSize: "128px" }} />
+
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute left-0 top-0 h-[320px] w-[320px] rounded-full opacity-10 sm:h-[500px] sm:w-[500px]"
+          style={{ background: "radial-gradient(circle, #C9922A 0%, transparent 70%)", transform: "translate(-30%, -30%)" }} />
+
+        <div className="relative mx-auto max-w-[1400px] px-4 sm:px-6 md:px-16">
+
+          {/* ── Header ── */}
+          <div className="mb-12 flex flex-col gap-6 md:mb-16 md:flex-row md:items-end md:justify-between">
+            <div>
+              {/* Eyebrow */}
+              <div className="mb-5 flex items-center gap-4">
+                <div className="h-px w-12 bg-amber-500/60" />
+                <span className="text-[10px] uppercase tracking-[0.35em] text-amber-500/80">Curated Collection</span>
+              </div>
+              <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                className="text-3xl font-light leading-[1.1] text-white sm:text-4xl md:text-5xl">
+                Crafted for Every Taste<br /><em className="text-amber-400/90">Explore our curated selection of premium spirits and beverages, designed to suit every mood and occasion.</em>
+              </h1>
+            </div>
+            <p className="max-w-md text-sm leading-relaxed text-zinc-500 md:max-w-xs md:text-right">
+              Premium spirits, wines and craft beers. Click any category to explore — hover an item to enquire via WhatsApp.
+            </p>
+          </div>
+
+   
+
+          {/* ── Category grid ── */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {CATEGORIES.map((cat, i) => (
+              <CategoryTile key={cat.id} category={cat} index={i} onClick={() => setActiveCategory(cat)} />
+            ))}
+          </div>
+
+          {/* ── Footer line ── */}
+          <div className="mt-12 flex flex-col gap-2 border-t border-white/5 pt-6 text-center sm:mt-16 sm:flex-row sm:items-center sm:justify-between sm:pt-8 sm:text-left">
+            <span className="text-[10px] tracking-[0.25em] text-zinc-700 uppercase">Menu Spotlight</span>
+            <span className="text-[10px] tracking-[0.25em] text-zinc-700 uppercase">{CATEGORIES.reduce((s, c) => s + c.items.length, 0)} total offerings</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Drawer overlay ── */}
+      <AnimatePresence>
+        {activeCategory && (
+          <ProductDrawer
+            key={activeCategory.id}
+            category={activeCategory}
+            onClose={() => setActiveCategory(null)}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }

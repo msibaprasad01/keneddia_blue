@@ -24,7 +24,7 @@ export default function WinePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen overflow-x-hidden bg-background">
       <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} />
 
       <main>
@@ -33,31 +33,29 @@ export default function WinePage() {
         </div>
 
         <div id="menu">
-          <WineSubCategories />
-          <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0] dark:hidden" />
+          <div className="h-8 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0] dark:hidden sm:h-12" />
           <WineSignatureDrinks />
         </div>
 
-        <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-[#E6E2D7] dark:hidden" />
+        <div className="h-8 bg-linear-to-b from-[#E4CDB0] to-[#E6E2D7] dark:hidden sm:h-12" />
         <div id="about">
           <AboutWinePage />
         </div>
 
-        <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0] dark:hidden" />
+        <div className="h-8 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0] dark:hidden sm:h-12" />
         <div id="events">
-          <WinepageEvents />
+          {/* <WinepageEvents /> */}
         </div>
 
-        <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-[#E6E2D7] dark:hidden" />
-        <WineTestimonials />
+        {/* <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-[#E6E2D7] dark:hidden" />
+        <WineTestimonials /> */}
 
-        <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#ABBF9B] dark:hidden" />
+        {/* <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#ABBF9B] dark:hidden" /> */}
         <div id="gallery">
           <WineGalleryPage />
         </div>
 
-        <div className="h-12 bg-linear-to-b from-[#ABBF9B] to-[#E4CDB0] dark:hidden" />
-        <WineReservationForm />
+        {/* <WineReservationForm /> */}
       </main>
 
       <div id="contact">

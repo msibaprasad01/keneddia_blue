@@ -6,36 +6,12 @@ import { siteContent } from "@/data/siteContent";
 const ABOUT_SECTIONS = [
   {
     id: 1,
-    subTitle: "Our Roots — Est. 2018",
+    subTitle: "Our Roots - Est. 2018",
     sectionTitle: "A Wine Built On Craft & Community",
     description:
-      "Kennedia Wine was born from a simple belief — that a great cup of coffee and a welcoming space can transform an ordinary day. We source our beans directly from small-batch farms, roast in-house every morning, and bake everything fresh before you arrive.",
+      "Kennedia Wine was born from a simple belief - that a great cup of coffee and a welcoming space can transform an ordinary day. We source our beans directly from small-batch farms, roast in-house every morning, and bake everything fresh before you arrive.",
     image: siteContent.images.cafes.minimalist.src,
-  },
-  {
-    id: 2,
-    subTitle: "The Spaces",
-    sectionTitle: "Rooms Designed For Staying, Not Rushing",
-    description:
-      "From our quiet library corner to the open garden terrace and the high-tea lounge — every space is designed with a specific kind of visitor in mind. You are never rushed here. Stay as long as you need to.",
-    image: siteContent.images.cafes.library.src,
-  },
-  {
-    id: 3,
-    subTitle: "Tea & Dessert Lounge",
-    sectionTitle: "A Slower Format Built Around Warm Service",
-    description:
-      "From plated desserts and tea towers to low-light lounge corners, every detail is arranged to feel intimate, polished, and easy to return to. Our high-tea lounge is the highlight of every weekend.",
-    image: siteContent.images.cafes.highTea.src,
-  },
-  {
-    id: 4,
-    subTitle: "Garden Terrace",
-    sectionTitle: "Open-Air Brunch With a View Worth the Wait",
-    description:
-      "Our outdoor terrace seats 40 guests under natural shade, surrounded by greenery and morning light. It's where brunch tables run long and cold brews flow freely — perfect for catching up or starting the week right.",
-    image: siteContent.images.cafes.garden.src,
-  },
+  }
 ];
 
 export default function AboutWinePage() {
@@ -59,7 +35,6 @@ export default function AboutWinePage() {
         </div>
 
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[45%_55%]">
-          {/* Image */}
           <motion.div
             key={`about-image-${currentIndex}`}
             initial={{ opacity: 0, x: -50 }}
@@ -79,7 +54,6 @@ export default function AboutWinePage() {
             <div className="absolute -left-4 -top-4 h-1/2 w-1/2 rounded-xl bg-zinc-100/80 -z-0 dark:bg-white/5" />
           </motion.div>
 
-          {/* Content */}
           <div className="relative lg:pl-4">
             <AnimatePresence mode="wait">
               <motion.div
@@ -111,10 +85,10 @@ export default function AboutWinePage() {
                     </h4>
                     <p className="flex items-center gap-2 font-serif text-base italic text-zinc-900 dark:text-white">
                       <Clock className="h-3.5 w-3.5 text-primary" />
-                      7:00 AM – 11:00 PM
+                      7:00 AM - 11:00 PM
                     </p>
                     <p className="mt-1 text-[10px] font-bold tracking-tighter text-zinc-400 dark:text-white/30">
-                      MONDAY – SUNDAY
+                      MONDAY - SUNDAY
                     </p>
                   </div>
                   <div>
@@ -135,7 +109,6 @@ export default function AboutWinePage() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Dot navigation */}
             <div className="mt-6 flex gap-2">
               {ABOUT_SECTIONS.map((_, idx) => (
                 <button

@@ -3,6 +3,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getHotelHomepageHeroSection, getPropertyTypes } from "@/Api/Api";
+import coverimg from "./../../../../../assets/resturant_images/Kennedia-cover.png";
+
+const fallbackSlides = [
+  {
+    id: "wine-fallback-slide",
+    tag: "Wine",
+    title: "Discover Kennedia Wine Experiences",
+    desc: "Explore curated spaces, signature pours, and memorable moments.",
+    img: coverimg,
+    isVideo: false,
+    bgTitle: "WINE",
+    ctaText: null,
+    ctaLink: null,
+  },
+];
 
 const transformApiDataToSlides = (content) =>
   (Array.isArray(content) ? content : [])
@@ -16,8 +31,6 @@ const transformApiDataToSlides = (content) =>
         item.backgroundDark?.[0] ||
         null;
 
-      if (!backgroundMedia?.url) return null;
-
       const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "";
 
       return {
@@ -25,8 +38,8 @@ const transformApiDataToSlides = (content) =>
         tag: item.ctaText || null,
         title: item.mainTitle || null,
         desc: item.subTitle || null,
-        img: backgroundMedia.url,
-        isVideo: backgroundMedia.type === "VIDEO",
+        img: backgroundMedia?.url || coverimg,
+        isVideo: backgroundMedia?.type === "VIDEO",
         bgTitle: primaryWord.toUpperCase(),
         ctaText: item.ctaText || null,
         ctaLink: item.ctaLink || null,
@@ -55,7 +68,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const onReadyCalled = useRef(false);
   const [slides, setSlides] = useState(
-    Array.isArray(initialSlides) && initialSlides.length > 0 ? initialSlides : [],
+    Array.isArray(initialSlides) && initialSlides.length > 0 ? initialSlides : fallbackSlides,
   );
   const [isLoading, setIsLoading] = useState(
     !(Array.isArray(initialSlides) && initialSlides.length > 0),
@@ -70,6 +83,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
 
   useEffect(() => {
     if (Array.isArray(initialSlides) && initialSlides.length > 0) {
+      setSlides(initialSlides);
       setIsLoading(false);
       return;
     }
@@ -92,12 +106,15 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
         const data = response?.data || response;
         const apiSlides = transformApiDataToSlides(data);
 
-        if (isMounted && apiSlides.length > 0) {
-          setSlides(apiSlides);
+        if (isMounted) {
+          setSlides(apiSlides.length > 0 ? apiSlides : fallbackSlides);
           setActiveIndex(0);
         }
       } catch (error) {
         console.error("Error fetching Wine hero sections:", error);
+        if (isMounted) {
+          setSlides(fallbackSlides);
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -130,7 +147,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
 
   if (isLoading) {
     return (
-      <section className="relative h-[90vh] w-full overflow-hidden bg-neutral-900">
+      <section className="relative h-[78svh] min-h-[520px] w-full overflow-hidden bg-neutral-900 md:h-[90vh]">
         <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.15),_rgba(23,23,23,1))]" />
       </section>
     );
@@ -138,7 +155,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
 
   if (!activeSlide) {
     return (
-      <section className="relative h-[90vh] w-full overflow-hidden bg-neutral-900">
+      <section className="relative h-[78svh] min-h-[520px] w-full overflow-hidden bg-neutral-900 md:h-[90vh]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
         <div className="absolute inset-0 backdrop-blur-sm" />
         <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 text-center">
@@ -160,7 +177,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
   }
 
   return (
-    <section className="relative h-[90vh] w-full overflow-hidden bg-background">
+    <section className="relative h-[78svh] min-h-[560px] w-full overflow-hidden bg-background sm:min-h-[620px] md:h-[90vh] md:min-h-0">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSlide.id}
@@ -238,19 +255,9 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
         </div>
       </div>
 
-      <div className="relative z-10 block md:hidden">
-        <div
-          className="relative w-full overflow-hidden bg-black"
-          style={{
-            height: "calc(75vw + 64px)",
-            minHeight: "320px",
-            maxHeight: "500px",
-          }}
-        >
-          <div
-            className="absolute inset-x-0 bottom-0 overflow-hidden"
-            style={{ top: "64px" }}
-          >
+      <div className="relative z-10 block h-full md:hidden">
+        <div className="relative h-full w-full overflow-hidden bg-black">
+          <div className="absolute inset-0 overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={`mobile-${activeSlide.id}`}
@@ -265,26 +272,20 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
             </AnimatePresence>
           </div>
 
-          <div
-            className="absolute inset-x-0 bottom-0 pointer-events-none"
-            style={{ top: "64px" }}
-          >
-            <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/55 to-transparent" />
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute inset-x-0 bottom-0 h-[68%] bg-gradient-to-t from-black/95 via-black/60 to-transparent" />
           </div>
 
-          <div className="absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-gradient-to-b from-black/60 to-transparent" />
 
-          <div
-            className="absolute inset-x-0 z-20 flex flex-col items-center justify-center px-5 text-center"
-            style={{ top: "64px", bottom: "2.5rem" }}
-          >
+          <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center justify-end px-4 pb-20 pt-28 text-center sm:px-6 sm:pb-24 sm:pt-32">
             {activeSlide.tag && (
               <motion.span
                 key={`m-tag-${activeSlide.id}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="mb-2 inline-flex rounded-full bg-white/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur-md"
+                className="mb-3 inline-flex rounded-full bg-white/12 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur-md"
               >
                 {activeSlide.tag}
               </motion.span>
@@ -296,7 +297,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.6 }}
-                className="mb-1.5 text-lg font-serif font-semibold leading-[1.08] tracking-tight text-white drop-shadow-md"
+                className="mb-2 max-w-[11ch] text-[1.75rem] font-serif font-semibold leading-[1.02] tracking-tight text-white drop-shadow-md sm:text-[2.15rem]"
               >
                 {activeSlide.title}
               </motion.h1>
@@ -308,7 +309,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
-                className="mb-3 text-[10px] font-light capitalize tracking-normal text-white/80"
+                className="mb-5 max-w-[30ch] text-xs font-light capitalize leading-relaxed tracking-normal text-white/80 sm:text-sm"
               >
                 {activeSlide.desc}
               </motion.p>
@@ -324,7 +325,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
                 <button
                   disabled={!activeSlide.ctaLink}
                   onClick={() => { if (activeSlide.ctaLink) { const url = /^https?:\/\//i.test(activeSlide.ctaLink) ? activeSlide.ctaLink : `https://${activeSlide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
-                  className={`group relative h-auto overflow-hidden rounded-full border px-5 py-2 text-xs font-semibold transition-all duration-500 ease-out inline-flex items-center gap-2 ${
+                  className={`group relative inline-flex h-auto items-center gap-2 overflow-hidden rounded-full border px-5 py-2.5 text-xs font-semibold transition-all duration-500 ease-out sm:px-6 sm:text-sm ${
                     !activeSlide.ctaLink
                       ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
                       : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40"
@@ -342,10 +343,10 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
             )}
           </div>
 
-          <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
+          <div className="absolute inset-x-0 bottom-4 z-20 flex items-center justify-center gap-3 px-4 sm:bottom-5">
             <button
               onClick={() => goToSlide(activeIndex - 1)}
-              className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
@@ -366,7 +367,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
 
             <button
               onClick={() => goToSlide(activeIndex + 1)}
-              className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </button>

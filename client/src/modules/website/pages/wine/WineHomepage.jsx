@@ -37,7 +37,7 @@ export default function WineHomepage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background [scrollbar-gutter:stable]">
+    <div className="min-h-screen overflow-x-hidden bg-background [scrollbar-gutter:stable]">
       <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} />
 
       <main>
@@ -45,42 +45,36 @@ export default function WineHomepage() {
           <WineHeroBanner initialSlides={ssr?.heroSlides} />
         </div>
 
-        <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-white dark:hidden" />
+        <div className="h-8 bg-linear-to-b from-[#E6E2D7] to-white dark:hidden sm:h-12" />
         <div id="collection">
           <Suspense fallback={<SectionFallback height="h-96" />}>
             <WineBestSellers />
           </Suspense>
         </div>
 
-        <div className="h-12 bg-linear-to-b from-white to-[#E4CDB0] dark:hidden" />
+        <div className="h-8 bg-linear-to-b from-white to-[#E4CDB0] dark:hidden sm:h-12" />
         <div id="wine-properties">
           <Suspense fallback={<SectionFallback height="h-[32rem]" />}>
             <WineProperties locationMatch={null} />
           </Suspense>
         </div>
 
-        <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-white dark:hidden" />
+        <div className="h-8 bg-linear-to-b from-[#E4CDB0] to-white dark:hidden sm:h-12" />
         <div id="about">
           <Suspense fallback={<SectionFallback height="h-80" />}>
             <WineAbout />
           </Suspense>
         </div>
 
-        <div className="h-12 bg-linear-to-b from-white to-[#E6E2D7] dark:hidden" />
+        <div className="h-8 bg-linear-to-b from-white to-[#E6E2D7] dark:hidden sm:h-12" />
         <div id="showcase">
           <Suspense fallback={<SectionFallback height="h-[28rem]" />}>
             <WineShowcaseSlider />
           </Suspense>
         </div>
 
-        <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0] dark:hidden" />
-        <div id="reservation">
-          <Suspense fallback={<SectionFallback height="h-80" />}>
-            <WineQuickBooking />
-          </Suspense>
-        </div>
 
-        <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-[#ABBF9B] dark:hidden" />
+        <div className="h-8 bg-linear-to-b from-[#E4CDB0] to-[#ABBF9B] dark:hidden sm:h-12" />
         <div id="reviews">
           <Suspense fallback={<SectionFallback height="h-[36rem]" />}>
             <WineGuestReviews />
