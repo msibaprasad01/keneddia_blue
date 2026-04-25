@@ -351,6 +351,10 @@ input:focus, select:focus, textarea:focus {
   color: hsl(var(--foreground));
 }
 
+.hotel-stay-calendar .react-calendar {
+  width: 100%;
+  max-width: 100%;
+}
 @keyframes verticalScroll {
   0% {
     transform: translateY(100%);

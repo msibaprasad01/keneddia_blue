@@ -104,7 +104,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
       onClick={() => navigate(buildEventDetailPath(event))}
-      className="group w-full max-w-[300px] h-[520px] mx-auto bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer"
+      className="group mx-auto flex h-[520px] w-full max-w-full cursor-pointer flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl sm:max-w-[300px]"
     >
       {/* Media Container */}
       <div
@@ -445,7 +445,7 @@ export default function EventSectionPropertySpecific({
           <>
             <button
               onClick={handlePrevious}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all backdrop-blur-sm"
+              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-white/90 p-2 text-foreground shadow-md backdrop-blur-sm transition-all hover:bg-primary hover:text-white dark:border-white/20 dark:bg-white/15 dark:text-white"
               aria-label="Previous"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -453,7 +453,7 @@ export default function EventSectionPropertySpecific({
 
             <button
               onClick={handleNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all backdrop-blur-sm"
+              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-white/90 p-2 text-foreground shadow-md backdrop-blur-sm transition-all hover:bg-primary hover:text-white dark:border-white/20 dark:bg-white/15 dark:text-white"
               aria-label="Next"
             >
               <ChevronRight className="w-4 h-4" />
@@ -491,7 +491,7 @@ export default function EventSectionPropertySpecific({
   /* ── 2 events: side by side, no carousel ── */
   if (events.length === 2) {
     return (
-      <div className="grid grid-cols-2 gap-4 w-full">
+      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
         {events.map((event, index) => (
           <EventCard key={event.id} event={event} index={index} />
         ))}
@@ -535,7 +535,7 @@ export default function EventSectionPropertySpecific({
       {/* Prev arrow — sits inside the container, overlapping left edge */}
       <button
         onClick={handlePrevious}
-        className="absolute left-1 top-1/2 -translate-y-1/2 z-10 bg-white/90 dark:bg-black/60 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all backdrop-blur-sm"
+        className="absolute left-1 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-white/90 p-2 text-foreground shadow-md backdrop-blur-sm transition-all hover:bg-primary hover:text-white dark:border-white/20 dark:bg-white/15 dark:text-white"
         aria-label="Previous"
       >
         <ChevronLeft className="w-4 h-4" />
@@ -544,7 +544,7 @@ export default function EventSectionPropertySpecific({
       {/* Next arrow — sits inside the container, overlapping right edge */}
       <button
         onClick={handleNext}
-        className="absolute right-1 top-1/2 -translate-y-1/2 z-10 bg-white/90 dark:bg-black/60 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all backdrop-blur-sm"
+        className="absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-white/90 p-2 text-foreground shadow-md backdrop-blur-sm transition-all hover:bg-primary hover:text-white dark:border-white/20 dark:bg-white/15 dark:text-white"
         aria-label="Next"
       >
         <ChevronRight className="w-4 h-4" />

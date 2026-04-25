@@ -408,9 +408,9 @@ export default function ReviewsSection({ propertyId }: ReviewsSectionProps) {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
           />
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1">
-              <span className="text-sm font-medium mr-2">Your Rating:</span>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="text-sm font-medium mr-2 shrink-0">Your Rating:</span>
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
@@ -421,7 +421,7 @@ export default function ReviewsSection({ propertyId }: ReviewsSectionProps) {
                 </button>
               ))}
             </div>
-            <Button onClick={handleSubmitClick} disabled={!newComment.trim() || submitting} className="gap-2">
+            <Button onClick={handleSubmitClick} disabled={!newComment.trim() || submitting} className="w-full sm:w-auto justify-center gap-2">
               <Send className="w-3.5 h-3.5" /> Submit Review
             </Button>
           </div>

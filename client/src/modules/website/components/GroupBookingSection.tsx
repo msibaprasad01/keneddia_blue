@@ -734,10 +734,10 @@ export default function GroupBookingSection({
 
                   <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
                     <Users className="h-8 w-8 text-primary/60" />
-                    <p className="font-serif text-sm font-semibold text-foreground/80">
+                    <p className="font-serif text-sm font-semibold text-zinc-900">
                       {groupBookingHeader?.header || "Planning something bigger?"}
                     </p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[11px] text-zinc-700">
                       {groupBookingHeader?.description ||
                         "Reach out for tailored celebrations, corporate stays, and exclusive hotel gathering packages."}
                     </p>
