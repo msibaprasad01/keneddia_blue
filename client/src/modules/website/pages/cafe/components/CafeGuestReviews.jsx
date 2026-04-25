@@ -163,8 +163,8 @@ export default function CafeGuestReviews() {
                 >
                   {guestReviews.map((item) => (
                     <SwiperSlide key={item.id}>
-                      <div className="group flex h-full flex-col overflow-hidden rounded-xl border bg-background">
-                        <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                      <div className="group flex h-[520px] flex-col overflow-hidden rounded-xl border bg-background">
+                        <div className="relative h-full overflow-hidden bg-muted">
                           <img
                             src={item.imageUrl}
                             alt={item.author}

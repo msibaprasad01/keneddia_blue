@@ -93,9 +93,9 @@ function EventCard({ event, index }) {
     media?.width && media?.height ? media.width / media.height : null,
   );
   const videoRef = useRef(null);
-  const TARGET_RATIO = 1080 / 1350;
+  const TARGET_RATIO = 1080 / 1920;
   const showFullMedia =
-    naturalRatio === null || naturalRatio <= TARGET_RATIO + 0.05;
+    naturalRatio === null || naturalRatio <= TARGET_RATIO + 0.1;
 
   const handleImageLoad = (e) => {
     const { naturalWidth, naturalHeight } = e.currentTarget;
@@ -199,7 +199,7 @@ function EventCard({ event, index }) {
               ) : null}
             </div>
             <Link to={event.detailPath}>
-              <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-primary/90">
+              <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-primary/90 cursor-pointer">
                 View Event <ExternalLink className="ml-2 h-3.5 w-3.5" />
               </Button>
             </Link>
@@ -573,7 +573,8 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
                   spaceBetween={16}
                   breakpoints={{
                     640: { slidesPerView: 2 },
-                    1024: { slidesPerView: 2.2 },
+                    768: { slidesPerView: 3 },
+                    1200: { slidesPerView: 4 },
                   }}
                   autoplay={{
                     delay: 5000,
@@ -682,7 +683,7 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
                   )}
                   {groupBookingHeader.ctaText && (
                     <Button
-                      className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold"
+                      className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold cursor-pointer"
                       onClick={() =>
                         openGroupBookingForm({
                           id: null,

@@ -27,6 +27,7 @@ export interface HeroSlide {
   subtitle: string;
   ctaText?: string;
   ctaLink?: string;
+  showOnHomepage?: boolean;
   showOnMobilePage?: boolean | null;
   backgroundAll: MediaItem[];
   backgroundLight: MediaItem[];
@@ -68,6 +69,29 @@ const EmptyHeroState = ({
   </section>
 );
 
+const ViewportEmptyState = ({
+  title,
+  subtitle,
+  className = "",
+}: {
+  title: string;
+  subtitle: string;
+  className?: string;
+}) => (
+  <div
+    className={`relative w-full overflow-hidden bg-neutral-900 ${className}`.trim()}
+  >
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
+    <div className="absolute inset-0 backdrop-blur-sm" />
+    <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+      <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/40">
+        {title}
+      </div>
+      <p className="text-sm text-white/25">{subtitle}</p>
+    </div>
+  </div>
+);
+
 const getCurrentTheme = (): "light" | "dark" => {
   if (typeof window === "undefined") return "light";
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
@@ -95,6 +119,11 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark">(getCurrentTheme());
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [loadedSlides, setLoadedSlides] = useState<Set<number>>(new Set());
+
+  const desktopSlides = useMemo(
+    () => slides.filter((s) => s.showOnHomepage === true),
+    [slides],
+  );
 
   const mobileSlides = useMemo(
     () => slides.filter((s) => s.showOnMobilePage === true),
@@ -151,7 +180,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
   }, []);
 
   useEffect(() => {
-    if (!swiperInstance || slides.length === 0) return;
+    if (!swiperInstance || desktopSlides.length === 0) return;
 
     if (loadedSlides.has(activeIndex)) {
       swiperInstance.autoplay?.start();
@@ -159,7 +188,26 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
     }
 
     swiperInstance.autoplay?.stop();
-  }, [activeIndex, loadedSlides, slides.length, swiperInstance]);
+  }, [activeIndex, desktopSlides.length, loadedSlides, swiperInstance]);
+
+  const upcomingThumbnailSlides = useMemo(() => {
+    if (desktopSlides.length === 0) return [];
+    if (desktopSlides.length === 1) {
+      return [{ slide: desktopSlides[0], index: 0 }];
+    }
+
+    return Array.from({ length: desktopSlides.length - 1 }, (_, offset) => {
+      const index = (activeIndex + offset + 1) % desktopSlides.length;
+      const slide = desktopSlides[index];
+
+      if (!slide) return null;
+
+      return {
+        slide,
+        index,
+      };
+    }).filter(Boolean);
+  }, [activeIndex, desktopSlides]);
 
   const getBackgroundMedia = useCallback(
     (slide: HeroSlide) => {
@@ -327,92 +375,104 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
     [getThumbnailMedia, imageErrors, logMediaError],
   );
 
-  if (!loading && slides.length === 0) {
+  if (!loading && desktopSlides.length === 0 && mobileSlides.length === 0) {
     return <EmptyHeroState />;
   }
 
   return (
-    <section className="relative w-full h-auto md:h-screen overflow-hidden bg-background">
+    <section
+      className={`relative w-full overflow-hidden bg-background ${
+        desktopSlides.length > 0 ? "h-auto md:h-screen" : "h-auto"
+      }`}
+    >
       {loading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm">
           <Loader2 size={48} className="animate-spin text-primary" />
         </div>
       )}
 
-      <Swiper
-        modules={[EffectFade, Autoplay, Navigation]}
-        effect="fade"
-        speed={1200}
-        autoplay={{ delay: 6000, disableOnInteraction: false }}
-        loop={slides.length > 1}
-        onSwiper={setSwiperInstance}
-        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-        className="w-full h-full"
-      >
-        {slides.map((slide, index) => (
-          <SwiperSlide key={`${slide.id}-${currentTheme}`} className="relative w-full h-full">
-            <div className="hidden md:block absolute inset-0 w-full h-full overflow-hidden">
-              {renderDesktopMedia(slide, index)}
-            </div>
-            <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-            <div className="hidden md:block absolute inset-0 z-10 pointer-events-none">
-              <div className="container mx-auto h-full px-8 md:px-16 lg:px-24 flex items-center">
-                <div className="w-full md:w-[70%] xl:w-[60%] pointer-events-auto">
-                  <motion.h1
-                    key={`title-${index}-${activeIndex}`}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.8 }}
-                    className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium text-white mb-6 leading-tight drop-shadow-lg"
-                  >
-                    {slide.title}
-                  </motion.h1>
-                  <motion.p
-                    key={`subtitle-${index}-${activeIndex}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.8 }}
-                    className="text-lg md:text-xl text-white/90 font-light mb-10 tracking-wide uppercase"
-                  >
-                    {slide.subtitle}
-                  </motion.p>
-                  {slide.ctaText && (
-                    <motion.button
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.7, duration: 0.8 }}
-                      disabled={!slide.ctaLink}
-                      onClick={() => {
-                        if (slide.ctaLink) { const url = /^https?:\/\//i.test(slide.ctaLink) ? slide.ctaLink : `https://${slide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); }
-                      }}
-                      className={`group relative px-6 py-2.5 font-semibold text-sm rounded-full overflow-hidden transition-all duration-500 ease-out flex items-center gap-2 border ${
-                        !slide.ctaLink
-                          ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
-                          : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] hover:scale-105 hover:-translate-y-0.5 cursor-pointer border-amber-300/40"
-                      }`}
+      {desktopSlides.length > 0 ? (
+        <Swiper
+          modules={[EffectFade, Autoplay, Navigation]}
+          effect="fade"
+          speed={1200}
+          autoplay={{ delay: 6000, disableOnInteraction: false }}
+          loop={desktopSlides.length > 1}
+          onSwiper={setSwiperInstance}
+          onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+          className="hidden md:block w-full h-full"
+        >
+          {desktopSlides.map((slide, index) => (
+            <SwiperSlide key={`${slide.id}-${currentTheme}`} className="relative w-full h-full">
+              <div className="hidden md:block absolute inset-0 w-full h-full overflow-hidden">
+                {renderDesktopMedia(slide, index)}
+              </div>
+              <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+              <div className="hidden md:block absolute inset-0 z-10 pointer-events-none">
+                <div className="container mx-auto h-full px-8 md:px-16 lg:px-24 flex items-center">
+                  <div className="w-full md:w-[70%] xl:w-[75%] pointer-events-auto">
+                    <motion.h1
+                      key={`title-${index}-${activeIndex}`}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3, duration: 0.8 }}
+                      className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium text-white mb-6 leading-[1.1] tracking-tight drop-shadow-lg"
                     >
-                      {slide.ctaLink && (
-                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-                      )}
-                      <span className="relative z-10">{slide.ctaText}</span>
-                    </motion.button>
-                  )}
+                      {slide.title}
+                    </motion.h1>
+                    <motion.p
+                      key={`subtitle-${index}-${activeIndex}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5, duration: 0.8 }}
+                      className="text-lg md:text-xl text-white/90 font-light mb-10 tracking-wide uppercase drop-shadow-md"
+                    >
+                      {slide.subtitle}
+                    </motion.p>
+                    {slide.ctaText && (
+                      <motion.button
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.7, duration: 0.8 }}
+                        disabled={!slide.ctaLink}
+                        onClick={() => {
+                          if (slide.ctaLink) { const url = /^https?:\/\//i.test(slide.ctaLink) ? slide.ctaLink : `https://${slide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); }
+                        }}
+                        className={`group relative px-6 py-2.5 font-semibold text-sm rounded-full overflow-hidden transition-all duration-500 ease-out flex items-center gap-2 border ${
+                          !slide.ctaLink
+                            ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+                            : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] hover:scale-105 hover:-translate-y-0.5 cursor-pointer border-amber-300/40"
+                        }`}
+                      >
+                        {slide.ctaLink && (
+                          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                        )}
+                        <span className="relative z-10">{slide.ctaText}</span>
+                      </motion.button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="hidden md:block absolute bottom-0 left-0 w-full h-32 md:h-40 z-10 pointer-events-none">
-              <svg viewBox="0 0 1440 320" className="w-full h-full" preserveAspectRatio="none">
-                <path
-                  className="fill-background"
-                  d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-                />
-              </svg>
-            </div>
+              <div className="hidden md:block absolute bottom-0 left-0 w-full h-32 md:h-40 z-10 pointer-events-none">
+                <svg viewBox="0 0 1440 320" className="w-full h-full" preserveAspectRatio="none">
+                  <path
+                    className="fill-background"
+                    d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+                  />
+                </svg>
+              </div>
 
-          </SwiperSlide>
-        ))}
-      </Swiper>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      ) : (
+        <ViewportEmptyState
+          title="No Slides Available"
+          subtitle="No hero slides are enabled for desktop view."
+          className="hidden md:block h-screen"
+        />
+      )}
 
       {/* ══════════════ MOBILE SWIPER ══════════════ */}
       <div className="block md:hidden">
@@ -448,7 +508,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                   <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                 </div>
                 <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10" />
-                <div className="absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center" style={{ top: "64px", bottom: "6.5rem" }}>
+                <div className="absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center" style={{ top: "64px", bottom: "2.5rem" }}>
                   <motion.h1
                     key={`m-title-${index}-${mobileActiveIndex}`}
                     initial={{ opacity: 0, y: 14 }}
@@ -490,7 +550,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                     </motion.button>
                   )}
                 </div>
-                <div className="absolute inset-x-0 bottom-16 z-20 flex items-center justify-center gap-3">
+                <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
                   <button
                     onClick={(e) => { e.stopPropagation(); mobileSwiperInstance?.slidePrev(); }}
                     className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
@@ -523,34 +583,11 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
         )}
       </div>
 
-      <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4 max-w-[calc(100vw-2rem)]">
-        <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4 overflow-hidden">
-          {slides.map((slide, index) => (
-            <motion.div
-              key={`thumbnail-${index}-${currentTheme}`}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.15 + 0.5 }}
-              onClick={() => handleThumbnailClick(index)}
-              className={`relative flex-shrink-0 w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${
-                activeIndex === index
-                  ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
-                  : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
-              }`}
-            >
-              {renderThumbnail(slide)}
-              <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-gradient-to-t from-black/90 to-transparent">
-                <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
-                  {slide.subtitle || slide.title}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
+      {desktopSlides.length > 0 && (
+        <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4 max-w-[calc(100vw-2rem)]">
         <div className="flex items-center gap-3 md:gap-4 lg:gap-6 pr-2">
           <div className="flex items-center gap-1.5 md:gap-2">
-            {slides.map((_, index) => (
+            {desktopSlides.map((_, index) => (
               <div
                 key={`indicator-${index}`}
                 onClick={() => handleThumbnailClick(index)}
@@ -578,7 +615,28 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
             </button>
           </div>
         </div>
-      </div>
+
+        <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4 overflow-hidden">
+          {upcomingThumbnailSlides.map(({ slide, index }, thumbOrder) => (
+            <motion.div
+              key={`thumbnail-${index}-${currentTheme}`}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: thumbOrder * 0.15 + 0.5 }}
+              onClick={() => handleThumbnailClick(index)}
+              className="relative flex-shrink-0 w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+            >
+              {renderThumbnail(slide)}
+              <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-gradient-to-t from-black/90 to-transparent">
+                <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
+                  {slide.subtitle || slide.title}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        </div>
+      )}
     </section>
   );
 }

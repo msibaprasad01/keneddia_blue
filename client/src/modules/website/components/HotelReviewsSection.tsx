@@ -513,8 +513,8 @@ export default function HotelReviewsSection({
                       const allMedia = buildMediaList(item);
                       return (
                         <SwiperSlide key={item.id}>
-                          <div className="bg-background border rounded-xl overflow-hidden h-full flex flex-col group">
-                            <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                          <div className="bg-background border rounded-xl overflow-hidden h-[520px] flex flex-col group">
+                            <div className="relative h-full bg-muted overflow-hidden">
                               {renderMediaGrid(allMedia, item)}
                               {allMedia.length > 0 && (
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none">
@@ -641,7 +641,7 @@ export default function HotelReviewsSection({
               <div className="flex gap-2 mb-4">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-grow bg-secondary/40 hover:bg-secondary/60 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors"
+                  className="flex-grow bg-secondary/40 hover:bg-secondary/60 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors cursor-pointer"
                 >
                   {mediaUploading ? (
                     <Loader2 size={16} className="animate-spin" />
@@ -667,7 +667,7 @@ export default function HotelReviewsSection({
                     !ytLink.trim())
                 }
                 onClick={handleSubmit}
-                className="w-full bg-[#f88d8d] hover:bg-[#f67a7a] text-white py-4 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95 disabled:opacity-50"
+                className="w-full bg-[#f88d8d] hover:bg-[#f67a7a] text-white py-4 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? (
                   <Loader2 className="animate-spin mx-auto" size={20} />

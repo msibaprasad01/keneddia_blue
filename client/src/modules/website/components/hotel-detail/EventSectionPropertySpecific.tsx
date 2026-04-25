@@ -58,6 +58,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
   const [isMuted, setIsMuted] = useState(true);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const OFFER_STYLE_PORTRAIT_RATIO = 1080 / 1920;
   const slides = event.mediaSlides?.length ? event.mediaSlides : event.image ? [event.image] : [];
   const activeMedia = slides[activeMediaIndex] || event.image;
 
@@ -79,7 +80,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
   }, [slides.length]);
 
   const analyzeMediaSize = (w: number, h: number) => {
-    if (w / h <= 0.85) setIsBanner(true);
+    if (w / h <= OFFER_STYLE_PORTRAIT_RATIO + 0.1) setIsBanner(true);
   };
 
   const toggleMute = (e: React.MouseEvent) => {

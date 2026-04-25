@@ -117,12 +117,13 @@ function EventCard({ event, index }: { event: Event; index: number }) {
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const OFFER_STYLE_PORTRAIT_RATIO = 1080 / 1920;
 
   const isVideo =
     event.image?.type === "VIDEO" || event.image?.url?.includes(".mp4");
 
   const analyzeMediaSize = (w: number, h: number) => {
-    if (w / h <= 0.85) setIsBanner(true);
+    if (w / h <= OFFER_STYLE_PORTRAIT_RATIO + 0.1) setIsBanner(true);
   };
 
   const toggleMute = (e: React.MouseEvent) => {
@@ -704,7 +705,7 @@ export default function GroupBookingSection({
                             )}
 
                             {booking.ctaLink && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-1.5 uppercase tracking-tight">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-1.5 uppercase tracking-tight cursor-pointer">
                                 {booking.ctaText || "Details"}{" "}
                                 <ExternalLink size={9} />
                               </span>
@@ -742,7 +743,7 @@ export default function GroupBookingSection({
                     </p>
                     <Button
                       type="button"
-                      className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold"
+                      className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold cursor-pointer"
                       onClick={() => {
                         setSelectedOffer(showcaseBookings[0] ?? groupBookings[0] ?? null);
                         setStep(1);

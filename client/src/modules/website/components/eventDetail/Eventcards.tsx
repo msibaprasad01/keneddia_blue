@@ -66,11 +66,12 @@ export function UpcomingEventCard({
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useNavigate();
+  const OFFER_STYLE_PORTRAIT_RATIO = 1080 / 1920;
 
   const isVideo = ev.image?.type === "VIDEO" || ev.image?.url?.includes(".mp4");
 
   const analyzeMediaSize = (w: number, h: number) => {
-    if (w / h <= 0.85) setIsBanner(true);
+    if (w / h <= OFFER_STYLE_PORTRAIT_RATIO + 0.1) setIsBanner(true);
   };
 
   const toggleMute = (e: React.MouseEvent) => {

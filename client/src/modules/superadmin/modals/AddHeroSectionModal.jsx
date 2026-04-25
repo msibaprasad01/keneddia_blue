@@ -12,6 +12,10 @@ import {
   createHeroSection,
   updateHeroSectionById,
   getPropertyTypes,
+  toggleHeroSectionHomepage,
+  toggleHeroSectionMobile,
+  toggleHeroSectionActive
+
 } from "@/Api/Api";
 
 const HERO_BACKGROUND_RECOMMENDATION = {
@@ -575,15 +579,26 @@ function AddHeroSectionModal({
       ]);
 
       const [bgAll, bgLight, bgDark, subAll, subLight, subDark] = uploadResults;
+      const originalFlags = editData
+        ? {
+            active: editData.active ?? false,
+            showOnHomepage: editData.showOnHomepage ?? false,
+            showOnMobilePage: editData.showOnMobilePage ?? false,
+          }
+        : {
+            active: false,
+            showOnHomepage: false,
+            showOnMobilePage: false,
+          };
 
       const payload = {
         mainTitle: formData.mainTitle || null,
         subTitle: formData.subTitle || null,
         ctaText: formData.ctaText || null,
         ctaLink: formData.ctaLink || null,
-        active: formData.active,
-        showOnHomepage: formData.showOnHomepage,
-        showOnMobilePage: formData.showOnMobilePage,
+        active: originalFlags.active,
+        showOnHomepage: originalFlags.showOnHomepage,
+        showOnMobilePage: originalFlags.showOnMobilePage,
         propertyTypeId: formData.propertyTypeId,
         backgroundAll:
           backgroundMedia.theme === "ALL"
@@ -609,15 +624,68 @@ function AddHeroSectionModal({
             : [],
       };
 
+      const syncHeroStatusFlags = async (heroId) => {
+        const toggleTasks = [];
+
+        if (originalFlags.active !== formData.active) {
+          toggleTasks.push({
+            label: "Active status",
+            task: toggleHeroSectionActive(heroId, formData.active),
+          });
+        }
+        if (originalFlags.showOnHomepage !== formData.showOnHomepage) {
+          toggleTasks.push({
+            label: "Desktop view",
+            task: toggleHeroSectionHomepage(heroId, formData.showOnHomepage),
+          });
+        }
+        if (originalFlags.showOnMobilePage !== formData.showOnMobilePage) {
+          toggleTasks.push({
+            label: "Mobile view",
+            task: toggleHeroSectionMobile(heroId, formData.showOnMobilePage),
+          });
+        }
+
+        if (!toggleTasks.length) {
+          return [];
+        }
+
+        const results = await Promise.allSettled(
+          toggleTasks.map((toggleTask) => toggleTask.task),
+        );
+
+        return results
+          .map((result, index) => ({ ...result, label: toggleTasks[index].label }))
+          .filter((result) => result.status === "rejected");
+      };
+
       if (editData?.id) {
+        const toggleFailures = await syncHeroStatusFlags(editData.id);
         await updateHeroSectionById(editData.id, payload);
+        if (toggleFailures.length > 0) {
+          showWarning(
+            `${toggleFailures.map((failure) => failure.label).join(", ")} could not be updated.`,
+          );
+        }
         showSuccess("Hero Section updated successfully!");
         setTimeout(() => {
           onClose();
           if (onSuccess) onSuccess();
         }, 1500);
       } else {
-        await createHeroSection(payload);
+        const response = await createHeroSection(payload);
+        const createdHeroId = response?.data?.id || response?.id;
+
+        if (!createdHeroId) {
+          throw new Error("Hero section created, but no ID was returned.");
+        }
+
+        const toggleFailures = await syncHeroStatusFlags(createdHeroId);
+        if (toggleFailures.length > 0) {
+          showWarning(
+            `${toggleFailures.map((failure) => failure.label).join(", ")} could not be updated.`,
+          );
+        }
         showSuccess("Hero Section created successfully!");
         setTimeout(() => {
           onClose();
@@ -776,6 +844,9 @@ function AddHeroSectionModal({
                   {isPropertyTypeSelected
                     ? "Property-type mode: this hero will be shown for the selected vertical"
                     : "Homepage mode: All options available"}
+                </p>
+                <p className="text-[10px] text-gray-500 mt-1">
+                  Desktop View and Mobile View can be controlled independently.
                 </p>
               </div>
 
@@ -955,7 +1026,7 @@ function AddHeroSectionModal({
               </div>
 
               {/* Switches Section */}
-              <div className="p-6 flex items-center gap-10">
+              <div className="p-6 flex flex-wrap items-center gap-6">
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input
                     type="checkbox"
@@ -970,24 +1041,20 @@ function AddHeroSectionModal({
                   </span>
                 </label>
 
-                {/* Show on Homepage toggle - Only for homepage mode */}
-                {/* {!isPropertyTypeSelected && (
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={formData.showOnHomepage}
-                      onChange={(e) =>
-                        handleInputChange("showOnHomepage", e.target.checked)
-                      }
-                      className="w-4 h-4 rounded accent-primary cursor-pointer"
-                    />
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
-                      Show on Homepage
-                    </span>
-                  </label>
-                )} */}
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={formData.showOnHomepage}
+                    onChange={(e) =>
+                      handleInputChange("showOnHomepage", e.target.checked)
+                    }
+                    className="w-4 h-4 rounded accent-primary cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
+                    Desktop View
+                  </span>
+                </label>
 
-                {/* Show on Mobile Page toggle */}
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input
                     type="checkbox"

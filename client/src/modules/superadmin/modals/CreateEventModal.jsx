@@ -25,8 +25,9 @@ import { showSuccess, showError, showWarning } from "@/lib/toasters/toastUtils";
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const HOMEPAGE_EVENT_RECOMMENDATION = {
   width: 1080,
-  height: 1350,
-  label: "Recommended: 1080 x 1350 (4:5 portrait). Taller reel-style images also fit.",
+  height: 1920,
+  label:
+    "Recommended: 1080 x 1920 (9:16 portrait) - matches the offer-style card frame.",
 };
 
 function CreateEventModal({ isOpen, onClose, editingEvent }) {
@@ -169,7 +170,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
 
   const hasRecommendedEventRatio = (dimensions) => {
     if (!dimensions?.width || !dimensions?.height) return false;
-    return dimensions.width / dimensions.height <= 0.85;
+    return dimensions.width / dimensions.height <= 0.65;
   };
 
   const handleSubmit = async () => {
@@ -511,6 +512,22 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 Event Media
               </label>
 
+              <div
+                className="mb-4 rounded-lg border px-3 py-2 text-xs"
+                style={{
+                  borderColor: colors.border,
+                  backgroundColor: colors.contentBg,
+                  color: colors.textSecondary,
+                }}
+              >
+                <p className="font-semibold text-primary">
+                  {HOMEPAGE_EVENT_RECOMMENDATION.label}
+                </p>
+                <p className="mt-1">
+                  Use portrait images or videos to match the homepage offer-style card frame.
+                </p>
+              </div>
+
               <div className="flex bg-gray-100 p-1 rounded-lg mb-4"></div>
 
               <div
@@ -548,7 +565,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                           setImageDimensions(dims);
                           if (!hasRecommendedEventRatio(dims)) {
                             showWarning(
-                              `Event image should ideally be ${HOMEPAGE_EVENT_RECOMMENDATION.width} x ${HOMEPAGE_EVENT_RECOMMENDATION.height} or another portrait ratio.`,
+                              `Event image should ideally be ${HOMEPAGE_EVENT_RECOMMENDATION.width} x ${HOMEPAGE_EVENT_RECOMMENDATION.height} or another tall portrait ratio.`,
                             );
                           }
                           URL.revokeObjectURL(objectUrl);

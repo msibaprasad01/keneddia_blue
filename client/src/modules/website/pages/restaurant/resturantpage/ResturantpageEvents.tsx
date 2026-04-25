@@ -640,6 +640,7 @@ function EventCard({ event }: { event: ApiEvent }) {
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const OFFER_STYLE_PORTRAIT_RATIO = 1080 / 1920;
 
   const isVideo =
     event.image?.type === "VIDEO" ||
@@ -647,7 +648,7 @@ function EventCard({ event }: { event: ApiEvent }) {
 
   const analyzeMediaSize = (w: number, h: number) => {
     if (!w || !h) return;
-    setIsBanner(w / h <= 0.85);
+    setIsBanner(w / h <= OFFER_STYLE_PORTRAIT_RATIO + 0.1);
   };
 
   const toggleMute = (e: React.MouseEvent) => {

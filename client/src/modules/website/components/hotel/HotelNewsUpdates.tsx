@@ -248,13 +248,12 @@ function NewsCard({ item }: { item: NewsItem }) {
   };
 
   return (
-    <div className="group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300">
-      <div className="relative w-full bg-black overflow-hidden">
+    <div className="group flex h-[520px] flex-col bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300">
+      <div className="relative h-[280px] w-full shrink-0 bg-black overflow-hidden">
         <img
           src={item.imageUrl}
           alt={item.title}
-          className="w-full h-auto object-contain block transition-transform duration-700 group-hover:scale-105"
-          style={{ maxHeight: "280px", minHeight: "140px" }}
+          className="w-full h-full object-cover block transition-transform duration-700 group-hover:scale-105"
           onError={(e) => {
             // hide broken images gracefully
             (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -284,7 +283,7 @@ function NewsCard({ item }: { item: NewsItem }) {
           <Link
             to={`/news/${item.id}`}
             // to={`#`}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3 cursor-pointer"
           >
             {item.ctaText || "Read Story"}
             <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
