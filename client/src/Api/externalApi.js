@@ -2,7 +2,7 @@ import axios from "axios";
 import API from "./Api";
 
 export const createPropertyGoogleMapping = (data) =>
-  API.post("api/v1/property-google-mapping", data);
+  API.post("api/v1/property-google-mapping/create", data);
 
 export const updatePropertyGoogleMapping = (id, data) =>
   API.put(`api/v1/property-google-mapping/${id}`, data);

@@ -27,8 +27,10 @@ const inputClassName =
 const unwrapResponse = (response) =>
   response?.data?.data ?? response?.data ?? response ?? null;
 
-const GOOGLE_PLACE_DETAILS_API_KEY =
-  import.meta.env.VITE_GOOGLE_PLACE_DETAILS_API_KEY || "";
+const GOOGLE_PLACE_DETAILS_API_KEY = (
+  import.meta.env.VITE_GOOGLE_PLACE_DETAILS_API_KEY ||
+  "AIzaSyBw0sYKZb7SeKFp_Hb9v7tpbeLZ9is9hrM"
+).trim();
 
 const normalizeMapping = (item) => {
   if (!item || typeof item !== "object") return null;
