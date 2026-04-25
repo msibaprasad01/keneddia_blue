@@ -87,7 +87,7 @@ export default function WineBanner() {
 
   return (
     <div
-      className="flex min-h-[100svh] flex-col overflow-x-hidden bg-[#E6E2D7] transition-colors duration-300 dark:bg-[#14100b] lg:h-screen lg:overflow-hidden"
+      className="flex min-h-[100svh] flex-col overflow-x-hidden bg-[#F8F8F6] transition-colors duration-300 dark:bg-[#14100b] lg:h-screen lg:overflow-hidden"
       style={{ paddingTop: "var(--navbar-height,72px)" }}
     >
       <GalleryModal

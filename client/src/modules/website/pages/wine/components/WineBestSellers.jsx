@@ -827,7 +827,7 @@ export default function BestSellers() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="bg-[#E4CDB0] pb-2 pt-16 dark:bg-[#311a1f]"
+            className="bg-[#F7F7F5] pb-2 pt-16 dark:bg-[#311a1f]"
           >
             <div className="mx-auto max-w-[1400px] px-6 text-left md:px-12">
 

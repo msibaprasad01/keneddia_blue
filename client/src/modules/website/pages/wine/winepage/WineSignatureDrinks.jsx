@@ -310,7 +310,7 @@ export default function BestSellers() {
       <link href={FONT_LINK} rel="stylesheet" />
 
       <section
-        className="relative min-h-screen overflow-hidden bg-[#0C0B08] py-14 sm:py-20"
+        className="relative min-h-screen overflow-hidden bg-[#F7F7F5] py-14 transition-colors duration-500 dark:bg-[#0C0B08] sm:py-20"
         style={{ fontFamily: "'DM Mono', monospace" }}
       >
         {/* Subtle noise texture overlay */}
@@ -332,7 +332,7 @@ export default function BestSellers() {
                 <span className="text-[10px] uppercase tracking-[0.35em] text-amber-500/80">Curated Collection</span>
               </div>
               <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }}
-                className="text-3xl font-light leading-[1.1] text-white sm:text-4xl md:text-5xl">
+                className="text-3xl font-light leading-[1.1] text-zinc-950 dark:text-white sm:text-4xl md:text-5xl">
                 Crafted for Every Taste<br /><em className="text-amber-400/90">Explore our curated selection of premium spirits and beverages, designed to suit every mood and occasion.</em>
               </h1>
             </div>
@@ -351,9 +351,9 @@ export default function BestSellers() {
           </div>
 
           {/* ── Footer line ── */}
-          <div className="mt-12 flex flex-col gap-2 border-t border-white/5 pt-6 text-center sm:mt-16 sm:flex-row sm:items-center sm:justify-between sm:pt-8 sm:text-left">
-            <span className="text-[10px] tracking-[0.25em] text-zinc-700 uppercase">Menu Spotlight</span>
-            <span className="text-[10px] tracking-[0.25em] text-zinc-700 uppercase">{CATEGORIES.reduce((s, c) => s + c.items.length, 0)} total offerings</span>
+          <div className="mt-12 flex flex-col gap-2 border-t border-zinc-200 pt-6 text-center dark:border-white/5 sm:mt-16 sm:flex-row sm:items-center sm:justify-between sm:pt-8 sm:text-left">
+            <span className="text-[10px] tracking-[0.25em] text-zinc-500 uppercase dark:text-zinc-700">Menu Spotlight</span>
+            <span className="text-[10px] tracking-[0.25em] text-zinc-500 uppercase dark:text-zinc-700">{CATEGORIES.reduce((s, c) => s + c.items.length, 0)} total offerings</span>
           </div>
         </div>
       </section>
