@@ -24,7 +24,7 @@ const sortLatestFirst = (userList) =>
   [...userList].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
 
 function ManageUsers() {
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("All Roles");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -34,6 +34,9 @@ function ManageUsers() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [actionLoading, setActionLoading] = useState({});
+
+  const [cursorStack, setCursorStack] = useState([0]); // history of lastIds
+  const [currentCursorIndex, setCurrentCursorIndex] = useState(0);
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,31 +53,28 @@ function ManageUsers() {
   ];
   const statusOptions = ["All Status", "Active", "Inactive"];
 
-  const fetchUsers = useCallback(async (page = currentPage) => {
+  const fetchUsers = useCallback(async (cursor = 0) => {
     setLoading(true);
     try {
       const response = await getUsersPaginated({
-        page,
+        lastId: cursor,
         size: itemsPerPage,
+        direction: "DESC",
+        includeInactive: true,
       });
 
-      const data = response?.data ?? response;
+      const data = response?.data;
 
-      if (data && data.content) {
+      if (data?.content) {
         setUsers(sortLatestFirst(data.content));
         setHasNext(Boolean(data.hasNext));
         setLastId(data.lastId ?? null);
-      } else if (Array.isArray(data)) {
-        setUsers(sortLatestFirst(data).slice(0, itemsPerPage));
-        setHasNext(false);
-        setLastId(null);
       } else {
         setUsers([]);
         setHasNext(false);
         setLastId(null);
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
       showError(error?.response?.data?.message || "Failed to fetch users");
       setUsers([]);
       setHasNext(false);
@@ -82,11 +82,11 @@ function ManageUsers() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage]);
+  }, []);
 
   useEffect(() => {
-    fetchUsers(currentPage);
-  }, [currentPage, fetchUsers]);
+    fetchUsers(cursorStack[currentCursorIndex]);
+  }, [currentCursorIndex, fetchUsers]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -121,14 +121,14 @@ function ManageUsers() {
         (u) =>
           u.name?.toLowerCase().includes(lowerSearch) ||
           u.email?.toLowerCase().includes(lowerSearch) ||
-          u.userName?.toLowerCase().includes(lowerSearch)
+          u.userName?.toLowerCase().includes(lowerSearch),
       );
     }
 
     // 2. Role Filter
     if (roleFilter !== "All Roles") {
       filtered = filtered.filter(
-        (u) => u.roleName?.toLowerCase() === roleFilter.toLowerCase()
+        (u) => u.roleName?.toLowerCase() === roleFilter.toLowerCase(),
       );
     }
 
@@ -202,6 +202,17 @@ function ManageUsers() {
     } finally {
       setUserActionLoading(userId, "delete", false);
     }
+  };
+  const handleNext = () => {
+    if (!hasNext || loading) return;
+
+    setCursorStack((prev) => [...prev, lastId]);
+    setCurrentCursorIndex((prev) => prev + 1);
+  };
+  const handlePrev = () => {
+    if (currentCursorIndex === 0 || loading) return;
+
+    setCurrentCursorIndex((prev) => prev - 1);
   };
 
   return (
@@ -489,7 +500,10 @@ function ManageUsers() {
                             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                             title="Edit user"
                           >
-                            <Edit2 size={16} style={{ color: colors.primary }} />
+                            <Edit2
+                              size={16}
+                              style={{ color: colors.primary }}
+                            />
                           </button>
                           <button
                             onClick={() => handleToggleUserStatus(user)}
@@ -498,12 +512,19 @@ function ManageUsers() {
                               isUserActionLoading(user.id, "disable")
                             }
                             className="p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={user.isActive ? "Deactivate user" : "Activate user"}
+                            title={
+                              user.isActive
+                                ? "Deactivate user"
+                                : "Activate user"
+                            }
                           >
                             {user.isActive ? (
                               <Ban size={16} style={{ color: "#f59e0b" }} />
                             ) : (
-                              <CheckCircle2 size={16} style={{ color: "#10b981" }} />
+                              <CheckCircle2
+                                size={16}
+                                style={{ color: "#10b981" }}
+                              />
                             )}
                           </button>
                           <button
@@ -528,15 +549,21 @@ function ManageUsers() {
             className="flex items-center justify-between px-6 py-4 border-t"
             style={{ borderColor: colors.border }}
           >
+            {/* Info */}
             <p className="text-sm" style={{ color: colors.textSecondary }}>
-              Page {currentPage} | Showing {displayUsers.length} of {itemsPerPage}
-              {lastId ? ` | Last ID ${lastId}` : ""}
+              Page {currentCursorIndex + 1} | Showing {displayUsers.length}
+              {lastId ? ` | Cursor ${lastId}` : ""}
             </p>
+
+            {/* Controls */}
             <div className="flex items-center gap-2">
+              {/* Prev Button */}
               <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1 || loading}
-                className="p-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                onClick={handlePrev}
+                disabled={currentCursorIndex === 0 || loading}
+                className="p-2 rounded-lg border transition-all duration-200 
+      disabled:opacity-50 disabled:cursor-not-allowed 
+      hover:bg-gray-50 hover:scale-105 active:scale-95"
                 style={{
                   borderColor: colors.border,
                   color: colors.textPrimary,
@@ -544,13 +571,19 @@ function ManageUsers() {
               >
                 <ChevronLeft size={18} />
               </button>
-              <span className="px-4 py-1.5 rounded-lg text-sm font-medium bg-gray-50">
-                {currentPage}
+
+              {/* Current Page Indicator */}
+              <span className="px-4 py-1.5 rounded-lg text-sm font-semibold bg-gray-50 shadow-sm">
+                {currentCursorIndex + 1}
               </span>
+
+              {/* Next Button */}
               <button
-                onClick={() => handlePageChange(currentPage + 1)}
+                onClick={handleNext}
                 disabled={!hasNext || loading}
-                className="p-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="p-2 rounded-lg border transition-all duration-200 
+      disabled:opacity-50 disabled:cursor-not-allowed 
+      hover:bg-gray-50 hover:scale-105 active:scale-95"
                 style={{
                   borderColor: colors.border,
                   color: colors.textPrimary,

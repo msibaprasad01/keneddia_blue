@@ -166,7 +166,15 @@ function BranchNode({ item, index }: any) {
 
   const cardContent = iconImageUrl ? (
     <div className="mb-3 flex items-center justify-center">
-      <div className="w-14 h-14 rounded-full bg-foreground/5 dark:bg-white/10 border border-border dark:border-white/15 flex items-center justify-center transition group-hover:bg-primary/10 dark:group-hover:bg-primary/20">
+      <div
+        className="w-14 h-14 rounded-xl bg-foreground/5 dark:bg-white/10 
+border border-border dark:border-white/15 
+flex items-center justify-center 
+transition-all duration-300 ease-out
+group-hover:bg-primary/10 dark:group-hover:bg-primary/20
+group-hover:-translate-y-1 group-hover:scale-105
+group-hover:shadow-lg"
+      >
         <img
           src={iconImageUrl}
           alt={item.title}

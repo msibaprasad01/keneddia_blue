@@ -207,7 +207,7 @@ const CarouselItem = ({
 
               const isRestaurant =
                 property.propertyType?.toLowerCase() === "restaurant";
-                 navigate(`/${propertyPath}`);
+              navigate(`/${propertyPath}`);
 
               // const finalUrl = isRestaurant
               //   ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`
@@ -276,7 +276,8 @@ export default function PropertiesSection({
   initialProperties?: ApiProperty[];
 }) {
   const navigate = useNavigate();
-  const [apiProperties, setApiProperties] = useState<ApiProperty[]>(initialProperties);
+  const [apiProperties, setApiProperties] =
+    useState<ApiProperty[]>(initialProperties);
   const [loading, setLoading] = useState(initialProperties.length === 0);
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [selectedType, setSelectedType] = useState("All Types");
@@ -444,7 +445,10 @@ export default function PropertiesSection({
                       e.stopPropagation();
                       prevSlide();
                     }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                    className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-30 
+p-2 md:p-2.5 rounded-full bg-black/50 text-white backdrop-blur-md 
+opacity-100 md:opacity-0 md:group-hover:opacity-100 
+transition-all cursor-pointer"
                   >
                     <ChevronLeft size={22} />
                   </button>
@@ -453,7 +457,10 @@ export default function PropertiesSection({
                       e.stopPropagation();
                       nextSlide();
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                    className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-30 
+p-2 md:p-2.5 rounded-full bg-black/50 text-white backdrop-blur-md 
+opacity-100 md:opacity-0 md:group-hover:opacity-100 
+transition-all cursor-pointer"
                   >
                     <ChevronRight size={22} />
                   </button>
@@ -672,7 +679,7 @@ export default function PropertiesSection({
                             const isRestaurant =
                               active.propertyType?.toLowerCase() ===
                               "restaurant";
-                              navigate(`/${propertyPath}`);
+                            navigate(`/${propertyPath}`);
 
                             // const finalUrl = isRestaurant
                             //   ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`
