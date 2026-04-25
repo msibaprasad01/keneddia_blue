@@ -40,6 +40,7 @@ function AddPropertyModal({ onClose, onSuccess }) {
   const [parentData, setParentData] = useState({
     propertyName: "",
     propertyTypeIds: "",
+    propertyRating: "",
     propertyCategoryIds: [],
     address: "",
     addressUrl: null,
@@ -154,6 +155,8 @@ function AddPropertyModal({ onClose, onSuccess }) {
   const isRestaurantType =
     String(selectedPropertyTypeName || "").trim().toLowerCase() ===
     "restaurant";
+  const isHotelType =
+    String(selectedPropertyTypeName || "").trim().toLowerCase() === "hotel";
 
   const handleLocationModeChange = (mode) => {
     setLocationInputMode(mode);
@@ -201,6 +204,10 @@ function AddPropertyModal({ onClose, onSuccess }) {
       const parentPayload = {
         ...parentData,
         propertyTypeIds: [parseInt(parentData.propertyTypeIds)],
+        propertyRating:
+          isHotelType && parentData.propertyRating !== ""
+            ? Number(parentData.propertyRating)
+            : null,
         locationId: parseInt(parentData.locationId),
         assignedAdminId: parseInt(parentData.assignedAdminId),
         addressUrl:
@@ -374,6 +381,30 @@ function AddPropertyModal({ onClose, onSuccess }) {
                   ))}
                 </select>
               </div>
+              {isHotelType && (
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
+                    Property Star Rating
+                  </label>
+                  <select
+                    className="w-full px-4 py-2.5 border rounded-xl"
+                    value={parentData.propertyRating}
+                    onChange={(e) =>
+                      setParentData({
+                        ...parentData,
+                        propertyRating: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Select Star Rating</option>
+                    {[3, 4, 5].map((star) => (
+                      <option key={star} value={star}>
+                        {star} Star
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               {isRestaurantType && (
                 <div className="col-span-2">
                   <label className="text-[10px] font-bold text-gray-400 uppercase mb-3 block">

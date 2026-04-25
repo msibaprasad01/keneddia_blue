@@ -149,6 +149,10 @@ function EditPropertyModal({
   const [form, setForm] = useState({
     propertyName: p.propertyName || "",
     propertyTypeIds: resolveTypeIds(),
+    propertyRating:
+      p.propertyRating === null || p.propertyRating === undefined
+        ? ""
+        : String(p.propertyRating),
     propertyCategoryIds: resolveCategoryIds(),
     address: p.address || "",
     addressUrl: p.addressUrl || "",
@@ -374,6 +378,10 @@ function EditPropertyModal({
       const payload = {
         propertyName: form.propertyName,
         propertyTypeIds: form.propertyTypeIds,
+        propertyRating:
+          isHotelType && form.propertyRating !== ""
+            ? Number(form.propertyRating)
+            : null,
         propertyCategoryIds: form.propertyCategoryIds,
         address: form.address,
         addressUrl:
@@ -543,6 +551,23 @@ function EditPropertyModal({
                   color="bg-purple-600"
                 />
               </Field>
+
+              {isHotelType && (
+                <Field label="Property Star Rating" icon={Star}>
+                  <select
+                    value={form.propertyRating}
+                    onChange={(e) => set("propertyRating", e.target.value)}
+                    className={inputCls}
+                  >
+                    <option value="">Select Star Rating</option>
+                    {[3, 4, 5].map((star) => (
+                      <option key={star} value={star}>
+                        {star} Star
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
 
               {isRestaurantOrCafeType && (
                 <Field label="Service Type" icon={Tag} span={2}>
