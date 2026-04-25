@@ -1,51 +1,23 @@
-import { Calendar, ChevronLeft, ChevronRight, Coffee, Gift, Users, ExternalLink, MapPin, Sparkles, ArrowRight } from "lucide-react";
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ArrowUpRight,
+  Calendar,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Coffee,
+  ExternalLink,
+  MapPin,
+  Sparkles,
+} from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { siteContent } from "@/data/siteContent";
-
+import img from '../../../../../assets/wine_images/news.jpeg'
 import "swiper/css";
-
-// ── Data ──────────────────────────────────────────────────────────────────────
-
-const OFFERS = [
-  {
-    id: "offer-1",
-    type: "Offer",
-    title: "Morning Brew & Bake Combo",
-    description: "Fresh croissant, house roast, and a quick breakfast format designed for early hours.",
-    image: siteContent.images.cafes.bakery.src,
-    date: "Daily · 7 AM – 11 AM",
-    location: "All Outlets",
-    slug: "morning-brew-bake",
-    icon: Gift,
-  },
-  {
-    id: "offer-2",
-    type: "Offer",
-    title: "High Tea For Two",
-    description: "Tea tower service with petit desserts and savouries in a lounge-style format.",
-    image: siteContent.images.cafes.highTea.src,
-    date: "Weekends · 3 PM – 6 PM",
-    location: "Lounge Only",
-    slug: "high-tea-for-two",
-    icon: Gift,
-  },
-  {
-    id: "offer-3",
-    type: "Offer",
-    title: "Late Night Dessert Bar",
-    description: "Specialty desserts, cold brews, and artisan toppings available post-dinner.",
-    image: siteContent.images.cafes.minimalist.src,
-    date: "Fri – Sat · 9 PM – 12 AM",
-    location: "Main Wine",
-    slug: "late-night-dessert",
-    icon: Coffee,
-  },
-];
 
 const EVENTS = [
   {
@@ -83,47 +55,58 @@ const EVENTS = [
   },
 ];
 
-const GROUP_BOOKINGS = [
+const WINE_NEWS_ITEMS = [
   {
     id: 1,
-    title: "Creative Team Coffee Meetups",
-    description: "Pre-set tables, quick service flow, and shared platters for compact office gatherings.",
-    image: siteContent.images.cafes.minimalist.src,
-    slug: "team-coffee-meetups",
+    category: "Wine",
+    title: "Kennedia Expands Its Premium Labels And Cellar Selection",
+    description:
+      "The wine program adds new premium pours, reserve bottles, and sommelier-led recommendations across the dining experience.",
+    dateBadge: "2026-02-21",
+    badgeType: "Press Release",
+    ctaText: "Read Story",
+    ctaLink: "/news/kennedia-wine-cellar-selection",
+    imageUrl: img,
   },
   {
     id: 2,
-    title: "Celebration Tables For Small Parties",
-    description: "Birthdays, catch-ups, and cosy celebrations arranged with dessert add-ons.",
-    image: siteContent.images.cafes.parisian.src,
-    slug: "celebration-tables",
+    category: "Wine",
+    title: "Weekend Wine Pairing Menus Introduced For Curated Dining",
+    description:
+      "Guests can now explore chef-led pairing menus with selected reds, whites, and sparkling labels through the weekend service.",
+    dateBadge: "2026-01-18",
+    badgeType: "Feature",
+    ctaText: "Read Story",
+    ctaLink: "/news/kennedia-weekend-wine-pairings",
+    imageUrl: siteContent.images.cafes.highTea.src,
   },
   {
     id: 3,
-    title: "Corporate Tasting Sessions",
-    description: "Curated tasting menus and private seating for team outings and client meetings.",
-    image: siteContent.images.cafes.library.src,
-    slug: "corporate-tasting",
+    category: "Wine",
+    title: "Private Tasting Calendar Launches With Seasonal Highlights",
+    description:
+      "A new tasting calendar brings guided sessions, limited-label showcases, and intimate hosted evenings to the wine floor.",
+    dateBadge: "2025-12-09",
+    badgeType: "Update",
+    ctaText: "Read Story",
+    ctaLink: "/news/kennedia-private-wine-tastings",
+    imageUrl: siteContent.images.cafes.garden.src,
   },
 ];
 
-// ── Shared Card ───────────────────────────────────────────────────────────────
-
+// ─── Original full ShowcaseCard (unchanged) ────────────────────────────────────
 function ShowcaseCard({ item }) {
   return (
-    <div className="group relative flex h-[460px] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm">
-      {/* Image */}
+    <div className="group relative flex h-[460px] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm dark:border dark:border-white/10 dark:bg-[#14090d]">
       <div className="relative h-full w-full overflow-hidden">
         <img
           src={item.image}
           alt={item.title}
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
       </div>
 
-      {/* Top badges */}
       <div className="absolute left-3 top-3 z-10 rounded bg-black/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
         {item.type}
       </div>
@@ -134,23 +117,19 @@ function ShowcaseCard({ item }) {
         </div>
       </div>
 
-      {/* Bottom content */}
       <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col p-4">
-        <h3 className="font-serif text-base font-bold leading-snug text-white line-clamp-2">
+        <h3 className="line-clamp-2 font-serif text-base font-bold leading-snug text-white">
           {item.title}
         </h3>
-
         <div className="mt-2 flex items-center gap-1.5 text-white/70">
           <Calendar size={11} className="text-primary" />
           <span className="text-[11px] font-medium italic uppercase">{item.date}</span>
         </div>
-
         <p className="mt-2 line-clamp-2 text-[11px] italic text-white/65">
           {item.description}
         </p>
-
         <Link to={`/Wine/${item.slug}`} className="mt-4">
-          <Button className="h-auto w-full rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
+          <Button className="h-auto w-full rounded-lg border border-white/20 bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black">
             Explore <ExternalLink className="ml-2 h-3 w-3" />
           </Button>
         </Link>
@@ -159,14 +138,12 @@ function ShowcaseCard({ item }) {
   );
 }
 
-// ── Column with Swiper ─────────────────────────────────────────────────────────
-
-function CarouselColumn({ label, title, icon: Icon, items, accentColor }) {
+// ─── Original EventsColumn (unchanged) ────────────────────────────────────────
+function EventsColumn({ title, icon: Icon, items }) {
   const [swiper, setSwiper] = useState(null);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border bg-card p-5">
-      {/* Header */}
+    <div className="flex h-full flex-col rounded-2xl border bg-card p-5 dark:border-white/10 dark:bg-[#14090d]">
       <div className="mb-5 flex items-center justify-between">
         <h3 className="flex items-center gap-2 font-serif text-lg font-semibold">
           <Icon className="h-5 w-5 text-primary" />
@@ -175,25 +152,19 @@ function CarouselColumn({ label, title, icon: Icon, items, accentColor }) {
         <div className="flex gap-2">
           <button
             onClick={() => swiper?.slidePrev()}
-            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted"
+            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted dark:border-white/10 dark:bg-[#1a0c11] dark:hover:bg-[#241116]"
           >
             <ChevronLeft size={16} />
           </button>
           <button
             onClick={() => swiper?.slideNext()}
-            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted"
+            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted dark:border-white/10 dark:bg-[#1a0c11] dark:hover:bg-[#241116]"
           >
             <ChevronRight size={16} />
           </button>
         </div>
       </div>
 
-      {/* Sub-label */}
-      {/* <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
-        {label}
-      </p> */}
-
-      {/* Single-slide carousel */}
       <Swiper
         modules={[Navigation, Autoplay]}
         slidesPerView={1}
@@ -216,124 +187,151 @@ function CarouselColumn({ label, title, icon: Icon, items, accentColor }) {
   );
 }
 
-// ── Group Booking Column ───────────────────────────────────────────────────────
+// ─── Single news card — 2-up layout ───────────────────────────────────────────
+function NewsCard({ item }) {
+  const [expanded, setExpanded] = useState(false);
+  const date = new Date(item.dateBadge).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 
-function GroupBookingColumn() {
   return (
-    <div className="flex h-full flex-col rounded-2xl border bg-card p-5">
-      {/* Header */}
-      <div className="mb-5 flex items-center gap-2">
-        <Users className="h-5 w-5 text-primary" />
-        <h3 className="font-serif text-lg font-semibold">Group Booking</h3>
+    <div className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-primary/50 dark:border-white/10 dark:bg-[#1a0c11]">
+      {/* Image */}
+      <div className="relative w-full overflow-hidden bg-black">
+        <img
+          src={item.imageUrl}
+          alt={item.title}
+          className="block h-auto w-full object-contain transition-transform duration-700 group-hover:scale-105"
+          style={{ maxHeight: "280px", minHeight: "140px" }}
+        />
+        <span className="absolute left-3 top-3 rounded bg-black/60 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
+          {date}
+        </span>
       </div>
 
-      {/* <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
-        Reserve · Celebrate · Connect
-      </p> */}
+      {/* Body */}
+      <div className="flex flex-grow flex-col p-5">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wider text-primary">
+          {item.category} · {item.badgeType}
+        </div>
 
-      {/* Booking list */}
-      <div className="space-y-3">
-        {GROUP_BOOKINGS.map((item, i) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.07 }}
-            className="group overflow-hidden rounded-xl border border-border bg-background transition-all duration-300 hover:border-primary/30 hover:shadow-md"
+        <h3 className="mb-3 line-clamp-2 text-lg font-serif font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
+          {item.title}
+        </h3>
+
+        <p
+          className={`text-sm leading-relaxed text-muted-foreground transition-all duration-300 ${
+            expanded ? "" : "line-clamp-2"
+          }`}
+        >
+          {item.description}
+        </p>
+
+        {item.description.length > 100 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded((p) => !p);
+            }}
+            className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
           >
-            <div className="flex items-center gap-3 p-3">
-              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-white/30 bg-muted shadow-sm">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h4 className="line-clamp-1 text-sm font-semibold transition-colors group-hover:text-primary">
-                  {item.title}
-                </h4>
-                <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-              <Link to={`/Wine/group/${item.slug}`}>
-                <Button
-                  type="button"
-                  size="icon"
-                  className="h-9 w-9 shrink-0 rounded-full"
-                >
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+            {expanded ? (
+              <>Show less <ChevronUp className="h-3 w-3" /></>
+            ) : (
+              <>Show more <ChevronDown className="h-3 w-3" /></>
+            )}
+          </button>
+        )}
 
-      {/* Glassmorphism decorative card */}
-      <div className="relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-slate-900/5" />
-        <div className="absolute inset-x-0 top-0 h-px bg-white/70" />
-
-        {/* Blobs */}
-        <div className="absolute -left-10 top-6 h-28 w-28 rounded-full bg-rose-200/40 blur-3xl" />
-        <div className="absolute right-[-18px] top-8 h-32 w-32 rounded-full bg-slate-400/20 blur-3xl" />
-        <div className="absolute bottom-[-16px] right-8 h-32 w-32 rounded-full bg-amber-200/35 blur-3xl" />
-        <div className="absolute bottom-8 left-6 h-20 w-20 rounded-full bg-sky-200/30 blur-3xl" />
-        <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5" />
-
-        {/* CTA text inside glass card */}
-        <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-          <Users className="h-8 w-8 text-primary/60" />
-          <p className="font-serif text-sm font-semibold text-foreground/80">
-            Planning something bigger?
-          </p>
-          <p className="text-[11px] text-muted-foreground">
-            Reach out for bespoke group experiences, private dining, and exclusive Wine takeovers.
-          </p>
-          <Button className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold">
-            Enquire Now
-          </Button>
+        <div className="mt-3 border-t border-border/50 pt-2">
+          <Link
+            to={item.ctaLink}
+            className="group/link inline-flex items-center gap-1.5 pt-2 text-xs font-bold text-foreground transition-colors hover:text-primary"
+          >
+            {item.ctaText}
+            <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+          </Link>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Main Export ────────────────────────────────────────────────────────────────
+// ─── News column — 2 cards side by side inside one box ────────────────────────
+function NewsColumn({ className = "" }) {
+  const swiperRef = useRef(null);
 
+  return (
+    <div className={className}>
+      {/* Header */}
+      <div className="mb-8 flex items-center justify-between">
+        <h3 className="text-2xl font-serif text-foreground md:text-3xl">Wine News & Press</h3>
+        <div className="flex items-center gap-4">
+          <Link
+            to="/news"
+            className="hidden items-center gap-1.5 text-sm font-semibold text-primary transition-all hover:gap-2.5 md:flex"
+          >
+            View All <ArrowUpRight className="h-4 w-4" />
+          </Link>
+          <div className="flex gap-2">
+            <button
+              onClick={() => swiperRef.current?.slidePrev()}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-all hover:bg-primary hover:text-primary-foreground"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => swiperRef.current?.slideNext()}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-all hover:bg-primary hover:text-primary-foreground"
+              aria-label="Next"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 2-up Swiper — both cards visible at once on md+ */}
+      <Swiper
+        modules={[Autoplay, Navigation]}
+        spaceBetween={24}
+        slidesPerView={1}
+        breakpoints={{
+          640: { slidesPerView: 2 },
+          1024: { slidesPerView: 2 },
+        }}
+        loop={false}
+        autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+        onSwiper={(swiper) => { swiperRef.current = swiper; }}
+        className="w-full pb-4"
+      >
+        {WINE_NEWS_ITEMS.map((item) => (
+          <SwiperSlide key={item.id} className="!h-auto">
+            <NewsCard item={item} />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
+  );
+}
+
+// ─── Root section ──────────────────────────────────────────────────────────────
 export default function WineShowcaseSlider() {
   return (
-    <section id="showcase" className="bg-[#E6E2D7] py-10 dark:bg-muted">
+    <section id="showcase" className="relative overflow-hidden bg-[#F5F5F3] py-10 dark:bg-[#311a1f]">
+      <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_20%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.18),transparent_28%)] dark:block" />
       <div className="mx-auto w-[92%] max-w-7xl">
-        {/* Section heading */}
         <div className="mb-8">
           <h2 className="font-serif text-2xl md:text-3xl">Wine Showcase</h2>
           <div className="mt-3 h-0.5 w-16 bg-primary" />
         </div>
 
-        {/* 3-column grid */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Left — Offers */}
-          <CarouselColumn
-            // label="Daily Deals · Seasonal Picks"
-            title="Offers"
-            icon={Gift}
-            items={OFFERS}
-          />
-
-          {/* Centre — Events */}
-          <CarouselColumn
-            // label="Upcoming · Live · Interactive"
-            title="Events"
-            icon={Sparkles}
-            items={EVENTS}
-          />
-
-          {/* Right — Group Booking */}
-          <GroupBookingColumn />
+          <EventsColumn title="Events" icon={Sparkles} items={EVENTS} />
+          <NewsColumn className="lg:col-span-2" />
         </div>
       </div>
     </section>

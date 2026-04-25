@@ -11,15 +11,7 @@ const ABOUT_SECTIONS = [
     description:
       "Our Wine concept blends specialty coffee, bakery-led comfort, and softer hospitality. The experience is shaped for morning regulars, casual meetings, and guests who want time to stay rather than rush.",
     image: siteContent.images.cafes.library.src,
-  },
-  {
-    id: 2,
-    subTitle: "Tea & Dessert Lounge",
-    sectionTitle: "A Slower Format Built Around Warm Service",
-    description:
-      "From plated desserts and tea towers to low-light lounge corners, every detail is arranged to feel intimate, polished, and easy to return to throughout the week.",
-    image: siteContent.images.cafes.highTea.src,
-  },
+  }
 ];
 
 export default function WineAbout() {
@@ -36,7 +28,8 @@ export default function WineAbout() {
   const section = ABOUT_SECTIONS[currentIndex];
 
   return (
-    <section id="about" className="bg-white px-6 py-8 transition-colors duration-500 dark:bg-[#050505]">
+    <section id="about" className="relative overflow-hidden bg-[#EFEFEB] px-6 py-8 transition-colors duration-500 dark:bg-[#311a1f]">
+      <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_22%)] dark:block" />
       <div className="container mx-auto max-w-7xl">
         <div className="mb-8">
           <h2 className="font-serif text-2xl md:text-3xl">About Us</h2>

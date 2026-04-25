@@ -176,8 +176,7 @@ export default function WineProperties({ locationMatch }) {
 
   const activeWine = filteredWines[activeIndex] || filteredWines[0];
 
-  const goToWineDetails = (Wine) =>
-    navigate(`/${Wine.citySlug}/${Wine.propertySlug}`);
+  const goToWineDetails = () => navigate("/wine-page");
 
   const scrollToReservation = () =>
     document
@@ -220,18 +219,18 @@ export default function WineProperties({ locationMatch }) {
   }
 
   return (
-    <div className="container mx-auto mb-12 px-4">
+    <div className="container mx-auto mb-10 px-4 sm:mb-12">
       <motion.div
         layout
         className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-2xl backdrop-blur-md"
       >
-        <div className="flex items-center justify-between border-b border-border/10 bg-primary/5 p-6">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-4 border-b border-border/10 bg-primary/5 p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
               <Search className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-xl font-serif font-medium text-foreground">
+              <h3 className="text-lg font-serif font-medium text-foreground sm:text-xl">
                 Explore Our Wines
               </h3>
               <p className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -264,8 +263,8 @@ export default function WineProperties({ locationMatch }) {
           )}
         </div>
 
-        <div className="p-8">
-          <div className="mb-8 flex flex-col gap-4 border-b border-border/10 pb-6">
+        <div className="p-4 sm:p-6 lg:p-8">
+          <div className="mb-6 flex flex-col gap-4 border-b border-border/10 pb-6 sm:mb-8">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="inline-flex w-fit items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm">
                 <button
@@ -294,7 +293,7 @@ export default function WineProperties({ locationMatch }) {
                 <div className="relative">
                   <button
                     onClick={() => setShowCityDropdown((prev) => !prev)}
-                    className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm transition-colors hover:border-primary/50"
+                    className="flex min-w-[150px] items-center justify-between gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm transition-colors hover:border-primary/50 sm:min-w-0"
                   >
                     <MapPin className="h-3 w-3 text-primary" />
                     <span className="font-medium">{selectedCity}</span>
@@ -305,7 +304,7 @@ export default function WineProperties({ locationMatch }) {
                   </button>
 
                   {showCityDropdown && (
-                    <div className="absolute left-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-lg border border-border bg-card shadow-xl">
+                    <div className="absolute left-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-lg border border-border bg-card shadow-xl sm:w-48">
                       {cities.map((city) => (
                         <button
                           key={city}
@@ -358,7 +357,7 @@ export default function WineProperties({ locationMatch }) {
               >
                 <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[60%_40%]">
                   <div
-                    className="relative h-[500px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-secondary/20 shadow-xl"
+                    className="relative h-[340px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-secondary/20 shadow-xl sm:h-[420px] lg:h-[500px]"
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                   >
@@ -370,7 +369,7 @@ export default function WineProperties({ locationMatch }) {
                         return (
                           <div
                             key={Wine.id}
-                            className="absolute transition-all duration-700 ease-out"
+                            className={`absolute transition-all duration-700 ease-out ${isCenter ? "block" : "hidden sm:block"}`}
                             style={{
                               zIndex: isCenter ? 30 : 20,
                               opacity: isCenter ? 1 : 0.55,
@@ -382,7 +381,7 @@ export default function WineProperties({ locationMatch }) {
                               transformStyle: "preserve-3d",
                             }}
                           >
-                            <div className="h-[380px] w-[340px] max-w-[80vw] overflow-hidden rounded-2xl border-2 border-border bg-card shadow-2xl">
+                            <div className="h-[250px] w-[220px] max-w-[84vw] overflow-hidden rounded-2xl border-2 border-border bg-card shadow-2xl sm:h-[320px] sm:w-[280px] lg:h-[380px] lg:w-[340px]">
                               <div className="relative h-full">
                                 <OptimizedImage
                                   {...Wine.image}
@@ -405,7 +404,7 @@ export default function WineProperties({ locationMatch }) {
                                       <div className="mb-1.5 inline-block rounded border border-white/30 bg-white/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
                                         {Wine.type}
                                       </div>
-                                      <h3 className="mb-1 text-lg font-serif font-semibold">
+                                      <h3 className="mb-1 text-base font-serif font-semibold sm:text-lg">
                                         {Wine.name}
                                       </h3>
                                       <div className="mb-1.5 flex items-center text-xs opacity-90">
@@ -425,10 +424,10 @@ export default function WineProperties({ locationMatch }) {
                       })}
                     </div>
 
-                    <div className="absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3">
+                    <div className="absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 sm:bottom-4 sm:gap-3">
                       <button
                         onClick={handlePrev}
-                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 sm:h-10 sm:w-10"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </button>
@@ -439,14 +438,14 @@ export default function WineProperties({ locationMatch }) {
                       </div>
                       <button
                         onClick={handleNext}
-                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 sm:h-10 sm:w-10"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex h-[500px] flex-col justify-between rounded-2xl border border-border bg-card p-5 shadow-xl">
+                  <div className="flex min-h-[420px] flex-col justify-between rounded-2xl border border-border bg-card p-4 shadow-xl sm:min-h-[460px] sm:p-5 lg:h-[500px] lg:min-h-0">
                     <div className="space-y-3.5 overflow-y-auto">
                       <div>
                         <div className="mb-2 flex items-center justify-between">
@@ -472,7 +471,7 @@ export default function WineProperties({ locationMatch }) {
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3 pb-1">
+                      <div className="grid grid-cols-1 gap-3 pb-1 sm:grid-cols-3">
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center">
                           <MapPin className="mx-auto mb-1 h-4 w-4 text-primary" />
                           <p className="text-[10px] text-muted-foreground">City</p>
@@ -482,7 +481,7 @@ export default function WineProperties({ locationMatch }) {
                         </div>
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center">
                           <Building2 className="mx-auto mb-1 h-4 w-4 text-primary" />
-                          <p className="text-[10px] text-muted-foreground">Type</p>
+                          <p className="text-[10px] text-muted-foreground">Area</p>
                           <p className="text-xs font-bold text-foreground">
                             {activeWine.type}
                           </p>
@@ -500,24 +499,9 @@ export default function WineProperties({ locationMatch }) {
                         <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground">
                           Available Highlights
                         </h4>
-                        <div className="mb-3 flex flex-wrap gap-2">
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
-                            <Building2 className="h-3 w-3" />
-                            {activeWine.serviceTag || "Wine"}
-                          </span>
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${activeWine.reservationAvailable
-                              ? "border-sky-200 bg-sky-50 text-sky-700"
-                              : "border-zinc-200 bg-zinc-100 text-zinc-500"
-                              }`}
-                          >
-                            {activeWine.reservationAvailable
-                              ? "Reservation Available"
-                              : "Walk-in Only"}
-                          </span>
-                        </div>
+                        
 
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                           {(activeWine.cuisines.length > 0
                             ? activeWine.cuisines
                             : ["Signature Hospitality", "Prime Location"]
@@ -561,7 +545,7 @@ export default function WineProperties({ locationMatch }) {
               >
                 <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
                   <div className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-xl">
-                    <div className="group relative h-[240px] overflow-hidden">
+                    <div className="group relative h-[220px] overflow-hidden sm:h-[240px]">
                       <OptimizedImage
                         {...activeWine.image}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -609,7 +593,7 @@ export default function WineProperties({ locationMatch }) {
                     </div>
 
                     <div className="p-4">
-                      <div className="mb-4 grid grid-cols-3 gap-3 border-b border-border pb-4">
+                      <div className="mb-4 grid grid-cols-1 gap-3 border-b border-border pb-4 sm:grid-cols-3">
                         <div className="text-center">
                           <MapPin className="mx-auto mb-0.5 h-4 w-4 text-primary" />
                           <p className="text-[10px] text-muted-foreground">City</p>

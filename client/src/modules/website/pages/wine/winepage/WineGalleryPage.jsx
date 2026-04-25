@@ -1,13 +1,18 @@
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { Camera, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useMemo, useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
 import { Wine_GALLERY_ITEMS } from "./WineGalleryData";
 
 const CATEGORIES = ["All", "Interior", "Brews", "Bakery", "Events", "Outdoor"];
 
 export default function WineGalleryPage() {
   const [activeCategory, setActiveCategory] = useState("All");
-  const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalIndex, setModalIndex] = useState(0);
+  const [modalDirection, setModalDirection] = useState(1);
 
   const filtered = useMemo(() => {
     const normalized = Wine_GALLERY_ITEMS.map((item) => ({
@@ -18,194 +23,487 @@ export default function WineGalleryPage() {
       image: item.media.url,
       alt: item.media.alt || item.media.fileName || item.propertyName,
     }));
-
     return activeCategory === "All"
       ? normalized
       : normalized.filter((item) => item.category === activeCategory);
   }, [activeCategory]);
 
-  const columns = useMemo(
-    () =>
-      [0, 1, 2].map((columnIndex) =>
-        filtered.filter((_, index) => index % 3 === columnIndex),
-      ),
-    [filtered],
-  );
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [activeCategory]);
 
-  const openLightbox = (index) => setLightboxIndex(index);
-  const closeLightbox = () => setLightboxIndex(null);
-  const lightboxPrev = () =>
-    setLightboxIndex((current) => (current - 1 + filtered.length) % filtered.length);
-  const lightboxNext = () =>
-    setLightboxIndex((current) => (current + 1) % filtered.length);
+  useEffect(() => {
+    if (!isAutoPlaying || filtered.length <= 1) return;
+    const timer = setInterval(() => {
+      setDirection(1);
+      setCurrentIndex((prev) => (prev + 1) % filtered.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [isAutoPlaying, filtered.length]);
+
+  const goTo = (index) => {
+    setDirection(index > currentIndex ? 1 : -1);
+    setCurrentIndex(index);
+    setIsAutoPlaying(false);
+  };
+
+  const prev = () => {
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
+    setIsAutoPlaying(false);
+  };
+
+  const next = () => {
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % filtered.length);
+    setIsAutoPlaying(false);
+  };
+
+  const openModal = (index) => {
+    setModalIndex(index);
+    setModalOpen(true);
+    setIsAutoPlaying(false);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    document.body.style.overflow = "";
+  };
+
+  const modalPrev = useCallback(() => {
+    setModalDirection(-1);
+    setModalIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
+  }, [filtered.length]);
+
+  const modalNext = useCallback(() => {
+    setModalDirection(1);
+    setModalIndex((prev) => (prev + 1) % filtered.length);
+  }, [filtered.length]);
+
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") closeModal();
+      if (e.key === "ArrowLeft") modalPrev();
+      if (e.key === "ArrowRight") modalNext();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [modalOpen, modalPrev, modalNext]);
+
+  const current = filtered[currentIndex];
+  const bgImage = current?.image;
+
+  const slideVariants = {
+    enter: (dir) => ({
+      x: dir > 0 ? "100%" : "-100%",
+      opacity: 0,
+      scale: 0.85,
+      rotateY: dir > 0 ? 15 : -15,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      rotateY: 0,
+    },
+    exit: (dir) => ({
+      x: dir > 0 ? "-100%" : "100%",
+      opacity: 0,
+      scale: 0.85,
+      rotateY: dir > 0 ? -15 : 15,
+    }),
+  };
 
   return (
-    <section className="py-16 lg:py-28 bg-[#ABBF9B] dark:bg-zinc-900/40">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
+    <section
+      className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden"
+      style={{ background: "#0a0a0f" }}
+    >
+      <AnimatePresence mode="sync">
+        {bgImage && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <Camera className="w-4 h-4 text-primary" />
-              <span className="text-primary text-[11px] font-bold uppercase tracking-[0.4em]">
-                Visual Gallery
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-serif text-zinc-900 dark:text-white tracking-tight">
-              Moments from the <span className="italic text-primary">Wine</span>
-            </h2>
-          </motion.div>
+            key={bgImage}
+            initial={{ opacity: 0, scale: 1.06 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.04 }}
+            transition={{ duration: 1.0, ease: "easeInOut" }}
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: `url(${bgImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+        )}
+      </AnimatePresence>
 
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((cat) => (
+      <div
+        className="absolute inset-0 z-[1]"
+        style={{ background: "rgba(0,0,0,0.55)" }}
+      />
+
+      <div
+        className="absolute inset-0 z-[2]"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%, rgba(0,0,0,0.3) 100%)",
+        }}
+      />
+
+      <div
+        className="absolute inset-0 z-[2]"
+        style={{
+          background:
+            "linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 25%, transparent 75%, rgba(0,0,0,0.4) 100%)",
+        }}
+      />
+
+      <div className="relative z-10 flex w-full flex-col items-center gap-6 px-4 py-10 sm:gap-8 sm:px-6 sm:py-16">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="text-center"
+        >
+          <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.45em] text-white/50 mb-2">
+            Visual Gallery
+          </p>
+          <h2
+            className="text-2xl sm:text-4xl md:text-5xl text-white tracking-tight"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+          >
+            Moments from the{" "}
+            <span className="italic" style={{ color: "#c8a97e" }}>
+              Wine
+            </span>
+          </h2>
+        </motion.div>
+
+       
+
+        {filtered.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4">
+            {filtered.slice(0, 8).map((_, i) => (
               <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 ${
-                  activeCategory === cat
-                    ? "bg-primary text-white shadow-md"
-                    : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-primary/10"
-                }`}
+                key={i}
+                onClick={() => goTo(i)}
+                className="relative flex items-center justify-center transition-all duration-300"
+                style={{ width: 28, height: 28 }}
               >
-                {cat}
+                <span
+                  className="font-mono transition-all duration-300"
+                  style={{
+                    color: i === currentIndex ? "#fff" : "rgba(255,255,255,0.35)",
+                    fontWeight: i === currentIndex ? 700 : 400,
+                    fontSize: i === currentIndex ? "15px" : "13px",
+                  }}
+                >
+                  {i + 1}
+                </span>
+                {i === currentIndex && (
+                  <motion.div
+                    layoutId="activeDot"
+                    className="absolute inset-0 rounded-full"
+                    style={{ border: "1.5px solid rgba(255,255,255,0.6)" }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
               </button>
             ))}
+            {filtered.length > 8 && (
+              <span className="text-white/30 text-xs font-mono">
+                +{filtered.length - 8}
+              </span>
+            )}
           </div>
-        </div>
+        )}
 
-        <div className="relative overflow-hidden rounded-[2rem] border border-zinc-200/70 dark:border-white/10 bg-white dark:bg-zinc-950 shadow-[0_35px_80px_-35px_rgba(0,0,0,0.35)]">
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white via-white/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 z-20 pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 z-20 pointer-events-none" />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 h-[760px] overflow-hidden">
-            {columns.map((columnItems, columnIndex) => {
-              const loopItems =
-                columnItems.length > 0 ? [...columnItems, ...columnItems] : [];
-
-              return (
-                <div
-                  key={columnIndex}
-                  className="relative h-full overflow-hidden rounded-[1.5rem] bg-zinc-100/70 dark:bg-white/[0.03]"
-                >
-                  <motion.div
-                    initial={{ y: columnIndex % 2 === 0 ? "0%" : "-50%" }}
-                    animate={{
-                      y:
-                        columnIndex % 2 === 0
-                          ? ["0%", "-50%"]
-                          : ["-50%", "0%"],
-                    }}
-                    transition={{
-                      duration: 20 + columnIndex * 4,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="flex flex-col gap-4 p-4"
-                  >
-                    {loopItems.map((item, loopIndex) => {
-                      const sourceIndex = filtered.findIndex(
-                        (entry) => entry.id === item.id,
-                      );
-
-                      return (
-                        <motion.button
-                          key={`${item.id}-${loopIndex}`}
-                          type="button"
-                          initial={{ opacity: 0, y: 30 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: Math.min(loopIndex * 0.04, 0.2) }}
-                          onClick={() => openLightbox(sourceIndex)}
-                          className="relative group overflow-hidden rounded-[1.5rem] text-left"
-                        >
-                          <div
-                            className={`relative ${
-                              loopIndex % 3 === 0 ? "aspect-[4/5]" : "aspect-[5/4]"
-                            }`}
-                          >
-                            <img
-                              src={item.image}
-                              alt={item.alt}
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-90" />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <div className="bg-white/90 backdrop-blur-sm rounded-full p-3">
-                                <Camera className="w-5 h-5 text-zinc-900" />
-                              </div>
-                            </div>
-                            <div className="absolute left-4 right-4 bottom-4 flex items-end justify-between gap-4">
-                              <div>
-                                <p className="text-[10px] uppercase tracking-[0.35em] text-white/70 mb-2">
-                                  {item.category}
-                                </p>
-                                <p className="text-white font-serif text-xl leading-tight">
-                                  {item.alt}
-                                </p>
-                              </div>
-                              <div className="shrink-0 rounded-full border border-white/20 bg-white/10 backdrop-blur-md p-2.5">
-                                <Camera className="w-4 h-4 text-white" />
-                              </div>
-                            </div>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </motion.div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {lightboxIndex !== null && filtered.length > 0 && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
-          onClick={closeLightbox}
+          className="relative flex items-center justify-center w-full"
+          style={{ perspective: "1200px" }}
         >
           <button
-            onClick={closeLightbox}
-            className="absolute top-5 right-5 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              lightboxPrev();
+            onClick={prev}
+            className="absolute z-20 rounded-full p-2 transition-all duration-200 hover:scale-105 active:scale-95 sm:p-3"
+            style={{
+              left: "clamp(2px, 2vw, 32px)",
+              background: "rgba(255,255,255,0.12)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              color: "white",
+              backdropFilter: "blur(8px)",
             }}
-            className="absolute left-5 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft size={20} />
           </button>
-          <motion.img
-            key={lightboxIndex}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            src={filtered[lightboxIndex].image}
-            alt={filtered[lightboxIndex].alt}
-            className="max-h-[85vh] max-w-[85vw] object-contain rounded-2xl shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              lightboxNext();
+
+          <div
+            className="relative overflow-hidden"
+            style={{
+              width: "clamp(220px, 72vw, 420px)",
+              aspectRatio: "9/11",
+              borderRadius: "clamp(1.25rem, 3vw, 2.5rem)",
+              border: "1.5px solid rgba(255,255,255,0.22)",
+              boxShadow:
+                "0 0 0 1px rgba(0,0,0,0.5), 0 30px 90px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15)",
+              background: "#111118",
             }}
-            className="absolute right-5 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
           >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-          <div className="absolute bottom-5 text-white/60 text-sm">
-            {lightboxIndex + 1} / {filtered.length}
+            <div
+              className="absolute top-0 inset-x-0 h-1/2 z-10 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(255,255,255,0.07) 0%, transparent 100%)",
+              }}
+            />
+
+            <AnimatePresence custom={direction} mode="wait">
+              {current && (
+                <motion.div
+                  key={current.id}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="absolute inset-0 cursor-zoom-in group"
+                  onClick={() => openModal(currentIndex)}
+                >
+                  <img
+                    src={current.image}
+                    alt={current.alt}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <div
+                      className="p-2 rounded-full"
+                      style={{
+                        background: "rgba(255,255,255,0.15)",
+                        backdropFilter: "blur(8px)",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                      }}
+                    >
+                      <ZoomIn size={14} color="white" />
+                    </div>
+                  </div>
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.88) 100%)",
+                    }}
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
+                    <p
+                      className="uppercase tracking-[0.35em] mb-1"
+                      style={{ color: "#c8a97e", fontSize: "9px" }}
+                    >
+                      {current.category}
+                    </p>
+                    <p
+                      className="text-white leading-tight"
+                      style={{
+                        fontFamily: "'Playfair Display', Georgia, serif",
+                        fontSize: "clamp(15px, 2.5vw, 20px)",
+                      }}
+                    >
+                      {current.alt}
+                    </p>
+                    <p
+                      className="text-white/40 mt-1 font-mono"
+                      style={{ fontSize: "10px" }}
+                    >
+                      {String(currentIndex + 1).padStart(2, "0")} /{" "}
+                      {String(filtered.length).padStart(2, "0")}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {!current && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <p className="text-white/30 text-sm">No items</p>
+              </div>
+            )}
           </div>
+
+          <button
+            onClick={next}
+            className="absolute z-20 rounded-full p-2 transition-all duration-200 hover:scale-105 active:scale-95 sm:p-3"
+            style={{
+              right: "clamp(2px, 2vw, 32px)",
+              background: "rgba(255,255,255,0.12)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              color: "white",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <ChevronRight size={20} />
+          </button>
         </div>
-      )}
+
+        {filtered.length > 0 && (
+          <div
+            className="rounded-full overflow-hidden"
+            style={{
+              width: "clamp(100px, 30vw, 160px)",
+              height: "2px",
+              background: "rgba(255,255,255,0.15)",
+            }}
+          >
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: "#c8a97e" }}
+              animate={{
+                width: `${((currentIndex + 1) / filtered.length) * 100}%`,
+              }}
+              transition={{ duration: 0.4 }}
+            />
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {modalOpen && filtered[modalIndex] && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.92)", backdropFilter: "blur(12px)" }}
+            onClick={closeModal}
+          >
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 p-2.5 rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                color: "white",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <X size={20} />
+            </button>
+
+            <button
+              onClick={(e) => { e.stopPropagation(); modalPrev(); }}
+              className="absolute left-2 top-1/2 z-10 rounded-full p-2.5 transition-all duration-200 hover:scale-110 active:scale-95 sm:left-6 sm:top-auto sm:p-3"
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                color: "white",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <ChevronLeft size={22} />
+            </button>
+
+            <div
+              className="relative flex h-full w-full items-center justify-center px-12 py-20 sm:px-24"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <AnimatePresence custom={modalDirection} mode="wait">
+                <motion.div
+                  key={filtered[modalIndex].id}
+                  custom={modalDirection}
+                  initial={{ opacity: 0, x: modalDirection > 0 ? 80 : -80, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: modalDirection > 0 ? -80 : 80, scale: 0.95 }}
+                  transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="flex w-full max-w-4xl flex-col items-center gap-4"
+                >
+                  <div
+                    className="relative overflow-hidden"
+                    style={{
+                      borderRadius: "1.25rem",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      boxShadow: "0 40px 120px rgba(0,0,0,0.8)",
+                      maxHeight: "75vh",
+                      width: "100%",
+                    }}
+                  >
+                    <img
+                      src={filtered[modalIndex].image}
+                      alt={filtered[modalIndex].alt}
+                      style={{
+                        width: "100%",
+                        maxHeight: "75vh",
+                        objectFit: "contain",
+                        display: "block",
+                        background: "#0a0a0f",
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex w-full flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p
+                        className="uppercase tracking-[0.35em] mb-0.5"
+                        style={{ color: "#c8a97e", fontSize: "9px" }}
+                      >
+                        {filtered[modalIndex].category}
+                      </p>
+                      <p
+                        className="text-white text-base sm:text-lg leading-tight"
+                        style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                      >
+                        {filtered[modalIndex].alt}
+                      </p>
+                    </div>
+                      <p className="ml-0 shrink-0 text-white/35 font-mono text-xs sm:ml-4">
+                      {String(modalIndex + 1).padStart(2, "0")} /{" "}
+                      {String(filtered.length).padStart(2, "0")}
+                    </p>
+                  </div>
+
+                  <div className="flex max-w-full gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+                    {filtered.map((item, i) => (
+                      <button
+                        key={item.id}
+                        onClick={() => { setModalDirection(i > modalIndex ? 1 : -1); setModalIndex(i); }}
+                        className="shrink-0 overflow-hidden transition-all duration-200"
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: "0.5rem",
+                          border: i === modalIndex
+                            ? "2px solid #c8a97e"
+                            : "2px solid rgba(255,255,255,0.1)",
+                          opacity: i === modalIndex ? 1 : 0.45,
+                        }}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.alt}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <button
+              onClick={(e) => { e.stopPropagation(); modalNext(); }}
+              className="absolute right-2 top-1/2 z-10 rounded-full p-2.5 transition-all duration-200 hover:scale-110 active:scale-95 sm:right-6 sm:top-auto sm:p-3"
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                color: "white",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <ChevronRight size={22} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

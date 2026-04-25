@@ -130,7 +130,7 @@ export default function WineGuestReviews() {
   };
 
   return (
-    <section id="reviews" className="bg-[#ABBF9B] py-12 dark:bg-background">
+    <section id="reviews" className="bg-[#F8F8F6] py-12 dark:bg-background">
       <div className="container mx-auto px-4">
         <div className="flex min-w-0 flex-col items-stretch gap-6 lg:flex-row">
 

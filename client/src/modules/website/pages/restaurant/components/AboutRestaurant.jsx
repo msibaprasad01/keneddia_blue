@@ -226,7 +226,7 @@ export default function AboutRestaurant({ initialSections }) {
                                   </span>
                                 </div>
                                 {/* title = the actual time value */}
-                                <p className="font-serif italic text-primary text-lg leading-snug">
+                                <p className="font-serif italic text-lg leading-snug text-[#a6a2b0]">
                                   {availabilityItem.title}
                                 </p>
                                 {availabilityItem.subTitle && (
@@ -246,7 +246,7 @@ export default function AboutRestaurant({ initialSections }) {
                                   </span>
                                 </div>
                                 {/* title = the actual phone number */}
-                                <p className="font-serif text-primary text-lg leading-snug">
+                                <p className="font-serif text-lg leading-snug text-[#a6a2b0]">
                                   {contactItem.title}
                                 </p>
                                 {contactItem.subTitle && (
