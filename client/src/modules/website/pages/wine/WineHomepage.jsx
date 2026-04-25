@@ -85,6 +85,7 @@ export default function WineHomepage() {
           </Suspense>
         </div>
 
+      
 
         <div className="dark:hidden">
           <div className="h-px bg-[#E1E1DD]" />

@@ -197,13 +197,14 @@ function NewsCard({ item }) {
   });
 
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background transition-colors hover:border-primary/50 dark:border-white/10 dark:bg-[#1a0c11]">
+    <div className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-primary/50 dark:border-white/10 dark:bg-[#1a0c11]">
       {/* Image */}
-      <div className="relative w-full overflow-hidden">
+      <div className="relative w-full overflow-hidden bg-black">
         <img
           src={item.imageUrl}
           alt={item.title}
-          className="h-48 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="block h-auto w-full object-contain transition-transform duration-700 group-hover:scale-105"
+          style={{ maxHeight: "280px", minHeight: "140px" }}
         />
         <span className="absolute left-3 top-3 rounded bg-black/60 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
           {date}
@@ -211,17 +212,17 @@ function NewsCard({ item }) {
       </div>
 
       {/* Body */}
-      <div className="flex flex-grow flex-col p-4">
-        <div className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-primary">
+      <div className="flex flex-grow flex-col p-5">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wider text-primary">
           {item.category} · {item.badgeType}
         </div>
 
-        <h3 className="mb-2 font-serif text-base font-bold leading-snug text-foreground transition-colors group-hover:text-primary">
+        <h3 className="mb-3 line-clamp-2 text-lg font-serif font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
           {item.title}
         </h3>
 
         <p
-          className={`text-[13px] leading-relaxed text-muted-foreground ${
+          className={`text-sm leading-relaxed text-muted-foreground transition-all duration-300 ${
             expanded ? "" : "line-clamp-2"
           }`}
         >
@@ -244,10 +245,10 @@ function NewsCard({ item }) {
           </button>
         )}
 
-        <div className="mt-auto border-t border-border/50 pt-3">
+        <div className="mt-3 border-t border-border/50 pt-2">
           <Link
             to={item.ctaLink}
-            className="group/link inline-flex items-center gap-1.5 text-xs font-bold text-foreground transition-colors hover:text-primary"
+            className="group/link inline-flex items-center gap-1.5 pt-2 text-xs font-bold text-foreground transition-colors hover:text-primary"
           >
             {item.ctaText}
             <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
@@ -259,15 +260,15 @@ function NewsCard({ item }) {
 }
 
 // ─── News column — 2 cards side by side inside one box ────────────────────────
-function NewsColumn() {
+function NewsColumn({ className = "" }) {
   const swiperRef = useRef(null);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border bg-card p-5 dark:border-white/10 dark:bg-[#14090d]">
+    <div className={className}>
       {/* Header */}
-      <div className="mb-5 flex items-center justify-between">
-        <h3 className="font-serif text-lg font-semibold">Wine News & Press</h3>
-        <div className="flex items-center gap-2">
+      <div className="mb-8 flex items-center justify-between">
+        <h3 className="text-2xl font-serif text-foreground md:text-3xl">Wine News & Press</h3>
+        <div className="flex items-center gap-4">
           <Link
             to="/news"
             className="hidden items-center gap-1.5 text-sm font-semibold text-primary transition-all hover:gap-2.5 md:flex"
@@ -296,15 +297,16 @@ function NewsColumn() {
       {/* 2-up Swiper — both cards visible at once on md+ */}
       <Swiper
         modules={[Autoplay, Navigation]}
-        spaceBetween={16}
+        spaceBetween={24}
         slidesPerView={1}
         breakpoints={{
-          540: { slidesPerView: 2, spaceBetween: 16 },
+          640: { slidesPerView: 2 },
+          1024: { slidesPerView: 2 },
         }}
         loop={false}
         autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
         onSwiper={(swiper) => { swiperRef.current = swiper; }}
-        className="w-full flex-1"
+        className="w-full pb-4"
       >
         {WINE_NEWS_ITEMS.map((item) => (
           <SwiperSlide key={item.id} className="!h-auto">
@@ -327,9 +329,9 @@ export default function WineShowcaseSlider() {
           <div className="mt-3 h-0.5 w-16 bg-primary" />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <EventsColumn title="Events" icon={Sparkles} items={EVENTS} />
-          <NewsColumn />
+          <NewsColumn className="lg:col-span-2" />
         </div>
       </div>
     </section>

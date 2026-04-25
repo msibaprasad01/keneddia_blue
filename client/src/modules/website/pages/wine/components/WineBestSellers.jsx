@@ -475,8 +475,8 @@ function DrinkImage({ src, alt, className = "" }) {
   const [errored, setErrored] = useState(false);
   if (!src || errored)
     return (
-      <div className={`flex items-center justify-center bg-zinc-800 ${className}`}>
-        <ImageOff size={28} className="text-zinc-600" />
+      <div className={`flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 ${className}`}>
+        <ImageOff size={28} className="text-zinc-400 dark:text-zinc-600" />
       </div>
     );
   return (
@@ -489,9 +489,9 @@ function StarRating({ rating }) {
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((s) => (
-        <Star key={s} size={11} className={s <= Math.round(rating) ? "fill-amber-400 text-amber-400" : "text-zinc-700"} />
+        <Star key={s} size={11} className={s <= Math.round(rating) ? "fill-amber-400 text-amber-400" : "text-zinc-300 dark:text-zinc-700"} />
       ))}
-      <span className="ml-1 text-[11px] font-bold text-amber-400">{rating}</span>
+      <span className="ml-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">{rating}</span>
     </div>
   );
 }
@@ -555,11 +555,11 @@ function BrandCard({ item, categoryName, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative flex flex-col overflow-hidden rounded-[1.5rem] border border-white/5 bg-zinc-900 transition-all duration-300 hover:border-white/10 hover:shadow-2xl"
+      className="group relative flex flex-col overflow-hidden rounded-[1.5rem] border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:border-zinc-300 hover:shadow-2xl dark:border-white/5 dark:bg-black dark:hover:border-white/10"
     >
       <div className="relative h-48 w-full overflow-hidden">
         <DrinkImage src={item.image} alt={item.title} className="h-full w-full transition-transform duration-700 group-hover:scale-110" />
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
         <span className="absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm" style={{ backgroundColor: item.accent + "dd" }}>
           {item.tag}
         </span>
@@ -572,19 +572,19 @@ function BrandCard({ item, categoryName, index }) {
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-1 flex items-center justify-between gap-2">
           <span className="truncate text-[11px] font-black uppercase tracking-widest" style={{ color: item.accent }}>{item.brand}</span>
-          <span className="shrink-0 text-[10px] text-zinc-500">{item.origin}</span>
+          <span className="shrink-0 text-[10px] text-zinc-500 dark:text-zinc-500">{item.origin}</span>
         </div>
-        <h4 className="mb-2 font-serif text-[1.2rem] leading-tight text-white">{item.title}</h4>
+        <h4 className="mb-2 font-serif text-[1.2rem] leading-tight text-zinc-950 dark:text-white">{item.title}</h4>
         <div className="mb-3 flex items-center justify-between">
           <StarRating rating={item.rating} />
-          <span className="rounded-full border border-zinc-700 px-2 py-0.5 text-[10px] font-semibold text-zinc-400">ABV {item.abv}</span>
+          <span className="rounded-full border border-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">ABV {item.abv}</span>
         </div>
-        <p className="line-clamp-2 text-[12px] italic leading-relaxed text-zinc-500">"{item.description}"</p>
+        <p className="line-clamp-2 text-[12px] italic leading-relaxed text-zinc-500 dark:text-zinc-500">"{item.description}"</p>
         {item.locationProfile && (
           <div className="mt-3 flex items-center gap-1.5">
-            <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-400">{item.locationProfile.state}</span>
-            <span className="rounded-full border border-zinc-700 px-2.5 py-0.5 text-[10px] text-zinc-500">{item.locationProfile.area}</span>
-            <span className="ml-auto text-[10px] text-zinc-600">{item.locationProfile.wineShops} shops</span>
+            <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400">{item.locationProfile.state}</span>
+            <span className="rounded-full border border-zinc-200 px-2.5 py-0.5 text-[10px] text-zinc-500 dark:border-zinc-700 dark:text-zinc-500">{item.locationProfile.area}</span>
+            <span className="ml-auto text-[10px] text-zinc-500 dark:text-zinc-600">{item.locationProfile.wineShops} shops</span>
           </div>
         )}
       </div>
@@ -628,11 +628,11 @@ function CategoryPage({ category, onBack }) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 60 }}
       transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-screen bg-[#14090d] pb-24 pt-10"
+      className="min-h-screen bg-[#F7F7F5] pb-24 pt-10 dark:bg-[#14090d]"
     >
       <div className="mx-auto max-w-[1400px] px-6 md:px-12">
         <button type="button" onClick={onBack}
-          className="mb-10 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#1a0c11] px-4 py-2 text-sm font-semibold text-zinc-300 transition-all hover:border-amber-500/60 hover:text-amber-400">
+          className="mb-10 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:border-amber-500/60 hover:text-amber-700 dark:border-white/10 dark:bg-[#1a0c11] dark:text-zinc-300 dark:hover:text-amber-400">
           <ArrowLeft size={15} /> Back
         </button>
 
@@ -650,23 +650,23 @@ function CategoryPage({ category, onBack }) {
         </div>
 
         {/* Filter bar */}
-        <div className="mb-8 grid gap-3 rounded-[1.5rem] border border-white/10 bg-[#1a0c11]/90 p-4 shadow-2xl shadow-black/20 md:grid-cols-3">
+        <div className="mb-8 grid gap-3 rounded-[1.5rem] border border-zinc-200 bg-white p-4 shadow-xl shadow-zinc-200/50 md:grid-cols-3 dark:border-white/10 dark:bg-[#1a0c11]/90 dark:shadow-black/20">
           <div>
             <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">State</label>
             <select value={selectedState} onChange={(e) => handleStateChange(e.target.value)}
-              className="h-11 w-full rounded-xl border border-white/10 bg-black/20 px-3 text-sm font-semibold text-white outline-none transition-colors focus:border-amber-500">
+              className="h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm font-semibold text-zinc-900 outline-none transition-colors focus:border-amber-500 dark:border-white/10 dark:bg-black/20 dark:text-white">
               {stateOptions.map((s) => <option key={s} value={s}>{s === "all" ? "All States" : s}</option>)}
             </select>
           </div>
           <div>
             <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Area</label>
             <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)}
-              className="h-11 w-full rounded-xl border border-white/10 bg-black/20 px-3 text-sm font-semibold text-white outline-none transition-colors focus:border-amber-500">
+              className="h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm font-semibold text-zinc-900 outline-none transition-colors focus:border-amber-500 dark:border-white/10 dark:bg-black/20 dark:text-white">
               {areaOptions.map((a) => <option key={a} value={a}>{a === "all" ? "All Areas" : a}</option>)}
             </select>
           </div>
           <div className="flex items-end">
-            <div className="flex h-11 w-full items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 text-sm font-black text-amber-400">
+            <div className="flex h-11 w-full items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 text-sm font-black text-amber-700 dark:text-amber-400">
               {filteredItems.length} Result{filteredItems.length === 1 ? "" : "s"}
             </div>
           </div>
@@ -677,8 +677,8 @@ function CategoryPage({ category, onBack }) {
             {filteredItems.map((item, i) => <BrandCard key={item.id} item={item} categoryName={category.name} index={i} />)}
           </div>
         ) : (
-          <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-[#1a0c11]/80 px-6 py-12 text-center">
-            <p className="text-sm font-semibold text-zinc-300">No items found for this filter.</p>
+          <div className="rounded-[1.5rem] border border-dashed border-zinc-300 bg-white px-6 py-12 text-center dark:border-white/10 dark:bg-[#1a0c11]/80">
+            <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">No items found for this filter.</p>
             <p className="mt-1 text-xs text-zinc-500">Try changing the state or area.</p>
           </div>
         )}
@@ -701,13 +701,11 @@ function CategoryGridCard({ category, index, onClick }) {
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="group relative flex cursor-pointer flex-col items-center rounded-[2.5rem] p-8 text-center"
+      className="group relative flex cursor-pointer flex-col items-center rounded-[2.5rem] border border-zinc-200 bg-white p-8 text-center shadow-xl transition-all duration-500 hover:-translate-y-1 dark:border-zinc-800 dark:bg-black"
       style={{
-        background: "linear-gradient(160deg, #1c1c1c 0%, #0e0e0e 60%, #111 100%)",
-        border: `1px solid ${hovered ? category.glowColor + "55" : "#2a2a2a"}`,
         boxShadow: hovered
-          ? `0 0 40px ${category.glowColor}33, 0 0 80px ${category.glowColor}18, 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)`
-          : "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)",
+          ? `0 0 36px ${category.glowColor}26, 0 18px 50px rgba(15,23,42,0.16)`
+          : undefined,
         transition: "all 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
       }}
     >
@@ -721,13 +719,10 @@ function CategoryGridCard({ category, index, onClick }) {
 
       {/* Image container */}
       <div
-        className="relative -mt-24 mb-5 aspect-square w-full overflow-hidden"
+        className="relative -mt-24 mb-5 aspect-square w-full overflow-hidden border border-zinc-200 bg-zinc-100 shadow-lg dark:border-zinc-800 dark:bg-black"
         style={{
           borderRadius: "1.75rem",
-          border: `3px solid ${hovered ? category.glowColor + "60" : "#2a2a2a"}`,
-          boxShadow: hovered
-            ? `0 0 30px ${category.glowColor}40, 0 12px 40px rgba(0,0,0,0.7)`
-            : "0 8px 32px rgba(0,0,0,0.6)",
+          boxShadow: hovered ? `0 0 30px ${category.glowColor}30, 0 12px 34px rgba(15,23,42,0.18)` : undefined,
           transition: "all 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       >
@@ -769,17 +764,13 @@ function CategoryGridCard({ category, index, onClick }) {
       </div>
 
       {/* Category name */}
-      <motion.h3
-        className="mb-1 font-serif text-2xl leading-tight"
-        animate={{ color: hovered ? "#ffffff" : "#d4d4d4" }}
-        transition={{ duration: 0.3 }}
-      >
+      <motion.h3 className="mb-1 font-serif text-2xl leading-tight text-zinc-950 dark:text-zinc-200">
         {category.name}
       </motion.h3>
 
       {/* Tagline */}
       <motion.p
-        className="text-xs italic"
+        className="text-xs italic text-zinc-500 dark:text-zinc-500"
         animate={{ color: hovered ? category.glowColor : "#6b7280" }}
         transition={{ duration: 0.3 }}
       >
@@ -788,9 +779,7 @@ function CategoryGridCard({ category, index, onClick }) {
 
       {/* Selection count */}
       <motion.p
-        className="mt-1 text-[11px]"
-        animate={{ color: hovered ? "#9ca3af" : "#4b5563" }}
-        transition={{ duration: 0.3 }}
+        className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-600"
       >
         {category.items.length} selections
       </motion.p>
@@ -836,10 +825,10 @@ export default function BestSellers() {
                 <div className="min-w-0 flex-1 lg:max-w-[80%]">
                   <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-amber-700">
                     <Sparkles className="h-3.5 w-3.5" />
-                    Menu Spotlight
+                  Explore Our Finest Picks
                   </div>
                   <h2 className="mb-2 font-serif text-3xl md:text-4xl">
-                    Best Seller <span className="italic text-amber-700">Drinks Menu</span>
+                   A curated range of <span className="italic text-amber-700">wines, champagnes, and premium spirits.</span>
                   </h2>
                   <div className="max-w-[80%]">
                     <p className="text-sm font-light leading-relaxed text-zinc-500">
