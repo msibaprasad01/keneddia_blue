@@ -400,8 +400,8 @@ export default function EventsListing() {
 
             {/* Content Area */}
             <div className="py-12 px-6 lg:pl-10">
-              <div className="mb-8">
-                <h2 className="text-3xl font-serif mb-2">Events</h2>
+              <div className="mb-8 mt-8">
+                <h2 className="text-3xl font-serif mb-2 mt-12">Events</h2>
                 <div className="flex gap-8 border-b">
                   {["upcoming", "past"].map((tab: any) => (
                     <button

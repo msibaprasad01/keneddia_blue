@@ -206,7 +206,7 @@
   }
 
   .hotel-pill {
-    @apply inline-flex items-center rounded-full bg-stone-100 px-4 py-2 text-sm font-medium text-foreground;
+    @apply inline-flex items-center rounded-full bg-stone-100 px-4 py-2 text-sm font-medium text-stone-900 dark:bg-white/15 dark:text-white dark:border dark:border-white/20;
   }
 
   .hotel-card {
@@ -238,7 +238,7 @@
   }
 
   .hotel-sidebar {
-    @apply sticky top-24 space-y-6;
+    @apply space-y-6 lg:sticky lg:top-24;
   }
 
   .hotel-sidebar-card {

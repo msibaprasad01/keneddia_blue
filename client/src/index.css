@@ -350,3 +350,8 @@ input:focus, select:focus, textarea:focus {
 .dark .react-calendar__century-view__decades__decade {
   color: hsl(var(--foreground));
 }
+
+.hotel-stay-calendar .react-calendar {
+  width: 100%;
+  max-width: 100%;
+}

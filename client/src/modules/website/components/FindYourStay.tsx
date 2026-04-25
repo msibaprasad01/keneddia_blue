@@ -95,8 +95,13 @@ export default function FindYourStay({
                   {startDate ? format(startDate, "EEE, dd MMM") : "Select"}
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent
+                className="w-[calc(100vw-1rem)] max-w-[22rem] p-0"
+                align="center"
+                collisionPadding={8}
+              >
                 <Calendar
+                  className="hotel-stay-calendar"
                   selectRange
                   value={date}
                   minDate={new Date()}

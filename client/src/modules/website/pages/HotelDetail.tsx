@@ -1589,7 +1589,7 @@ export default function HotelDetail() {
                 </div>
               </section>
             </div>
-            <aside className="hidden lg:block">
+            <aside>
               <RightSidebar
                 hotel={hotel}
                 selectedRoom={effectiveSelectedRoom}
