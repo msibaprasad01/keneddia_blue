@@ -1,5 +1,5 @@
 import {
-  // GetAllPropertyDetails,
+  GetAllPropertyDetails,
   getHotelHomepageHeroSection,
   getPropertyTypes,
 } from "@/Api/Api";
@@ -231,18 +231,16 @@ export const fetchCafeHomepageData = async () => {
     : null;
   const cafeTypeId = cafeType?.id ? Number(cafeType.id) : null;
 
-  const [heroRes] = await Promise.all([
+  const [heroRes, propertiesRes] = await Promise.all([
     cafeTypeId
       ? fetchSafe(() => getHotelHomepageHeroSection(cafeTypeId), { data: [] })
       : { data: [] },
-    // Uncomment this when cafe homepage properties should load from the API again.
-    // fetchSafe(() => GetAllPropertyDetails(), null),
+    fetchSafe(() => GetAllPropertyDetails(), null),
   ]);
 
   return {
     cafeTypeId,
     heroSlides: normalizeHeroSlides(heroRes?.data || heroRes || []),
-    // cafeProperties: propertiesRes ? normalizeProperties(propertiesRes) : fallbackCafeProperties,
-    cafeProperties: fallbackCafeProperties,
+    cafeProperties: propertiesRes ? normalizeProperties(propertiesRes) : fallbackCafeProperties,
   };
 };

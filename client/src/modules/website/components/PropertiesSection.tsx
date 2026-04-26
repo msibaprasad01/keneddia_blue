@@ -37,6 +37,7 @@ interface ApiProperty {
   listingId: number;
   propertyName: string;
   propertyType: string;
+  propertyRating?: number | null;
   city: string;
   mainHeading: string;
   subTitle: string;
@@ -116,6 +117,9 @@ const CarouselItem = ({
   const propertyName = property.propertyName || "";
   const subTitle = property.subTitle || "";
   const isLong = subTitle.length > SUBTITLE_LIMIT;
+  const isHotel = property.propertyType?.toLowerCase() === "hotel";
+  const hotelStarLabel =
+    isHotel && property.propertyRating ? `${property.propertyRating} Star` : null;
 
   return (
     <div
@@ -372,6 +376,7 @@ export default function PropertiesSection({
                 propertyName: parent?.propertyName || "Unnamed Property",
                 propertyType:
                   l.propertyType || parent?.propertyTypes?.[0] || "Property",
+                propertyRating: parent?.propertyRating ?? null,
                 city: parent?.locationName,
                 mainHeading: l.mainHeading || "",
                 subTitle: l.subTitle || "",
@@ -430,6 +435,10 @@ export default function PropertiesSection({
   const nextProperty =
     filtered.length > 1 ? filtered[(activeIndex + 1) % filtered.length] : null;
   const isRestaurant = active?.propertyType?.toLowerCase() === "restaurant";
+  const hotelStarLabel =
+    !isRestaurant && active?.propertyRating
+      ? `${active.propertyRating} Star`
+      : null;
   const activePropertyUrls = active
     ? getPropertyUrls(
         active.propertyType,
@@ -619,8 +628,22 @@ transition-all cursor-pointer"
                           </p>
                         )}
                       </div>
-                    )}
+                  )}
                   </div>
+
+                  {!isRestaurant && hotelStarLabel && (
+                    <div>
+                      <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
+                        Star Property
+                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-yellow-400 fill-yellow-400" />
+                        <span className="text-base md:text-lg font-bold text-foreground">
+                          {hotelStarLabel}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Restaurant extra row: type + rating */}
                   {isRestaurant && (

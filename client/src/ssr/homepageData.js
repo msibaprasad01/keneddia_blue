@@ -185,6 +185,7 @@ const normalizeProperties = (response) => {
         propertyName: parent?.propertyName || "Unnamed Property",
         propertyType:
           listing.propertyType || parent?.propertyTypes?.[0] || "Property",
+        propertyRating: parent?.propertyRating ?? null,
         city: parent?.locationName,
         mainHeading: listing.mainHeading || "",
         subTitle: listing.subTitle || "",

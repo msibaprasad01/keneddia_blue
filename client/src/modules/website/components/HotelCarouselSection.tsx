@@ -77,6 +77,7 @@ const mapApiToHotelUI = (item: any) => {
     location: listing?.fullAddress || parent?.address || "N/A",
     city: parent?.locationName || "Unknown",
     type: listing?.propertyType || parent?.propertyTypes?.[0] || "Hotel",
+    propertyRating: parent?.propertyRating ?? null,
     bookingEngineUrl: parent?.bookingEngineUrl || null,
 
     image: {
@@ -302,6 +303,9 @@ export default function HotelCarouselSection({
 }: {
   initialHotels?: any[];
 }) {
+  const formatPropertyRating = (value: number | null | undefined) =>
+    value ? `${value} Star` : "N/A";
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [viewMode, setViewMode] = useState<"gallery" | "map">("gallery");
   const [isPaused, setIsPaused] = useState(false);
@@ -685,7 +689,7 @@ export default function HotelCarouselSection({
                         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-yellow-50 rounded-full border border-yellow-200">
                           <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
                           <span className="text-xs font-bold text-yellow-900">
-                            {activeHotel.rating || "N/A"}
+                            {formatPropertyRating(activeHotel.propertyRating)}
                           </span>
                         </div>
                       </div>
@@ -931,7 +935,9 @@ export default function HotelCarouselSection({
                                   <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-full">
                                     <Star className="w-3 h-3 text-yellow-500 fill-current" />
                                     <span className="text-xs font-bold">
-                                      {hotel.rating || "N/A"}
+                                      {formatPropertyRating(
+                                        hotel.propertyRating,
+                                      )}
                                     </span>
                                   </div>
                                 </div>

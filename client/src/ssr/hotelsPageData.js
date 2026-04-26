@@ -95,6 +95,7 @@ const mapApiToHotelUI = (item) => {
     location: listing?.fullAddress || parent?.address || "N/A",
     city: parent?.locationName || "Unknown",
     type: listing?.propertyType || parent?.propertyTypes?.[0] || "Hotel",
+    propertyRating: parent?.propertyRating ?? null,
     bookingEngineUrl: parent?.bookingEngineUrl || null,
     image: {
       src: listing?.media?.[0]?.url || listing?.media?.[0] || "",

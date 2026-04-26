@@ -364,7 +364,7 @@ export default function HotelOffersCarousel({
                           alt={offer.image.alt}
                           className={`w-full h-full ${
                             showFullImage
-                              ? "object-contain bg-black"
+                              ? "object-cover"
                               : "object-cover"
                           } object-center transition-transform duration-500 group-hover:scale-105`}
                         />

@@ -17,7 +17,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-// import { GetAllPropertyDetails } from "@/Api/Api";
+import { GetAllPropertyDetails } from "@/Api/Api";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 import cafeParisian from "@assets/generated_images/parisian_style_cafe_interior.png";
 import cafeMinimalist from "@assets/generated_images/modern_minimalist_coffee_shop.png";
@@ -96,117 +96,117 @@ const mapApiToCafeUI = (item) => {
   };
 };
 
-export const FALLBACK_CAFE_PROPERTIES = [
-  {
-    id: "fallback-cafe-ghaziabad",
-    propertyId: 9001,
-    name: "Kennedia Blu Cafe Ghaziabad",
-    dineIn: true,
-    takeaway: true,
-    city: "Ghaziabad",
-    location: "Raj Nagar District Centre, Ghaziabad",
-    type: "Cafe",
-    serviceTag: "Dine In",
-    reservationAvailable: true,
-    image: {
-      src: cafeParisian,
-      alt: "Kennedia Blu Cafe Ghaziabad",
-    },
-    rating: 4.8,
-    description:
-      "A refined neighbourhood cafe for slow mornings, crafted coffee, fresh bakes, and relaxed evening conversations.",
-    cuisines: ["Specialty Coffee", "Artisan Bakery", "All Day Breakfast", "Desserts"],
-    highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Wi-Fi"],
-    nearbyLocation: "RDC Ghaziabad",
-    area: "Raj Nagar",
-    serviceHours: "Open Daily",
-    googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Ghaziabad",
-    isActive: true,
-  },
-  {
-    id: "fallback-cafe-noida",
-    propertyId: 9002,
-    name: "Kennedia Blu Cafe Noida",
-    dineIn: true,
-    takeaway: true,
-    city: "Noida",
-    location: "Sector 18, Noida",
-    type: "Cafe",
-    serviceTag: "Dine In",
-    reservationAvailable: true,
-    image: {
-      src: cafeMinimalist,
-      alt: "Kennedia Blu Cafe Noida",
-    },
-    rating: 4.7,
-    description:
-      "A modern cafe space with clean interiors, single-origin brews, working lunches, and signature comfort plates.",
-    cuisines: ["Single-Origin Coffee", "Continental", "Sandwiches", "Healthy Bowls"],
-    highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Work Friendly"],
-    nearbyLocation: "Sector 18 Metro",
-    area: "Sector 18",
-    serviceHours: "Open Daily",
-    googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Noida",
-    isActive: true,
-  },
-  {
-    id: "fallback-cafe-delhi",
-    propertyId: 9003,
-    name: "Kennedia Blu Cafe Delhi",
-    dineIn: true,
-    takeaway: true,
-    city: "Delhi",
-    location: "Connaught Place, New Delhi",
-    type: "Cafe",
-    serviceTag: "Dine In",
-    reservationAvailable: true,
-    image: {
-      src: cafeLibrary,
-      alt: "Kennedia Blu Cafe Delhi",
-    },
-    rating: 4.9,
-    description:
-      "A calm city cafe with lounge seating, curated teas, handcrafted desserts, and a quiet premium setting.",
-    cuisines: ["Coffee", "High Tea", "Desserts", "Light Meals"],
-    highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Lounge Seating"],
-    nearbyLocation: "Connaught Place",
-    area: "CP",
-    serviceHours: "Open Daily",
-    googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Delhi",
-    isActive: true,
-  },
-  {
-    id: "fallback-cafe-bangalore",
-    propertyId: 9004,
-    name: "Kennedia Blu Cafe Bangalore",
-    dineIn: true,
-    takeaway: true,
-    city: "Bangalore",
-    location: "Indiranagar, Bangalore",
-    type: "Cafe",
-    serviceTag: "Dine In",
-    reservationAvailable: true,
-    image: {
-      src: cafeGarden,
-      alt: "Kennedia Blu Cafe Bangalore",
-    },
-    rating: 4.8,
-    description:
-      "A garden-inspired cafe for premium coffee, brunch plates, relaxed meetings, and evening desserts.",
-    cuisines: ["Coffee", "Brunch", "Bakery", "Small Plates"],
-    highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Outdoor Seating"],
-    nearbyLocation: "Indiranagar",
-    area: "Indiranagar",
-    serviceHours: "Open Daily",
-    googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Bangalore",
-    isActive: true,
-  },
-];
+// export const FALLBACK_CAFE_PROPERTIES = [
+//   {
+//     id: "fallback-cafe-ghaziabad",
+//     propertyId: 9001,
+//     name: "Kennedia Blu Cafe Ghaziabad",
+//     dineIn: true,
+//     takeaway: true,
+//     city: "Ghaziabad",
+//     location: "Raj Nagar District Centre, Ghaziabad",
+//     type: "Cafe",
+//     serviceTag: "Dine In",
+//     reservationAvailable: true,
+//     image: {
+//       src: cafeParisian,
+//       alt: "Kennedia Blu Cafe Ghaziabad",
+//     },
+//     rating: 4.8,
+//     description:
+//       "A refined neighbourhood cafe for slow mornings, crafted coffee, fresh bakes, and relaxed evening conversations.",
+//     cuisines: ["Specialty Coffee", "Artisan Bakery", "All Day Breakfast", "Desserts"],
+//     highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Wi-Fi"],
+//     nearbyLocation: "RDC Ghaziabad",
+//     area: "Raj Nagar",
+//     serviceHours: "Open Daily",
+//     googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Ghaziabad",
+//     isActive: true,
+//   },
+//   {
+//     id: "fallback-cafe-noida",
+//     propertyId: 9002,
+//     name: "Kennedia Blu Cafe Noida",
+//     dineIn: true,
+//     takeaway: true,
+//     city: "Noida",
+//     location: "Sector 18, Noida",
+//     type: "Cafe",
+//     serviceTag: "Dine In",
+//     reservationAvailable: true,
+//     image: {
+//       src: cafeMinimalist,
+//       alt: "Kennedia Blu Cafe Noida",
+//     },
+//     rating: 4.7,
+//     description:
+//       "A modern cafe space with clean interiors, single-origin brews, working lunches, and signature comfort plates.",
+//     cuisines: ["Single-Origin Coffee", "Continental", "Sandwiches", "Healthy Bowls"],
+//     highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Work Friendly"],
+//     nearbyLocation: "Sector 18 Metro",
+//     area: "Sector 18",
+//     serviceHours: "Open Daily",
+//     googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Noida",
+//     isActive: true,
+//   },
+//   {
+//     id: "fallback-cafe-delhi",
+//     propertyId: 9003,
+//     name: "Kennedia Blu Cafe Delhi",
+//     dineIn: true,
+//     takeaway: true,
+//     city: "Delhi",
+//     location: "Connaught Place, New Delhi",
+//     type: "Cafe",
+//     serviceTag: "Dine In",
+//     reservationAvailable: true,
+//     image: {
+//       src: cafeLibrary,
+//       alt: "Kennedia Blu Cafe Delhi",
+//     },
+//     rating: 4.9,
+//     description:
+//       "A calm city cafe with lounge seating, curated teas, handcrafted desserts, and a quiet premium setting.",
+//     cuisines: ["Coffee", "High Tea", "Desserts", "Light Meals"],
+//     highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Lounge Seating"],
+//     nearbyLocation: "Connaught Place",
+//     area: "CP",
+//     serviceHours: "Open Daily",
+//     googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Delhi",
+//     isActive: true,
+//   },
+//   {
+//     id: "fallback-cafe-bangalore",
+//     propertyId: 9004,
+//     name: "Kennedia Blu Cafe Bangalore",
+//     dineIn: true,
+//     takeaway: true,
+//     city: "Bangalore",
+//     location: "Indiranagar, Bangalore",
+//     type: "Cafe",
+//     serviceTag: "Dine In",
+//     reservationAvailable: true,
+//     image: {
+//       src: cafeGarden,
+//       alt: "Kennedia Blu Cafe Bangalore",
+//     },
+//     rating: 4.8,
+//     description:
+//       "A garden-inspired cafe for premium coffee, brunch plates, relaxed meetings, and evening desserts.",
+//     cuisines: ["Coffee", "Brunch", "Bakery", "Small Plates"],
+//     highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Outdoor Seating"],
+//     nearbyLocation: "Indiranagar",
+//     area: "Indiranagar",
+//     serviceHours: "Open Daily",
+//     googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Bangalore",
+//     isActive: true,
+//   },
+// ];
 
 export default function CafeProperties({ locationMatch, initialCafes }) {
   const navigate = useNavigate();
-  // const ssrLoaded = Array.isArray(initialCafes) && initialCafes.length > 0;
-  const [cafes, setCafes] = useState(FALLBACK_CAFE_PROPERTIES);
+  const ssrLoaded = Array.isArray(initialCafes) && initialCafes.length > 0;
+  const [cafes, setCafes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [viewMode, setViewMode] = useState("gallery");
@@ -215,9 +215,6 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
   const [isPaused, setIsPaused] = useState(false);
   const [locationBanner, setLocationBanner] = useState(null);
 
-  /*
-  // Uncomment this block, the GetAllPropertyDetails import, and ssrLoaded above
-  // when cafe properties should load from the API again.
   useEffect(() => {
     if (ssrLoaded) {
       setCafes(initialCafes);
@@ -238,7 +235,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
         setCafes([...mapped].reverse());
       } catch (error) {
         console.error("Failed to load cafe properties", error);
-        setCafes(FALLBACK_CAFE_PROPERTIES);
+        setCafes([]);
       } finally {
         setLoading(false);
       }
@@ -246,7 +243,6 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
 
     fetchCafes();
   }, [initialCafes, ssrLoaded]);
-  */
 
   const cities = useMemo(
     () => ["All Cities", ...new Set(cafes.map((item) => item.city).filter(Boolean))],
