@@ -817,6 +817,7 @@ function MenuItemsPanel({
         onClose={handleModalClose}
         initialData={editingItem}
         propertyData={propertyData}
+        propertyTypeId={propertyData?.propertyTypeId}
         onSave={() => fetchItems()}
       />
     </div>
@@ -1145,6 +1146,7 @@ function MenuThumbnailsPanel({ propertyId, propertyData }) {
         isOpen={modalOpen}
         onClose={handleModalClose}
         propertyData={propertyData}
+        propertyTypeId={propertyData?.propertyTypeId}
         thumbnailId={editingId}
       />
     </div>

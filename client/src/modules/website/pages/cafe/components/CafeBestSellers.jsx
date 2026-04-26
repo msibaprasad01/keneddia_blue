@@ -120,12 +120,12 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
     if (ssrLoaded || !resolvedTypeId) return;
     setFetchLoading(true);
 
-    getMenuItemsByTopSold(true)
+    getMenuItemsByPropertyTypeId(resolvedTypeId)
       .then((res) => {
         const data = res.data ?? [];
         setMenuItems(
           (Array.isArray(data) ? data : [])
-            .filter((item) => Number(item?.propertyTypeId) === Number(resolvedTypeId))
+            .filter((item) => item.topSold === true)
             .map(normalize)
         );
       })
