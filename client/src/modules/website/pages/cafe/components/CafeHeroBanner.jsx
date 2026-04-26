@@ -188,24 +188,16 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
     }).filter(Boolean);
   }, [activeIndex, desktopSlides]);
 
+  // Global fallback if no slides are available for either device
   if (!activeSlide && !activeMobileSlide) {
     return (
-      <section className="relative h-[90vh] w-full overflow-hidden bg-neutral-900">
+      <section className="relative h-[90vh] w-full overflow-hidden bg-neutral-900 flex items-center justify-center">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
-        <div className="absolute inset-0 backdrop-blur-sm" />
-        <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 text-center">
+        <div className="relative z-10 flex flex-col items-center gap-3 text-center px-6">
           <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/40">
-            No Content Available
+            No Preview Available
           </div>
           <p className="text-sm text-white/25">Hero section has no active slides configured.</p>
-        </div>
-        <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
-          <svg viewBox="0 0 1440 320" className="h-full w-full" preserveAspectRatio="none">
-            <path
-              className="fill-background"
-              d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-            />
-          </svg>
         </div>
       </section>
     );
@@ -213,11 +205,17 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
 
   return (
     <section
-      className={`relative w-full overflow-hidden bg-background ${
-        activeSlide ? "h-[90vh]" : "h-auto"
-      }`}
+      className="relative w-full overflow-hidden bg-background h-[90vh]"
     >
-      {activeSlide && (
+      {!activeSlide ? (
+        <div className="absolute inset-0 hidden items-center justify-center bg-neutral-900 md:flex">
+          <div className="text-center px-6">
+            <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/40">
+              No Preview
+            </div>
+          </div>
+        </div>
+      ) : (
         <>
           <AnimatePresence mode="wait">
             <motion.div
@@ -238,80 +236,76 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
           <div className="absolute left-0 top-1/4 hidden whitespace-nowrap text-[16rem] font-black italic text-white/[0.03] pointer-events-none md:block">
             {activeSlide.bgTitle}
           </div>
+
+          <div className="relative z-10 hidden h-full items-center md:flex">
+            <div className="container mx-auto flex h-full items-center px-8 md:px-16 lg:px-24">
+              <div className="w-full md:w-[70%] xl:w-[75%]">
+                {activeSlide.title && (
+                  <motion.h1
+                    key={`title-${activeSlide.id}`}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.8 }}
+                    className="mb-3 text-3xl font-serif font-medium leading-[1.06] tracking-tight text-white drop-shadow-lg md:text-4xl lg:text-5xl"
+                  >
+                    {activeSlide.title}
+                  </motion.h1>
+                )}
+
+                {activeSlide.desc && (
+                  <motion.p
+                    key={`desc-${activeSlide.id}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35, duration: 0.8 }}
+                    className="mb-6 max-w-2xl text-sm font-light capitalize tracking-normal text-white/90 drop-shadow-md md:text-base"
+                  >
+                    {activeSlide.desc}
+                  </motion.p>
+                )}
+
+                {activeSlide.ctaText && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.94 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.5, duration: 0.7 }}
+                    className="flex flex-wrap items-center gap-3"
+                  >
+                    <button
+                      disabled={!activeSlide.ctaLink}
+                      onClick={() => { if (activeSlide.ctaLink) { const url = /^https?:\/\//i.test(activeSlide.ctaLink) ? activeSlide.ctaLink : `https://${activeSlide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
+                      className={`group relative h-auto overflow-hidden rounded-full border px-6 py-2.5 text-sm font-semibold transition-all duration-500 ease-out flex items-center gap-2 ${!activeSlide.ctaLink
+                          ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+                          : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] cursor-pointer border-amber-300/40"
+                        }`}
+                    >
+                      {activeSlide.ctaLink && (
+                        <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
+                      )}
+                      <span className="relative z-10 flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        {activeSlide.ctaText}
+                      </span>
+                    </button>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </div>
         </>
       )}
 
-      {activeSlide && (
-        <div className="relative z-10 hidden h-full items-center md:flex">
-          <div className="container mx-auto flex h-full items-center px-8 md:px-16 lg:px-24">
-            <div className="w-full md:w-[70%] xl:w-[75%]">
-              {activeSlide.title && (
-                <motion.h1
-                  key={`title-${activeSlide.id}`}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.8 }}
-                  className="mb-3 text-3xl font-serif font-medium leading-[1.06] tracking-tight text-white drop-shadow-lg md:text-4xl lg:text-5xl"
-                >
-                  {activeSlide.title}
-                </motion.h1>
-              )}
-
-              {activeSlide.desc && (
-                <motion.p
-                  key={`desc-${activeSlide.id}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.35, duration: 0.8 }}
-                  className="mb-6 max-w-2xl text-sm font-light capitalize tracking-normal text-white/90 drop-shadow-md md:text-base"
-                >
-                  {activeSlide.desc}
-                </motion.p>
-              )}
-
-              {activeSlide.ctaText && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.94 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5, duration: 0.7 }}
-                  className="flex flex-wrap items-center gap-3"
-                >
-                  <button
-                    disabled={!activeSlide.ctaLink}
-                    onClick={() => { if (activeSlide.ctaLink) { const url = /^https?:\/\//i.test(activeSlide.ctaLink) ? activeSlide.ctaLink : `https://${activeSlide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
-                    className={`group relative h-auto overflow-hidden rounded-full border px-6 py-2.5 text-sm font-semibold transition-all duration-500 ease-out flex items-center gap-2 ${
-                      !activeSlide.ctaLink
-                        ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
-                        : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] cursor-pointer border-amber-300/40"
-                    }`}
-                  >
-                    {activeSlide.ctaLink && (
-                      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
-                    )}
-                    <span className="relative z-10 flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      {activeSlide.ctaText}
-                    </span>
-                  </button>
-                </motion.div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {mobileSlides.length === 0 ? (
+      {!activeMobileSlide ? (
         <div
-          className="relative z-10 flex md:hidden w-full overflow-hidden bg-neutral-900 items-center justify-center"
-          style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
+          className="relative z-10 flex md:hidden w-full overflow-hidden bg-neutral-900 items-center justify-center h-full"
         >
           <div className="text-center px-6">
             <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/40 inline-block">
-              Not Available on Mobile
+              No Preview
             </div>
           </div>
         </div>
-      ) : activeMobileSlide && (
+      ) : (
         <div className="relative z-10 block md:hidden">
           <div
             className="relative w-full overflow-hidden bg-black"

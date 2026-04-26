@@ -14,80 +14,6 @@ import cafeImg from "@/assets/cafe_images/image.png";
 import cafeImg1 from "@/assets/cafe_images/image1.png";
 import cafeImg2 from "@/assets/cafe_images/image2.png";
 
-const STORY_CARDS_STATIC = [
-  {
-    id: 1,
-    eyebrow: "Morning Ritual",
-    title: "Single Origin Espresso",
-    description:
-      "Dark cacao depth and dense crema create a sharper wake-up profile for early cafe regulars.",
-    benefit: "High aroma & bold body",
-    accent: "Fast starts",
-    image: cafeImg,
-    icon: Coffee,
-    stats: ["18g dose", "25s pull"],
-  },
-  {
-    id: 2,
-    eyebrow: "Slow Brewing",
-    title: "Pour Over Ritual",
-    description:
-      "Hand brewing opens cleaner acidity and floral lift designed for longer sipping.",
-    benefit: "Nuanced tasting notes",
-    accent: "Calm moments",
-    image: cafeImg1,
-    icon: Leaf,
-    stats: ["92C water", "3m bloom"],
-  },
-  {
-    id: 3,
-    eyebrow: "Noon Reset",
-    title: "Flat White Balance",
-    description:
-      "A tighter milk texture keeps espresso structure intact, making the cup creamy without losing roast identity.",
-    benefit: "Silky mouthfeel",
-    accent: "Mid-day focus",
-    image: cafeImg2,
-    icon: SunMedium,
-    stats: ["Double shot", "Velvet foam"],
-  },
-  {
-    id: 4,
-    eyebrow: "Cold Extraction",
-    title: "Cold Brew Reserve",
-    description:
-      "Overnight steeping lowers bitterness and builds a smoother, chocolate-toned drink.",
-    benefit: "Lower acidity",
-    accent: "Long conversations",
-    image: cafeImg,
-    icon: Waves,
-    stats: ["14hr steep", "Clean chill"],
-  },
-  {
-    id: 5,
-    eyebrow: "Comfort Pairing",
-    title: "Bakery And Brew",
-    description:
-      "Buttery bakes and roasted coffee are paired to stretch aroma across the entire experience.",
-    benefit: "Fuller flavor contrast",
-    accent: "Relaxed brunches",
-    image: cafeImg1,
-    icon: Sparkles,
-    stats: ["Warm pastry", "Soft sweet"],
-  },
-  {
-    id: 6,
-    eyebrow: "Evening Mood",
-    title: "Mocha Afterglow",
-    description:
-      "Cocoa bitterness and espresso warmth turn the last coffee of the day into a slower indulgence.",
-    benefit: "Dessert-like depth",
-    accent: "Late hours",
-    image: cafeImg2,
-    icon: MoonStar,
-    stats: ["Cocoa layer", "Night sip"],
-  },
-];
 
 const ICONS = [Coffee, Leaf, SunMedium, Waves, Sparkles, MoonStar];
 
@@ -234,13 +160,22 @@ export default function CafeCoffeeStory({ initialData }) {
 
   // Determine cards: dynamic from props or static fallback
   const cards = useMemo(() => {
-    if (initialData?.cards && initialData.cards.length > 0) {
-      return initialData.cards.map((c, i) => ({
+    const entries = initialData?.entries || initialData?.cards;
+    if (entries && entries.length > 0) {
+      return entries.map((c, i) => ({
         ...c,
+        id: c.id || i,
+        eyebrow: c.subtitle || c.eyebrow || "Discovery",
+        title: c.title || "The Craft",
+        description: c.description || "",
+        benefit: c.profileText || c.benefit || "",
+        accent: c.high || c.accent || "",
+        image: c.imageUrl || c.image,
+        stats: [c.tag1, c.tag2].filter(Boolean).length > 0 ? [c.tag1, c.tag2].filter(Boolean) : (c.stats || []),
         icon: ICONS[i % ICONS.length],
       }));
     }
-    return STORY_CARDS_STATIC;
+    return [];
   }, [initialData]);
 
   const sectionInfo = useMemo(() => {
@@ -262,6 +197,8 @@ export default function CafeCoffeeStory({ initialData }) {
 
     return () => window.clearInterval(interval);
   }, [isPaused, cards.length]);
+
+  if (!cards || cards.length === 0) return null;
 
   const activeCard = cards[activeIndex] || cards[0];
 

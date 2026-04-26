@@ -67,7 +67,7 @@ function PropertyDetailRoute() {
     (propertyDetail?.propertyType === "restaurant" ||
       propertyDetail?.propertyType === "cafe" ||
       propertyDetail?.propertyType === "hotel")
-      ? (isSlugCafe && propertyDetail.propertyType === "restaurant" ? "cafe" : propertyDetail.propertyType)
+      ? (isSlugCafe ? "cafe" : isSlugRestaurant ? "restaurant" : propertyDetail.propertyType)
       : null;
   const [resolvedType, setResolvedType] = useState(ssrResolvedType);
 
@@ -119,10 +119,8 @@ function PropertyDetailRoute() {
         );
 
         if (isMounted) {
-          // Priority 1: Use slug keywords if present
-          if (isSlugCafe && isCafe) setResolvedType("cafe");
-          else if (isSlugRestaurant && isRestaurant) setResolvedType("restaurant");
-          // Priority 2: Fallback to detected types
+          if (isSlugCafe) setResolvedType("cafe");
+          else if (isSlugRestaurant) setResolvedType("restaurant");
           else setResolvedType(isCafe ? "cafe" : isRestaurant ? "restaurant" : "hotel");
         }
       } catch {
