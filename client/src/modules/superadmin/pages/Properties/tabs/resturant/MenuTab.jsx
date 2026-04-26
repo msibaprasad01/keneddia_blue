@@ -16,15 +16,15 @@ import {
   createChefRemark,
   getChefRemarks,
   updateChefRemark,
-} from "@/Api/RestaurantApi";
-import {
   createMenuHeaderSection,
   getMenuHeaders,
   updateMenuHeadersSection,
-  getItemLikes,
+  getMenuItems,
+  getMenuItemsByPropertyId,
+  toggleMenuItemStatus,
+  getItemLikesByPropertyId,
+  getAllMenuThumbnails,
 } from "@/Api/RestaurantApi";
-import { getMenuItems, toggleMenuItemStatus } from "@/Api/RestaurantApi";
-import { getAllMenuThumbnails } from "@/Api/RestaurantApi";
 
 // ── Shared input style ────────────────────────────────────────────────────────
 const inp =
@@ -83,7 +83,7 @@ function ChefImageUpload({ value, onChange, onClear }) {
 }
 
 // ── Header & Chef Remark Editor ───────────────────────────────────────────────
-function HeaderEditor({ propertyId }) {
+function HeaderEditor({ propertyId, propertyType }) {
   const [headerForm, setHeaderForm] = useState({
     part1: "",
     part2: "",
@@ -373,127 +373,129 @@ function HeaderEditor({ propertyId }) {
       </div>
 
       {/* Chef's remark card */}
-      <div className="border border-gray-100 rounded-xl overflow-hidden">
-        <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">
-            Chef's Remark Card
-          </h3>
-          {remarkForm.existingId && (
-            <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded">
-              Editing existing
-            </span>
-          )}
-        </div>
-        <div className="p-4 space-y-3">
-          <Field label="Remark (short label, e.g. Low salt preference)">
-            <input
-              className={inp}
-              value={remarkForm.remark}
-              onChange={(e) => setR("remark", e.target.value)}
-              placeholder="e.g. Low salt preference"
-            />
-          </Field>
-          <Field label="Description / Quote Text">
-            <textarea
-              className={inp}
-              rows={2}
-              value={remarkForm.description}
-              onChange={(e) => setR("description", e.target.value)}
-              placeholder="Customer requested less salt in dishes"
-            />
-          </Field>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="remarkActive"
-                checked={remarkForm.isActive}
-                onChange={(e) => setR("isActive", e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label
-                htmlFor="remarkActive"
-                className="text-xs font-semibold text-gray-600"
-              >
-                Active
-              </label>
-            </div>
-            <div className="flex-1">
-              <Field label="Chef Photo">
-                <ChefImageUpload
-                  value={remarkForm.imageUrl}
-                  onChange={(url, file) => {
-                    setR("imageUrl", url);
-                    setR("imageFile", file);
-                  }}
-                  onClear={() => {
-                    setR("imageUrl", "");
-                    setR("imageFile", null);
-                  }}
-                />
-              </Field>
-            </div>
+      {propertyType !== "cafe" && (
+        <div className="border border-gray-100 rounded-xl overflow-hidden">
+          <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+            <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">
+              Chef's Remark Card
+            </h3>
+            {remarkForm.existingId && (
+              <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded">
+                Editing existing
+              </span>
+            )}
           </div>
-          <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
-            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
-              Card Preview
-            </p>
-            <div className="flex items-start gap-3 bg-white rounded-xl p-3 border shadow-sm max-w-sm">
-              <div className="relative shrink-0">
-                {remarkForm.imageUrl ? (
-                  <img
-                    src={remarkForm.imageUrl}
-                    alt="Chef"
-                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow"
+          <div className="p-4 space-y-3">
+            <Field label="Remark (short label, e.g. Low salt preference)">
+              <input
+                className={inp}
+                value={remarkForm.remark}
+                onChange={(e) => setR("remark", e.target.value)}
+                placeholder="e.g. Low salt preference"
+              />
+            </Field>
+            <Field label="Description / Quote Text">
+              <textarea
+                className={inp}
+                rows={2}
+                value={remarkForm.description}
+                onChange={(e) => setR("description", e.target.value)}
+                placeholder="Customer requested less salt in dishes"
+              />
+            </Field>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="remarkActive"
+                  checked={remarkForm.isActive}
+                  onChange={(e) => setR("isActive", e.target.checked)}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label
+                  htmlFor="remarkActive"
+                  className="text-xs font-semibold text-gray-600"
+                >
+                  Active
+                </label>
+              </div>
+              <div className="flex-1">
+                <Field label="Chef Photo">
+                  <ChefImageUpload
+                    value={remarkForm.imageUrl}
+                    onChange={(url, file) => {
+                      setR("imageUrl", url);
+                      setR("imageFile", file);
+                    }}
+                    onClear={() => {
+                      setR("imageUrl", "");
+                      setR("imageFile", null);
+                    }}
                   />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border">
-                    <ImageIcon size={16} className="text-gray-300" />
+                </Field>
+              </div>
+            </div>
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                Card Preview
+              </p>
+              <div className="flex items-start gap-3 bg-white rounded-xl p-3 border shadow-sm max-w-sm">
+                <div className="relative shrink-0">
+                  {remarkForm.imageUrl ? (
+                    <img
+                      src={remarkForm.imageUrl}
+                      alt="Chef"
+                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border">
+                      <ImageIcon size={16} className="text-gray-300" />
+                    </div>
+                  )}
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-rose-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-[8px] font-black">❝</span>
                   </div>
-                )}
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-rose-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-[8px] font-black">❝</span>
+                </div>
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-rose-600 mb-1">
+                    {remarkForm.remark || "CHEF'S REMARK"}
+                  </p>
+                  <p className="text-xs text-gray-600 italic leading-relaxed line-clamp-2">
+                    {remarkForm.description || "Add your description here…"}
+                  </p>
                 </div>
               </div>
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-rose-600 mb-1">
-                  {remarkForm.remark || "CHEF'S REMARK"}
-                </p>
-                <p className="text-xs text-gray-600 italic leading-relaxed line-clamp-2">
-                  {remarkForm.description || "Add your description here…"}
-                </p>
+            </div>
+            {remarkError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-600">
+                {remarkError}
               </div>
+            )}
+            {remarkSuccess && (
+              <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-xs text-green-600 font-bold">
+                ✓ Chef remark saved successfully.
+              </div>
+            )}
+            <div className="flex justify-end pt-1">
+              <button
+                onClick={handleSaveRemark}
+                disabled={savingRemark}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-bold bg-rose-600 hover:bg-rose-700 transition-all disabled:opacity-60"
+              >
+                {savingRemark ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" /> Saving…
+                  </>
+                ) : (
+                  <>
+                    <Save size={14} /> Save Chef Remark
+                  </>
+                )}
+              </button>
             </div>
-          </div>
-          {remarkError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-600">
-              {remarkError}
-            </div>
-          )}
-          {remarkSuccess && (
-            <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-xs text-green-600 font-bold">
-              ✓ Chef remark saved successfully.
-            </div>
-          )}
-          <div className="flex justify-end pt-1">
-            <button
-              onClick={handleSaveRemark}
-              disabled={savingRemark}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-bold bg-rose-600 hover:bg-rose-700 transition-all disabled:opacity-60"
-            >
-              {savingRemark ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" /> Saving…
-                </>
-              ) : (
-                <>
-                  <Save size={14} /> Save Chef Remark
-                </>
-              )}
-            </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -524,12 +526,10 @@ function MenuItemsPanel({
     setLoading(true);
     setError(null);
     try {
-      const res = await getMenuItems();
+      const res = await getMenuItemsByPropertyId(propertyId);
       const all = res?.data || [];
-      const filtered = all
-        .filter((i) => i.propertyId === propertyId)
-        .sort((a, b) => b.id - a.id);
-      setItems(filtered);
+      const sorted = all.sort((a, b) => b.id - a.id);
+      setItems(sorted);
     } catch {
       setError("Failed to load menu items.");
     } finally {
@@ -719,13 +719,12 @@ function MenuItemsPanel({
                 {/* Food type */}
                 <td className="px-4 py-3 whitespace-nowrap">
                   <span
-                    className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                      item.foodType === "VEG"
+                    className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${item.foodType === "VEG"
                         ? "bg-green-100 text-green-700"
                         : item.foodType === "NON_VEG"
                           ? "bg-red-100 text-red-700"
                           : "bg-yellow-100 text-yellow-700"
-                    }`}
+                      }`}
                   >
                     {item.foodType || "—"}
                   </span>
@@ -742,11 +741,10 @@ function MenuItemsPanel({
                   <button
                     onClick={() => handleToggleStatus(item)}
                     disabled={togglingId === item.id}
-                    className={`text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full transition-all ${
-                      item.status
+                    className={`text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full transition-all ${item.status
                         ? "bg-green-100 text-green-600 hover:bg-green-200"
                         : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                    } disabled:opacity-50`}
+                      } disabled:opacity-50`}
                   >
                     {togglingId === item.id
                       ? "…"
@@ -819,6 +817,7 @@ function MenuItemsPanel({
         onClose={handleModalClose}
         initialData={editingItem}
         propertyData={propertyData}
+        propertyTypeId={propertyData?.propertyTypeId}
         onSave={() => fetchItems()}
       />
     </div>
@@ -835,9 +834,8 @@ function ItemLikesPanel({ propertyId }) {
     (async () => {
       setLoading(true);
       try {
-        const res = await getItemLikes();
-        const all = res?.data || [];
-        setLikes(all.filter((l) => l.propertyId === propertyId));
+        const res = await getItemLikesByPropertyId(propertyId);
+        setLikes(res?.data || []);
       } catch {
         setError("Failed to load likes.");
       } finally {
@@ -1117,11 +1115,10 @@ function MenuThumbnailsPanel({ propertyId, propertyData }) {
                     {thumb.tag || "—"}
                   </p>
                   <span
-                    className={`shrink-0 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full ${
-                      thumb.active
+                    className={`shrink-0 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full ${thumb.active
                         ? "bg-green-100 text-green-600"
                         : "bg-gray-100 text-gray-400"
-                    }`}
+                      }`}
                   >
                     {thumb.active ? "Active" : "Off"}
                   </span>
@@ -1149,6 +1146,7 @@ function MenuThumbnailsPanel({ propertyId, propertyData }) {
         isOpen={modalOpen}
         onClose={handleModalClose}
         propertyData={propertyData}
+        propertyTypeId={propertyData?.propertyTypeId}
         thumbnailId={editingId}
       />
     </div>
@@ -1212,7 +1210,13 @@ const MenuTab = ({
       {/* ── Panel switcher ───────────────────────────────────────────────── */}
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
         {[
-          { key: "header", label: "Header & Chef" },
+          {
+            key: "header",
+            label:
+              propertyData?.propertyType === "cafe"
+                ? "Header"
+                : "Header & Chef",
+          },
           { key: "items", label: "Menu Items" },
           { key: "thumbnails", label: "Menu Thumbnails" },
           { key: "likes", label: "Likes" },
@@ -1220,11 +1224,10 @@ const MenuTab = ({
           <button
             key={t.key}
             onClick={() => setActivePanel(t.key)}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-              activePanel === t.key
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activePanel === t.key
                 ? "bg-white text-gray-800 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             {t.label}
           </button>
@@ -1232,7 +1235,12 @@ const MenuTab = ({
       </div>
 
       {/* ── HEADER PANEL ─────────────────────────────────────────────────── */}
-      {activePanel === "header" && <HeaderEditor propertyId={propertyId} />}
+      {activePanel === "header" && (
+        <HeaderEditor
+          propertyId={propertyId}
+          propertyType={propertyData?.propertyType}
+        />
+      )}
       {activePanel === "likes" && <ItemLikesPanel propertyId={propertyId} />}
       {activePanel === "thumbnails" && (
         <MenuThumbnailsPanel

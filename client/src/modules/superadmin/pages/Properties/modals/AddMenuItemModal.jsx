@@ -19,6 +19,7 @@ import {
   updateMenuItem,
   getAllVerticalCards,
 } from "@/Api/RestaurantApi";
+import { getPropertyTypes } from "@/Api/Api";
 
 // ── Shared input style ────────────────────────────────────────────────────────
 const inp =
@@ -244,13 +245,12 @@ function TagSelector({
                 </div>
               ) : (
                 <div
-                  className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full border transition-all ${
-                    String(value) === String(item.id)
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : item.isActive === false
-                        ? "bg-gray-50 text-gray-400 border-gray-200 opacity-60"
-                        : "bg-gray-100 text-gray-600 border-gray-200"
-                  }`}
+                  className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full border transition-all ${String(value) === String(item.id)
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : item.isActive === false
+                      ? "bg-gray-50 text-gray-400 border-gray-200 opacity-60"
+                      : "bg-gray-100 text-gray-600 border-gray-200"
+                    }`}
                 >
                   <span
                     className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.isActive === false ? "bg-gray-400" : "bg-green-400"}`}
@@ -263,11 +263,10 @@ function TagSelector({
                     title={
                       item.isActive === false ? "Set Active" : "Set Inactive"
                     }
-                    className={`opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 disabled:opacity-50 ${
-                      String(value) === String(item.id)
-                        ? "text-blue-200 hover:text-white"
-                        : "text-gray-400 hover:text-red-500"
-                    }`}
+                    className={`opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 disabled:opacity-50 ${String(value) === String(item.id)
+                      ? "text-blue-200 hover:text-white"
+                      : "text-gray-400 hover:text-red-500"
+                      }`}
                   >
                     {togglingId === item.id ? (
                       <Loader2 size={9} className="animate-spin" />
@@ -281,11 +280,10 @@ function TagSelector({
                     type="button"
                     onClick={(e) => startEdit(item, e)}
                     title={`Edit ${item.name}`}
-                    className={`opacity-0 group-hover:opacity-100 transition-opacity ${
-                      String(value) === String(item.id)
-                        ? "text-blue-200 hover:text-white"
-                        : "text-gray-400 hover:text-gray-700"
-                    }`}
+                    className={`opacity-0 group-hover:opacity-100 transition-opacity ${String(value) === String(item.id)
+                      ? "text-blue-200 hover:text-white"
+                      : "text-gray-400 hover:text-gray-700"
+                      }`}
                   >
                     <Pencil size={9} />
                   </button>
@@ -322,11 +320,13 @@ function AddMenuItemModal({
   onClose,
   initialData,
   propertyData,
+  propertyTypeId: explicitPropertyTypeId,
   onSave,
 }) {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [resolvedPropertyTypeId, setResolvedPropertyTypeId] = useState(null);
 
   const [verticals, setVerticals] = useState([]); // filtered vertical cards
   const [types, setTypes] = useState([]);
@@ -364,6 +364,30 @@ function AddMenuItemModal({
       setLoadingMeta(false);
     }
   }, [propertyId]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Attempt to resolve propertyTypeId
+    const initialId = explicitPropertyTypeId || propertyData?.propertyTypeId;
+    if (initialId) {
+      setResolvedPropertyTypeId(initialId);
+    } else {
+      getPropertyTypes().then((res) => {
+        const types = res.data || res;
+        const targetName = typeof propertyData?.propertyType === 'string'
+          ? propertyData.propertyType
+          : (propertyData?.propertyType?.typeName || "");
+
+        if (targetName && Array.isArray(types)) {
+          const matched = types.find(t =>
+            (t.typeName || "").toLowerCase() === targetName.toLowerCase()
+          );
+          if (matched) setResolvedPropertyTypeId(matched.id);
+        }
+      }).catch(err => console.error("Error resolving property type id:", err));
+    }
+  }, [isOpen, propertyData, explicitPropertyTypeId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -456,8 +480,11 @@ function AddMenuItemModal({
       fd.append("topSold", String(form.topSold));
       fd.append("status", String(form.status));
       fd.append("likeCount", String(form.likeCount));
+
+      const typeIdToPass = resolvedPropertyTypeId || explicitPropertyTypeId || propertyData?.propertyTypeId || "";
+
       fd.append("propertyId", String(propertyId || ""));
-      fd.append("propertyTypeId", String(propertyData?.propertyTypeId || ""));
+      fd.append("propertyTypeId", String(typeIdToPass));
       if (form.imageFile) fd.append("image", form.imageFile);
 
       if (isEditing) {
@@ -471,7 +498,7 @@ function AddMenuItemModal({
     } catch (err) {
       setError(
         err?.response?.data?.message ||
-          "Failed to save item. Please try again.",
+        "Failed to save item. Please try again.",
       );
     } finally {
       setSaving(false);
@@ -620,15 +647,14 @@ function AddMenuItemModal({
                     key={ft}
                     type="button"
                     onClick={() => set("foodType", ft)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all ${i > 0 ? "border-l border-gray-200" : ""} ${
-                      form.foodType === ft
-                        ? ft === "VEG"
-                          ? "bg-green-500 text-white"
-                          : ft === "NON_VEG"
-                            ? "bg-red-500 text-white"
-                            : "bg-yellow-500 text-white"
-                        : "bg-white text-gray-500 hover:bg-gray-50"
-                    }`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all ${i > 0 ? "border-l border-gray-200" : ""} ${form.foodType === ft
+                      ? ft === "VEG"
+                        ? "bg-green-500 text-white"
+                        : ft === "NON_VEG"
+                          ? "bg-red-500 text-white"
+                          : "bg-yellow-500 text-white"
+                      : "bg-white text-gray-500 hover:bg-gray-50"
+                      }`}
                   >
                     {ft === "VEG"
                       ? "Veg"

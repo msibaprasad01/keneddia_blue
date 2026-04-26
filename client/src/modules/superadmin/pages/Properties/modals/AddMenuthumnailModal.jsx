@@ -14,17 +14,19 @@ import {
   updateMenuThumbnail,
   getAllVerticalCards,
 } from "@/Api/RestaurantApi";
+import { getPropertyTypes } from "@/Api/Api";
 
 const inp =
   "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 outline-none bg-white transition-all";
 
-function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
+function AddMenuThumbnailModal({ isOpen, onClose, propertyData, propertyTypeId: explicitPropertyTypeId, thumbnailId }) {
   const propertyId = propertyData?.id;
   const isEditing = !!thumbnailId;
 
   const [verticals, setVerticals] = useState([]);
   const [types, setTypes] = useState([]);
   const [loadingMeta, setLoadingMeta] = useState(false);
+  const [resolvedPropertyTypeId, setResolvedPropertyTypeId] = useState(null);
 
   const [formData, setFormData] = useState({
     itemTypeId: "",
@@ -96,7 +98,27 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
     setMediaType("image");
     fetchMeta();
     if (thumbnailId) fetchThumbnail();
-  }, [isOpen]);
+
+    // Resolve propertyTypeId
+    const initialId = explicitPropertyTypeId || propertyData?.propertyTypeId;
+    if (initialId) {
+      setResolvedPropertyTypeId(initialId);
+    } else {
+      getPropertyTypes().then((res) => {
+        const types = res.data || res;
+        const targetName = typeof propertyData?.propertyType === 'string' 
+          ? propertyData.propertyType 
+          : (propertyData?.propertyType?.typeName || "");
+        
+        if (targetName && Array.isArray(types)) {
+          const matched = types.find(t => 
+            (t.typeName || "").toLowerCase() === targetName.toLowerCase()
+          );
+          if (matched) setResolvedPropertyTypeId(matched.id);
+        }
+      }).catch(err => console.error("Error resolving property type id:", err));
+    }
+  }, [isOpen, propertyData, explicitPropertyTypeId]);
 
   const handleChange = (key, value) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -120,6 +142,8 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
       if (formData.verticalCardId) fd.append("verticalCardId", formData.verticalCardId);
       if (formData.tag?.trim()) fd.append("tag", formData.tag.trim());
       if (isEditing) fd.append("active", String(formData.active));
+      const typeIdToPass = resolvedPropertyTypeId || explicitPropertyTypeId || propertyData?.propertyTypeId || "";
+      if (typeIdToPass) fd.append("propertyTypeId", String(typeIdToPass));
       if (formData.file) fd.append("file", formData.file);
 
       if (isEditing) {

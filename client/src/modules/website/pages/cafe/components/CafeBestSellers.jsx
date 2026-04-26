@@ -12,7 +12,8 @@ import {
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getMenuItemsByTopSold, addItemLike, getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
+import { getMenuItemsByTopSold, addItemLike, getMenuSectionsByPropertyTypeId, getMenuItemsByPropertyTypeId } from "@/Api/RestaurantApi";
+import { getPropertyTypes } from "@/Api/Api";
 
 const FILTERS = ["Hot Brews", "Cold Brews"];
 
@@ -20,7 +21,7 @@ const toCafeTag = (item) => {
   const name = (item.itemName || "").toLowerCase();
   const typeName = (item.type?.typeName || "").toLowerCase();
   const catName = (item.verticalCardResponseDTO?.verticalName || "").toLowerCase();
-  
+
   if (name.includes("cold") || name.includes("ice") || name.includes("frappe") || typeName.includes("cold") || catName.includes("cold")) {
     return "Cold Brews";
   }
@@ -99,9 +100,45 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
   });
   const [headerData, setHeaderData] = useState(null);
 
+  const [resolvedTypeId, setResolvedTypeId] = useState(cafeTypeId);
+
   useEffect(() => {
-    if (!cafeTypeId) return;
-    getMenuSectionsByPropertyTypeId(cafeTypeId)
+    if (cafeTypeId) {
+      setResolvedTypeId(cafeTypeId);
+    } else {
+      getPropertyTypes().then((res) => {
+        const types = res.data || res;
+        const cafeType = Array.isArray(types)
+          ? types.find((t) => (t.typeName || "").toLowerCase().includes("cafe"))
+          : null;
+        if (cafeType?.id) setResolvedTypeId(Number(cafeType.id));
+      }).catch(err => console.error("Error fetching property types:", err));
+    }
+  }, [cafeTypeId]);
+
+  useEffect(() => {
+    if (ssrLoaded || !resolvedTypeId) return;
+    setFetchLoading(true);
+
+    getMenuItemsByPropertyTypeId(resolvedTypeId)
+      .then((res) => {
+        const data = res.data ?? [];
+        setMenuItems(
+          (Array.isArray(data) ? data : [])
+            .filter((item) => item.topSold === true)
+            .map(normalize)
+        );
+      })
+      .catch((err) => {
+        console.error("CafeBestSellers fetch error:", err);
+        setMenuItems([]);
+      })
+      .finally(() => setFetchLoading(false));
+  }, [ssrLoaded, resolvedTypeId]);
+
+  useEffect(() => {
+    if (!resolvedTypeId) return;
+    getMenuSectionsByPropertyTypeId(resolvedTypeId)
       .then((res) => {
         const data = res.data?.data || res.data;
         if (Array.isArray(data)) {
@@ -113,24 +150,7 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
         }
       })
       .catch((err) => console.error(err));
-  }, [cafeTypeId]);
-
-  useEffect(() => {
-    if (ssrLoaded) return;
-    getMenuItemsByTopSold(true)
-      .then((res) => {
-        const data = res.data ?? [];
-        setMenuItems(
-          (Array.isArray(data) ? data : [])
-            .filter((item) => {
-              return cafeTypeId != null && Number(item?.propertyTypeId) === Number(cafeTypeId);
-            })
-            .map(normalize)
-        );
-      })
-      .catch(() => setMenuItems([]))
-      .finally(() => setFetchLoading(false));
-  }, [ssrLoaded, cafeTypeId]);
+  }, [resolvedTypeId]);
 
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => item.tags.includes(activeFilter));
@@ -260,13 +280,12 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
                 key={filter}
                 type="button"
                 onClick={() => handleFilterChange(filter)}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all cursor-pointer ${
-                  activeFilter === filter
-                    ? filter === "Hot Brews"
-                      ? "border-amber-500 bg-amber-500 text-white"
-                      : "border-sky-400 bg-white text-sky-500"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-primary/40 hover:text-primary"
-                }`}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all cursor-pointer ${activeFilter === filter
+                  ? filter === "Hot Brews"
+                    ? "border-amber-500 bg-amber-500 text-white"
+                    : "border-sky-400 bg-white text-sky-500"
+                  : "border-zinc-200 bg-white text-zinc-700 hover:border-primary/40 hover:text-primary"
+                  }`}
               >
                 {filter}
               </button>

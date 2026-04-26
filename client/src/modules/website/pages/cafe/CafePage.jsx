@@ -155,7 +155,10 @@ export default function CafePage() {
             <div className="h-px bg-[#E3E3DF]" />
             <div className="h-4 bg-linear-to-b from-[#F7F7F5] to-[#EFEFEB]" />
           </div>
-          <CafeSignatureDrinks />
+          <CafeSignatureDrinks
+            propertyId={resolvedPropertyId}
+            propertyType={propertyData?.propertyType}
+          />
         </div>
 
         <div className="dark:hidden">
