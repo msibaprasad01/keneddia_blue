@@ -87,8 +87,8 @@ function BuffetCarousel({ items, onBook }) {
                 animate={positionStyles[pos]}
                 transition={{ duration: 0.6, ease: "easeInOut" }}
                 className={`absolute inset-0 m-auto w-[80%] h-[95%] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 ${pos === "center"
-                    ? "pointer-events-auto"
-                    : "pointer-events-none"
+                  ? "pointer-events-auto"
+                  : "pointer-events-none"
                   }`}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -175,8 +175,8 @@ function BuffetCarousel({ items, onBook }) {
             <div
               key={i}
               className={`h-1 rounded-full transition-all duration-300 ${i === active
-                  ? "w-8 bg-primary"
-                  : "w-2 bg-zinc-200 dark:bg-zinc-800"
+                ? "w-8 bg-primary"
+                : "w-2 bg-zinc-200 dark:bg-zinc-800"
                 }`}
             />
           ))}
@@ -578,8 +578,8 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                       <div
                         ref={menuDescriptionRef}
                         className={`text-zinc-500 dark:text-zinc-400 text-sm font-light leading-relaxed break-words ${isMenuDescriptionExpanded
-                            ? "max-h-32 overflow-y-auto pr-2"
-                            : "line-clamp-2"
+                          ? "max-h-32 overflow-y-auto pr-2"
+                          : "line-clamp-2"
                           }`}
                       >
                         {menuHeader.description}
