@@ -15,26 +15,17 @@ import { Input } from "@/components/ui/input";
 import { getMenuItemsByTopSold, addItemLike, getMenuSectionsByPropertyTypeId, getMenuItemsByPropertyTypeId } from "@/Api/RestaurantApi";
 import { getPropertyTypes } from "@/Api/Api";
 
-const FILTERS = ["Hot Brews", "Cold Brews"];
+// Dynamic categories will be derived from data
 
-const toCafeTag = (item) => {
-  const name = (item.itemName || "").toLowerCase();
-  const typeName = (item.type?.typeName || "").toLowerCase();
-  const catName = (item.verticalCardResponseDTO?.verticalName || "").toLowerCase();
 
-  if (name.includes("cold") || name.includes("ice") || name.includes("frappe") || typeName.includes("cold") || catName.includes("cold")) {
-    return "Cold Brews";
-  }
-  return "Hot Brews";
-};
 
 const normalize = (item) => ({
   id: item.id,
   title: item.itemName,
   description: item.description || "",
   image: item.image?.url || item.media?.url || "",
-  tags: [toCafeTag(item), "Best Seller"],
-  category: item.type?.typeName || item.verticalCardResponseDTO?.verticalName || "Cafe Signature",
+  tags: ["Best Seller"],
+  category: item.type?.typeName || item.verticalCardResponseDTO?.verticalName || "Other",
   likes: item.likeCount || 0,
 });
 
@@ -83,7 +74,7 @@ function AnimatedCounter({ target }) {
 
 export default function CafeBestSellers({ initialItems, cafeTypeId }) {
   const ssrLoaded = Array.isArray(initialItems) && initialItems.length > 0;
-  const [activeFilter, setActiveFilter] = useState("Hot Brews");
+  const [activeFilter, setActiveFilter] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [menuItems, setMenuItems] = useState(ssrLoaded ? initialItems : []);
   const [fetchLoading, setFetchLoading] = useState(!ssrLoaded);
@@ -117,24 +108,31 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
   }, [cafeTypeId]);
 
   useEffect(() => {
-    if (ssrLoaded || !resolvedTypeId) return;
+    // Enable fetching even if initialItems is provided but empty, or if we specifically need fresh data
+    if (!resolvedTypeId) return;
     setFetchLoading(true);
 
     getMenuItemsByPropertyTypeId(resolvedTypeId)
       .then((res) => {
         const data = res.data ?? [];
-        setMenuItems(
-          (Array.isArray(data) ? data : [])
-            .filter((item) => item.topSold === true)
-            .map(normalize)
-        );
+        const normalizedItems = (Array.isArray(data) ? data : [])
+          .filter((item) => item.topSold === true)
+          .map(normalize);
+
+        setMenuItems(normalizedItems);
+
+        // Auto-set the first filter if none is set
+        if (normalizedItems.length > 0) {
+          const firstCat = normalizedItems[0].category;
+          setActiveFilter(firstCat);
+        }
       })
       .catch((err) => {
         console.error("CafeBestSellers fetch error:", err);
         setMenuItems([]);
       })
       .finally(() => setFetchLoading(false));
-  }, [ssrLoaded, resolvedTypeId]);
+  }, [resolvedTypeId]); // Removed ssrLoaded to ensure fetch happens if ID is resolved later
 
   useEffect(() => {
     if (!resolvedTypeId) return;
@@ -152,8 +150,14 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
       .catch((err) => console.error(err));
   }, [resolvedTypeId]);
 
+  const categories = useMemo(() => {
+    const cats = new Set(menuItems.map(i => i.category));
+    return Array.from(cats).sort();
+  }, [menuItems]);
+
   const filteredItems = useMemo(() => {
-    return menuItems.filter((item) => item.tags.includes(activeFilter));
+    if (!activeFilter) return menuItems;
+    return menuItems.filter((item) => item.category === activeFilter);
   }, [activeFilter, menuItems]);
 
   const primaryItems = filteredItems.slice(0, 4);
@@ -206,9 +210,9 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.08 }}
-      className="group relative flex cursor-pointer flex-col items-center rounded-[2.5rem] border border-zinc-100 bg-zinc-50 p-8 text-center"
+      className="group relative flex cursor-pointer flex-col items-center rounded-[2.5rem] border border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-zinc-900/40 p-8 text-center"
     >
-      <div className="relative -mt-24 mb-4 aspect-square w-full overflow-hidden rounded-[2rem] border-4 border-white shadow-xl transition-transform duration-700 group-hover:scale-105">
+      <div className="relative -mt-24 mb-4 aspect-square w-full overflow-hidden rounded-[2rem] border-4 border-white dark:border-zinc-800 shadow-xl transition-transform duration-700 group-hover:scale-105">
         <CoffeeImage src={item.image} alt={item.title} />
 
         <button
@@ -217,7 +221,7 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
             event.stopPropagation();
             setLikeModal({ isOpen: true, item });
           }}
-          className="absolute right-4 top-4 rounded-full bg-white/80 p-2 text-primary shadow-md backdrop-blur-md transition-transform hover:scale-110"
+          className="absolute right-4 top-4 rounded-full bg-white/80 dark:bg-zinc-800/80 p-2 text-primary shadow-md backdrop-blur-md transition-transform hover:scale-110"
           aria-label={`Like ${item.title}`}
         >
           <Heart
@@ -232,12 +236,12 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
       </span>
 
       <div className="flex w-full flex-col items-center">
-        <h3 className="mb-2 text-2xl font-serif leading-tight text-zinc-900">
+        <h3 className="mb-2 text-2xl font-serif leading-tight text-zinc-900 dark:text-white">
           {item.title}
         </h3>
 
         {item.description && (
-          <p className="mb-3 line-clamp-2 text-[13px] italic leading-snug text-zinc-500">
+          <p className="mb-3 line-clamp-2 text-[13px] italic leading-snug text-zinc-500 dark:text-zinc-400">
             "{item.description}"
           </p>
         )}
@@ -253,7 +257,7 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
   );
 
   return (
-    <section className="bg-[#EFEFEB] pb-2 pt-16 dark:bg-[#050505]">
+    <section className="bg-white dark:bg-[#050505] pb-2 pt-16 transition-colors duration-500">
       <div className="mx-auto max-w-[1400px] px-6 text-left md:px-12">
         <div className="mb-20 flex flex-col items-start justify-between gap-8 lg:flex-row">
           <div className="min-w-0 flex-1 lg:max-w-[80%]">
@@ -262,29 +266,27 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
               Cafe Menu Spotlight
             </div>
 
-            <h2 className="mb-2 text-3xl font-serif md:text-4xl">
+            <h2 className="mb-2 text-3xl font-serif md:text-4xl dark:text-white">
               {headerData ? headerData.part1 : "Best Seller"}{" "}
               <span className="italic text-primary">{headerData ? headerData.part2 : "Coffee Menu"}</span>
             </h2>
 
             <div className="w-full md:max-w-[80%]">
-              <p className="text-sm font-light leading-relaxed text-zinc-500 whitespace-pre-line">
+              <p className="text-sm font-light leading-relaxed text-zinc-500 dark:text-zinc-400 whitespace-pre-line">
                 {headerData ? headerData.description : "The restaurant bestseller layout is reused here exactly in spirit,\nbut tuned for cafe categories, coffee language, and brew-led\nhighlights."}
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {FILTERS.map((filter) => (
+            {categories.map((filter) => (
               <button
                 key={filter}
                 type="button"
                 onClick={() => handleFilterChange(filter)}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all cursor-pointer ${activeFilter === filter
-                  ? filter === "Hot Brews"
-                    ? "border-amber-500 bg-amber-500 text-white"
-                    : "border-sky-400 bg-white text-sky-500"
-                  : "border-zinc-200 bg-white text-zinc-700 hover:border-primary/40 hover:text-primary"
+                className={`rounded-full border px-4 py-2 text-sm font-bold capitalize transition-all cursor-pointer ${activeFilter === filter
+                  ? "border-primary bg-primary text-white"
+                  : "border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-primary/40 hover:text-primary"
                   }`}
               >
                 {filter}
@@ -313,7 +315,7 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
               <button
                 type="button"
                 onClick={() => setExpanded((current) => !current)}
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition-all hover:border-primary/40 hover:text-primary cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-800 dark:text-zinc-200 transition-all hover:border-primary/40 hover:text-primary cursor-pointer"
               >
                 {expanded ? "Show Less" : `Show More (${extraItems.length})`}
                 {expanded ? (
@@ -352,20 +354,20 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-md rounded-[2.5rem] border border-zinc-100 bg-white p-10 text-left shadow-2xl"
+              className="relative w-full max-w-md rounded-[2.5rem] border border-zinc-100 dark:border-white/5 bg-white dark:bg-zinc-900 p-10 shadow-2xl text-left"
             >
               <button
                 type="button"
                 onClick={closeLikeModal}
-                className="absolute right-6 top-6 rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-100"
+                className="absolute right-6 top-6 rounded-full p-2 text-zinc-400 dark:text-zinc-500 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
                 <X size={20} />
               </button>
 
-              <h3 className="mb-2 text-2xl font-serif text-zinc-900">
+              <h3 className="mb-2 text-2xl font-serif text-zinc-900 dark:text-white">
                 Show your love
               </h3>
-              <p className="mb-6 text-xs italic text-zinc-500">
+              <p className="mb-6 text-xs italic text-zinc-500 dark:text-zinc-400">
                 Share your details to like {likeModal.item?.title || "this coffee"}.
               </p>
 
@@ -373,41 +375,32 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
                 <Input
                   placeholder="Your Name"
                   value={likeForm.name}
-                  onChange={(event) =>
-                    setLikeForm((prev) => ({
-                      ...prev,
-                      name: event.target.value,
-                    }))
+                  onChange={(e) =>
+                    setLikeForm((f) => ({ ...f, name: e.target.value }))
                   }
-                  className="h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+                  className="h-14 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 shadow-sm"
                 />
                 <Input
                   placeholder="Phone Number"
                   value={likeForm.phone}
-                  onChange={(event) =>
-                    setLikeForm((prev) => ({
-                      ...prev,
-                      phone: event.target.value,
-                    }))
+                  onChange={(e) =>
+                    setLikeForm((f) => ({ ...f, phone: e.target.value }))
                   }
-                  className="h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+                  className="h-14 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 shadow-sm"
                 />
                 <Input
                   placeholder="Leave a comment"
                   value={likeForm.description}
-                  onChange={(event) =>
-                    setLikeForm((prev) => ({
-                      ...prev,
-                      description: event.target.value,
-                    }))
+                  onChange={(e) =>
+                    setLikeForm((f) => ({ ...f, description: e.target.value }))
                   }
-                  className="h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+                  className="h-14 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 shadow-sm"
                 />
 
                 <Button
-                  disabled={!likeForm.name || !likeForm.phone || likeSubmitting}
+                  disabled={likeSubmitting}
                   onClick={handleLikeSubmit}
-                  className="h-14 w-full rounded-2xl bg-primary font-black uppercase text-white shadow-lg transition-all hover:bg-primary/90 active:scale-95"
+                  className="h-14 w-full bg-primary font-black uppercase text-white shadow-lg transition-all hover:bg-primary/90 active:scale-95 rounded-2xl"
                 >
                   {likeSubmitting ? (
                     <Loader2 size={18} className="mx-auto animate-spin" />
