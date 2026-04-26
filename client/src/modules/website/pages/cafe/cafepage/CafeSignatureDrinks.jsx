@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   CalendarCheck,
@@ -11,193 +11,26 @@ import {
   User,
   Utensils,
   X,
+  ImageIcon,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { siteContent } from "@/data/siteContent";
+import { 
+  getMenuItemsByPropertyId, 
+  getMenuHeaders, 
+  createJoiningUs 
+} from "@/Api/RestaurantApi";
 
-const MENU = [
-  {
-    category: "Brews",
-    categoryImage: siteContent.images.cafes.minimalist.src,
-    items: [
-      {
-        id: 1,
-        name: "Single Origin Pour-Over",
-        description:
-          "Hand-poured through a single filter, this brew highlights the natural clarity and fruit tones of its origin bean.",
-        image: siteContent.images.cafes.minimalist.src,
-        foodType: "VEG",
-        price: "₹280",
-      },
-      {
-        id: 2,
-        name: "Iced Matcha Latte",
-        description:
-          "Ceremonial-grade matcha whisked into cold oat milk for a smooth, grassy, and lightly sweet glass.",
-        image: siteContent.images.cafes.library.src,
-        foodType: "VEG",
-        price: "₹320",
-      },
-      {
-        id: 3,
-        name: "Classic Cold Brew",
-        description:
-          "Slow-steeped overnight for 18 hours. Low acid, high clarity, cocoa and malt undertones.",
-        image: siteContent.images.cafes.garden.src,
-        foodType: "VEG",
-        price: "₹260",
-      },
-      {
-        id: 4,
-        name: "Hazelnut Cappuccino",
-        description:
-          "Toasted nut sweetness folded into velvet milk foam and a warm aromatic espresso base.",
-        image: siteContent.images.cafes.parisian.src,
-        foodType: "VEG",
-        price: "₹240",
-      },
-      {
-        id: 5,
-        name: "Espresso Tonic",
-        description:
-          "Bright tonic sparkle, fresh espresso, and a citrus wedge — a sharper modern coffee serve.",
-        image: siteContent.images.cafes.highTea.src,
-        foodType: "VEG",
-        price: "₹220",
-      },
-      {
-        id: 6,
-        name: "Salted Caramel Frappe",
-        description:
-          "Blended coffee, cream, and caramel in a frozen profile made for long slow cafe hours.",
-        image: siteContent.images.cafes.bakery.src,
-        foodType: "VEG",
-        price: "₹300",
-      },
-    ],
-  },
-  {
-    category: "Bites",
-    categoryImage: siteContent.images.cafes.highTea.src,
-    items: [
-      {
-        id: 7,
-        name: "Avocado Toast & Poached Egg",
-        description:
-          "Thick-cut sourdough, smashed avocado, two poached eggs, chilli flakes, and a drizzle of herb oil.",
-        image: siteContent.images.cafes.minimalist.src,
-        foodType: "VEG",
-        price: "₹380",
-      },
-      {
-        id: 8,
-        name: "High Tea Platter for Two",
-        description:
-          "A tiered selection of finger sandwiches, petit fours, scones, and seasonal preserves.",
-        image: siteContent.images.cafes.highTea.src,
-        foodType: "VEG",
-        price: "₹680",
-      },
-      {
-        id: 9,
-        name: "Garden Brunch Board",
-        description:
-          "Cold cuts, artisan cheeses, seasonal fruit, house hummus, and warm flatbread on a sharing board.",
-        image: siteContent.images.cafes.garden.src,
-        foodType: "NON_VEG",
-        price: "₹580",
-      },
-      {
-        id: 10,
-        name: "Smashed Banana Pancakes",
-        description:
-          "Fluffy banana pancakes topped with honey yoghurt, toasted granola, and a cocoa dust finish.",
-        image: siteContent.images.cafes.library.src,
-        foodType: "VEG",
-        price: "₹320",
-      },
-      {
-        id: 11,
-        name: "Chicken Tikka Bruschetta",
-        description:
-          "Tandoor-spiced chicken tikka on toasted sourdough with mint chutney, pickled onion, and cheddar melt.",
-        image: siteContent.images.cafes.parisian.src,
-        foodType: "NON_VEG",
-        price: "₹360",
-        isSpicy: true,
-      },
-      {
-        id: 12,
-        name: "Pulled Lamb Slider",
-        description:
-          "Slow-braised lamb with harissa mayo, pickled cucumber, and sesame brioche — a bold two-bite serve.",
-        image: siteContent.images.cafes.bakery.src,
-        foodType: "NON_VEG",
-        price: "₹420",
-        isSpicy: true,
-      },
-    ],
-  },
-  {
-    category: "Bakes",
-    categoryImage: siteContent.images.cafes.parisian.src,
-    items: [
-      {
-        id: 13,
-        name: "Croissant & Jam",
-        description:
-          "Freshly baked butter croissant served warm with house-made seasonal jam and French-style cultured butter.",
-        image: siteContent.images.cafes.parisian.src,
-        foodType: "VEG",
-        price: "₹180",
-      },
-      {
-        id: 14,
-        name: "Belgian Waffle Stack",
-        description:
-          "Crisp on the outside, fluffy inside, topped with mascarpone, berries, and maple drizzle.",
-        image: siteContent.images.cafes.bakery.src,
-        foodType: "VEG",
-        price: "₹340",
-      },
-      {
-        id: 15,
-        name: "Almond Danish",
-        description:
-          "Flaky laminated dough filled with almond cream, glazed with apricot and toasted flaked almonds.",
-        image: siteContent.images.cafes.minimalist.src,
-        foodType: "VEG",
-        price: "₹200",
-      },
-      {
-        id: 16,
-        name: "Sourdough Loaf",
-        description:
-          "Long-fermented sourdough with a deep crust and open crumb, baked fresh every morning from 5 AM.",
-        image: siteContent.images.cafes.library.src,
-        foodType: "VEG",
-        price: "₹260",
-      },
-      {
-        id: 17,
-        name: "Cinnamon Scroll",
-        description:
-          "Soft enriched dough rolled with cinnamon butter and brown sugar, finished with a cream cheese glaze.",
-        image: siteContent.images.cafes.garden.src,
-        foodType: "VEG",
-        price: "₹220",
-      },
-    ],
-  },
-];
-
-export default function CafeSignatureDrinks() {
+export default function CafeSignatureDrinks({ propertyId, propertyType }) {
   const [activeTab, setActiveTab] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [menuItems, setMenuItems] = useState([]);
+  const [menuHeader, setMenuHeader] = useState(null);
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -206,6 +39,68 @@ export default function CafeSignatureDrinks() {
     totalGuest: "2",
   });
   const scrollRef = useRef(null);
+
+  // ── Fetch Data ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!propertyId) return;
+    setLoading(true);
+
+    Promise.all([
+      getMenuItemsByPropertyId(propertyId),
+      getMenuHeaders()
+    ])
+      .then(([itemsRes, headersRes]) => {
+        // Items
+        const allItems = itemsRes?.data || [];
+        setMenuItems(allItems.filter((i) => i.isActive !== false));
+
+        // Header
+        const allHeaders = headersRes?.data || [];
+        const matchedHeader = allHeaders
+          .filter((h) => Number(h.propertyId) === Number(propertyId) && h.isActive)
+          .sort((a, b) => b.id - a.id)[0];
+        if (matchedHeader) {
+          setMenuHeader({
+            part1: matchedHeader.part1 || "The",
+            part2: matchedHeader.part2 || "Menu",
+            description: matchedHeader.description || "",
+          });
+        }
+      })
+      .catch((err) => console.error("CafeSignatureDrinks fetch error:", err))
+      .finally(() => setLoading(false));
+  }, [propertyId]);
+
+  // ── Group menu by category ───────────────────────────────────────────────
+  const groupedMenu = useMemo(() => {
+    const map = {};
+    menuItems.forEach((item) => {
+      const catName = item.itemCategory?.categoryName || "Signature";
+      if (!map[catName]) {
+        map[catName] = {
+          category: catName,
+          categoryImage: item.media?.url || item.image?.url || "",
+          items: [],
+        };
+      }
+      map[catName].items.push({
+        id: item.id,
+        name: item.itemName,
+        description: item.description || "",
+        image: item.media?.url || item.image?.url || "",
+        foodType: item.foodType,
+        price: item.price ? `₹${item.price}` : null,
+        isSpicy: item.isSpicy,
+      });
+    });
+    return Object.values(map);
+  }, [menuItems]);
+
+  useEffect(() => {
+    if (groupedMenu.length > 0 && activeTab >= groupedMenu.length) {
+      setActiveTab(0);
+    }
+  }, [groupedMenu, activeTab]);
 
   const handleTabClick = (idx) => {
     setActiveTab(idx);
@@ -226,12 +121,13 @@ export default function CafeSignatureDrinks() {
   };
 
   const handleNext = () => {
-    if (activeTab < MENU.length - 1) handleTabClick(activeTab + 1);
+    if (activeTab < groupedMenu.length - 1) handleTabClick(activeTab + 1);
   };
 
   const openReserve = (item = null) => {
+    const category = groupedMenu[activeTab]?.category || "General";
     setSelectedItem(
-      item ?? { name: "Table Reservation", category: MENU[activeTab].category },
+      item ?? { name: "Table Reservation", category: category },
     );
     setShowModal(true);
   };
@@ -239,13 +135,22 @@ export default function CafeSignatureDrinks() {
   const setField = (key, value) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.name || !formData.phone) {
       toast.error("Please fill in your name and phone number.");
       return;
     }
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      await createJoiningUs({
+        name: formData.name,
+        mobileNumber: formData.phone,
+        bookingDate: formData.date,
+        bookingTime: formData.time,
+        numberOfGuest: formData.totalGuest,
+        propertyId: propertyId,
+        bookingType: selectedItem?.name || "Table Reservation",
+      });
       toast.success("Reservation request sent!");
       setShowModal(false);
       setFormData({
@@ -255,14 +160,32 @@ export default function CafeSignatureDrinks() {
         time: "19:00",
         totalGuest: "2",
       });
+    } catch (error) {
+      console.error("Reservation submission failed:", error);
+      toast.error("Failed to submit reservation. Please try again.");
+    } finally {
       setIsSubmitting(false);
-    }, 600);
+    }
   };
 
-  const activeSection = MENU[activeTab];
+  if (loading) {
+    return (
+      <div className="py-24 flex flex-col items-center justify-center gap-4 text-zinc-400">
+        <Loader2 className="animate-spin" size={32} />
+        <p className="text-sm font-medium">Brewing the menu...</p>
+      </div>
+    );
+  }
+
+  if (groupedMenu.length === 0) {
+    return null; // Don't show if no items
+  }
+
+  const activeSection = groupedMenu[activeTab];
 
   // 1 thumbnail per 4 items — first uses categoryImage, rest use every 4th item's image
   const getThumbnails = (section) => {
+    if (!section) return [];
     const count = Math.ceil(section.items.length / 4);
     return Array.from({ length: count }, (_, i) => ({
       image: i === 0 ? section.categoryImage : (section.items[i * 4 - 1]?.image ?? section.categoryImage),
@@ -275,7 +198,7 @@ export default function CafeSignatureDrinks() {
   return (
     <section
       id="menu"
-      className="py-8 bg-[#EFEFEB] dark:bg-[#050505] transition-colors duration-500"
+      className="py-16 bg-[#EFEFEB] dark:bg-[#050505] transition-colors duration-500"
     >
       <div className="container mx-auto px-6 max-w-[1200px]">
         {/* ── HEADER ──────────────────────────────────────────────────────── */}
@@ -285,7 +208,8 @@ export default function CafeSignatureDrinks() {
               <Utensils className="w-5 h-5 text-primary" />
             </div>
             <h2 className="text-3xl font-serif dark:text-white">
-              The <span className="italic text-primary">Menu</span>
+              {menuHeader?.part1 || "The"}{" "}
+              <span className="italic text-primary">{menuHeader?.part2 || "Menu"}</span>
             </h2>
           </div>
 
@@ -299,11 +223,11 @@ export default function CafeSignatureDrinks() {
                 <ChevronLeft className="w-5 h-5 dark:text-white" />
               </button>
               <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                {activeTab + 1} / {MENU.length}
+                {activeTab + 1} / {groupedMenu.length}
               </div>
               <button
                 onClick={handleNext}
-                disabled={activeTab === MENU.length - 1}
+                disabled={activeTab === groupedMenu.length - 1}
                 className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
               >
                 <ChevronRight className="w-5 h-5 dark:text-white" />
@@ -322,10 +246,9 @@ export default function CafeSignatureDrinks() {
         {/* ── TAB SCROLLER ─────────────────────────────────────────────────── */}
         <div
           ref={scrollRef}
-          className="flex gap-4 overflow-x-auto pb-8 snap-x"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          className="flex gap-4 overflow-x-auto pb-8 snap-x no-scrollbar"
         >
-          {MENU.map((section, idx) => (
+          {groupedMenu.map((section, idx) => (
             <motion.button
               key={idx}
               onClick={() => handleTabClick(idx)}
@@ -355,17 +278,23 @@ export default function CafeSignatureDrinks() {
                 {thumbnails.map((thumb, i) => (
                   <div
                     key={i}
-                    className="relative w-full aspect-4/3 rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5 bg-black"
+                    className="relative w-full aspect-4/3 rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5 bg-zinc-100 dark:bg-zinc-900"
                   >
-                    <img
-                      src={thumb.image}
-                      alt={thumb.label}
-                      className="w-full h-full object-cover"
-                    />
+                    {thumb.image ? (
+                      <img
+                        src={thumb.image}
+                        alt={thumb.label}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center opacity-20">
+                         <ImageIcon size={48} />
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-6 left-6 text-white">
+                    <div className="absolute bottom-6 left-6 text-white text-left">
                       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">
-                        {i === 0 ? "Featured" : `Items ${i * 4 + 1}–${Math.min((i + 1) * 4, activeSection.items.length)}`}
+                        {i === 0 ? "Featured" : `Items ${i * 4 + 1}–${Math.min((i + 1) * 4, activeSection.items?.length || 0)}`}
                       </p>
                       <h3 className="text-2xl font-serif uppercase tracking-tight line-clamp-1">
                         {i === 0 ? activeSection.category : thumb.label}
@@ -400,7 +329,7 @@ export default function CafeSignatureDrinks() {
                     )}
                   </div>
 
-                  <div className="flex-1 border-b border-zinc-100 dark:border-white/5 pb-4 group-last:border-none">
+                  <div className="flex-1 border-b border-zinc-100 dark:border-white/5 pb-4 group-last:border-none text-left">
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="text-base font-extrabold tracking-tight text-zinc-900 dark:text-white">
@@ -443,7 +372,7 @@ export default function CafeSignatureDrinks() {
       {/* ── RESERVE MODAL ────────────────────────────────────────────────── */}
       <AnimatePresence>
         {showModal && (
-          <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -471,7 +400,7 @@ export default function CafeSignatureDrinks() {
 
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
+                  <div className="space-y-1 text-left">
                     <label className="text-[10px] uppercase font-black tracking-widest text-primary">
                       Full Name <span className="text-red-500">*</span>
                     </label>
@@ -486,7 +415,7 @@ export default function CafeSignatureDrinks() {
                     </div>
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-1 text-left">
                     <label className="text-[10px] uppercase font-black tracking-widest text-primary">
                       Phone <span className="text-red-500">*</span>
                     </label>
@@ -505,7 +434,7 @@ export default function CafeSignatureDrinks() {
                     </div>
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-1 text-left">
                     <label className="text-[10px] uppercase font-black tracking-widest text-primary">
                       Date <span className="text-red-500">*</span>
                     </label>
@@ -518,7 +447,7 @@ export default function CafeSignatureDrinks() {
                     />
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-1 text-left">
                     <label className="text-[10px] uppercase font-black tracking-widest text-primary">
                       Arrival Time <span className="text-red-500">*</span>
                     </label>
@@ -530,7 +459,7 @@ export default function CafeSignatureDrinks() {
                     />
                   </div>
 
-                  <div className="space-y-1 col-span-2">
+                  <div className="space-y-1 col-span-2 text-left">
                     <label className="text-[10px] uppercase font-black tracking-widest text-primary">
                       Total Guests <span className="text-red-500">*</span>
                     </label>
@@ -545,7 +474,7 @@ export default function CafeSignatureDrinks() {
                   </div>
                 </div>
 
-                <div className="p-3 bg-primary/5 rounded-xl border border-primary/10">
+                <div className="p-3 bg-primary/5 rounded-xl border border-primary/10 text-left">
                   <p className="text-[11px] text-zinc-500 italic leading-relaxed">
                     Requesting <b>{selectedItem?.name}</b> for{" "}
                     <b>{formData.totalGuest} guests</b> at{" "}
