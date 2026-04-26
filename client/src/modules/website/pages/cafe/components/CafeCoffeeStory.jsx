@@ -9,85 +9,13 @@ import {
   Waves,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import cafeImg from "@/assets/cafe_images/image.png";
 import cafeImg1 from "@/assets/cafe_images/image1.png";
 import cafeImg2 from "@/assets/cafe_images/image2.png";
 
-const STORY_CARDS = [
-  {
-    id: 1,
-    eyebrow: "Morning Ritual",
-    title: "Single Origin Espresso",
-    description:
-      "Dark cacao depth and dense crema create a sharper wake-up profile for early cafe regulars.",
-    benefit: "High aroma & bold body",
-    accent: "Fast starts",
-    image: cafeImg,
-    icon: Coffee,
-    stats: ["18g dose", "25s pull"],
-  },
-  {
-    id: 2,
-    eyebrow: "Slow Brewing",
-    title: "Pour Over Ritual",
-    description:
-      "Hand brewing opens cleaner acidity and floral lift designed for longer sipping.",
-    benefit: "Nuanced tasting notes",
-    accent: "Calm moments",
-    image: cafeImg1,
-    icon: Leaf,
-    stats: ["92C water", "3m bloom"],
-  },
-  {
-    id: 3,
-    eyebrow: "Noon Reset",
-    title: "Flat White Balance",
-    description:
-      "A tighter milk texture keeps espresso structure intact, making the cup creamy without losing roast identity.",
-    benefit: "Silky mouthfeel",
-    accent: "Mid-day focus",
-    image: cafeImg2,
-    icon: SunMedium,
-    stats: ["Double shot", "Velvet foam"],
-  },
-  {
-    id: 4,
-    eyebrow: "Cold Extraction",
-    title: "Cold Brew Reserve",
-    description:
-      "Overnight steeping lowers bitterness and builds a smoother, chocolate-toned drink.",
-    benefit: "Lower acidity",
-    accent: "Long conversations",
-    image: cafeImg,
-    icon: Waves,
-    stats: ["14hr steep", "Clean chill"],
-  },
-  {
-    id: 5,
-    eyebrow: "Comfort Pairing",
-    title: "Bakery And Brew",
-    description:
-      "Buttery bakes and roasted coffee are paired to stretch aroma across the entire experience.",
-    benefit: "Fuller flavor contrast",
-    accent: "Relaxed brunches",
-    image: cafeImg1,
-    icon: Sparkles,
-    stats: ["Warm pastry", "Soft sweet"],
-  },
-  {
-    id: 6,
-    eyebrow: "Evening Mood",
-    title: "Mocha Afterglow",
-    description:
-      "Cocoa bitterness and espresso warmth turn the last coffee of the day into a slower indulgence.",
-    benefit: "Dessert-like depth",
-    accent: "Late hours",
-    image: cafeImg2,
-    icon: MoonStar,
-    stats: ["Cocoa layer", "Night sip"],
-  },
-];
+
+const ICONS = [Coffee, Leaf, SunMedium, Waves, Sparkles, MoonStar];
 
 function DesktopStoryCard({ card, onHoverChange }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -226,31 +154,61 @@ function MobileStoryCard({ card }) {
   );
 }
 
-export default function CafeCoffeeStory() {
+export default function CafeCoffeeStory({ initialData }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Determine cards: dynamic from props or static fallback
+  const cards = useMemo(() => {
+    const entries = initialData?.entries || initialData?.cards;
+    if (entries && entries.length > 0) {
+      return entries.map((c, i) => ({
+        ...c,
+        id: c.id || i,
+        eyebrow: c.subtitle || c.eyebrow || "Discovery",
+        title: c.title || "The Craft",
+        description: c.description || "",
+        benefit: c.profileText || c.benefit || "",
+        accent: c.high || c.accent || "",
+        image: c.imageUrl || c.image,
+        stats: [c.tag1, c.tag2].filter(Boolean).length > 0 ? [c.tag1, c.tag2].filter(Boolean) : (c.stats || []),
+        icon: ICONS[i % ICONS.length],
+      }));
+    }
+    return [];
+  }, [initialData]);
+
+  const sectionInfo = useMemo(() => {
+    return {
+      heading: initialData?.heading || "The Art of Slow Brewing",
+      highlight: initialData?.highlight || "Discovery",
+      description: initialData?.description || "Each chapter unfolds a new texture. Browse the vertical story list and explore the finer details without scroll-based transitions.",
+    };
+  }, [initialData]);
+
   useEffect(() => {
-    if (isPaused) {
+    if (isPaused || cards.length === 0) {
       return undefined;
     }
 
     const interval = window.setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
+      setActiveIndex((prev) => (prev + 1) % cards.length);
     }, 5000);
 
     return () => window.clearInterval(interval);
-  }, [isPaused]);
+  }, [isPaused, cards.length]);
 
-  const activeCard = STORY_CARDS[activeIndex];
+  if (!cards || cards.length === 0) return null;
+
+  const activeCard = cards[activeIndex] || cards[0];
 
   const handlePrev = () =>
     setActiveIndex((prev) =>
-      prev === 0 ? STORY_CARDS.length - 1 : prev - 1,
+      prev === 0 ? cards.length - 1 : prev - 1,
     );
 
   const handleNext = () =>
-    setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
+    setActiveIndex((prev) => (prev + 1) % cards.length);
 
   return (
     <section className="relative overflow-hidden bg-[#F7F7F5] py-24 dark:bg-[#080808]">
@@ -258,19 +216,20 @@ export default function CafeCoffeeStory() {
         <div className="grid w-full min-h-[58vh] items-stretch grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24">
           <div className="flex h-full flex-col justify-center">
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-900">
-              <Coffee className="h-3.5 w-3.5" /> Discovery
+              <Coffee className="h-3.5 w-3.5" /> {sectionInfo.highlight}
             </div>
             <h2 className="mb-8 text-6xl font-serif leading-[1.1] text-zinc-950 dark:text-white">
-              The Art of <br />
-              <span className="italic text-amber-800">Slow Brewing</span>
+              {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <br />
+              <span className="italic text-amber-800">
+                {sectionInfo.heading.split(" ").slice(-2).join(" ")}
+              </span>
             </h2>
             <p className="mb-10 max-w-sm text-base leading-relaxed text-zinc-600 dark:text-white/60">
-              Each chapter unfolds a new texture. Browse the vertical story list
-              and explore the finer details without scroll-based transitions.
+              {sectionInfo.description}
             </p>
 
             <div className="flex flex-col gap-4">
-              {STORY_CARDS.map((card, index) => (
+              {cards.map((card, index) => (
                 <button
                   key={card.id}
                   type="button"
@@ -312,7 +271,7 @@ export default function CafeCoffeeStory() {
               </button>
               <span className="ml-2 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
                 {String(activeIndex + 1).padStart(2, "0")} /{" "}
-                {String(STORY_CARDS.length).padStart(2, "0")}
+                {String(cards.length).padStart(2, "0")}
               </span>
             </div>
           </div>
@@ -321,7 +280,7 @@ export default function CafeCoffeeStory() {
             <div className="relative h-full w-full">
               <AnimatePresence mode="wait">
                 <DesktopStoryCard
-                  key={activeCard.id}
+                  key={activeCard?.id || activeIndex}
                   card={activeCard}
                   onHoverChange={setIsPaused}
                 />
@@ -334,18 +293,19 @@ export default function CafeCoffeeStory() {
       <div className="w-full px-6 lg:hidden">
         <div className="mb-14">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900">
-            <Coffee className="h-3 w-3" /> The Journey
+            <Coffee className="h-3 w-3" /> {sectionInfo.highlight}
           </div>
           <h2 className="mb-6 text-5xl font-serif text-zinc-950 dark:text-white">
-            Every <span className="italic text-amber-800">Roast</span>
+            {sectionInfo.heading.split(" ").slice(0, -1).join(" ")}{" "}
+            <span className="italic text-amber-800">
+              {sectionInfo.heading.split(" ").slice(-1).join(" ")}
+            </span>
           </h2>
-          <p className="text-sm text-zinc-500">
-            Explore our coffee rituals in a simple vertical slider.
-          </p>
+          <p className="text-sm text-zinc-500">{sectionInfo.description}</p>
         </div>
 
         <AnimatePresence mode="wait">
-          <MobileStoryCard key={activeCard.id} card={activeCard} />
+          <MobileStoryCard key={activeCard?.id || activeIndex} card={activeCard} />
         </AnimatePresence>
 
         <div className="mt-8 flex items-center justify-between">
@@ -358,9 +318,9 @@ export default function CafeCoffeeStory() {
           </button>
 
           <div className="flex gap-2">
-            {STORY_CARDS.map((card, index) => (
+            {cards.map((card, index) => (
               <button
-                key={card.id}
+                key={card.id || index}
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 className={`h-2 rounded-full transition-all ${

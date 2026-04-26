@@ -11,6 +11,7 @@ import {
 } from "@/Api/Api";
 import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
+import { getCafeSectionById, getCafeSectionsByPropertyType } from "@/Api/CafeApi";
 import cafeParisian from "@assets/generated_images/parisian_style_cafe_interior.png";
 import cafeMinimalist from "@assets/generated_images/modern_minimalist_coffee_shop.png";
 import cafeGarden from "@assets/generated_images/garden_terrace_cafe.png";
@@ -155,9 +156,9 @@ const normalizeAboutSections = async (aboutRes, cafeTypeId) => {
   const aboutData = aboutRes?.data || aboutRes;
   const activeSections = Array.isArray(aboutData)
     ? aboutData
-        .filter((item) => item?.isActive === true && item?.showOnPropertyPage === true)
-        .sort((a, b) => b.id - a.id)
-        .slice(0, 3)
+      .filter((item) => item?.isActive === true && item?.showOnPropertyPage === true)
+      .sort((a, b) => b.id - a.id)
+      .slice(0, 3)
     : [];
 
   if (activeSections.length === 0) return null;
@@ -335,6 +336,23 @@ const normalizeOffers = (offersRes, cafeTypeId) => {
     .filter((item) => item.image);
 };
 
+const normalizeCoffeeStory = (storyRes) => {
+  const rawData = storyRes?.data || storyRes || [];
+  const activeSection = Array.isArray(rawData)
+    ? rawData.find((section) => section.active === true)
+    : null;
+
+  if (!activeSection) return null;
+
+  return {
+    heading: activeSection.heading,
+    highlight: activeSection.highlight,
+    description: activeSection.description,
+    entries: activeSection.entries || [],
+  };
+};
+
+
 
 const normalizeGroupBookings = (bookingsRes, cafeTypeId) => {
   const rawBookings = bookingsRes?.data || bookingsRes || [];
@@ -473,8 +491,16 @@ export const fetchCafeHomepageData = async () => {
     : null;
   const cafeTypeId = cafeType?.id ? Number(cafeType.id) : null;
 
-  const [heroRes, propertiesRes, aboutRes, newsRes, eventsRes, offersRes, bookingsRes] =
-    await Promise.all([
+  const [
+    heroRes,
+    propertiesRes,
+    aboutRes,
+    newsRes,
+    eventsRes,
+    offersRes,
+    bookingsRes,
+    storyRes,
+  ] = await Promise.all([
     cafeTypeId
       ? fetchSafe(() => getHotelHomepageHeroSection(cafeTypeId), { data: [] })
       : { data: [] },
@@ -486,7 +512,10 @@ export const fetchCafeHomepageData = async () => {
     fetchSafe(() => getEventsUpdated(), null),
     fetchSafe(() => getDailyOffers({ page: 0, size: 50 }), null),
     fetchSafe(() => getGroupBookings(), null),
-    ]);
+    cafeTypeId
+      ? fetchSafe(() => getCafeSectionsByPropertyType(cafeTypeId), { data: [] })
+      : { data: [] },
+  ]);
 
   const aboutSections = await normalizeAboutSections(aboutRes, cafeTypeId);
 
@@ -501,5 +530,6 @@ export const fetchCafeHomepageData = async () => {
     groupBookings: bookingsRes
       ? normalizeGroupBookings(bookingsRes, cafeTypeId)
       : [],
+    coffeeStory: normalizeCoffeeStory(storyRes),
   };
 };

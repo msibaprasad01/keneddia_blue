@@ -212,8 +212,6 @@ function CarouselColumn({ label, title, icon: Icon, items, accentColor }) {
         }}
         onSwiper={setSwiper}
         className="w-full flex-1"
-        slidesPerView={1}
-        spaceBetween={0}
       >
         {items.map((item) => (
           <SwiperSlide key={item.id}>

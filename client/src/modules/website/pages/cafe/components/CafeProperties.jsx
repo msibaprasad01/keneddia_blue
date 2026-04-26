@@ -298,7 +298,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
       ? "/cafe-page"
       :
     `/${createCitySlug(cafe.city || cafe.name)}/${createHotelSlug(
-      cafe.name || cafe.city || "property",
+      (cafe.name || "").toLowerCase().includes("cafe") ? cafe.name : `${cafe.name} Cafe`,
       cafe.propertyId,
     )}`;
 

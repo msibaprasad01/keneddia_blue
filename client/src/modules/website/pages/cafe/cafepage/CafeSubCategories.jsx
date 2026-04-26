@@ -12,80 +12,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { siteContent } from "@/data/siteContent";
 
-const STORY_CARDS = [
-  {
-    id: 1,
-    eyebrow: "Our Roots",
-    title: "Born From A Love Of Craft Coffee",
-    description:
-      "Kennedia Cafe started as a single roastery counter in 2018, driven by a belief that good coffee and calm spaces could transform any ordinary day into something worth remembering.",
-    benefit: "Where it all began",
-    accent: "The Beginning",
-    image: siteContent.images.cafes.minimalist.src,
-    icon: Coffee,
-    stats: ["Est. 2018", "Ghaziabad"],
-  },
-  {
-    id: 2,
-    eyebrow: "Sourcing",
-    title: "Beans Traced Back To Their Origin",
-    description:
-      "Every bean we use is sourced directly from small-batch farms across 12 countries. We visit the farms, meet the growers, and select only what aligns with our flavour standards and ethical practices.",
-    benefit: "Traceable & Ethical",
-    accent: "The Source",
-    image: siteContent.images.cafes.library.src,
-    icon: Leaf,
-    stats: ["12 Origins", "Direct Trade"],
-  },
-  {
-    id: 3,
-    eyebrow: "The Roastery",
-    title: "Roasted In-House Every Morning",
-    description:
-      "Our in-house roasting setup allows us to control every variable from roast curve to rest time. The result is a consistently fresh cup with no compromise on flavour.",
-    benefit: "Always fresh, never stale",
-    accent: "The Process",
-    image: siteContent.images.cafes.parisian.src,
-    icon: SunMedium,
-    stats: ["Daily Roast", "Small Batch"],
-  },
-  {
-    id: 4,
-    eyebrow: "The Kitchen",
-    title: "Baked Fresh Before You Arrive",
-    description:
-      "Our bakery team starts at 5 AM every day. By the time the cafe opens, every croissant, sourdough loaf, and pastry is fresh out of the oven because we think that matters.",
-    benefit: "No day-old bakes, ever",
-    accent: "The Bakery",
-    image: siteContent.images.cafes.bakery.src,
-    icon: Sparkles,
-    stats: ["5 AM Bake", "All-Natural"],
-  },
-  {
-    id: 5,
-    eyebrow: "The Spaces",
-    title: "Rooms Designed For Staying",
-    description:
-      "From our quiet library corner to the open garden terrace and the high-tea lounge, every space is designed with a specific kind of visitor in mind. You are not rushed here.",
-    benefit: "Built for long stays",
-    accent: "The Atmosphere",
-    image: siteContent.images.cafes.garden.src,
-    icon: Waves,
-    stats: ["4 Spaces", "All-Day Open"],
-  },
-  {
-    id: 6,
-    eyebrow: "The Community",
-    title: "A Cafe That Grows With Its Guests",
-    description:
-      "We run workshops, cupping sessions, and monthly brunch pop-ups because the best cafes are not just places to drink coffee. They are places where regulars become regulars for a reason.",
-    benefit: "Events every month",
-    accent: "The People",
-    image: siteContent.images.cafes.highTea.src,
-    icon: MoonStar,
-    stats: ["Monthly Events", "Open to All"],
-  },
-];
+
+const ICONS = [Coffee, Leaf, SunMedium, Sparkles, Waves, MoonStar];
 
 function DesktopStoryCard({ card, onHoverChange }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -227,35 +155,67 @@ function MobileStoryCard({ card }) {
   );
 }
 
-export default function CafeSubCategories() {
+import { useMemo } from "react";
+
+export default function CafeSubCategories({ initialData }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Determine cards: dynamic from props or static fallback
+  const cards = useMemo(() => {
+    const entries = initialData?.entries || initialData?.cards;
+    if (entries && entries.length > 0) {
+      return entries.map((c, i) => ({
+        ...c,
+        id: c.id || i,
+        eyebrow: c.subtitle || c.eyebrow || "Discovery",
+        title: c.title || "The Craft",
+        description: c.description || "",
+        benefit: c.profileText || c.benefit || "",
+        accent: c.high || c.accent || "",
+        image: c.imageUrl || c.image,
+        stats: [c.tag1, c.tag2].filter(Boolean).length > 0 ? [c.tag1, c.tag2].filter(Boolean) : (c.stats || []),
+        icon: ICONS[i % ICONS.length],
+      }));
+    }
+    return [];
+  }, [initialData]);
+
+  const sectionInfo = useMemo(() => {
+    return {
+      heading: initialData?.heading || "Six Chapters One Cafe",
+      highlight: initialData?.highlight || "Our Story",
+      description: initialData?.description || "Discover the story behind every cup and every corner through a simple vertical slider instead of the old scroll-driven flow.",
+    };
+  }, [initialData]);
+
   useEffect(() => {
-    if (isPaused) {
+    if (isPaused || cards.length === 0) {
       return undefined;
     }
 
     const interval = window.setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
+      setActiveIndex((prev) => (prev + 1) % cards.length);
     }, 5000);
 
     return () => window.clearInterval(interval);
-  }, [isPaused]);
+  }, [isPaused, cards.length]);
 
-  const activeCard = STORY_CARDS[activeIndex];
+  if (!cards || cards.length === 0) return null;
+
+  const activeCard = cards[activeIndex] || cards[0];
 
   const handlePrev = () =>
     setActiveIndex((prev) =>
-      prev === 0 ? STORY_CARDS.length - 1 : prev - 1,
+      prev === 0 ? cards.length - 1 : prev - 1,
     );
 
   const handleNext = () =>
-    setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
+    setActiveIndex((prev) => (prev + 1) % cards.length);
 
   return (
     <section
-      className="relative overflow-hidden py-10 bg-[#F7F7F5] dark:bg-[#0f0f0f]"
+      className="relative overflow-hidden py-24 bg-[#F7F7F5] dark:bg-[#0f0f0f]"
     >
       {/* ── Sparkle background animation ─────────────────────────────────── */}
       <style>{`
@@ -293,9 +253,8 @@ export default function CafeSubCategories() {
         ))}
       </div>
       <div className="hidden w-full lg:block">
-        <div className="grid w-full min-h-[58vh] items-stretch grid-cols-[1.3fr_0.7fr] gap-16 px-12 xl:px-24">
-          {/* Story card — now on the LEFT */}
-          <div className="relative flex items-center justify-center self-center h-[70%]">
+        <div className="container mx-auto grid min-h-[58vh] items-center grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-16 px-12 xl:px-24">
+          <div className="relative flex items-center justify-center h-full">
             <div className="relative h-full w-full">
               <AnimatePresence mode="wait">
                 <DesktopStoryCard
@@ -310,21 +269,22 @@ export default function CafeSubCategories() {
           {/* Nav / controls — now on the RIGHT */}
           <div className="flex h-full flex-col justify-center">
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-900">
-              <Coffee className="h-3.5 w-3.5" /> Our Story
+              <Coffee className="h-3.5 w-3.5" /> {sectionInfo.highlight}
             </div>
             <h2 className="mb-8 text-5xl xl:text-6xl font-serif leading-[1.1] text-zinc-950 dark:text-white">
-              Six Chapters <br />
-              <span className="italic text-amber-800">One Cafe</span>
+              {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <br />
+              <span className="italic text-amber-800">
+                {sectionInfo.heading.split(" ").slice(-2).join(" ")}
+              </span>
             </h2>
             <p className="mb-10 max-w-sm text-base leading-relaxed text-zinc-600 dark:text-white/60">
-              Discover the story behind every cup and every corner through a
-              simple vertical slider instead of the old scroll-driven flow.
+              {sectionInfo.description}
             </p>
 
             <div className="flex flex-col gap-4">
-              {STORY_CARDS.map((card, index) => (
+              {cards.map((card, index) => (
                 <button
-                  key={card.id}
+                  key={card.id || index}
                   type="button"
                   onClick={() => setActiveIndex(index)}
                   className="group flex items-center gap-4 text-left"
@@ -339,7 +299,7 @@ export default function CafeSubCategories() {
                       : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-white/70"
                       }`}
                   >
-                    {card.eyebrow}
+                    {card.eyebrow || card.title}
                   </span>
                 </button>
               ))}
@@ -362,7 +322,7 @@ export default function CafeSubCategories() {
               </button>
               <span className="ml-2 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
                 {String(activeIndex + 1).padStart(2, "0")} /{" "}
-                {String(STORY_CARDS.length).padStart(2, "0")}
+                {String(cards.length).padStart(2, "0")}
               </span>
             </div>
           </div>
@@ -372,13 +332,13 @@ export default function CafeSubCategories() {
       <div className="w-full px-6 lg:hidden">
         <div className="mb-14">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900">
-            <Coffee className="h-3 w-3" /> Our Story
+            <Coffee className="h-3 w-3" /> {sectionInfo.highlight}
           </div>
           <h2 className="mb-6 text-4xl font-serif text-zinc-950 dark:text-white">
-            Six Chapters, <span className="italic text-amber-800">One Cafe</span>
+             {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <span className="italic text-amber-800">{sectionInfo.heading.split(" ").slice(-2).join(" ")}</span>
           </h2>
           <p className="text-sm text-zinc-500">
-            The story behind every cup and every corner.
+            {sectionInfo.description}
           </p>
         </div>
 
@@ -396,9 +356,9 @@ export default function CafeSubCategories() {
           </button>
 
           <div className="flex gap-2">
-            {STORY_CARDS.map((card, index) => (
+            {cards.map((card, index) => (
               <button
-                key={card.id}
+                key={card.id || index}
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 className={`h-2 rounded-full transition-all ${activeIndex === index
