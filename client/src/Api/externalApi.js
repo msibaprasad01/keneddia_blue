@@ -33,3 +33,13 @@ export const getGooglePlaceDetails = ({
       key,
     },
   });
+
+export const getGuestExperienceReviews = ({
+  propertyId,
+  source = "USER", 
+}) =>
+  API.get(`api/v1/guest-experience/reviews/property/${propertyId}`, {
+    params: { source },
+  });
+export const updateGuestExperienceReview = (id, data) =>
+  API.patch(`api/v1/guest-experience/${id}/review`, data);

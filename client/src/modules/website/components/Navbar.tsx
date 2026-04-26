@@ -24,7 +24,7 @@ const BUSINESS_ITEMS = [
 
   // { label: "Restaurants", href: "https://restaurants.kennediablu.com/ghaziabad/kennedia-blu-restaurant-ghaziabad-31",external: true }
 
-  // { label: "Cafes & Dining", href: "/cafe-homepage" },
+  { label: "Cafes & Dining", href: "/cafe-homepage",external: true },
   // { label: "Bars & Lounges", href: "/bars" },
   // { label: "Events & Conf.", href: "/events" },
   // { label: "Entertainment", href: "/entertainment" },

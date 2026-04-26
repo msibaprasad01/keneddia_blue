@@ -9,6 +9,9 @@ import {
   Star,
   MessageSquare,
   Download,
+  Users,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import {
   createPropertyGoogleMapping,
@@ -18,9 +21,11 @@ import {
   syncGoogleReviewsByPropertyId,
   togglePropertyGoogleMappingStatus,
   updatePropertyGoogleMapping,
+  getGuestExperienceReviews,
+  updateGuestExperienceReview,
 } from "@/Api/externalApi";
 import { showError, showSuccess } from "@/lib/toasters/toastUtils";
-
+import { deleteGuestExperience } from "@/Api/Api";
 const inputClassName =
   "w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-blue-400 focus:ring-4 focus:ring-blue-400/10";
 
@@ -28,8 +33,7 @@ const unwrapResponse = (response) =>
   response?.data?.data ?? response?.data ?? response ?? null;
 
 const GOOGLE_PLACE_DETAILS_API_KEY = (
-  import.meta.env.VITE_GOOGLE_PLACE_DETAILS_API_KEY ||
-  "AIzaSyBw0sYKZb7SeKFp_Hb9v7tpbeLZ9is9hrM"
+  import.meta.env.VITE_GOOGLE_PLACE_DETAILS_API_KEY || ""
 ).trim();
 
 const normalizeMapping = (item) => {
@@ -48,6 +52,368 @@ const normalizeMapping = (item) => {
   };
 };
 
+// ── Star Rating display ────────────────────────────────────────────────────
+function StarRating({ rating }) {
+  const value = Number(rating) || 0;
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          size={12}
+          className={
+            star <= Math.round(value)
+              ? "fill-amber-400 text-amber-400"
+              : "fill-gray-200 text-gray-200"
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Guest Reviews Section ──────────────────────────────────────────────────
+function GuestReviewsSection({ propertyId }) {
+  const [source, setSource] = useState("USER");
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
+  // Track which review ids are currently being toggled or deleted
+  const [togglingIds, setTogglingIds] = useState(new Set());
+  const [deletingIds, setDeletingIds] = useState(new Set());
+
+  const fetchReviews = useCallback(async (selectedSource) => {
+    if (!propertyId) {
+      showError("Property id is missing");
+      return;
+    }
+    setReviewsLoading(true);
+    try {
+      const response = await getGuestExperienceReviews({
+        propertyId,
+        source: selectedSource,
+      });
+      const payload = unwrapResponse(response);
+      setReviews(Array.isArray(payload) ? payload : payload ? [payload] : []);
+      setHasFetched(true);
+    } catch (error) {
+      showError(
+        error?.response?.data?.message || "Failed to fetch guest reviews",
+      );
+      setReviews([]);
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, [propertyId]);
+
+  const handleSourceChange = (newSource) => {
+    setSource(newSource);
+    if (hasFetched) fetchReviews(newSource);
+  };
+
+  const handleToggleActive = async (review) => {
+    if (!review.id) return;
+    const newStatus = !review.isActive;
+
+    // Optimistic update
+    setReviews((prev) =>
+      prev.map((r) => (r.id === review.id ? { ...r, isActive: newStatus } : r)),
+    );
+    setTogglingIds((prev) => new Set(prev).add(review.id));
+
+    try {
+      await updateGuestExperienceReview(review.id, { isActive: newStatus });
+      showSuccess(`Review ${newStatus ? "enabled" : "disabled"} successfully`);
+    } catch (error) {
+      // Revert optimistic update on failure
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === review.id ? { ...r, isActive: !newStatus } : r,
+        ),
+      );
+      showError(
+        error?.response?.data?.message || "Failed to update review status",
+      );
+    } finally {
+      setTogglingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(review.id);
+        return next;
+      });
+    }
+  };
+
+  const handleDeleteReview = async (review) => {
+    if (!review.id) return;
+    if (!window.confirm("Delete this review? This cannot be undone.")) return;
+
+    setDeletingIds((prev) => new Set(prev).add(review.id));
+    try {
+      await deleteGuestExperience(review.id);
+      setReviews((prev) => prev.filter((r) => r.id !== review.id));
+      showSuccess("Review deleted successfully");
+    } catch (error) {
+      showError(
+        error?.response?.data?.message || "Failed to delete review",
+      );
+    } finally {
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(review.id);
+        return next;
+      });
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5">
+      {/* Header */}
+      <div className="flex flex-col gap-3 border-b border-gray-100 pb-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="flex items-center gap-2 text-sm font-bold text-gray-900">
+            <Users size={15} className="text-violet-500" />
+            Guest Experience Reviews
+          </p>
+          <p className="mt-1 text-sm text-gray-500">
+            View reviews submitted by guests or pulled from Google.
+          </p>
+        </div>
+
+        {/* Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Source filter */}
+          <div className="flex overflow-hidden rounded-xl border border-gray-200 bg-gray-50 text-xs font-bold">
+            {["USER", "GOOGLE"].map((s) => (
+              <button
+                key={s}
+                onClick={() => handleSourceChange(s)}
+                className={`px-4 py-2 transition-colors ${
+                  source === s
+                    ? "bg-violet-600 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {s === "USER" ? "👤 User" : "🌐 Google"}
+              </button>
+            ))}
+          </div>
+
+          {/* Fetch button */}
+          <button
+            onClick={() => fetchReviews(source)}
+            disabled={reviewsLoading}
+            className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {reviewsLoading ? (
+              <>
+                <Loader2 size={13} className="animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <Download size={13} />
+                Fetch Reviews
+              </>
+            )}
+          </button>
+
+          {/* Count badge */}
+          {hasFetched && !reviewsLoading && (
+            <span className="rounded-full bg-violet-50 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-violet-700">
+              {reviews.length} review{reviews.length !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Body */}
+      {!hasFetched && !reviewsLoading ? (
+        <div className="py-8 text-center text-sm text-gray-400">
+          Select a source and click <span className="font-semibold">Fetch Reviews</span> to load.
+        </div>
+      ) : reviewsLoading ? (
+        <div className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
+          <Loader2 size={16} className="animate-spin" />
+          Fetching {source === "USER" ? "user" : "Google"} reviews...
+        </div>
+      ) : reviews.length === 0 ? (
+        <div className="py-8 text-center text-sm text-gray-400">
+          No {source === "USER" ? "user" : "Google"} reviews found for this property.
+        </div>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {reviews.map((review, index) => {
+            // Normalize fields — handle both USER and GOOGLE shapes
+            const authorName =
+              review.author ||
+              review.author_name ||
+              review.guestName ||
+              review.reviewerName ||
+              "Anonymous";
+            const reviewText =
+              review.description ||
+              review.text ||
+              review.review ||
+              review.comment ||
+              review.reviewText ||
+              "No review text";
+            const rating = review.rating ?? review.overallRating ?? null;
+            const timeLabel =
+              review.createdAt ||
+              review.relative_time_description ||
+              review.reviewDate ||
+              null;
+            const sourceTag = review.source || source;
+            const isToggling = togglingIds.has(review.id);
+            const isDeleting = deletingIds.has(review.id);
+
+            return (
+              <div
+                key={review.id || review.author_url || `review-${index}`}
+                className={`rounded-2xl border p-4 transition-opacity ${
+                  review.isActive
+                    ? "border-gray-100 bg-gray-50"
+                    : "border-red-100 bg-red-50/40"
+                }`}
+              >
+                <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-bold text-gray-900">{authorName}</p>
+                      {review.title && (
+                        <span className="text-xs text-gray-500 italic">"{review.title.trim()}"</span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {timeLabel && (
+                        <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                          {typeof timeLabel === "string" && timeLabel.includes("T")
+                            ? new Date(timeLabel).toLocaleDateString()
+                            : timeLabel}
+                        </p>
+                      )}
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${
+                          sourceTag === "GOOGLE"
+                            ? "bg-blue-50 text-blue-600"
+                            : "bg-violet-50 text-violet-600"
+                        }`}
+                      >
+                        {sourceTag}
+                      </span>
+                      {/* Active status badge — reflects live state */}
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${
+                          review.isActive
+                            ? "bg-green-50 text-green-600"
+                            : "bg-red-50 text-red-500"
+                        }`}
+                      >
+                        {review.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </div>
+                    {(review.authorEmail || review.authorPhone) && (
+                      <p className="text-[11px] text-gray-400">
+                        {review.authorEmail}
+                        {review.authorEmail && review.authorPhone ? " · " : ""}
+                        {review.authorPhone}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Right side: rating + toggle */}
+                  <div className="flex flex-col items-end gap-2">
+                    {rating !== null && (
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+                          <Star size={12} className="fill-amber-400 text-amber-400" />
+                          {rating}
+                        </div>
+                        <StarRating rating={rating} />
+                      </div>
+                    )}
+
+                    {/* Enable / Disable toggle — only for reviews that have an id */}
+                    {review.id && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleToggleActive(review)}
+                          disabled={isToggling || isDeleting}
+                          title={review.isActive ? "Disable review" : "Enable review"}
+                          className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-[11px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                            review.isActive
+                              ? "border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
+                              : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                          }`}
+                        >
+                          {isToggling ? (
+                            <Loader2 size={13} className="animate-spin" />
+                          ) : review.isActive ? (
+                            <ToggleRight size={13} />
+                          ) : (
+                            <ToggleLeft size={13} />
+                          )}
+                          {review.isActive ? "Enabled" : "Disabled"}
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteReview(review)}
+                          disabled={isDeleting || isToggling}
+                          title="Delete review"
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-bold text-red-600 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {isDeleting ? (
+                            <Loader2 size={13} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={13} />
+                          )}
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <p className="mt-3 whitespace-pre-line text-sm leading-6 text-gray-600">
+                  {reviewText}
+                </p>
+
+                {/* Media thumbnails */}
+                {Array.isArray(review.mediaList) && review.mediaList.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {review.mediaList.map((media) =>
+                      media.type === "IMAGE" ? (
+                        <img
+                          key={media.mediaId}
+                          src={media.url}
+                          alt={media.alt || media.fileName || "media"}
+                          className="h-20 w-20 rounded-xl object-cover border border-gray-200"
+                        />
+                      ) : null,
+                    )}
+                  </div>
+                )}
+
+                {review.videoUrl && (
+                  <a
+                    href={review.videoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:underline"
+                  >
+                    🎥 View Video
+                  </a>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main ConfigTab ─────────────────────────────────────────────────────────
 function ConfigTab({ propertyData }) {
   const propertyId = propertyData?.id;
   const [mapping, setMapping] = useState(null);
@@ -318,9 +684,7 @@ function ConfigTab({ propertyData }) {
             <input
               type="text"
               value={form.placeId}
-              onChange={(event) =>
-                setForm({ placeId: event.target.value })
-              }
+              onChange={(event) => setForm({ placeId: event.target.value })}
               placeholder="ChIJ123XYZ"
               className={inputClassName}
             />
@@ -438,6 +802,7 @@ function ConfigTab({ propertyData }) {
         </div>
       </div>
 
+      {/* Google Place Details */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-4">
           <div>
@@ -517,6 +882,9 @@ function ConfigTab({ propertyData }) {
           </div>
         )}
       </div>
+
+      {/* ── Guest Experience Reviews ── */}
+      <GuestReviewsSection propertyId={propertyId} />
     </div>
   );
 }
