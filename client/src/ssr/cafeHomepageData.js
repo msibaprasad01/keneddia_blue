@@ -15,7 +15,7 @@ import {
 import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 import { getCafeSectionById, getCafeSectionsByPropertyType } from "@/Api/CafeApi";
-import { getMenuItemsByTopSold } from "@/Api/RestaurantApi";
+import { getMenuItemsByTopSoldV2 } from "@/Api/RestaurantApi";
 import cafeParisian from "@assets/generated_images/parisian_style_cafe_interior.png";
 import cafeMinimalist from "@assets/generated_images/modern_minimalist_coffee_shop.png";
 import cafeGarden from "@assets/generated_images/garden_terrace_cafe.png";
@@ -298,15 +298,9 @@ const normalizeEvents = (eventsRes, cafeTypeId) => {
     .filter((item) => item.image);
 };
 
-const toCafeTag = (item) => {
-  const name = (item.itemName || "").toLowerCase();
-  const typeName = (item.type?.typeName || "").toLowerCase();
-  const catName = (item.verticalCardResponseDTO?.verticalName || "").toLowerCase();
-  
-  if (name.includes("cold") || name.includes("ice") || name.includes("frappe") || typeName.includes("cold") || catName.includes("cold")) {
-    return "Cold Brews";
-  }
-  return "Hot Brews";
+const toFoodTag = (foodType) => {
+  if (!foodType) return "Veg";
+  return foodType.toUpperCase() === "NON_VEG" ? "Non-Veg" : "Veg";
 };
 
 const normalizeBestSellers = (data, cafeTypeId) =>
@@ -319,7 +313,7 @@ const normalizeBestSellers = (data, cafeTypeId) =>
       title: item.itemName,
       description: item.description || "",
       image: item.image?.url || item.media?.url || "",
-      tags: [toCafeTag(item), "Best Seller"],
+      tags: [toFoodTag(item.foodType), "Best Seller"],
       category: item.type?.typeName || item.verticalCardResponseDTO?.verticalName || "Cafe Signature",
       likes: item.likeCount || 0,
     }));
@@ -567,7 +561,7 @@ export const fetchCafeHomepageData = async () => {
     fetchSafe(() => getGuestExperienceSection({ size: 100 }), null),
     fetchSafe(() => getGuestExperienceSectionHeader(), null),
     fetchSafe(() => getGuestExperineceRatingHeader(), null),
-    fetchSafe(() => getMenuItemsByTopSold(true), { data: [] }),
+    fetchSafe(() => getMenuItemsByTopSoldV2({ topSold: true, propertyTypeId: cafeTypeId }), { data: [] }),
   ]);
 
   const aboutSections = await normalizeAboutSections(aboutRes, cafeTypeId);
