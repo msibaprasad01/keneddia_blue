@@ -52,8 +52,17 @@ const normalizeHeroSlides = (data) =>
         item.backgroundLight?.[0] ||
         item.backgroundDark?.[0] ||
         null;
+
+      const subMedia =
+        item.subAll?.[0] ||
+        item.subLight?.[0] ||
+        item.subDark?.[0] ||
+        null;
+
       if (!backgroundMedia?.url) return null;
+
       const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "";
+
       return {
         id: item.id,
         tag: item.ctaText || null,
@@ -61,6 +70,8 @@ const normalizeHeroSlides = (data) =>
         desc: item.subTitle || null,
         img: backgroundMedia.url,
         isVideo: backgroundMedia.type === "VIDEO",
+        thumbnail: subMedia?.url || backgroundMedia.url,
+        thumbnailIsVideo: subMedia?.type === "VIDEO",
         bgTitle: primaryWord.toUpperCase(),
         ctaText: item.ctaText || null,
         ctaLink: item.ctaLink || null,
