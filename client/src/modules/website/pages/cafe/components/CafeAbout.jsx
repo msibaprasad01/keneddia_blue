@@ -247,7 +247,7 @@ export default function CafeAbout({ initialSections }) {
                                 <button
                                   key={item.id}
                                   onClick={() => setCurrentRecognitionIndex(index)}
-                                  className="group flex flex-col gap-0.5 text-left"
+                                  className="group flex cursor-pointer flex-col gap-0.5 text-left"
                                 >
                                   <AnimatePresence mode="wait">
                                     {index === currentRecognitionIndex ? (
@@ -308,7 +308,7 @@ export default function CafeAbout({ initialSections }) {
                     <button
                       key={item.id}
                       onClick={() => setCurrentIndex(idx)}
-                      className={`h-1 rounded-full transition-all duration-300 ${
+                      className={`h-1 cursor-pointer rounded-full transition-all duration-300 ${
                         idx === currentIndex ? "w-6 bg-primary" : "w-3 bg-zinc-200 hover:bg-primary/50 dark:bg-white/10"
                       }`}
                     />

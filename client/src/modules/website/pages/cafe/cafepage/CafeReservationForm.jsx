@@ -256,7 +256,7 @@ export default function CafeReservationForm({ propertyId }) {
                       <Button
                         type="button"
                         onClick={handleNext}
-                        className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-primary dark:hover:bg-primary hover:text-white transition-all rounded-xl uppercase text-xs font-black"
+                        className="w-full h-14 cursor-pointer bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-primary dark:hover:bg-primary hover:text-white transition-all rounded-xl uppercase text-xs font-black"
                       >
                         Review & Confirm
                         <ChevronRight className="ml-2 w-4 h-4" />
@@ -320,14 +320,14 @@ export default function CafeReservationForm({ propertyId }) {
                           type="button"
                           variant="outline"
                           onClick={() => setCurrentStep(1)}
-                          className="h-14 px-8 border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white rounded-xl"
+                          className="h-14 px-8 cursor-pointer border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white rounded-xl"
                         >
                           Modify
                         </Button>
                         <Button
                           type="submit"
                           disabled={isSubmitting}
-                          className="flex-1 h-14 bg-primary text-white hover:bg-primary/90 transition-all rounded-xl uppercase text-xs font-black shadow-lg shadow-primary/20"
+                          className="flex-1 h-14 cursor-pointer bg-primary text-white hover:bg-primary/90 transition-all rounded-xl uppercase text-xs font-black shadow-lg shadow-primary/20"
                         >
                           {isSubmitting ? "Sending..." : "Confirm My Table"}
                         </Button>
@@ -391,7 +391,7 @@ export default function CafeReservationForm({ propertyId }) {
                       <button
                         type="button"
                         onClick={handleReset}
-                        className="text-xs font-bold text-primary underline underline-offset-4 hover:opacity-70 transition-opacity"
+                        className="text-xs cursor-pointer font-bold text-primary underline underline-offset-4 hover:opacity-70 transition-opacity"
                       >
                         Make another reservation
                       </button>

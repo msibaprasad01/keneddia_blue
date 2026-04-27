@@ -720,10 +720,10 @@ function MenuItemsPanel({
                 <td className="px-4 py-3 whitespace-nowrap">
                   <span
                     className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${item.foodType === "VEG"
-                        ? "bg-green-100 text-green-700"
-                        : item.foodType === "NON_VEG"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
+                      ? "bg-green-100 text-green-700"
+                      : item.foodType === "NON_VEG"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
                       }`}
                   >
                     {item.foodType || "—"}
@@ -742,8 +742,8 @@ function MenuItemsPanel({
                     onClick={() => handleToggleStatus(item)}
                     disabled={togglingId === item.id}
                     className={`text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full transition-all ${item.status
-                        ? "bg-green-100 text-green-600 hover:bg-green-200"
-                        : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                      ? "bg-green-100 text-green-600 hover:bg-green-200"
+                      : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                       } disabled:opacity-50`}
                   >
                     {togglingId === item.id
@@ -1116,8 +1116,8 @@ function MenuThumbnailsPanel({ propertyId, propertyData }) {
                   </p>
                   <span
                     className={`shrink-0 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full ${thumb.active
-                        ? "bg-green-100 text-green-600"
-                        : "bg-gray-100 text-gray-400"
+                      ? "bg-green-100 text-green-600"
+                      : "bg-gray-100 text-gray-400"
                       }`}
                   >
                     {thumb.active ? "Active" : "Off"}
@@ -1225,8 +1225,8 @@ const MenuTab = ({
             key={t.key}
             onClick={() => setActivePanel(t.key)}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activePanel === t.key
-                ? "bg-white text-gray-800 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+              ? "bg-white text-gray-800 shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
               }`}
           >
             {t.label}

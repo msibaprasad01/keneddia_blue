@@ -255,7 +255,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               </div>
               <a
                 href={mapsLink} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs font-black text-red-700 dark:text-red-400 hover:underline"
+                className="flex cursor-pointer items-center gap-1 text-xs font-black text-red-700 dark:text-red-400 hover:underline"
               >
                 <Navigation className="w-3 h-3" /> View Map
               </a>
@@ -294,7 +294,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               <button
                 key={i}
                 onClick={() => handleThumbClick(i)}
-                className="relative rounded-xl overflow-hidden focus:outline-none"
+                className="relative cursor-pointer rounded-xl overflow-hidden focus:outline-none"
                 style={{
                   width: "clamp(56px,8vw,90px)",
                   height: "clamp(56px,8vw,90px)",
@@ -318,7 +318,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
             {totalImages > 6 && (
               <button
                 onClick={() => setIsGalleryOpen(true)}
-                className="rounded-xl flex flex-col items-center justify-center font-black transition-all active:scale-95 shrink-0 text-[#3d1f00] dark:text-[#e8d0b0]"
+                className="cursor-pointer rounded-xl flex flex-col items-center justify-center font-black transition-all active:scale-95 shrink-0 text-[#3d1f00] dark:text-[#e8d0b0]"
                 style={{
                   width: "clamp(56px,8vw,90px)",
                   height: "clamp(56px,8vw,90px)",
@@ -471,8 +471,8 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
             <button
               onClick={() => setIsBookmarked((b) => !b)}
               className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 cursor-pointer ${isBookmarked
-                  ? "bg-red-100/60 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-300/50 dark:border-red-700/30"
-                  : "bg-[#e8d8c4]/60 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0] border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"
+                ? "bg-red-100/60 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-300/50 dark:border-red-700/30"
+                : "bg-[#e8d8c4]/60 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0] border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"
                 }`}
             >
               <Heart className={`w-3.5 h-3.5 ${isBookmarked ? "fill-red-600 dark:fill-red-400" : ""}`} />
@@ -505,14 +505,14 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
             </p>
           </div>
           <div className="flex gap-2 justify-end">
-            <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]">
+            <button className="flex cursor-pointer items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]">
               <Share2 className="w-3 h-3" /> Share
             </button>
             <button
               onClick={() => setIsBookmarked((b) => !b)}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black ${isBookmarked
-                  ? "bg-red-100 dark:bg-red-900/25 text-red-700 dark:text-red-400"
-                  : "bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]"
+              className={`flex cursor-pointer items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black ${isBookmarked
+                ? "bg-red-100 dark:bg-red-900/25 text-red-700 dark:text-red-400"
+                : "bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]"
                 }`}
             >
               <Heart

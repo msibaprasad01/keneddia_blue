@@ -173,7 +173,7 @@ export default function AboutCafePage({ propertyId }) {
                   </h4>
                   <a
                     href={`tel:+${connectData.phoneNumber.replace(/\D/g, "")}`}
-                    className="block font-serif text-base italic text-zinc-900 transition-colors hover:text-primary dark:text-white"
+                    className="block cursor-pointer font-serif text-base italic text-zinc-900 transition-colors hover:text-primary dark:text-white"
                   >
                     {connectData.title || connectData.phoneNumber}
                   </a>
@@ -190,7 +190,7 @@ export default function AboutCafePage({ propertyId }) {
                     <button
                       key={idx}
                       onClick={() => setCurrentIndex(idx)}
-                      className={`h-1 rounded-full transition-all duration-300 ${
+                      className={`h-1 cursor-pointer rounded-full transition-all duration-300 ${
                         idx === currentIndex
                           ? "w-6 bg-primary"
                           : "w-3 bg-zinc-200 hover:bg-primary/50 dark:bg-white/10"

@@ -68,9 +68,8 @@ function DesktopStoryCard({ card, onHoverChange }) {
               {card.title}
             </h3>
             <p
-              className={`text-sm leading-relaxed text-zinc-600 dark:text-white/50 ${
-                isHovered ? "" : "line-clamp-3"
-              }`}
+              className={`text-sm leading-relaxed text-zinc-600 dark:text-white/50 ${isHovered ? "" : "line-clamp-3"
+                }`}
             >
               {card.description}
             </p>
@@ -335,7 +334,7 @@ export default function CafeSubCategories({ initialData }) {
             <Coffee className="h-3 w-3" /> {sectionInfo.highlight}
           </div>
           <h2 className="mb-6 text-4xl font-serif text-primary">
-             {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <span className="italic text-primary">{sectionInfo.heading.split(" ").slice(-2).join(" ")}</span>
+            {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <span className="italic text-primary">{sectionInfo.heading.split(" ").slice(-2).join(" ")}</span>
           </h2>
           <p className="text-sm text-zinc-500">
             {sectionInfo.description}

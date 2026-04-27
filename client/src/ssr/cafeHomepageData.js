@@ -92,22 +92,18 @@ const normalizeProperties = (response) => {
       const amenities = Array.isArray(listing?.amenities)
         ? listing.amenities.map(getAmenityName).filter(Boolean)
         : [];
-      const reservationAvailable = Boolean(
-        parent?.dineIn || parent?.takeaway || parent?.bookingEngineUrl,
-      );
+      const reservationAvailable = Boolean(parent?.bookingEngineUrl);
       const highlightedAmenities = [];
 
       if (parent?.dineIn) highlightedAmenities.push("Dine In");
       if (parent?.takeaway) highlightedAmenities.push("Takeaway");
-      highlightedAmenities.push(
-        reservationAvailable ? "Reservation Available" : "Walk-in Only",
-      );
+
       highlightedAmenities.push(...amenities.slice(0, 3));
 
       return {
         id: listing?.id ? `${parent?.id}-${listing.id}` : `property-${parent?.id}`,
         propertyId: parent?.id,
-        name: parent?.propertyName || "Unnamed Cafe",
+        name: parent?.propertyName || "",
         dineIn: Boolean(parent?.dineIn),
         takeaway: Boolean(parent?.takeaway),
         city: parent?.locationName || listing?.city || "Unknown",
@@ -125,19 +121,16 @@ const normalizeProperties = (response) => {
         },
         rating: listing?.rating || 0,
         description:
-          listing?.mainHeading ||
-          listing?.tagline ||
-          listing?.subTitle ||
-          "Cafe experience with signature beverages and relaxed hospitality.",
+          listing?.mainHeading || listing?.tagline || listing?.subTitle || "",
         cuisines: amenities.slice(0, 6),
         highlightedAmenities: highlightedAmenities.filter(Boolean),
         nearbyLocation:
           parent?.nearbyLocations?.[0]?.nearbyLocationName ||
           listing?.landmark ||
           parent?.locationName ||
-          "Prime location",
+          "",
         area: parent?.area || null,
-        serviceHours: "Open Daily",
+        serviceHours: parent?.serviceHours || "",
         googleMapLink: parent?.nearbyLocations?.[0]?.googleMapLink || parent?.addressUrl || "",
         isActive: parent?.isActive && (listing ? listing?.isActive : true),
       };
@@ -412,105 +405,12 @@ const normalizeGroupBookings = (bookingsRes, cafeTypeId) => {
     .filter((item) => item.image);
 };
 
-const fallbackCafeProperties = [
-  {
-    id: "fallback-cafe-ghaziabad",
-    propertyId: 9001,
-    name: "Kennedia Blu Cafe Ghaziabad",
-    dineIn: true,
-    takeaway: true,
-    city: "Ghaziabad",
-    location: "Raj Nagar District Centre, Ghaziabad",
-    type: "Cafe",
-    serviceTag: "Dine In",
-    reservationAvailable: true,
-    image: { src: cafeParisian, alt: "Kennedia Blu Cafe Ghaziabad" },
-    rating: 4.8,
-    description:
-      "A refined neighbourhood cafe for slow mornings, crafted coffee, fresh bakes, and relaxed evening conversations.",
-    cuisines: ["Specialty Coffee", "Artisan Bakery", "All Day Breakfast", "Desserts"],
-    highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Wi-Fi"],
-    nearbyLocation: "RDC Ghaziabad",
-    area: "Raj Nagar",
-    serviceHours: "Open Daily",
-    googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Ghaziabad",
-    isActive: true,
-  },
-  {
-    id: "fallback-cafe-noida",
-    propertyId: 9002,
-    name: "Kennedia Blu Cafe Noida",
-    dineIn: true,
-    takeaway: true,
-    city: "Noida",
-    location: "Sector 18, Noida",
-    type: "Cafe",
-    serviceTag: "Dine In",
-    reservationAvailable: true,
-    image: { src: cafeMinimalist, alt: "Kennedia Blu Cafe Noida" },
-    rating: 4.7,
-    description:
-      "A modern cafe space with clean interiors, single-origin brews, working lunches, and signature comfort plates.",
-    cuisines: ["Single-Origin Coffee", "Continental", "Sandwiches", "Healthy Bowls"],
-    highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Work Friendly"],
-    nearbyLocation: "Sector 18 Metro",
-    area: "Sector 18",
-    serviceHours: "Open Daily",
-    googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Noida",
-    isActive: true,
-  },
-  {
-    id: "fallback-cafe-delhi",
-    propertyId: 9003,
-    name: "Kennedia Blu Cafe Delhi",
-    dineIn: true,
-    takeaway: true,
-    city: "Delhi",
-    location: "Connaught Place, New Delhi",
-    type: "Cafe",
-    serviceTag: "Dine In",
-    reservationAvailable: true,
-    image: { src: cafeLibrary, alt: "Kennedia Blu Cafe Delhi" },
-    rating: 4.9,
-    description:
-      "A calm city cafe with lounge seating, curated teas, handcrafted desserts, and a quiet premium setting.",
-    cuisines: ["Coffee", "High Tea", "Desserts", "Light Meals"],
-    highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Lounge Seating"],
-    nearbyLocation: "Connaught Place",
-    area: "CP",
-    serviceHours: "Open Daily",
-    googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Delhi",
-    isActive: true,
-  },
-  {
-    id: "fallback-cafe-bangalore",
-    propertyId: 9004,
-    name: "Kennedia Blu Cafe Bangalore",
-    dineIn: true,
-    takeaway: true,
-    city: "Bangalore",
-    location: "Indiranagar, Bangalore",
-    type: "Cafe",
-    serviceTag: "Dine In",
-    reservationAvailable: true,
-    image: { src: cafeGarden, alt: "Kennedia Blu Cafe Bangalore" },
-    rating: 4.8,
-    description:
-      "A garden-inspired cafe for premium coffee, brunch plates, relaxed meetings, and evening desserts.",
-    cuisines: ["Coffee", "Brunch", "Bakery", "Small Plates"],
-    highlightedAmenities: ["Dine In", "Takeaway", "Reservation Available", "Outdoor Seating"],
-    nearbyLocation: "Indiranagar",
-    area: "Indiranagar",
-    serviceHours: "Open Daily",
-    googleMapLink: "https://www.google.com/maps/search/Kennedia+Blu+Cafe+Bangalore",
-    isActive: true,
-  },
-];
+
 
 export const defaultCafeHomepageData = {
   cafeTypeId: null,
   heroSlides: [],
-  cafeProperties: fallbackCafeProperties,
+  cafeProperties: [],
   aboutSections: null,
   cafeNews: [],
   cafeEvents: [],
@@ -569,7 +469,7 @@ export const fetchCafeHomepageData = async () => {
   return {
     cafeTypeId,
     heroSlides: normalizeHeroSlides(heroRes?.data || heroRes || []),
-    cafeProperties: propertiesRes ? normalizeProperties(propertiesRes) : fallbackCafeProperties,
+    cafeProperties: propertiesRes ? normalizeProperties(propertiesRes) : [],
     aboutSections,
     cafeNews: newsRes ? normalizeNews(newsRes, cafeTypeId) : [],
     cafeEvents: eventsRes ? normalizeEvents(eventsRes, cafeTypeId) : [],

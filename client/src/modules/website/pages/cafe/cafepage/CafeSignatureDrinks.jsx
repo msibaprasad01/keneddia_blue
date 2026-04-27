@@ -295,8 +295,8 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
               key={idx}
               onClick={() => handleTabClick(idx)}
               className={`relative shrink-0 px-6 py-3 rounded-full border text-xs font-bold uppercase tracking-widest transition-all snap-center cursor-pointer ${activeTab === idx
-                  ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
-                  : "bg-transparent border-zinc-100 dark:border-white/5 text-zinc-500 hover:border-primary/50 dark:text-zinc-400"
+                ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
+                : "bg-transparent border-zinc-100 dark:border-white/5 text-zinc-500 hover:border-primary/50 dark:text-zinc-400"
                 }`}
             >
               {section.category}

@@ -512,6 +512,20 @@ export default function CafeTestimonials({
       return;
     }
 
+    const phoneTrimmed = phone.trim();
+    if (!/^[0-9]{10}$/.test(phoneTrimmed)) {
+      toast.error("Please enter a valid 10-digit phone number.");
+      setShowPopup(true);
+      return;
+    }
+
+    if (!feedbackText.trim() && mediaPreviews.length === 0 && !ytLink.trim()) {
+      toast.error("Please provide a comment, image, or video link.");
+      return;
+    }
+
+
+
     setIsSubmitting(true);
     try {
       const fd = new FormData();
@@ -523,10 +537,10 @@ export default function CafeTestimonials({
       const title = snippet ? `${stars} ${snippet}` : stars;
 
       fd.append("title", title);
-      fd.append("description", feedbackText);
-      fd.append("author", authorName);
-      fd.append("authorEmail", email);
-      fd.append("authorPhone", phone);
+      fd.append("description", feedbackText.trim());
+      fd.append("author", authorName.trim());
+      fd.append("authorEmail", email.trim());
+      fd.append("authorPhone", phone.trim());
       fd.append("rating", String(rating));
       if (initialCafeTypeId != null) {
         fd.append("propertyTypeId", String(initialCafeTypeId));
@@ -736,7 +750,7 @@ export default function CafeTestimonials({
                   )}
 
                   <button
-                    disabled={isSubmitting || (!feedbackText && mediaPreviews.length === 0 && !ytLink.trim())}
+                    disabled={isSubmitting || (!feedbackText.trim() && mediaPreviews.length === 0 && !ytLink.trim())}
                     onClick={handleSubmit}
                     className="group/btn relative w-full overflow-hidden rounded-2xl bg-primary py-4 text-sm font-bold text-white transition-all hover:bg-primary/90 active:scale-[0.98] disabled:grayscale disabled:opacity-50 cursor-pointer"
                   >
@@ -785,6 +799,8 @@ export default function CafeTestimonials({
                       {label}
                     </label>
                     <input
+                      type={label === "Email Address" ? "email" : label === "Phone Number" ? "tel" : "text"}
+                      maxLength={label === "Phone Number" ? 10 : undefined}
                       value={val}
                       onChange={(e) => set(e.target.value)}
                       className="w-full rounded-xl border border-primary/20 bg-[#FAF9F6] p-4 outline-none transition-colors focus:border-primary dark:border-white/10 dark:bg-white/5"
@@ -796,6 +812,23 @@ export default function CafeTestimonials({
                   onClick={() => {
                     if (!authorName.trim() || !email.trim() || !phone.trim()) {
                       toast.error("Please fill in all details.");
+                      return;
+                    }
+                    if (!/^\d{10}$/.test(phone.trim())) {
+                      toast.error("Phone number must be exactly 10 digits.");
+                      return;
+                    }
+                    if (!authorName.trim() || !email.trim() || !phone.trim()) {
+                      toast.error("Please fill in all details.");
+                      return;
+                    }
+                    if (!/^\d{10}$/.test(phone.trim())) {
+                      toast.error("Phone number must be exactly 10 digits.");
+                      return;
+                    }
+                    if (!feedbackText.trim() && mediaPreviews.length === 0 && !ytLink.trim()) {
+                      toast.error("Please provide at least a comment or media.");
+                      setShowPopup(false);
                       return;
                     }
                     setIsVerified(true);

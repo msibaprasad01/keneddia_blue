@@ -49,8 +49,8 @@ const normalizeHeaderRecords = (payload) => {
 // ── Shared Card ───────────────────────────────────────────────────────────────
 
 function ShowcaseCard({ item }) {
-  const linkPath = item.type === "Offer" || item.type === "Event" 
-    ? (item.detailPath || `/cafe/${item.slug}`) 
+  const linkPath = item.type === "Offer" || item.type === "Event"
+    ? (item.detailPath || `/cafe/${item.slug}`)
     : `/cafe/${item.slug}`;
 
   return (
@@ -86,7 +86,7 @@ function ShowcaseCard({ item }) {
           {item.description}
         </p>
         <Link to={linkPath} className="mt-4">
-          <Button className="h-auto w-full rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
+          <Button className="h-auto w-full cursor-pointer rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
             Explore <ExternalLink className="ml-2 h-3 w-3" />
           </Button>
         </Link>
@@ -171,8 +171,8 @@ function GroupBookingColumn({ items = [], openGroupBookingForm }) {
         const propertyTypes = typesResponse?.data || typesResponse || [];
         const cafeType = Array.isArray(propertyTypes)
           ? propertyTypes.find(
-              (type) => type?.isActive && type?.typeName?.toLowerCase() === "cafe",
-            )
+            (type) => type?.isActive && type?.typeName?.toLowerCase() === "cafe",
+          )
           : null;
 
         if (!cafeType?.id) return;
@@ -531,7 +531,7 @@ export default function CafepageEvents({
                 onChange={setDateRange}
               />
               <Button
-                className="w-full"
+                className="w-full cursor-pointer"
                 onClick={() => setStep(2)}
                 disabled={!Array.isArray(dateRange) || !dateRange[0]}
               >
@@ -664,7 +664,7 @@ export default function CafepageEvents({
               </div>
 
               <Button
-                className="w-full"
+                className="w-full cursor-pointer"
                 onClick={handleFinalSubmit}
                 disabled={isSubmitting}
               >
