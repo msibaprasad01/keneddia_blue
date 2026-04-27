@@ -32,8 +32,8 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
   const [menuHeader, setMenuHeader] = useState(null);
 
   const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
+    guestName: "",
+    contactNumber: "",
     date: new Date().toISOString().split("T")[0],
     time: "19:00",
     totalGuest: "2",
@@ -136,26 +136,29 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
     setFormData((prev) => ({ ...prev, [key]: value }));
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.phone) {
+    if (!formData.guestName || !formData.contactNumber) {
       toast.error("Please fill in your name and phone number.");
       return;
     }
     setIsSubmitting(true);
     try {
+      const category = groupedMenu[activeTab]?.category || "General";
+      const itemType = selectedItem?.name || "Table Reservation";
+
       await createJoiningUs({
-        name: formData.name,
-        mobileNumber: formData.phone,
-        bookingDate: formData.date,
-        bookingTime: formData.time,
-        numberOfGuest: formData.totalGuest,
+        guestName: formData.guestName.trim(),
+        contactNumber: formData.contactNumber.trim(),
+        date: formData.date,
+        time: formData.time,
+        totalGuest: Number(formData.totalGuest),
         propertyId: propertyId,
-        bookingType: selectedItem?.name || "Table Reservation",
+        description: `Request: ${itemType} | Category: ${category}`,
       });
       toast.success("Reservation request sent!");
       setShowModal(false);
       setFormData({
-        name: "",
-        phone: "",
+        guestName: "",
+        contactNumber: "",
         date: new Date().toISOString().split("T")[0],
         time: "19:00",
         totalGuest: "2",
@@ -407,8 +410,8 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
                       <Input
-                        value={formData.name}
-                        onChange={(e) => setField("name", e.target.value)}
+                        value={formData.guestName}
+                        onChange={(e) => setField("guestName", e.target.value)}
                         placeholder="Full Name"
                         className="pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border-none"
                       />
@@ -424,9 +427,9 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
                       <Input
                         type="tel"
                         maxLength={10}
-                        value={formData.phone}
+                        value={formData.contactNumber}
                         onChange={(e) =>
-                          setField("phone", e.target.value.replace(/\D/g, ""))
+                          setField("contactNumber", e.target.value.replace(/\D/g, ""))
                         }
                         placeholder="10-digit number"
                         className="pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border-none"
