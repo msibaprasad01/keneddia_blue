@@ -39,7 +39,7 @@ function CustomSelect({ options, value, onChange, placeholder, disabled }) {
         type="button"
         disabled={disabled}
         onClick={() => setOpen((c) => !c)}
-        className="group flex h-14 w-full items-center justify-between rounded-md border border-border/60 bg-background/50 px-4 text-left text-sm font-normal transition-colors hover:border-primary/50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+        className="group flex h-14 w-full cursor-pointer items-center justify-between rounded-md border border-border/60 bg-background/50 px-4 text-left text-sm font-normal transition-colors hover:border-primary/50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className={selected ? "text-foreground" : "text-muted-foreground"}>
           {selected ? selected.label : placeholder}
@@ -66,7 +66,7 @@ function CustomSelect({ options, value, onChange, placeholder, disabled }) {
                     onChange(option.value);
                     setOpen(false);
                   }}
-                  className="flex w-full items-center justify-between px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-muted"
+                  className="flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-muted"
                 >
                   {option.label}
                   {value === option.value && <Check className="h-3.5 w-3.5 text-primary" />}
@@ -225,7 +225,7 @@ export default function CafeQuickBooking() {
               <Button
                 onClick={handleSearch}
                 disabled={!canSearch || loading}
-                className="h-14 w-full gap-2 bg-primary text-base font-bold uppercase tracking-wide text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl disabled:opacity-70"
+                className="h-14 w-full cursor-pointer gap-2 bg-primary text-base font-bold uppercase tracking-wide text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl disabled:opacity-70"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -251,7 +251,7 @@ export default function CafeQuickBooking() {
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="rounded-full p-0.5 transition-colors hover:bg-primary/20"
+                    className="cursor-pointer rounded-full p-0.5 transition-colors hover:bg-primary/20"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -264,7 +264,7 @@ export default function CafeQuickBooking() {
                   <button
                     type="button"
                     onClick={() => setLocation("")}
-                    className="rounded-full p-0.5 transition-colors hover:bg-primary/20"
+                    className="cursor-pointer rounded-full p-0.5 transition-colors hover:bg-primary/20"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -274,7 +274,7 @@ export default function CafeQuickBooking() {
                 <Button
                   variant="ghost"
                   onClick={() => setIsOpen(false)}
-                  className="h-auto rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  className="h-auto cursor-pointer rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
                 >
                   <X className="mr-1 h-3 w-3" />
                   Hide Results
@@ -364,7 +364,7 @@ export default function CafeQuickBooking() {
                             </div>
                             <Button
                               size="sm"
-                              className="w-full px-6 md:w-auto"
+                              className="w-full cursor-pointer px-6 md:w-auto"
                               onClick={() => setSelectedProperty(property)}
                             >
                               Reserve

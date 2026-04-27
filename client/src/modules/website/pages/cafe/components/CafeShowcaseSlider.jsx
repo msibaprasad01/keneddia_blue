@@ -79,7 +79,7 @@ function ShowcaseCard({ item }) {
         </p>
 
         <Link to={item.detailPath || `/cafe/${item.slug}`} className="mt-4">
-          <Button className="h-auto w-full rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
+          <Button className="h-auto w-full cursor-pointer rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
             Explore <ExternalLink className="ml-2 h-3 w-3" />
           </Button>
         </Link>
@@ -104,13 +104,13 @@ function CarouselColumn({ label, title, icon: Icon, items, accentColor }) {
         <div className="flex gap-2">
           <button
             onClick={() => swiper?.slidePrev()}
-            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted"
+            className="rounded-full border border-border bg-background p-2 cursor-pointer shadow-sm transition-colors hover:bg-muted"
           >
             <ChevronLeft size={16} />
           </button>
           <button
             onClick={() => swiper?.slideNext()}
-            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted"
+            className="rounded-full border border-border bg-background p-2 cursor-pointer shadow-sm transition-colors hover:bg-muted"
           >
             <ChevronRight size={16} />
           </button>
@@ -543,7 +543,7 @@ export default function CafeShowcaseSlider({
                 onChange={setDateRange}
               />
               <Button
-                className="w-full"
+                className="w-full cursor-pointer"
                 onClick={() => setStep(2)}
                 disabled={!Array.isArray(dateRange) || !dateRange[0]}
               >
@@ -676,7 +676,7 @@ export default function CafeShowcaseSlider({
               </div>
 
               <Button
-                className="w-full"
+                className="w-full cursor-pointer"
                 onClick={handleFinalSubmit}
                 disabled={isSubmitting}
               >

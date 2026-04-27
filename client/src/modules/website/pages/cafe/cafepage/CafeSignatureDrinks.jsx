@@ -218,7 +218,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
               <button
                 onClick={handlePrev}
                 disabled={activeTab === 0}
-                className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
+                className="p-2 cursor-pointer rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
               >
                 <ChevronLeft className="w-5 h-5 dark:text-white" />
               </button>
@@ -228,7 +228,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
               <button
                 onClick={handleNext}
                 disabled={activeTab === groupedMenu.length - 1}
-                className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
+                className="p-2 cursor-pointer rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
               >
                 <ChevronRight className="w-5 h-5 dark:text-white" />
               </button>
@@ -236,7 +236,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
 
             <button
               onClick={() => openReserve()}
-              className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-all active:scale-95 shadow-lg shadow-zinc-200 dark:shadow-none"
+              className="hidden md:flex cursor-pointer items-center gap-2 px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-all active:scale-95 shadow-lg shadow-zinc-200 dark:shadow-none"
             >
               <CalendarCheck size={14} /> Reserve Now
             </button>
@@ -252,7 +252,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
             <motion.button
               key={idx}
               onClick={() => handleTabClick(idx)}
-              className={`relative shrink-0 px-6 py-3 rounded-full border text-xs font-bold uppercase tracking-widest transition-all snap-center ${
+              className={`relative shrink-0 px-6 py-3 cursor-pointer rounded-full border text-xs font-bold uppercase tracking-widest transition-all snap-center ${
                 activeTab === idx
                   ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
                   : "bg-transparent border-zinc-100 dark:border-white/5 text-zinc-500 hover:border-primary/50 dark:text-zinc-400"
@@ -392,7 +392,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400"
+                  className="p-2 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400"
                 >
                   <X size={20} />
                 </button>
@@ -485,7 +485,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
                 <Button
                   disabled={isSubmitting}
                   onClick={handleSubmit}
-                  className="w-full h-11 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
+                  className="w-full h-11 cursor-pointer bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
                 >
                   {isSubmitting ? (
                     <Loader2 className="animate-spin" size={18} />

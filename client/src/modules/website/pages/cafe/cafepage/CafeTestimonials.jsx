@@ -512,6 +512,20 @@ export default function CafeTestimonials({
       return;
     }
 
+    const phoneTrimmed = phone.trim();
+    if (!/^[0-9]{10}$/.test(phoneTrimmed)) {
+      toast.error("Please enter a valid 10-digit phone number.");
+      setShowPopup(true);
+      return;
+    }
+
+    if (!feedbackText.trim() && mediaPreviews.length === 0 && !ytLink.trim()) {
+      toast.error("Please provide a comment, image, or video link.");
+      return;
+    }
+
+
+
     setIsSubmitting(true);
     try {
       const fd = new FormData();
@@ -523,10 +537,10 @@ export default function CafeTestimonials({
       const title = snippet ? `${stars} ${snippet}` : stars;
 
       fd.append("title", title);
-      fd.append("description", feedbackText);
-      fd.append("author", authorName);
-      fd.append("authorEmail", email);
-      fd.append("authorPhone", phone);
+      fd.append("description", feedbackText.trim());
+      fd.append("author", authorName.trim());
+      fd.append("authorEmail", email.trim());
+      fd.append("authorPhone", phone.trim());
       fd.append("rating", String(rating));
       if (initialCafeTypeId != null) {
         fd.append("propertyTypeId", String(initialCafeTypeId));
@@ -704,7 +718,7 @@ export default function CafeTestimonials({
                     <div className="flex gap-2">
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold transition-all hover:bg-white/10"
+                        className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold transition-all hover:bg-white/10"
                       >
                         {mediaUploading ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
                         Add Media
@@ -726,7 +740,7 @@ export default function CafeTestimonials({
                           )}
                           <button
                             onClick={() => setMediaPreviews((prev) => prev.filter((_, idx) => idx !== i))}
-                            className="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white"
+                            className="absolute right-1 top-1 cursor-pointer rounded-full bg-red-500 p-1 text-white"
                           >
                             <X size={8} />
                           </button>
@@ -736,9 +750,9 @@ export default function CafeTestimonials({
                   )}
 
                   <button
-                    disabled={isSubmitting || (!feedbackText && mediaPreviews.length === 0 && !ytLink.trim())}
+                    disabled={isSubmitting || (!feedbackText.trim() && mediaPreviews.length === 0 && !ytLink.trim())}
                     onClick={handleSubmit}
-                    className="group/btn relative w-full overflow-hidden rounded-2xl bg-[#D4A373] py-4 text-sm font-bold text-[#3E2723] transition-all hover:bg-[#C29262] active:scale-[0.98] disabled:grayscale disabled:opacity-50"
+                    className="group/btn relative w-full cursor-pointer overflow-hidden rounded-2xl bg-[#D4A373] py-4 text-sm font-bold text-[#3E2723] transition-all hover:bg-[#C29262] active:scale-[0.98] disabled:grayscale disabled:opacity-50"
                   >
                     <span className="flex items-center justify-center gap-2">
                       {isSubmitting ? (
@@ -769,7 +783,7 @@ export default function CafeTestimonials({
             >
               <div className="mb-8 flex items-center justify-between">
                 <h3 className="text-2xl font-serif">Guest Details</h3>
-                <button onClick={() => setShowPopup(false)} className="transition-transform hover:rotate-90">
+                <button onClick={() => setShowPopup(false)} className="cursor-pointer transition-transform hover:rotate-90">
                   <X size={24} />
                 </button>
               </div>
@@ -785,8 +799,17 @@ export default function CafeTestimonials({
                       {label}
                     </label>
                     <input
+                      type={label === "Email Address" ? "email" : label === "Phone Number" ? "tel" : "text"}
+                      maxLength={label === "Phone Number" ? 10 : undefined}
                       value={val}
-                      onChange={(e) => set(e.target.value)}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (label === "Phone Number") {
+                          if (/^\d*$/.test(v)) set(v);
+                        } else {
+                          set(v);
+                        }
+                      }}
                       className="w-full rounded-xl border border-[#E0D7D0] bg-[#FAF9F6] p-4 outline-none transition-colors focus:border-[#D4A373] dark:border-white/10 dark:bg-white/5"
                     />
                   </div>
@@ -798,11 +821,28 @@ export default function CafeTestimonials({
                       toast.error("Please fill in all details.");
                       return;
                     }
+                    if (!/^\d{10}$/.test(phone.trim())) {
+                      toast.error("Phone number must be exactly 10 digits.");
+                      return;
+                    }
+                    if (!authorName.trim() || !email.trim() || !phone.trim()) {
+                      toast.error("Please fill in all details.");
+                      return;
+                    }
+                    if (!/^\d{10}$/.test(phone.trim())) {
+                      toast.error("Phone number must be exactly 10 digits.");
+                      return;
+                    }
+                    if (!feedbackText.trim() && mediaPreviews.length === 0 && !ytLink.trim()) {
+                      toast.error("Please provide at least a comment or media.");
+                      setShowPopup(false);
+                      return;
+                    }
                     setIsVerified(true);
                     setShowPopup(false);
                     handleSubmit();
                   }}
-                  className="mt-4 w-full rounded-2xl bg-[#3E2723] py-4 font-bold text-white shadow-lg transition-all hover:bg-[#5D4037] dark:bg-[#8D5C42] dark:hover:bg-[#A06F54]"
+                  className="mt-4 w-full cursor-pointer rounded-2xl bg-[#3E2723] py-4 font-bold text-white shadow-lg transition-all hover:bg-[#5D4037] dark:bg-[#8D5C42] dark:hover:bg-[#A06F54]"
                 >
                   Verify & Post Review
                 </button>

@@ -119,6 +119,7 @@ export default function GroupBookings() {
   const [enquiryPage, setEnquiryPage] = useState(1);
   const [statusUpdatingId, setStatusUpdatingId] = useState(null);
   const [homepageUpdatingId, setHomepageUpdatingId] = useState(null);
+  const [imageError, setImageError] = useState("");
 
   // Extra Info tab state
   const [selectedExtraTypeId, setSelectedExtraTypeId] = useState("");
@@ -345,6 +346,7 @@ export default function GroupBookings() {
     setForm(EMPTY_FORM);
     setFile(null);
     setPreview(null);
+    setImageError("");
     setShowModal(true);
   };
 
@@ -362,6 +364,7 @@ export default function GroupBookings() {
     });
     setFile(null);
     setPreview(item.media?.[0]?.url || null);
+    setImageError("");
     setShowModal(true);
   };
 
@@ -389,6 +392,11 @@ export default function GroupBookings() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!file && !editItem) {
+      setImageError("Image is required");
+      return;
+    }
+    setImageError("");
     if (!form.title.trim()) return toast.error("Title is required");
 
     const selectedProp = form.propertyId
@@ -1249,7 +1257,7 @@ export default function GroupBookings() {
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-y-auto">
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Image</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Image <span className="text-red-400">*</span></label>
                   <div
                     onClick={() => fileRef.current?.click()}
                     className="w-full h-32 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 overflow-hidden"
@@ -1266,11 +1274,19 @@ export default function GroupBookings() {
                       className="hidden"
                       onChange={(e) => {
                         const f = e.target.files[0];
-                        setFile(f);
-                        setPreview(URL.createObjectURL(f));
+                        if (f) {
+                          setFile(f);
+                          setPreview(URL.createObjectURL(f));
+                          setImageError("");
+                        }
                       }}
                     />
                   </div>
+                  {imageError && (
+                    <p className="text-red-500 text-[10px] mt-1 font-semibold uppercase tracking-wider">
+                      {imageError}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Assign Property (Optional)</label>

@@ -208,7 +208,7 @@ const PropertyDetail = ({ property, onBack }) => {
       "policies",
       "comment reviews",
     ],
-    Cafe: ["overview", "config", "menu", "story", "about", "gallery","offers section", "comment reviews","amenities","Header items","enquiries",],
+    Cafe: ["overview", "config", "menu", "story", "about", "gallery", "offers section", "amenities", "Header items", "enquiries",],
     Restaurant: [
       "overview",
       "config",
@@ -443,11 +443,10 @@ const PropertyDetail = ({ property, onBack }) => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2 text-sm font-medium capitalize rounded-t-lg transition-colors whitespace-nowrap flex-shrink-0 ${
-                  activeTab === tab
-                    ? "bg-white border-x border-t text-blue-600 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
-                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                }`}
+                className={`px-6 py-2 text-sm font-medium capitalize rounded-t-lg transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === tab
+                  ? "bg-white border-x border-t text-blue-600 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  }`}
                 style={
                   activeTab === tab
                     ? { color: colors.primary, borderColor: "#e5e7eb" }

@@ -234,7 +234,7 @@ export default function CafeHomepage() {
               {/* Close icon */}
               <button
                 onClick={handlePopupOk}
-                className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="absolute right-4 top-4 cursor-pointer rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -257,7 +257,7 @@ export default function CafeHomepage() {
               {/* CTA */}
               <button
                 onClick={handlePopupOk}
-                className="mt-5 flex h-10 w-full items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                className="mt-5 flex h-10 w-full cursor-pointer items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 View Nearby Properties
               </button>
