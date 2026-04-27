@@ -618,7 +618,7 @@ export default function CafeTestimonials({
             </div>
             <div className="h-10 w-[1px] bg-primary/20 dark:bg-white/10" />
             <p className="max-w-[90px] text-[11px] font-semibold uppercase leading-tight tracking-widest text-primary dark:text-primary">
-              Average Bean Rating
+              Average Rating
             </p>
           </div>
         </motion.div>

@@ -183,7 +183,7 @@ export default function CafePage() {
           <div className="h-px bg-[#E5E5E2]" />
         </div>
         <div className="relative z-[7] shadow-sm">
-          <CafeTestimonials />
+          <CafeTestimonials propertyId={resolvedPropertyId} />
         </div>
 
         <div className="dark:hidden">
