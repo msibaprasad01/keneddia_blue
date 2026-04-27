@@ -328,14 +328,8 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                             setSelectedCity(city);
                             setShowCityDropdown(false);
                           }}
-<<<<<<< HEAD
-                          className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 ${selectedCity === city ? "bg-secondary/30 font-semibold" : ""
+                          className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 cursor-pointer ${selectedCity === city ? "bg-secondary/30 font-semibold" : ""
                             }`}
-=======
-                          className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 cursor-pointer ${
-                            selectedCity === city ? "bg-secondary/30 font-semibold" : ""
-                          }`}
->>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
                         >
                           {city}
                         </button>
@@ -369,12 +363,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
               <div className="inline-flex w-full items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm sm:w-fit">
                 <button
                   onClick={() => setViewMode("gallery")}
-<<<<<<< HEAD
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${viewMode === "gallery"
-=======
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none cursor-pointer ${
-                    viewMode === "gallery"
->>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none cursor-pointer ${viewMode === "gallery"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                     }`}
@@ -384,12 +373,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                 </button>
                 <button
                   onClick={() => setViewMode("map")}
-<<<<<<< HEAD
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${viewMode === "map"
-=======
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none cursor-pointer ${
-                    viewMode === "map"
->>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none cursor-pointer ${viewMode === "map"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                     }`}
@@ -592,11 +576,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                       </Button>
                       <button
                         onClick={() => goToCafeDetails(activeCafe)}
-<<<<<<< HEAD
-                        className="w-full cursor-pointer py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-=======
                         className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
->>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
                       >
                         View Details -&gt;
                       </button>
