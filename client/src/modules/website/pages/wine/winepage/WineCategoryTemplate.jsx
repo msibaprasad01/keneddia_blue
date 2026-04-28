@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
+import WineWhatsAppButton from "../components/WineWhatsAppButton";
 import { siteContent } from "@/data/siteContent";
 
 // ─── NAV ─────────────────────────────────────────────────────────────────────
@@ -458,20 +459,7 @@ function ItemCard({ drink, index }) {
           <p className="mt-0.5 text-[11px] italic text-stone-400">{drink.subtitle}</p>
         </div>
 
-        <StarRow rating={drink.rating} />
-
         <p className="mt-3 line-clamp-2 text-[11px] italic leading-relaxed text-stone-400 dark:text-stone-500">"{drink.tasting}"</p>
-
-        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-stone-100 pt-4 dark:border-white/5">
-          <div>
-            <p className="text-[8px] font-black uppercase tracking-widest text-stone-300">Origin</p>
-            <p className="truncate text-[10px] font-bold text-stone-700 dark:text-stone-300">{drink.origin}</p>
-          </div>
-          <div>
-            <p className="text-[8px] font-black uppercase tracking-widest text-stone-300">Pairing</p>
-            <p className="truncate text-[10px] font-bold text-stone-700 dark:text-stone-300">{drink.pairing}</p>
-          </div>
-        </div>
       </div>
     </motion.div>
   );
@@ -930,6 +918,8 @@ export default function WineCategoryTemplate() {
       <div id="contact" className="bg-[#EDE7DF] dark:bg-[#0A0407]">
         <Footer />
       </div>
+
+      <WineWhatsAppButton />
     </div>
   );
 }

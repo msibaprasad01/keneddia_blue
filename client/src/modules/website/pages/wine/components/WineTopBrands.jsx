@@ -55,11 +55,11 @@ const BRANDS = [
   },
 ];
 
-function BrandCard({ brand, onClick }) {
+function BrandCard({ brand, onClick, clickable }) {
   const hasLogo = Boolean(brand.logo);
 
   return (
-    <article onClick={onClick} className="group relative h-full cursor-pointer overflow-hidden rounded-[1rem] border border-zinc-200/80 bg-white/90 px-3 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-zinc-300 dark:border-white/10 dark:bg-[#14090d]/90 dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] dark:hover:border-white/20">
+    <article onClick={onClick} className={`group relative h-full overflow-hidden rounded-[1rem] border border-zinc-200/80 bg-white/90 px-3 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-zinc-300 dark:border-white/10 dark:bg-[#14090d]/90 dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] dark:hover:border-white/20 ${clickable ? "cursor-pointer" : ""}`}>
       <div
         className="absolute inset-x-4 top-0 h-px opacity-80"
         style={{ background: `linear-gradient(90deg, transparent, ${brand.accent}, transparent)` }}
@@ -112,13 +112,17 @@ function BrandCard({ brand, onClick }) {
     </article>
   );
 }
-export default function WineTopBrands() {
+export default function WineTopBrands({ clickable = false }) {
   const navigate = useNavigate();
   const { citySlug = "ghaziabad", propertySlug = "kennedia-blu" } = useParams();
 
   const handleBrandClick = (brand) => {
-    navigate(`/wine-detail/${citySlug}/${propertySlug}/${brand.id}`);
+    if (clickable) {
+      navigate(`/wine-detail/${citySlug}/${propertySlug}/${brand.id}`);
+    }
   };
+
+
 
   return (
     <section className="relative overflow-hidden bg-[#F0EAE2] py-8 text-zinc-950 transition-colors duration-500 dark:bg-[#100609] dark:text-white md:py-10">
@@ -174,7 +178,7 @@ export default function WineTopBrands() {
             >
               {BRANDS.map((brand) => (
                 <SwiperSlide key={brand.id} className="h-auto">
-                  <BrandCard brand={brand} onClick={() => handleBrandClick(brand)} />
+                  <BrandCard brand={brand} onClick={clickable ? () => handleBrandClick(brand) : undefined} clickable={clickable} />
                 </SwiperSlide>
               ))}
             </Swiper>

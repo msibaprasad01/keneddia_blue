@@ -18,9 +18,9 @@ const WHATSAPP_NUMBER = "919999999999"; // ← Replace with actual number
 
 // ─── TYPE ACCENTS ─────────────────────────────────────────────────────────────
 const TYPE_ACCENTS = {
-  Red:       { color: "#8B1A2A", light: "#FDF2F4", dark: "#3D0A10", dot: "#C4485A" },
-  White:     { color: "#8A6A18", light: "#FBF7ED", dark: "#3A2C08", dot: "#C9A030" },
-  Rosé:      { color: "#A8456A", light: "#FDF0F5", dark: "#3D1428", dot: "#D4789A" },
+  Red: { color: "#8B1A2A", light: "#FDF2F4", dark: "#3D0A10", dot: "#C4485A" },
+  White: { color: "#8A6A18", light: "#FBF7ED", dark: "#3A2C08", dot: "#C9A030" },
+  Rosé: { color: "#A8456A", light: "#FDF0F5", dark: "#3D1428", dot: "#D4789A" },
   Champagne: { color: "#9A7A10", light: "#FBF8E8", dark: "#3C3008", dot: "#D4B035" },
   Sparkling: { color: "#2E7A8E", light: "#EDF6F9", dark: "#0D2E35", dot: "#52B0C8" },
 };
@@ -316,7 +316,7 @@ function WineCard({ wine, index }) {
   const accent = TYPE_ACCENTS[wine.type] || TYPE_ACCENTS.Red;
   const navigate = useNavigate();
 
-  const generateSlug = (text) => 
+  const generateSlug = (text) =>
     text?.toString()
       .toLowerCase()
       .trim()
@@ -375,11 +375,11 @@ function WineCard({ wine, index }) {
           <div className="mb-4 flex flex-col items-center gap-2">
             <button
               type="button"
-              onClick={(e) => { 
-                e.stopPropagation(); 
+              onClick={(e) => {
+                e.stopPropagation();
                 const citySlug = wine.location.toLowerCase();
                 const propSlug = generateSlug(wine.property);
-                navigate(`/wine-detail/${citySlug}/${propSlug}`); 
+                navigate(`/wine-detail/${citySlug}/${propSlug}`);
               }}
               className="flex cursor-pointer items-center gap-1.5 transition-opacity hover:opacity-70 active:opacity-50"
               title="Explore this property"
@@ -394,12 +394,14 @@ function WineCard({ wine, index }) {
             </button>
 
             {/* Wine name */}
-            <h3 className="font-serif text-[1.25rem] leading-tight text-stone-950 dark:text-stone-100">
-              {wine.name}
-            </h3>
-            <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
-              {wine.subtitle}
-            </p>
+            <div className="flex flex-col items-center gap-1">
+              <h3 className="font-serif text-[1.25rem] leading-tight text-stone-950 dark:text-stone-100">
+                {wine.name}
+              </h3>
+              <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
+                {wine.subtitle}
+              </p>
+            </div>
           </div>
 
           {/* Type badge */}
@@ -416,9 +418,8 @@ function WineCard({ wine, index }) {
             </span>
           </div>
 
-          {/* Middle: rating + meta badges */}
-          <div className="mb-4 flex flex-col items-center gap-2">
-            <StarRating rating={wine.rating} />
+          {/* Middle: meta badges */}
+          <div className="mb-4 flex justify-center">
             <div className="flex flex-wrap justify-center gap-2">
               <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-400 dark:bg-white/5 dark:text-stone-500">
                 {wine.vintage} · {wine.abv} ABV
@@ -434,17 +435,6 @@ function WineCard({ wine, index }) {
             <p className="mx-auto max-w-[220px] line-clamp-3 text-[11px] italic leading-relaxed text-stone-400 dark:text-stone-500">
               &ldquo;{wine.tasting}&rdquo;
             </p>
-            
-            <div className="mt-auto grid w-full grid-cols-2 gap-3 border-t border-stone-100 pt-4 dark:border-white/5">
-              <div className="space-y-0.5">
-                <p className="text-[8px] font-black uppercase tracking-widest text-stone-300 dark:text-stone-700">Origin</p>
-                <p className="truncate text-[10px] font-bold text-stone-700 dark:text-stone-300">{wine.origin}</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[8px] font-black uppercase tracking-widest text-stone-300 dark:text-stone-700">Pairing</p>
-                <p className="truncate text-[10px] font-bold text-stone-700 dark:text-stone-300">{wine.pairing}</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -452,10 +442,10 @@ function WineCard({ wine, index }) {
       {/* Hover query popup */}
       <AnimatePresence>
         {hovered && (
-          <HoverQueryPopup 
-            key="popup" 
-            wine={wine} 
-            accent={accent} 
+          <HoverQueryPopup
+            key="popup"
+            wine={wine}
+            accent={accent}
             onExplore={() => {
               const citySlug = wine.location.toLowerCase();
               const propSlug = generateSlug(wine.property);
@@ -649,9 +639,6 @@ function WineCarousel({ wines }) {
 
         {/* Count + arrows */}
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-semibold tabular-nums text-stone-400 dark:text-stone-600">
-            {activeIndex + 1} / {wines.length}
-          </span>
           <div className="flex gap-2">
             <motion.button
               type="button"
@@ -800,12 +787,12 @@ export default function WineBestSellers() {
               />
 
               {/* Active count pill */}
-              <div className="flex h-9 items-center rounded-xl border border-[#8B1A2A]/20 bg-[#8B1A2A]/[0.07] px-3.5 text-[12px] font-black text-[#8B1A2A] dark:border-[#C8956A]/20 dark:bg-[#C8956A]/[0.08] dark:text-[#C8956A]">
+              {/* <div className="flex h-9 items-center rounded-xl border border-[#8B1A2A]/20 bg-[#8B1A2A]/[0.07] px-3.5 text-[12px] font-black text-[#8B1A2A] dark:border-[#C8956A]/20 dark:bg-[#C8956A]/[0.08] dark:text-[#C8956A]">
                 {filtered.length}&nbsp;
                 <span className="font-normal text-[#8B1A2A]/60 dark:text-[#C8956A]/60">
                   wine{filtered.length !== 1 ? "s" : ""}
                 </span>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -824,8 +811,6 @@ export default function WineBestSellers() {
         </div>
       </section>
 
-      {/* Fixed common WhatsApp — floats across the entire homepage */}
-      <CommonWhatsAppButton />
     </>
   );
 }
