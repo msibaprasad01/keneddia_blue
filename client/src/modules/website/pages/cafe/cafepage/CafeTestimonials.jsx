@@ -580,6 +580,7 @@ export default function CafeTestimonials({
   initialExperiences = [],
   initialTestimonialHeader = null,
   initialCafeTypeId,
+  propertyId,
 }) {
   const ssrExperiences = Array.isArray(initialExperiences) && initialExperiences.length > 0;
 
@@ -588,6 +589,8 @@ export default function CafeTestimonials({
     title: "A Sip of Guest Stories",
     sectionTag: "The Daily Grind & Glory",
     description: "",
+    ratingValue: "",
+    ratingLabel: "",
   });
   const [loading, setLoading] = useState(!ssrExperiences);
 
@@ -682,15 +685,35 @@ export default function CafeTestimonials({
         });
 
         const allHeaders = headersRes?.data || [];
-        const cafeHeaders = allHeaders.filter(h => h.isActive && (cafeTypeId != null ? h.propertyTypeId === cafeTypeId : true)).sort((a, b) => b.id - a.id);
+        const cafeHeaders = allHeaders
+          .filter(h => {
+            if (!h.isActive) return false;
+            if (propertyId) return String(h.propertyId) === String(propertyId);
+            return cafeTypeId != null ? h.propertyTypeId === cafeTypeId : true;
+          })
+          .sort((a, b) => b.id - a.id);
         const latestHeader = cafeHeaders[0];
 
         setExperiences(mappedExp);
         if (latestHeader) {
+          let ratingValue = "";
+          let ratingLabel = "";
+          const rawDesc = latestHeader.description || "";
+          try {
+            const parsed = JSON.parse(rawDesc);
+            if (parsed && typeof parsed === "object" && "ratingValue" in parsed) {
+              ratingValue = parsed.ratingValue || "";
+              ratingLabel = parsed.ratingLabel || "";
+            }
+          } catch {
+            // plain text, not a rating JSON
+          }
           setHeaderData({
             title: latestHeader.testimonialName1 || latestHeader.header1 || "A Sip of Guest Stories",
             sectionTag: latestHeader.testimonialName2 || latestHeader.header2 || "The Daily Grind & Glory",
-            description: latestHeader.description || "",
+            description: rawDesc,
+            ratingValue,
+            ratingLabel,
           });
         }
       } catch (err) {
@@ -921,7 +944,7 @@ export default function CafeTestimonials({
           <div className="flex items-center gap-6 rounded-[1.8rem] border border-primary/20 bg-white/80 p-6 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5">
             <div className="text-center">
               <p className="text-3xl font-serif font-bold leading-none text-zinc-900 dark:text-[#F7EEE8]">
-                {avgRating}
+                {headerData.ratingValue || avgRating}
               </p>
               <div className="mt-2 flex gap-0.5 cursor-pointer">
                 {[...Array(5)].map((_, i) => (
@@ -931,7 +954,7 @@ export default function CafeTestimonials({
             </div>
             <div className="h-10 w-[1px] bg-primary/20 dark:bg-white/10" />
             <p className="max-w-[90px] text-[11px] font-semibold uppercase leading-tight tracking-widest text-primary dark:text-primary">
-              Average Rating
+              {headerData.ratingLabel || "Average Rating"}
             </p>
           </div>
         </motion.div>

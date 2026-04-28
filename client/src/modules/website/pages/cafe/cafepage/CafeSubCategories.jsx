@@ -164,7 +164,7 @@ export default function CafeSubCategories({ initialData }) {
   const cards = useMemo(() => {
     const entries = initialData?.entries || initialData?.cards;
     if (entries && entries.length > 0) {
-      return entries.map((c, i) => ({
+      return entries.filter((c) => c.active !== false).map((c, i) => ({
         ...c,
         id: c.id || i,
         eyebrow: c.subtitle || c.eyebrow || "Discovery",
