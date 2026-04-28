@@ -251,7 +251,7 @@ function TypeHero({ meta, citySlug, propertySlug }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
 
-      <div className="relative z-10 flex h-full items-end pb-24 pt-[120px]">
+      <div className="relative z-10 flex h-full items-center pt-[60px]">
         <div className="container mx-auto px-6 md:px-12 lg:px-24">
           <div className="max-w-2xl">
             {/* Breadcrumb */}
@@ -271,9 +271,6 @@ function TypeHero({ meta, citySlug, propertySlug }) {
             </motion.nav>
 
             <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.8 }} className="mb-4">
-              <span className="mb-3 block text-[10px] font-black uppercase tracking-[0.45em]" style={{ color: accent.dot }}>
-                {meta.tag}
-              </span>
               <h1 className="font-serif text-5xl font-black italic leading-[1.1] text-white md:text-6xl lg:text-7xl">
                 {meta.label.split(" ")[0]}{" "}
                 <em className="not-italic" style={{ color: "#D4AF37" }}>
@@ -291,10 +288,7 @@ function TypeHero({ meta, citySlug, propertySlug }) {
               {meta.description}
             </motion.p>
 
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6, duration: 0.7 }} className="flex items-center gap-4">
-              <div className="h-px w-10 opacity-40" style={{ background: accent.dot }} />
-              <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/40">Kennedia Blu · Estate Collection</span>
-            </motion.div>
+
           </div>
         </div>
       </div>
@@ -336,7 +330,7 @@ function BrandHero({ brand, citySlug, propertySlug }) {
       {/* Accent line */}
       <div className="pointer-events-none absolute left-0 top-0 h-full w-1" style={{ background: `linear-gradient(to bottom, transparent, ${brand.accent}, transparent)`, opacity: 0.6 }} />
 
-      <div className="relative z-10 flex h-full items-end pb-24 pt-[120px]">
+      <div className="relative z-10 flex h-full items-center pt-[60px]">
         <div className="container mx-auto px-6 md:px-12 lg:px-24">
           <div className="max-w-3xl">
             {/* Breadcrumb */}
@@ -496,17 +490,30 @@ function FlattenedItemsSection({ items, accentColor, giOffset = 0 }) {
 function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
   const accent = meta.accent;
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("All");
+  const [isBrandOpen, setIsBrandOpen] = useState(false);
+
+  const availableBrands = useMemo(() => {
+    const brandIds = Array.from(new Set(items.map((d) => d.brandId)));
+    return BRANDS.filter((b) => brandIds.includes(b.id));
+  }, [items]);
 
   const filteredItems = useMemo(() => {
-    if (!searchTerm.trim()) return items;
-    const lower = searchTerm.toLowerCase();
-    return items.filter(
-      (d) =>
-        d.name.toLowerCase().includes(lower) ||
-        d.tag.toLowerCase().includes(lower) ||
-        d.subtitle?.toLowerCase().includes(lower)
-    );
-  }, [items, searchTerm]);
+    let result = items;
+    if (selectedBrand !== "All") {
+      result = result.filter((d) => d.brandId === selectedBrand);
+    }
+    if (searchTerm.trim()) {
+      const lower = searchTerm.toLowerCase();
+      result = result.filter(
+        (d) =>
+          d.name.toLowerCase().includes(lower) ||
+          d.tag.toLowerCase().includes(lower) ||
+          d.subtitle?.toLowerCase().includes(lower)
+      );
+    }
+    return result;
+  }, [items, selectedBrand, searchTerm]);
 
   return (
     <section id="collection" className="relative overflow-hidden bg-[#FAF8F4] pt-4 pb-20 dark:bg-[#0D0508]">
@@ -514,8 +521,8 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
 
       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
         {/* Section header */}
-        <div className="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
+        <div className="mb-14 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="max-w-xl">
             {/* <div className="mb-4 flex items-center gap-3">
               <div className="h-px w-10 opacity-40" style={{ background: accent.dot }} />
               <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: accent.color }}>
@@ -525,26 +532,79 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
             <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
               All {meta.typeKey} <em className="not-italic" style={{ color: accent.color }}>Across Every Brand</em>
             </h2>
-            <p className="mt-3 max-w-xl text-sm italic text-stone-400">{filteredItems.length} items available</p>
+            <p className="mt-3 text-sm italic text-stone-400">{filteredItems.length} items available</p>
           </div>
 
-          <div className="relative min-w-[280px]">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
-            <input
-              type="text"
-              placeholder="Search by name, tag..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-full border border-stone-200 bg-white py-3 pl-10 pr-10 text-sm outline-none focus:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-amber-600 transition-colors"
-            />
-            {searchTerm && (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            {/* Brand Dropdown */}
+            <div className="relative min-w-[200px]">
+              <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Brand</span>
               <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+                onClick={() => setIsBrandOpen(!isBrandOpen)}
+                className="flex w-full items-center justify-between rounded-full border border-stone-200 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-stone-800 transition-all hover:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-amber-600 cursor-pointer"
               >
-                <X size={14} />
+                <span>{selectedBrand === "All" ? "All Brands" : availableBrands.find(b => b.id === selectedBrand)?.name}</span>
+                <ChevronDown size={14} className={`transition-transform duration-300 ${isBrandOpen ? "rotate-180" : ""}`} />
               </button>
-            )}
+
+              <AnimatePresence>
+                {isBrandOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsBrandOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                      className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#1A0C13]"
+                    >
+                      <div className="max-h-[240px] overflow-y-auto py-2">
+                        <button
+                          onClick={() => { setSelectedBrand("All"); setIsBrandOpen(false); }}
+                          className={`flex w-full items-center px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-stone-50 dark:hover:bg-white/5 cursor-pointer ${selectedBrand === "All" ? "text-[#D4AF37]" : "text-stone-500 dark:text-stone-400"
+                            }`}
+                        >
+                          All Brands
+                        </button>
+                        {availableBrands.map((b) => (
+                          <button
+                            key={b.id}
+                            onClick={() => { setSelectedBrand(b.id); setIsBrandOpen(false); }}
+                            className={`flex w-full items-center px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-stone-50 dark:hover:bg-white/5 cursor-pointer ${selectedBrand === b.id ? "text-amber-600" : "text-stone-500 dark:text-stone-400"
+                              }`}
+                            style={selectedBrand === b.id ? { color: b.accent } : {}}
+                          >
+                            {b.name}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Search */}
+            <div className="relative min-w-[260px]">
+              <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Search Collection</span>
+              <div className="relative">
+                <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
+                <input
+                  type="text"
+                  placeholder="Search name, tag..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-full border border-stone-200 bg-white py-2.5 pl-10 pr-10 text-[10px] font-medium outline-none focus:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-amber-600 transition-colors"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
