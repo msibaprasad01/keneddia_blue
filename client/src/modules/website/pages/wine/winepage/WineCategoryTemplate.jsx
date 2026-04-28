@@ -437,13 +437,6 @@ function ItemCard({ drink, index }) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-        {/* Type badge */}
-        <div className="absolute left-3 top-3">
-          <span className="rounded-full px-2.5 py-1 text-[8px] font-black uppercase tracking-widest" style={{ color: accent.color, backgroundColor: accent.bg + "ee", border: `1px solid ${accent.color}30` }}>
-            {drink.tag}
-          </span>
-        </div>
-
         {/* ABV badge */}
         <div className="absolute right-3 top-3">
           <span className="rounded-full bg-black/50 px-2.5 py-1 text-[9px] font-bold text-white/90 backdrop-blur-sm">
@@ -466,52 +459,30 @@ function ItemCard({ drink, index }) {
 }
 
 // ─── TYPE ITEMS SECTION ───────────────────────────────────────────────────────
-function TypeCategoryGroup({ brandName, brand, brandItems, gi, citySlug, propertySlug }) {
+function FlattenedItemsSection({ items, accentColor, giOffset = 0 }) {
   const [expanded, setExpanded] = useState(false);
-  const displayedItems = expanded ? brandItems : brandItems.slice(0, 10);
+  const limit = 12;
+  const hasMore = items.length > limit;
+  const displayedItems = expanded ? items : items.slice(0, limit);
+
+  if (items.length === 0) {
+    return <div className="py-20 text-center text-stone-400">No items found matching your criteria.</div>;
+  }
 
   return (
-    <div className="mb-16">
-      {/* Brand sub-header */}
-      <motion.div
-        initial={{ opacity: 0, x: -16 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true }}
-        className="mb-8 flex items-center gap-4"
-      >
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full border border-stone-200 bg-white flex items-center justify-center dark:border-white/10 dark:bg-white/5">
-            <Wine size={14} className="text-stone-400" />
-          </div>
-          <div>
-            <p className="text-[8px] font-black uppercase tracking-[0.35em] text-stone-300">Brand</p>
-            <h3 className="font-serif text-lg text-stone-800 dark:text-stone-200" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              {brand?.name || brandName}
-              {brand && (
-                <Link
-                  to={`/wine-detail/${citySlug}/${propertySlug}/${brand.id}`}
-                  className="ml-2 text-[9px] font-black uppercase tracking-widest opacity-40 hover:opacity-80 transition-opacity cursor-pointer"
-                  style={{ color: brand.accent }}
-                >
-                  View Brand →
-                </Link>
-              )}
-            </h3>
-          </div>
-        </div>
-        <div className="flex-1 h-px bg-stone-200/60 dark:bg-white/5" />
-        <span className="text-[9px] font-bold text-stone-300">{brandItems.length} expression{brandItems.length !== 1 ? "s" : ""}</span>
-      </motion.div>
-
+    <div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {displayedItems.map((d, i) => <ItemCard key={d.id} drink={d} index={gi * 10 + i} />)}
+        {displayedItems.map((d, i) => (
+          <ItemCard key={d.id} drink={d} index={giOffset + i} />
+        ))}
       </div>
 
-      {brandItems.length > 10 && (
-        <div className="mt-8 flex justify-center">
+      {hasMore && (
+        <div className="mt-12 flex justify-center">
           <button
             onClick={() => setExpanded((prev) => !prev)}
-            className="group flex items-center gap-2 rounded-full border border-[#D4AF37]/40 bg-transparent px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] transition-all hover:bg-[#D4AF37]/10 cursor-pointer"
+            className="group flex items-center gap-2 rounded-full border px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer"
+            style={{ color: accentColor, borderColor: accentColor + "40" }}
           >
             {expanded ? "Show Less" : "Show More"}
             <ChevronDown size={14} className={`transition-transform duration-300 ${expanded ? "rotate-180" : ""}`} />
@@ -537,20 +508,8 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
     );
   }, [items, searchTerm]);
 
-  // Group by brand
-  const byBrand = useMemo(() => {
-    const map = {};
-    filteredItems.forEach((d) => {
-      const b = BRANDS.find((br) => br.id === d.brandId);
-      const key = b ? b.name : "Other";
-      if (!map[key]) map[key] = { brand: b, items: [] };
-      map[key].items.push(d);
-    });
-    return Object.entries(map);
-  }, [filteredItems]);
-
   return (
-    <section id="collection" className="relative overflow-hidden bg-[#FAF8F4] py-20 dark:bg-[#0D0508]">
+    <section id="collection" className="relative overflow-hidden bg-[#FAF8F4] pt-4 pb-20 dark:bg-[#0D0508]">
       <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
 
       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
@@ -589,119 +548,44 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
           </div>
         </div>
 
-        {byBrand.length === 0 && (
-          <div className="py-20 text-center text-stone-400">No items found for this category.</div>
-        )}
-
-        {byBrand.map(([brandName, { brand, items: brandItems }], gi) => (
-          <TypeCategoryGroup
-            key={brandName}
-            brandName={brandName}
-            brand={brand}
-            brandItems={brandItems}
-            gi={gi}
-            citySlug={citySlug}
-            propertySlug={propertySlug}
-          />
-        ))}
+        <FlattenedItemsSection items={filteredItems} accentColor={accent.color} />
       </div>
     </section>
   );
 }
 
-// ─── BRAND ITEMS SECTION ──────────────────────────────────────────────────────
-function BrandCategoryGroup({ typeName, typeItems, gi, activeType, acc }) {
-  const [expanded, setExpanded] = useState(false);
-  const displayedItems = expanded ? typeItems : typeItems.slice(0, 10);
-
-  return (
-    <div className="mb-16">
-      {activeType === "All" && (
-        <motion.div
-          initial={{ opacity: 0, x: -16 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="mb-8 flex items-center gap-4"
-        >
-          <div className="flex items-center gap-2">
-            <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: acc.dot }} />
-            <h3 className="font-serif text-xl text-stone-800 dark:text-stone-200">{typeName}</h3>
-          </div>
-          <div className="flex-1 h-px bg-stone-200/60 dark:bg-white/5" />
-          <span className="text-[9px] font-bold text-stone-300">{typeItems.length} expression{typeItems.length !== 1 ? "s" : ""}</span>
-        </motion.div>
-      )}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {displayedItems.map((d, i) => <ItemCard key={d.id} drink={d} index={gi * 10 + i} />)}
-      </div>
-
-      {typeItems.length > 10 && (
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={() => setExpanded((prev) => !prev)}
-            className="group flex items-center gap-2 rounded-full border border-[#D4AF37]/40 bg-transparent px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] transition-all hover:bg-[#D4AF37]/10 cursor-pointer"
-          >
-            {expanded ? "Show Less" : "Show More"}
-            <ChevronDown size={14} className={`transition-transform duration-300 ${expanded ? "rotate-180" : ""}`} />
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function BrandItemsSection({ items, brand }) {
-  const [activeType, setActiveType] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const types = useMemo(() => {
-    const set = new Set(items.map((d) => d.type));
-    return ["All", ...Array.from(set)];
-  }, [items]);
-
   const filtered = useMemo(() => {
-    let base = activeType === "All" ? items : items.filter((d) => d.type === activeType);
-    if (searchTerm.trim()) {
-      const lower = searchTerm.toLowerCase();
-      base = base.filter(
-        (d) =>
-          d.name.toLowerCase().includes(lower) ||
-          d.tag.toLowerCase().includes(lower) ||
-          d.subtitle?.toLowerCase().includes(lower)
-      );
-    }
-    return base;
-  }, [items, activeType, searchTerm]);
-
-  // Group filtered by type
-  const byType = useMemo(() => {
-    if (activeType !== "All") return [[activeType, filtered]];
-    const map = {};
-    filtered.forEach((d) => {
-      if (!map[d.type]) map[d.type] = [];
-      map[d.type].push(d);
-    });
-    return Object.entries(map);
-  }, [filtered, activeType]);
+    if (!searchTerm.trim()) return items;
+    const lower = searchTerm.toLowerCase();
+    return items.filter(
+      (d) =>
+        d.name.toLowerCase().includes(lower) ||
+        d.tag.toLowerCase().includes(lower) ||
+        d.subtitle?.toLowerCase().includes(lower)
+    );
+  }, [items, searchTerm]);
 
   return (
-    <section id="collection" className="relative overflow-hidden bg-[#FAF8F4] py-20 dark:bg-[#0D0508]">
+    <section id="collection" className="relative overflow-hidden bg-[#FAF8F4] pt-4 pb-20 dark:bg-[#0D0508]">
       <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
 
       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
         {/* Section header */}
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <div className="mb-4 flex items-center gap-3">
+            {/* <div className="mb-4 flex items-center gap-3">
               <div className="h-px w-10 opacity-50" style={{ background: brand.accent }} />
               <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: brand.accent }}>
                 {brand.subLabel}
               </span>
-            </div>
+            </div> */}
             <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
               {brand.name} <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Collection</em>
             </h2>
-            <p className="mt-3 max-w-xl text-sm italic text-stone-400">{filtered.length} expression{filtered.length !== 1 ? "s" : ""} available</p>
+            <p className="mt-3 max-w-xl text-sm italic text-stone-400">{filtered.length} item{filtered.length !== 1 ? "s" : ""} available</p>
           </div>
 
           <div className="relative min-w-[280px]">
@@ -724,47 +608,7 @@ function BrandItemsSection({ items, brand }) {
           </div>
         </div>
 
-        {/* Type filter tabs */}
-        {types.length > 2 && (
-          <div className="mb-10 flex flex-wrap gap-2">
-            {types.map((t) => {
-              const acc = t !== "All" ? TYPE_ACCENTS[t] : null;
-              const isActive = t === activeType;
-              return (
-                <button
-                  key={t}
-                  onClick={() => setActiveType(t)}
-                  className="rounded-full border px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer"
-                  style={
-                    isActive
-                      ? { color: acc?.color || "#8B1A2A", backgroundColor: acc?.bg || "#FDF2F4", borderColor: (acc?.color || "#8B1A2A") + "40" }
-                      : { color: "#a8a29e", backgroundColor: "transparent", borderColor: "#e7e5e4" }
-                  }
-                >
-                  {t}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {items.length === 0 && (
-          <div className="py-20 text-center text-stone-400">No items found for this brand.</div>
-        )}
-
-        {byType.map(([typeName, typeItems], gi) => {
-          const acc = TYPE_ACCENTS[typeName] || TYPE_ACCENTS.Wine;
-          return (
-            <BrandCategoryGroup
-              key={typeName}
-              typeName={typeName}
-              typeItems={typeItems}
-              gi={gi}
-              activeType={activeType}
-              acc={acc}
-            />
-          );
-        })}
+        <FlattenedItemsSection items={filtered} accentColor={brand.accent} />
       </div>
     </section>
   );
@@ -894,7 +738,7 @@ export default function WineCategoryTemplate() {
 
         {/* Back pill */}
         <div className="bg-[#FAF8F4] dark:bg-[#0D0508]">
-          <div className="mx-auto max-w-[1400px] px-6 py-5 md:px-12">
+          <div className="mx-auto max-w-[1400px] px-6 pt-8 pb-0 md:px-12">
             <button
               onClick={() => navigate(`/wine-detail/${citySlug}/${propertySlug}`)}
               className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-stone-400 transition-colors hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
