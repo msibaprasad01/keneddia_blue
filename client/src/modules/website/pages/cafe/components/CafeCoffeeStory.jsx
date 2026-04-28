@@ -154,7 +154,6 @@ function MobileStoryCard({ card }) {
 }
 
 export default function CafeCoffeeStory({ initialData }) {
-  console.log('data', initialData);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -162,7 +161,7 @@ export default function CafeCoffeeStory({ initialData }) {
   const cards = useMemo(() => {
     const entries = initialData?.entries || initialData?.cards;
     if (entries && entries.length > 0) {
-      return entries.map((c, i) => ({
+      return entries.filter((c) => c.active !== false).map((c, i) => ({
         ...c,
         id: c.id || i,
         eyebrow: c.subtitle || c.eyebrow || "Discovery",

@@ -265,11 +265,28 @@ function VisualGalleryHeaderEditor({ propertyId }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // TESTIMONIAL HEADER EDITOR
 // ─────────────────────────────────────────────────────────────────────────────
-function TestimonialHeaderEditor({ propertyId }) {
+function TestimonialHeaderEditor({ propertyId, propertyType }) {
+  const isCafe = propertyType === "cafe";
+
+  const parseDescription = (raw) => {
+    if (!raw) return { description: "", ratingValue: "", ratingLabel: "" };
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object" && "ratingValue" in parsed) {
+        return { description: "", ratingValue: parsed.ratingValue || "", ratingLabel: parsed.ratingLabel || "" };
+      }
+    } catch {
+      // plain text description
+    }
+    return { description: raw, ratingValue: "", ratingLabel: "" };
+  };
+
   const EMPTY = {
     testimonialName1: "",
     testimonialName2: "",
     description: "",
+    ratingValue: "",
+    ratingLabel: "",
     isActive: true,
     existingId: null,
   };
@@ -286,14 +303,17 @@ function TestimonialHeaderEditor({ propertyId }) {
       const res = await getActiveTestimonialHeaders();
       const all = res?.data || [];
       const matched = all
-        .filter((h) => h.propertyId === propertyId)
+        .filter((h) => String(h.propertyId) === String(propertyId))
         .sort((a, b) => b.id - a.id);
       const latest = matched[0] || null;
       if (latest) {
+        const { description, ratingValue, ratingLabel } = parseDescription(latest.description);
         setForm({
           testimonialName1: latest.testimonialName1 || latest.header1 || "",
           testimonialName2: latest.testimonialName2 || latest.header2 || "",
-          description: latest.description || "",
+          description,
+          ratingValue,
+          ratingLabel,
           isActive: latest.isActive ?? true,
           existingId: latest.id,
         });
@@ -318,10 +338,13 @@ function TestimonialHeaderEditor({ propertyId }) {
     setError(null);
     setSuccess(null);
     try {
+      const encodedDescription = isCafe
+        ? JSON.stringify({ ratingValue: form.ratingValue, ratingLabel: form.ratingLabel })
+        : form.description;
       const payload = {
         testimonialName1: form.testimonialName1,
         testimonialName2: form.testimonialName2,
-        description: form.description,
+        description: encodedDescription,
         isActive: form.isActive,
         propertyId,
       };
@@ -383,15 +406,36 @@ function TestimonialHeaderEditor({ propertyId }) {
           </Field>
         </div>
 
-        <Field label="Description">
-          <textarea
-            className={inp}
-            rows={2}
-            value={form.description}
-            onChange={(e) => set("description", e.target.value)}
-            placeholder="Real moments shared by our guests…"
-          />
-        </Field>
+        {isCafe ? (
+          <div className="flex gap-3">
+            <Field label="Rating Value (e.g. 4.9)">
+              <input
+                className={inp}
+                value={form.ratingValue}
+                onChange={(e) => set("ratingValue", e.target.value)}
+                placeholder="4.9"
+              />
+            </Field>
+            <Field label="Rating Label (e.g. Average Rating)">
+              <input
+                className={inp}
+                value={form.ratingLabel}
+                onChange={(e) => set("ratingLabel", e.target.value)}
+                placeholder="Average Rating"
+              />
+            </Field>
+          </div>
+        ) : (
+          <Field label="Description">
+            <textarea
+              className={inp}
+              rows={2}
+              value={form.description}
+              onChange={(e) => set("description", e.target.value)}
+              placeholder="Real moments shared by our guests…"
+            />
+          </Field>
+        )}
 
         <label className="flex items-center gap-2 cursor-pointer w-fit">
           <div
@@ -408,7 +452,7 @@ function TestimonialHeaderEditor({ propertyId }) {
         <HeadlinePreview
           part1={form.testimonialName1}
           part2={form.testimonialName2}
-          description={form.description}
+          description={isCafe ? `Rating: ${form.ratingValue || "—"} · ${form.ratingLabel || "—"}` : form.description}
           accentColor="text-amber-500"
         />
 
@@ -842,6 +886,7 @@ const TABS = [
 
 function Gallery3d({ propertyData }) {
   const propertyId = propertyData?.id ?? propertyData?.propertyId ?? "";
+  const propertyType = (propertyData?.propertyType || "").toLowerCase();
   const [activeTab, setActiveTab] = useState("gallery");
 
   return (
@@ -880,7 +925,7 @@ function Gallery3d({ propertyData }) {
           <VisualGalleryHeaderEditor propertyId={propertyId} />
         )}
         {activeTab === "testimonials" && (
-          <TestimonialHeaderEditor propertyId={propertyId} />
+          <TestimonialHeaderEditor propertyId={propertyId} propertyType={propertyType} />
         )}
         {activeTab === "conversion" && (
           <PrimaryConversionHeaderEditor propertyId={propertyId} />
