@@ -97,7 +97,7 @@ function HoverQueryPopup({ drink, accent, onExplore }) {
         <div className="ml-4 flex shrink-0 items-center gap-2">
           <button
             onClick={(e) => { e.stopPropagation(); onExplore(); }}
-            className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-[#8B1A2A] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-black hover:scale-105"
+            className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-[#8B1A2A] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-black hover:scale-105 cursor-pointer"
           >
             Explore
           </button>
@@ -106,7 +106,7 @@ function HoverQueryPopup({ drink, accent, onExplore }) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/10"
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/10 cursor-pointer"
           >
             Query
           </a>
@@ -154,7 +154,7 @@ function DrinkCard({ drink, index }) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); handleExplore(); }}
-                className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.22em] text-[#8B1A2A] hover:underline dark:text-[#C8956A]"
+                className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.22em] text-[#8B1A2A] hover:underline dark:text-[#C8956A] cursor-pointer"
               >
                 <Building2 size={10} /> {drink.property}
               </button>
@@ -223,8 +223,8 @@ function DrinkCarousel({ drinks }) {
           ))}
         </div>
         <div className="flex gap-2">
-          <button onClick={() => scroll(-1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white transition-all hover:bg-stone-50"><ChevronLeft size={18} /></button>
-          <button onClick={() => scroll(1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white transition-all hover:bg-stone-50"><ChevronRight size={18} /></button>
+          <button onClick={() => scroll(-1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white transition-all hover:bg-stone-50 cursor-pointer"><ChevronLeft size={18} /></button>
+          <button onClick={() => scroll(1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white transition-all hover:bg-stone-50 cursor-pointer"><ChevronRight size={18} /></button>
         </div>
       </div>
     </div>
