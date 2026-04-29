@@ -43,3 +43,42 @@ export const getGuestExperienceReviews = ({
   });
 export const updateGuestExperienceReview = (id, data) =>
   API.patch(`api/v1/guest-experience/${id}/review`, data);
+
+// ─── PET POOJA ───────────────────────────────────────────────────────────────
+export const createPropertyPetPooja = (data) =>
+  API.post("api/v1/property-petpooja/create", data);
+
+export const getPropertyPetPoojaByPropertyId = (propertyId) =>
+  API.get(`api/v1/property-petpooja/${propertyId}`);
+
+export const updatePropertyPetPooja = (propertyId, data) =>
+  API.put(`api/v1/property-petpooja/${propertyId}`, data);
+
+export const togglePropertyPetPoojaStatus = (propertyId, active) =>
+  API.patch(`api/v1/property-petpooja/${propertyId}/active`, null, {
+    params: { active },
+  });
+
+export const fetchPetPoojaMenus = ({ appKey, appSecret, accessToken }) =>
+  axios.post(
+    "https://qle1yy2ydc.execute-api.ap-southeast-1.amazonaws.com/V1/mapped_restaurant_menus",
+    undefined,
+    {
+      params: {
+        "app-key": appKey,
+        "app-secret": appSecret,
+        "access-token": accessToken,
+      },
+      transformRequest: [(data, headers) => {
+        delete headers["Content-Type"];
+        delete headers.post?.["Content-Type"];
+        return data;
+      }],
+    }
+  );
+
+export const savePetPoojaOrder = ({ appKey, appSecret, accessToken, orderinfo }) =>
+  axios.post(
+    "https://47pfzh5sf2.execute-api.ap-southeast-1.amazonaws.com/V1/save_order",
+    { "app-key": appKey, "app-secret": appSecret, "access-token": accessToken, orderinfo }
+  );

@@ -40,6 +40,7 @@ import EnquiriesTab from "./tabs/resturant/EnquiriesTab";
 import CommentReviewsTab from "./tabs/CommentReviewsTab";
 import CafeStoryTab from "./tabs/cafe/CafeStoryTab";
 import CafeAbout from "./tabs/cafe/CafeAbout";
+import PetPoojaConfigTab from "./tabs/resturant/PetPoojaConfigTab";
 
 // Import Modals
 import AddEditOverviewModal from "./modals/AddEditOverviewModal";
@@ -225,6 +226,7 @@ const PropertyDetail = ({ property, onBack }) => {
       "Header items",
       "enquiries",
       // "comment reviews",
+      "pet pooja",
     ],
   };
 
@@ -380,6 +382,12 @@ const PropertyDetail = ({ property, onBack }) => {
           <EnquiriesTab
             propertyData={currentPropertyInfo}
             refreshData={fetchAllData}
+          />
+        );
+      case "pet pooja":
+        return (
+          <PetPoojaConfigTab
+            propertyData={currentPropertyInfo}
           />
         );
       case "comment reviews":
