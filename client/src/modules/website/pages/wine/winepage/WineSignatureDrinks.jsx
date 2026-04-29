@@ -13,14 +13,14 @@ const TYPE_ACCENTS = {
 
 // ─── CATEGORY DATA ──────────────────────────────────────────────────────────
 const CATEGORIES = [
-  { name: "Whiskey", id: "whiskey", tag: "Single Malts & Blends", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
-  { name: "Wine", id: "wine", tag: "Fine Estates", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
-  { name: "Beers", id: "beers", tag: "Craft & Imported", image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
-  { name: "Tastings", id: "tastings", tag: "Master Classes", image: "https://images.unsplash.com/photo-1543158181-e6f9f6712055?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
+  { name: "Whiskey", id: "whiskey", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
+  { name: "Wine", id: "wine", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
+  { name: "Beers", id: "beers", image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
+  { name: "Tastings", id: "tastings", image: "https://images.unsplash.com/photo-1543158181-e6f9f6712055?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
 ];
 
 // ─── CATEGORY CARD ────────────────────────────────────────────────────────────
-function CategoryCard({ category, index }) {
+function CategoryCard({ category, index, routeMode = "property" }) {
   const [hovered, setHovered] = useState(false);
   const accent = TYPE_ACCENTS[category.name] || TYPE_ACCENTS.Wine;
   const navigate = useNavigate();
@@ -28,9 +28,13 @@ function CategoryCard({ category, index }) {
   const generateSlug = (text) => text?.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
 
   const handleExplore = () => {
+    const typeSlug = category.id;
+    if (routeMode === "global") {
+      navigate(`/wine-categories/${typeSlug}`);
+      return;
+    }
     const citySlug = category.location.toLowerCase();
     const propSlug = generateSlug(category.property);
-    const typeSlug = category.id;
     navigate(`/wine-detail/${citySlug}/${propSlug}/${typeSlug}`);
   };
 
@@ -45,7 +49,7 @@ function CategoryCard({ category, index }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleExplore}
-      className="group relative flex h-full min-h-[108px] cursor-pointer select-none items-center overflow-hidden rounded-[1.5rem] border border-stone-200/90 bg-white px-4 py-4 shadow-[0_14px_40px_-28px_rgba(66,28,35,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_-34px_rgba(66,28,35,0.45)] dark:border-white/[0.07] dark:bg-[#1A0C13]"
+      className="group relative flex h-full min-h-[96px] cursor-pointer select-none items-center overflow-hidden rounded-[1.5rem] border border-stone-200/90 bg-white px-4 py-4 shadow-[0_14px_40px_-28px_rgba(66,28,35,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_-34px_rgba(66,28,35,0.45)] dark:border-white/[0.07] dark:bg-[#1A0C13]"
     >
       <div
         className="absolute left-0 top-0 h-full w-[3px] transition-all duration-500"
@@ -70,18 +74,9 @@ function CategoryCard({ category, index }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p
-            className="mb-1 text-[10px] font-black uppercase tracking-[0.28em]"
-            style={{ color: accent.color }}
-          >
-            {category.tag}
-          </p>
-          <h3 className="truncate font-serif text-lg capitalize leading-tight text-stone-900 dark:text-stone-100">
+          <h3 className="truncate whitespace-nowrap font-serif text-lg capitalize leading-tight text-stone-900 dark:text-stone-100">
             {category.name}
           </h3>
-          <p className="mt-1 truncate text-xs text-stone-500 dark:text-stone-400">
-            {category.property}
-          </p>
         </div>
 
         <div
@@ -106,6 +101,36 @@ function CategoryCard({ category, index }) {
 }
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
+export function WineCategoriesSection() {
+  return (
+    <section className="relative overflow-hidden bg-[#F5F0EA] pt-16 pb-20 dark:bg-[#12070A]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
+
+      <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
+        <div className="mb-12 max-w-2xl text-center md:text-left">
+          {/* <div className="mb-5 flex items-center justify-center gap-3 md:justify-start">
+            <div className="h-px w-10 bg-[#8B1A2A]/40" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#8B1A2A]">By Category</span>
+            <div className="h-px w-10 bg-[#8B1A2A]/40 md:hidden" />
+          </div> */}
+          <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
+            Explore by <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Categories</em>
+          </h2>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+            Browse whiskey, wine, beers, and tasting experiences across every location. Open any category to see the full collection with filters.
+          </p>
+        </div>
+
+        <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {CATEGORIES.map((category, i) => (
+            <CategoryCard key={category.id} category={category} index={i} routeMode="global" />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function WineSignatureDrinks() {
   return (
     <section className="relative overflow-hidden bg-[#FAF8F4] pt-20 pb-24 dark:bg-[#0D0508]">
@@ -125,7 +150,7 @@ export default function WineSignatureDrinks() {
 
           <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
             {CATEGORIES.map((category, i) => (
-              <CategoryCard key={category.id} category={category} index={i} />
+              <CategoryCard key={category.id} category={category} index={i} routeMode="property" />
             ))}
           </div>
        </div>

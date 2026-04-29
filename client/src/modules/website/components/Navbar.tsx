@@ -159,7 +159,8 @@ export default function Navbar({
     location.pathname === "/resturant-homepage" ||
     location.pathname === "/wine-homepage" ||
     location.pathname === "/cafe-homepage" ||
-    location.pathname.startsWith("/wine-detail");
+    location.pathname.startsWith("/wine-detail") ||
+    location.pathname.startsWith("/wine-categories");
   const showQuickBook = showQuickBookProp !== undefined ? showQuickBookProp : isTransparentHeroRoute;
   const effectiveQuickBookOptions: QuickBookOption[] = quickBookOptions || QUICK_BOOKING_OPTIONS;
   const useWhiteTextOnTransparent = isTransparentHeroRoute;

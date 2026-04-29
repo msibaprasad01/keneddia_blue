@@ -6,6 +6,7 @@ import { siteContent } from "@/data/siteContent";
 import { useSsrData } from "@/ssr/SsrDataContext";
 import WineHeroBanner from "./components/WineHeroBanner";
 import WineWhatsAppButton from "./components/WineWhatsAppButton";
+import { WineCategoriesSection } from "./winepage/WineSignatureDrinks";
 
 const WineBestSellers = lazy(() => import("./components/WineBestSellers"));
 const WineTopBrands = lazy(() => import("./components/WineTopBrands"));
@@ -14,6 +15,7 @@ const WineShowcaseSlider = lazy(() => import("./components/WineShowcaseSlider"))
 
 const WINE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
+  { type: "link", label: "CATEGORIES", key: "categories", href: "#categories" },
   { type: "link", label: "COLLECTION", key: "collection", href: "#collection" },
   { type: "link", label: "BRANDS", key: "brand", href: "#brand" },
   { type: "link", label: "ABOUT", key: "about", href: "#about" },
@@ -168,6 +170,10 @@ export default function WineHomepage() {
           {/* Hero — full viewport */}
           <div id="home">
             <WineHeroBanner initialSlides={ssr?.heroSlides} />
+          </div>
+
+          <div id="categories" className="bg-[#F5F0EA] dark:bg-[#12070A]">
+            <WineCategoriesSection />
           </div>
 
           {/* Collection */}

@@ -14,6 +14,7 @@ import {
   Search,
   Filter,
   X,
+  Building2,
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
@@ -151,7 +152,7 @@ const BRANDS = [
 ];
 
 // ─── DRINKS DATA ──────────────────────────────────────────────────────────────
-export const DRINKS_DATA = [
+const BASE_DRINKS_DATA = [
   // --- WHISKEY (12+ ITEMS) ---
   { id: 101, brandId: "hibiki", property: "Kennedia Blu", location: "Ghaziabad", name: "Glenfiddich", subtitle: "12 Year Old Single Malt", type: "Whiskey", tag: "Single Malt", origin: "Speyside, Scotland", rating: 4.8, tasting: "Fresh pear, vanilla oak and a long clean finish with hints of spice.", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=600&q=85", pairing: "Dark Chocolate", body: "Medium Body" },
   { id: 102, brandId: "johnnie-walker", property: "Kennedia Blu", location: "Ghaziabad", name: "Johnnie Walker Black", subtitle: "Blended Scotch", type: "Whiskey", tag: "Blended Scotch", origin: "Scotland", rating: 4.7, tasting: "Dark fruit and vanilla with a rich signature smokiness and malty depth.", image: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=600&q=85", pairing: "Smoked Meat", body: "Full Body" },
@@ -209,6 +210,52 @@ export const DRINKS_DATA = [
   { id: 412, brandId: "johnnie-walker", property: "Kennedia Blu", location: "Ghaziabad", name: "Gin Botanicals", subtitle: "Sensory Workshop", type: "Tastings", tag: "Workshop", origin: "In-House", abv: "Varies", rating: 4.8, tasting: "Blend your own gin while tasting four distinctive botanical profiles.", image: "https://images.unsplash.com/photo-1543158181-e6f9f6712055?w=600&q=85", pairing: "Cucumber Sandwiches", body: "Interactive" }
 ];
 
+const PROPERTY_VARIANTS = {
+  Whiskey: [
+    { property: "Kennedia Blu", location: "Ghaziabad" },
+    { property: "The Cellar Lounge", location: "Delhi" },
+    { property: "Vine & Dine", location: "Mumbai" },
+    { property: "Terroir Room", location: "Bangalore" },
+    { property: "The Wine Bar", location: "Hyderabad" },
+    { property: "Blanc & Rouge", location: "Pune" },
+  ],
+  Wine: [
+    { property: "Kennedia Blu", location: "Ghaziabad" },
+    { property: "The Cellar Lounge", location: "Delhi" },
+    { property: "Vine & Dine", location: "Mumbai" },
+    { property: "Terroir Room", location: "Bangalore" },
+    { property: "The Wine Bar", location: "Hyderabad" },
+    { property: "Blanc & Rouge", location: "Pune" },
+    { property: "Clos de Kennedia", location: "Kolkata" },
+  ],
+  Beers: [
+    { property: "Kennedia Blu", location: "Ghaziabad" },
+    { property: "Vine & Dine", location: "Mumbai" },
+    { property: "Terroir Room", location: "Bangalore" },
+    { property: "The Wine Bar", location: "Hyderabad" },
+    { property: "Blanc & Rouge", location: "Pune" },
+    { property: "Tap House Kennedia", location: "Delhi" },
+  ],
+  Tastings: [
+    { property: "Kennedia Blu", location: "Ghaziabad" },
+    { property: "The Cellar Lounge", location: "Delhi" },
+    { property: "Vine & Dine", location: "Mumbai" },
+    { property: "Terroir Room", location: "Bangalore" },
+    { property: "Clos de Kennedia", location: "Kolkata" },
+    { property: "Blanc & Rouge", location: "Pune" },
+  ],
+};
+
+export const DRINKS_DATA = BASE_DRINKS_DATA.map((drink, index) => {
+  const variants = PROPERTY_VARIANTS[drink.type] || PROPERTY_VARIANTS.Wine;
+  const variant = variants[index % variants.length];
+  return {
+    ...drink,
+    property: variant.property,
+    location: variant.location,
+  };
+});
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function ImgWithFallback({ src, alt, className }) {
   const [err, setErr] = useState(false);
@@ -235,6 +282,7 @@ function StarRow({ rating }) {
 // ─── TYPE HERO ────────────────────────────────────────────────────────────────
 function TypeHero({ meta, citySlug, propertySlug }) {
   const accent = meta.accent;
+  const isGlobalPage = !citySlug || !propertySlug;
   return (
     <section id="hero" className="relative h-svh w-full overflow-hidden bg-[#0D0508]">
       <motion.div
@@ -264,8 +312,17 @@ function TypeHero({ meta, citySlug, propertySlug }) {
               <Link to="/" className="hover:text-white transition-colors">Home</Link>
               <ChevronRight className="h-2.5 w-2.5 opacity-50" />
               <Link to="/wine-homepage" className="hover:text-white transition-colors">Wines</Link>
-              <ChevronRight className="h-2.5 w-2.5 opacity-50" />
-              <Link to={`/wine-detail/${citySlug}/${propertySlug}`} className="hover:text-white transition-colors capitalize">{citySlug}</Link>
+              {isGlobalPage ? (
+                <>
+                  <ChevronRight className="h-2.5 w-2.5 opacity-50" />
+                  <span className="text-white/60">Categories</span>
+                </>
+              ) : (
+                <>
+                  <ChevronRight className="h-2.5 w-2.5 opacity-50" />
+                  <Link to={`/wine-detail/${citySlug}/${propertySlug}`} className="hover:text-white transition-colors capitalize">{citySlug}</Link>
+                </>
+              )}
               <ChevronRight className="h-2.5 w-2.5 opacity-50" />
               <span className="text-white/60">{meta.typeKey}</span>
             </motion.nav>
@@ -418,35 +475,65 @@ function ItemCard({ drink, index }) {
       transition={{ delay: Math.min(index * 0.06, 0.3), duration: 0.55 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="group relative overflow-hidden rounded-[1.5rem] border border-stone-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/[0.07] dark:bg-[#1A0C13] cursor-pointer"
+      className="group relative flex min-h-[266px] overflow-hidden rounded-[1.75rem] border border-stone-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/[0.07] dark:bg-[#1A0C13]"
     >
       <div className="absolute left-0 top-0 h-full w-[3px] transition-all duration-500" style={{ background: hovered ? `linear-gradient(to bottom, ${accent.dot}, ${accent.color})` : "transparent" }} />
 
-      {/* Image */}
-      <div className="relative h-56 overflow-hidden">
-        <ImgWithFallback
-          src={drink.image}
-          alt={drink.name}
-          className={`h-full w-full transition-transform duration-700 ${hovered ? "scale-[1.06]" : "scale-100"}`}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-        {/* ABV badge */}
-        {/* <div className="absolute right-3 top-3">
-          <span className="rounded-full bg-black/50 px-2.5 py-1 text-[9px] font-bold text-white/90 backdrop-blur-sm">
-            {drink.abv} ABV
-          </span>
-        </div> */}
-      </div>
-
-      {/* Content */}
-      <div className="p-5">
-        <div className="mb-3">
-          <h3 className="font-serif text-[1.2rem] leading-tight text-stone-900 dark:text-stone-100">{drink.name}</h3>
-          <p className="mt-0.5 text-[11px] italic text-stone-400">{drink.subtitle}</p>
+      <div className="flex h-full w-full overflow-hidden">
+        <div className="relative w-[40%] shrink-0 overflow-hidden">
+          <ImgWithFallback
+            src={drink.image}
+            alt={drink.name}
+            className={`h-full w-full transition-transform duration-700 ${hovered ? "scale-[1.06]" : "scale-100"}`}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/80 dark:to-[#1A0C13]/80" />
+          <div className="absolute left-4 top-4 h-2.5 w-2.5 rounded-full shadow-sm" style={{ backgroundColor: accent.dot }} />
         </div>
 
-        <p className="mt-3 line-clamp-2 text-[11px] italic leading-relaxed text-stone-400 dark:text-stone-500">"{drink.tasting}"</p>
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 py-5 text-center">
+          <div className="mb-3 flex flex-col items-center gap-2">
+            <div className="flex max-w-full items-center gap-1.5 whitespace-nowrap">
+              <Building2 size={10} className="shrink-0" style={{ color: accent.color }} />
+              <span className="truncate text-[8px] font-black uppercase tracking-[0.18em]" style={{ color: accent.color }}>
+                {drink.property} · {drink.location}
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center gap-1">
+              <h3 className="font-serif text-[1.4rem] leading-tight text-stone-900 dark:text-stone-100">{drink.name}</h3>
+              <p className="text-[11px] italic text-stone-400">{drink.subtitle}</p>
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <span
+              className="rounded-lg px-3 py-1 text-[8px] font-black uppercase tracking-widest"
+              style={{
+                color: accent.color,
+                backgroundColor: accent.bg || accent.light,
+                border: `1px solid ${accent.color}30`,
+              }}
+            >
+              {drink.tag || drink.type}
+            </span>
+          </div>
+
+          <div className="mb-3 h-px w-6 bg-stone-200 dark:bg-white/10" />
+
+          <p className="mx-auto max-w-[220px] line-clamp-3 text-[11px] italic leading-relaxed text-stone-400 dark:text-stone-500">
+            &ldquo;{drink.tasting}&rdquo;
+          </p>
+
+          <div className="mt-4 flex items-center gap-2">
+            <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-500">
+              {drink.body}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-500">
+              <MapPin size={10} />
+              {drink.location}
+            </span>
+          </div>
+        </div>
       </div>
     </motion.div>
   );
@@ -455,7 +542,7 @@ function ItemCard({ drink, index }) {
 // ─── TYPE ITEMS SECTION ───────────────────────────────────────────────────────
 function FlattenedItemsSection({ items, accentColor, giOffset = 0 }) {
   const [expanded, setExpanded] = useState(false);
-  const limit = 12;
+  const limit = 6;
   const hasMore = items.length > limit;
   const displayedItems = expanded ? items : items.slice(0, limit);
 
@@ -465,7 +552,7 @@ function FlattenedItemsSection({ items, accentColor, giOffset = 0 }) {
 
   return (
     <div>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {displayedItems.map((d, i) => (
           <ItemCard key={d.id} drink={d} index={giOffset + i} />
         ))}
@@ -489,19 +576,28 @@ function FlattenedItemsSection({ items, accentColor, giOffset = 0 }) {
 
 function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
   const accent = meta.accent;
+  const isGlobalPage = !citySlug || !propertySlug;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("All");
   const [isBrandOpen, setIsBrandOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState("All Locations");
 
   const availableBrands = useMemo(() => {
     const brandIds = Array.from(new Set(items.map((d) => d.brandId)));
     return BRANDS.filter((b) => brandIds.includes(b.id));
   }, [items]);
 
+  const availableLocations = useMemo(() => {
+    return ["All Locations", ...Array.from(new Set(items.map((d) => d.location))).sort()];
+  }, [items]);
+
   const filteredItems = useMemo(() => {
     let result = items;
     if (selectedBrand !== "All") {
       result = result.filter((d) => d.brandId === selectedBrand);
+    }
+    if (isGlobalPage && selectedLocation !== "All Locations") {
+      result = result.filter((d) => d.location === selectedLocation);
     }
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
@@ -513,7 +609,7 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
       );
     }
     return result;
-  }, [items, selectedBrand, searchTerm]);
+  }, [items, selectedBrand, searchTerm, isGlobalPage, selectedLocation]);
 
   return (
     <section id="collection" className="relative overflow-hidden bg-[#FAF8F4] pt-4 pb-20 dark:bg-[#0D0508]">
@@ -530,12 +626,32 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
               </span>
             </div> */}
             <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
-              All {meta.typeKey} <em className="not-italic" style={{ color: accent.color }}>Across Every Brand</em>
+              All {meta.typeKey} <em className="not-italic" style={{ color: accent.color }}>{isGlobalPage ? "Across Every Location" : "Across Every Brand"}</em>
             </h2>
             <p className="mt-3 text-sm italic text-stone-400">{filteredItems.length} items available</p>
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            {isGlobalPage && (
+              <div className="relative min-w-[200px]">
+                <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Location</span>
+                <div className="relative">
+                  <select
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                    className="flex w-full appearance-none items-center justify-between rounded-full border border-stone-200 bg-white px-5 py-2.5 pr-10 text-[10px] font-black uppercase tracking-widest text-stone-800 transition-all hover:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-amber-600"
+                  >
+                    {availableLocations.map((location) => (
+                      <option key={location} value={location}>
+                        {location}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-stone-400" />
+                </div>
+              </div>
+            )}
+
             {/* Brand Dropdown */}
             <div className="relative min-w-[200px]">
               <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Brand</span>
@@ -745,6 +861,8 @@ function RelatedStrip({ currentSlug, isTypePage, citySlug, propertySlug }) {
 export default function WineCategoryTemplate() {
   const { citySlug, propertySlug, slug } = useParams();
   const navigate = useNavigate();
+  const isGlobalPage = !citySlug || !propertySlug;
+  const backHref = isGlobalPage ? "/wine-homepage" : `/wine-detail/${citySlug}/${propertySlug}`;
 
   useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
@@ -773,10 +891,10 @@ export default function WineCategoryTemplate() {
           <h2 className="font-serif text-4xl text-stone-800 dark:text-stone-200">Collection Not Found</h2>
           <p className="text-stone-400">The category or brand you are looking for is not available.</p>
           <button
-            onClick={() => navigate(`/wine-detail/${citySlug}/${propertySlug}`)}
+            onClick={() => navigate(backHref)}
             className="flex items-center gap-2 rounded-full bg-[#8B1A2A] px-8 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black transition-all cursor-pointer"
           >
-            <ArrowLeft size={13} /> Back to Wine Estate
+            <ArrowLeft size={13} /> {isGlobalPage ? "Back to Wine Homepage" : "Back to Wine Estate"}
           </button>
         </div>
         <Footer />
@@ -800,10 +918,10 @@ export default function WineCategoryTemplate() {
         <div className="bg-[#FAF8F4] dark:bg-[#0D0508]">
           <div className="mx-auto max-w-[1400px] px-6 pt-8 pb-0 md:px-12">
             <button
-              onClick={() => navigate(`/wine-detail/${citySlug}/${propertySlug}`)}
+              onClick={() => navigate(backHref)}
               className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-stone-400 transition-colors hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
             >
-              <ArrowLeft size={13} /> Back to Estate
+              <ArrowLeft size={13} /> {isGlobalPage ? "Back to Wine Homepage" : "Back to Estate"}
             </button>
           </div>
         </div>
@@ -816,7 +934,9 @@ export default function WineCategoryTemplate() {
         )}
 
         {/* Related strip */}
-        <RelatedStrip currentSlug={normalizedSlug} isTypePage={isTypePage} citySlug={citySlug} propertySlug={propertySlug} />
+        {!isGlobalPage && (
+          <RelatedStrip currentSlug={normalizedSlug} isTypePage={isTypePage} citySlug={citySlug} propertySlug={propertySlug} />
+        )}
       </main>
 
       <div id="contact" className="bg-[#EDE7DF] dark:bg-[#0A0407]">
