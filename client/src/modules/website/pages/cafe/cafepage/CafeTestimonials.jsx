@@ -142,7 +142,7 @@ function MediaTile({ item, index, total }) {
         <div className="relative h-full w-full">
           <iframe
             src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1`}
-            className="h-full w-full"
+            className="h-full w-full pointer-events-none"
             style={{ border: "none" }}
             allow="autoplay; encrypted-media"
             title={item.alt || "Guest video"}
@@ -326,7 +326,7 @@ function StandaloneMedia({ media, alt, className }) {
       <div className={`${className} group relative overflow-hidden bg-black`}>
         <iframe
           src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1`}
-          className="h-full w-full"
+          className="h-full w-full pointer-events-none"
           style={{ border: "none" }}
           allow="autoplay; encrypted-media"
           title={alt || "Guest video"}
@@ -567,18 +567,22 @@ function TestimonialCard({ item }) {
   );
 }
 
-function InfiniteColumn({ items, pattern, scrollYProgress }) {
+function InfiniteColumn({ items, pattern, scrollYProgress, paused = false }) {
   const parallaxY = useTransform(scrollYProgress, [0, 1], pattern.parallax);
   const controls = useAnimation();
   const loopItems = [...items, ...items];
 
   useEffect(() => {
-    controls.start({
-      ...pattern.animate,
-      transition: { duration: pattern.duration, repeat: Infinity, ease: "linear" },
-    });
+    if (paused) {
+      controls.stop();
+    } else {
+      controls.start({
+        ...pattern.animate,
+        transition: { duration: pattern.duration, repeat: Infinity, ease: "linear" },
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [paused]);
 
   const handleMouseEnter = () => controls.stop();
   const handleMouseLeave = () =>
@@ -778,6 +782,7 @@ export default function CafeTestimonials({
   const [showPopup, setShowPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mediaUploading] = useState(false);
+  const [isColumnsPaused, setIsColumnsPaused] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -939,6 +944,9 @@ export default function CafeTestimonials({
   const titleParts = headerData.title ? headerData.title.split(" ") : ["A", "Sip", "of", "Guest", "Stories"];
   const titleMain = titleParts.length > 1 ? titleParts.slice(0, -1).join(" ") : titleParts[0] || "";
   const titleItalic = titleParts.length > 1 ? titleParts[titleParts.length - 1] : "";
+  const ratingNumber = Number(headerData.ratingValue || avgRating || 0);
+  const safeRating = Number.isFinite(ratingNumber) ? Math.max(0, Math.min(5, ratingNumber)) : 0;
+  const filledStars = Math.floor(safeRating);
 
   return (
     <section
@@ -982,7 +990,15 @@ export default function CafeTestimonials({
               </p>
               <div className="mt-2 flex gap-0.5 cursor-pointer">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={14} className="fill-primary text-primary dark:fill-primary dark:text-primary" />
+                  <Star
+                    key={i}
+                    size={14}
+                    className={
+                      i < filledStars
+                        ? "fill-primary text-primary dark:fill-primary dark:text-primary"
+                        : "fill-transparent text-primary/35 dark:text-primary/35"
+                    }
+                  />
                 ))}
               </div>
             </div>
@@ -1001,13 +1017,18 @@ export default function CafeTestimonials({
               </div>
             ) : (
               <>
-                <div className="hidden gap-5 lg:grid lg:grid-cols-3">
+                <div
+                  className="hidden gap-5 lg:grid lg:grid-cols-3"
+                  onMouseEnter={() => setIsColumnsPaused(true)}
+                  onMouseLeave={() => setIsColumnsPaused(false)}
+                >
                   {testimonialColumns.map((columnItems, index) => (
                     <InfiniteColumn
                       key={`column-${index}`}
                       items={columnItems}
                       pattern={motionPatterns[index]}
                       scrollYProgress={scrollYProgress}
+                      paused={isColumnsPaused}
                     />
                   ))}
                 </div>
