@@ -275,10 +275,10 @@ function GroupBookingColumn({ items = [], openGroupBookingForm }) {
         <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5" />
         <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
           <Users className="h-8 w-8 text-primary/60" />
-          <p className="font-serif text-sm font-semibold text-foreground/80">
+          <p className="font-serif text-sm font-semibold text-[#2F2F2B]">
             {groupBookingHeader?.header || "Planning something bigger?"}
           </p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[11px] text-[#5A5A56]">
             {groupBookingHeader?.description ||
               "Reach out for bespoke group experiences, private dining, and exclusive cafe takeovers."}
           </p>

@@ -36,12 +36,26 @@ const EMPTY_FORM = {
   customQuery: "",
 };
 
+const normalizeCtaUrl = (url = "") => {
+  const clean = String(url || "").trim();
+  if (!clean) return "";
+  if (/^(https?:|mailto:|tel:)/i.test(clean)) return clean;
+  if (clean.startsWith("//")) return `https:${clean}`;
+  if (/^(www\.)?(instagram\.com|youtube\.com|youtu\.be|facebook\.com)\//i.test(clean)) {
+    return `https://${clean.replace(/^https?:\/\//i, "")}`;
+  }
+  return clean;
+};
+
 // ── Shared Card ───────────────────────────────────────────────────────────────
 
 function ShowcaseCard({ item }) {
   const ctaText = item?.ctaText?.trim() || item?.ctaLabel?.trim() || "";
-  const ctaHref = item?.ctaLink || item?.ctaUrl || item?.detailPath || (item?.slug ? `/cafe/${item.slug}` : null);
-  const isExternalCta = typeof ctaHref === "string" && /^https?:\/\//i.test(ctaHref);
+  const rawCtaHref = item?.ctaLink || item?.ctaUrl || item?.detailPath || (item?.slug ? `/cafe/${item.slug}` : null);
+  const ctaHref = normalizeCtaUrl(rawCtaHref);
+  const isExternalCta =
+    typeof ctaHref === "string" &&
+    (/^(https?:|mailto:|tel:)/i.test(ctaHref) || /^(www\.)?(instagram\.com|youtube\.com|youtu\.be|facebook\.com)\//i.test(ctaHref));
 
   return (
     <div className="group relative mx-auto flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
@@ -275,10 +289,10 @@ function GroupBookingColumn({ initialBookings = [], openGroupBookingForm }) {
         {/* CTA text inside glass card */}
         <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
           <Users className="h-8 w-8 text-primary/60" />
-          <p className="font-serif text-sm font-semibold text-foreground/80">
+          <p className="font-serif text-sm font-semibold text-[#2F2F2B]">
             {groupBookingHeader?.header || "Planning something bigger?"}
           </p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[11px] text-[#5A5A56]">
             {groupBookingHeader?.description ||
               "Reach out for bespoke group experiences, private dining, and exclusive cafe takeovers."}
           </p>

@@ -433,7 +433,7 @@ function TestimonialCard({ item }) {
       <motion.article
         whileHover={{ y: -6 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="relative h-64 overflow-hidden rounded-[2rem] shadow-[0_18px_45px_rgba(72,41,26,0.18)]"
+        className="relative h-56 overflow-hidden rounded-[2rem] shadow-[0_18px_45px_rgba(72,41,26,0.18)] sm:h-64"
       >
         {img ? (
           <StandaloneMedia
@@ -498,7 +498,7 @@ function TestimonialCard({ item }) {
         transition={{ duration: 0.35, ease: "easeOut" }}
         className="overflow-hidden rounded-[2rem] border border-[#EADFD4] bg-white/90 shadow-[0_18px_45px_rgba(72,41,26,0.12)] dark:border-white/10 dark:bg-[#1A1210]/88"
       >
-        <div className="relative h-44 overflow-hidden">
+        <div className="relative h-40 overflow-hidden sm:h-44">
           {img ? (
             <StandaloneMedia
               media={img}
@@ -952,7 +952,7 @@ export default function CafeTestimonials({
     <section
       id="reviews"
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#F7F7F5] py-20 text-zinc-900 dark:bg-[#120D0C] dark:text-[#F7EEE8]"
+      className="relative overflow-hidden bg-[#F7F7F5] pb-12 pt-0 text-zinc-900 dark:bg-[#120D0C] dark:text-[#F7EEE8] md:pb-16 lg:pb-20"
     >
       <motion.div
         style={{ x: glowX, y: glowY }}
@@ -963,10 +963,10 @@ export default function CafeTestimonials({
         className="pointer-events-none absolute right-[-6%] top-1/3 h-80 w-80 rounded-full bg-[#ECECE8]/70 blur-3xl dark:bg-[#5A3426]/25"
       />
 
-      <div className="container mx-auto max-w-7xl px-4">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-5">
         <motion.div
           style={{ y: headerY }}
-          className="mb-16 flex flex-col justify-between gap-6 border-b border-primary/20 pb-8 md:flex-row md:items-end dark:border-white/10"
+          className="mb-8 flex flex-col justify-between gap-4 border-b border-primary/20 pb-6 md:mb-12 md:gap-6 md:pb-8 md:flex-row md:items-end dark:border-white/10"
         >
           <div>
             <div className="mb-3 flex items-center gap-2">
@@ -975,7 +975,7 @@ export default function CafeTestimonials({
                 {headerData.sectionTag}
               </p>
             </div>
-            <h2 className="text-4xl font-serif font-medium leading-tight md:text-5xl">
+            <h2 className="text-3xl font-serif font-medium leading-tight sm:text-4xl md:text-5xl">
               {titleMain}{" "}
               <span className="italic text-primary dark:text-[#DDB8A5]">
                 {titleItalic}
@@ -983,7 +983,7 @@ export default function CafeTestimonials({
             </h2>
           </div>
 
-          <div className="flex items-center gap-6 rounded-[1.8rem] border border-primary/20 bg-white/80 p-6 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center gap-4 rounded-[1.8rem] border border-primary/20 bg-white/80 p-4 shadow-sm backdrop-blur-md sm:gap-6 sm:p-6 dark:border-white/10 dark:bg-white/5">
             <div className="text-center">
               <p className="text-3xl font-serif font-bold leading-none text-zinc-900 dark:text-[#F7EEE8]">
                 {headerData.ratingValue || avgRating}
@@ -1009,7 +1009,7 @@ export default function CafeTestimonials({
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12">
+        <div className="grid grid-cols-1 items-start gap-8 md:gap-10 lg:grid-cols-12">
           <div className="lg:col-span-8">
             {loading && experiences.length === 0 ? (
               <div className="flex h-64 items-center justify-center">
@@ -1051,7 +1051,7 @@ export default function CafeTestimonials({
           </div>
 
           <div className="lg:col-span-4">
-            <div className="group relative overflow-hidden rounded-[2rem] bg-[#3E2723] p-8 text-[#FDFCFB] shadow-2xl dark:bg-[#1A1210]">
+            <div className="group relative overflow-hidden rounded-[2rem] bg-[#3E2723] p-5 text-[#FDFCFB] shadow-2xl sm:p-6 md:p-8 dark:bg-[#1A1210]">
               <Coffee className="absolute -bottom-4 -right-4 opacity-5 transition-transform duration-700 group-hover:rotate-12" size={160} />
 
               <div className="relative z-10">
