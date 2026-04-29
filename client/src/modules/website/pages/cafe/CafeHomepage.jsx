@@ -57,6 +57,11 @@ const haversineKm = (lat1, lng1, lat2, lng2) => {
 
 export default function CafeHomepage() {
   const { cafeHomepage: ssr } = useSsrData();
+  const isInsecureOrigin =
+    typeof window !== "undefined" &&
+    !window.isSecureContext &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
   const [isPageReady, setIsPageReady] = useState(
     (ssr?.heroSlides?.length ?? 0) > 0,
   );
@@ -82,6 +87,13 @@ export default function CafeHomepage() {
 
   // ── Geolocation status logging ───────────────────────────────────────────
   useEffect(() => {
+    if (isInsecureOrigin) {
+      console.warn(
+        "CafeHomepage: Geolocation requires HTTPS or localhost. Current origin is insecure:",
+        window.location.origin,
+      );
+      return;
+    }
     if (!isGeolocationAvailable) {
       console.warn("CafeHomepage: Geolocation not supported by this browser.");
       return;
@@ -100,7 +112,7 @@ export default function CafeHomepage() {
     if (!coords) {
       console.log("CafeHomepage: Waiting for user coordinates...");
     }
-  }, [isGeolocationAvailable, isGeolocationEnabled, positionError, coords]);
+  }, [coords, isGeolocationAvailable, isGeolocationEnabled, isInsecureOrigin, positionError]);
 
   // ── fetchNearby — runs only once real coords are available ───────────────
   useEffect(() => {
@@ -235,6 +247,18 @@ export default function CafeHomepage() {
       <AnimatePresence>{!isPageReady && <PageLoader />}</AnimatePresence>
 
       <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
+     {/* {isInsecureOrigin && (
+        <div className="relative z-[190] border-y border-amber-500/30 bg-amber-50/95 px-4 py-3 text-amber-950 shadow-sm">
+          <div className="mx-auto flex max-w-6xl flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-medium">
+              Nearby location is unavailable on this server URL.
+            </p>
+            <p className="text-amber-900/80">
+              Open this page on HTTPS or localhost to allow browser location access.
+            </p>
+          </div>
+        </div>
+      )}*/}
 
       {/* ── Location match popup ─────────────────────────────────────────── */}
       <AnimatePresence>

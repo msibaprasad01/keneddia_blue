@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Building2, ChevronDown, ImageOff, MapPin } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import WineBanner from "./winepage/WineBanner";
@@ -13,6 +15,7 @@ import WineReservationForm from "./winepage/WineReservationForm";
 import WineTopBrands from "./components/WineTopBrands";
 import { siteContent } from "@/data/siteContent";
 import WineWhatsAppButton from "./components/WineWhatsAppButton";
+import { DRINKS_DATA } from "./winepage/WineCategoryTemplate";
 
 const WINE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
@@ -72,8 +75,218 @@ function KenediaWinesLoader() {
   );
 }
 
+function generateSlug(text) {
+  return text
+    ?.toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/--+/g, "-");
+}
+
+function humanizeSlug(slug) {
+  return slug
+    ?.replace(/-/g, " ")
+    .replace(/\bwine\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function WineShowcaseCard({ wine, index }) {
+  const [errored, setErrored] = useState(false);
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.45, delay: index * 0.05 }}
+      className="group relative flex min-h-[266px] overflow-hidden rounded-[1.75rem] border border-stone-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-[#1A0C12]"
+    >
+      <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-[1.75rem] bg-gradient-to-b from-[#C4485A] to-[#8B1A2A] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      <div className="flex h-full w-full overflow-hidden">
+        <div className="relative w-[40%] shrink-0 overflow-hidden bg-stone-100 dark:bg-zinc-900">
+          {!wine.image || errored ? (
+            <div className="flex h-full w-full items-center justify-center">
+              <ImageOff size={20} className="text-stone-300 dark:text-zinc-700" />
+            </div>
+          ) : (
+            <img
+              src={wine.image}
+              alt={wine.name}
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              onError={() => setErrored(true)}
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/80 dark:to-[#1A0C12]/80" />
+          <div className="absolute left-4 top-4 h-2.5 w-2.5 rounded-full bg-[#D4AF37] shadow-sm" />
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 py-5 text-center">
+          <div className="mb-3 flex flex-col items-center gap-2">
+            <div className="flex max-w-full items-center gap-1.5 whitespace-nowrap">
+              <Building2 size={10} className="shrink-0 text-[#8B1A2A]" />
+              <span className="truncate text-[8px] font-black uppercase tracking-[0.18em] text-[#8B1A2A]">
+                {wine.property} · {wine.location}
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center gap-1">
+              <h3 className="font-serif text-[1.4rem] leading-tight text-stone-950 dark:text-stone-100">
+                {wine.name}
+              </h3>
+              <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
+                {wine.subtitle}
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <span className="rounded-lg border border-[#8B1A2A]/20 bg-[#8B1A2A]/[0.06] px-3 py-1 text-[8px] font-black uppercase tracking-widest text-[#8B1A2A] dark:border-[#C8956A]/20 dark:bg-[#C8956A]/10 dark:text-[#C8956A]">
+              {wine.tag}
+            </span>
+          </div>
+
+          <div className="mb-3 h-px w-6 bg-stone-200 dark:bg-white/10" />
+
+          <p className="mx-auto max-w-[220px] line-clamp-3 text-[11px] italic leading-relaxed text-stone-400 dark:text-stone-500">
+            &ldquo;{wine.tasting}&rdquo;
+          </p>
+
+          <div className="mt-4 flex items-center gap-2">
+            <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-500">
+              {wine.body}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-500">
+              <MapPin size={10} />
+              {wine.location}
+            </span>
+          </div>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+function WineShowcaseSection({ wines, propertyName }) {
+  const [expanded, setExpanded] = useState(false);
+  const visibleWines = expanded ? wines : wines.slice(0, 6);
+  const hasMore = wines.length > 6;
+
+  if (!wines.length) {
+    return null;
+  }
+
+  return (
+    <section className="relative overflow-hidden bg-[#F5F0EA] py-20 dark:bg-[#12070A]">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.018]"
+        style={{
+          backgroundImage:
+            'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")',
+          backgroundSize: "128px",
+        }}
+      />
+      <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
+        <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="h-px w-10 bg-[#8B1A2A]/40" />
+              <span className="text-[10px] font-black uppercase tracking-[0.38em] text-[#8B1A2A]">
+                Wine Showcase
+              </span>
+            </div>
+            <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
+              Bottles available at{" "}
+              <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">{propertyName}</em>
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+              A property-specific collection in a listing format, using the same editorial card direction as the wine homepage.
+            </p>
+          </div>
+          <div className="rounded-full border border-[#8B1A2A]/15 bg-white/70 px-4 py-2 text-[11px] font-black uppercase tracking-[0.24em] text-[#8B1A2A] shadow-sm dark:border-[#C8956A]/20 dark:bg-white/5 dark:text-[#C8956A]">
+            {wines.length} Labels
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {visibleWines.map((wine, index) => (
+            <WineShowcaseCard key={wine.id} wine={wine} index={index} />
+          ))}
+        </div>
+
+        {hasMore && (
+          <div className="mt-12 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setExpanded((prev) => !prev)}
+              className="inline-flex items-center gap-2 rounded-full border border-[#8B1A2A]/20 bg-white px-6 py-3 text-[10px] font-black uppercase tracking-[0.26em] text-[#8B1A2A] transition-all hover:border-[#8B1A2A]/35 hover:shadow-lg dark:border-[#C8956A]/20 dark:bg-white/5 dark:text-[#C8956A]"
+            >
+              {expanded ? "Show Less" : "Show More"}
+              <ChevronDown size={14} className={`transition-transform duration-300 ${expanded ? "rotate-180" : ""}`} />
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function WinePage() {
+  const { citySlug, propertySlug } = useParams();
   const [loaderDone, setLoaderDone] = useState(false);
+  const showcaseWines = useMemo(() => {
+    const allWines = DRINKS_DATA.filter((drink) => drink.type === "Wine");
+
+    if (!citySlug || !propertySlug) {
+      return allWines;
+    }
+
+    const propertyMatchedWines = allWines.filter(
+      (drink) =>
+        drink.location.toLowerCase() === citySlug.toLowerCase() &&
+        generateSlug(drink.property) === propertySlug.toLowerCase()
+    );
+
+    if (propertyMatchedWines.length > 0) {
+      return propertyMatchedWines;
+    }
+
+    const cityMatchedWines = allWines.filter(
+      (drink) => drink.location.toLowerCase() === citySlug.toLowerCase()
+    );
+
+    if (cityMatchedWines.length > 0) {
+      return cityMatchedWines;
+    }
+
+    return allWines;
+  }, [citySlug, propertySlug]);
+
+  const currentPropertyName =
+    showcaseWines[0]?.property ??
+    humanizeSlug(propertySlug) ??
+    siteContent.brand.name ??
+    "this property";
+
+  const showcaseDescription = useMemo(() => {
+    const exactPropertyMatch = showcaseWines.some(
+      (drink) => generateSlug(drink.property) === propertySlug?.toLowerCase()
+    );
+
+    if (exactPropertyMatch) {
+      return currentPropertyName;
+    }
+
+    if (citySlug) {
+      return `${currentPropertyName} collection`;
+    }
+
+    return currentPropertyName;
+  }, [showcaseWines, propertySlug, citySlug, currentPropertyName]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -103,6 +316,8 @@ export default function WinePage() {
             </div>
             <WineSignatureDrinks />
           </div>
+
+          <WineShowcaseSection wines={showcaseWines} propertyName={showcaseDescription} />
 
           {/* Top Brands */}
           <div id="brand" className="bg-[#F0EAE2] pb-16 dark:bg-[#100609]">
