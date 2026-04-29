@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import {
   CalendarCheck,
   ChevronLeft,
@@ -217,6 +218,15 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (!showModal) return undefined;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [showModal]);
 
   if (loading) {
     return (
@@ -459,9 +469,10 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
       </div>
 
       {/* ── RESERVE MODAL ────────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {showModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      {createPortal(
+        <AnimatePresence>
+          {showModal && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -482,6 +493,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
                 <button
                   onClick={() => setShowModal(false)}
                   className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 cursor-pointer"
+                  aria-label="Close reservation form"
                 >
                   <X size={20} />
                 </button>
@@ -588,8 +600,10 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
 
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }

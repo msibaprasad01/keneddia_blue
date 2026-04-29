@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import { Camera, X, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { CAFE_GALLERY_ITEMS } from "./cafeGalleryData";
 import { getGalleryByPropertyId } from "@/Api/Api";
@@ -261,14 +262,20 @@ export default function CafeGalleryPage({ propertyId }) {
         </div>
       </div>
 
-      {lightboxIndex !== null && filtered.length > 0 && (
+      {lightboxIndex !== null &&
+        filtered.length > 0 &&
+        createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          className="fixed inset-0 z-[99999] bg-black/95 flex items-center justify-center"
           onClick={closeLightbox}
         >
           <button
-            onClick={closeLightbox}
-            className="absolute top-5 right-5 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              closeLightbox();
+            }}
+            className="absolute top-3 right-3 z-[1210] p-2 sm:top-5 sm:right-5 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            aria-label="Close image"
           >
             <X className="w-6 h-6" />
           </button>
@@ -277,7 +284,8 @@ export default function CafeGalleryPage({ propertyId }) {
               e.stopPropagation();
               lightboxPrev();
             }}
-            className="absolute left-5 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            className="absolute left-3 sm:left-5 z-[1210] p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            aria-label="Previous image"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -296,14 +304,16 @@ export default function CafeGalleryPage({ propertyId }) {
               e.stopPropagation();
               lightboxNext();
             }}
-            className="absolute right-5 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            className="absolute right-3 sm:right-5 z-[1210] p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            aria-label="Next image"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
           <div className="absolute bottom-5 text-white/60 text-sm">
             {lightboxIndex + 1} / {filtered.length}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </section>
   );
