@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ImageOff } from "lucide-react";
+import { ArrowRight, ImageOff } from "lucide-react";
 
 // ─── TYPE ACCENTS ─────────────────────────────────────────────────────────────
 const TYPE_ACCENTS = {
@@ -38,42 +38,69 @@ function CategoryCard({ category, index }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
-      whileInView={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.1, duration: 0.5 }}
+      transition={{ delay: index * 0.08, duration: 0.45 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleExplore}
-      className="group relative flex h-full min-h-[300px] cursor-pointer select-none flex-col overflow-hidden rounded-[1.75rem] border border-stone-200/80 bg-white shadow-sm transition-shadow duration-300 hover:shadow-xl dark:border-white/[0.07] dark:bg-[#1A0C13]"
+      className="group relative flex h-full min-h-[108px] cursor-pointer select-none items-center overflow-hidden rounded-[1.5rem] border border-stone-200/90 bg-white px-4 py-4 shadow-[0_14px_40px_-28px_rgba(66,28,35,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_-34px_rgba(66,28,35,0.45)] dark:border-white/[0.07] dark:bg-[#1A0C13]"
     >
-      <div className="absolute left-0 top-0 h-full w-[3px] transition-all duration-500 z-10" style={{ background: hovered ? `linear-gradient(to bottom, ${accent.dot}, ${accent.color})` : "transparent" }} />
-      
-      {/* Background Image */}
-      <div className="absolute inset-0 overflow-hidden">
-        {(!category.image || errored) ? (
-           <div className="flex h-full w-full items-center justify-center bg-stone-100 dark:bg-zinc-900">
-             <ImageOff size={20} className="text-stone-300 dark:text-zinc-700" />
-           </div>
-        ) : (
-          <img 
-            src={category.image} 
-            alt={category.name} 
-            className="h-full w-full object-cover transition-transform duration-700" 
-            style={{ transform: hovered ? "scale(1.08)" : "scale(1)" }} 
-            onError={() => setErrored(true)} 
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-300 group-hover:from-black" />
+      <div
+        className="absolute left-0 top-0 h-full w-[3px] transition-all duration-500"
+        style={{ background: hovered ? `linear-gradient(to bottom, ${accent.dot}, ${accent.color})` : "transparent" }}
+      />
+
+      <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-stone-100 ring-1 ring-stone-200/80 dark:bg-zinc-900 dark:ring-white/10">
+          {(!category.image || errored) ? (
+            <div className="flex h-full w-full items-center justify-center bg-stone-100 dark:bg-zinc-900">
+              <ImageOff size={18} className="text-stone-300 dark:text-zinc-700" />
+            </div>
+          ) : (
+            <img
+              src={category.image}
+              alt={category.name}
+              className="h-full w-full object-cover transition-transform duration-700"
+              style={{ transform: hovered ? "scale(1.08)" : "scale(1)" }}
+              onError={() => setErrored(true)}
+            />
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p
+            className="mb-1 text-[10px] font-black uppercase tracking-[0.28em]"
+            style={{ color: accent.color }}
+          >
+            {category.tag}
+          </p>
+          <h3 className="truncate font-serif text-lg capitalize leading-tight text-stone-900 dark:text-stone-100">
+            {category.name}
+          </h3>
+          <p className="mt-1 truncate text-xs text-stone-500 dark:text-stone-400">
+            {category.property}
+          </p>
+        </div>
+
+        <div
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white shadow-lg transition-transform duration-300 group-hover:scale-105"
+          style={{
+            background: `linear-gradient(135deg, ${accent.dot}, ${accent.color})`,
+            transform: hovered ? "translateX(2px)" : "translateX(0px)",
+          }}
+        >
+          <ArrowRight size={20} />
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="absolute inset-0 flex flex-col justify-end p-8 text-left z-20">
-         <span className="mb-2 w-fit rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/90 backdrop-blur-md" style={{ backgroundColor: `${accent.color}80` }}>
-           {category.tag}
-         </span>
-         <h3 className="font-serif text-3xl leading-tight text-white">{category.name}</h3>
-      </div>
+      <div
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background: `linear-gradient(90deg, ${accent.color}08 0%, transparent 45%)`,
+        }}
+      />
     </motion.div>
   );
 }
@@ -96,7 +123,7 @@ export default function WineSignatureDrinks() {
              </h2>
           </div>
 
-          <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
             {CATEGORIES.map((category, i) => (
               <CategoryCard key={category.id} category={category} index={i} />
             ))}

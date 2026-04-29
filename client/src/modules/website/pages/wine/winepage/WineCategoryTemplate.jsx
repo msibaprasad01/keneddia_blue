@@ -151,7 +151,7 @@ const BRANDS = [
 ];
 
 // ─── DRINKS DATA ──────────────────────────────────────────────────────────────
-const DRINKS_DATA = [
+export const DRINKS_DATA = [
   // --- WHISKEY (12+ ITEMS) ---
   { id: 101, brandId: "hibiki", property: "Kennedia Blu", location: "Ghaziabad", name: "Glenfiddich", subtitle: "12 Year Old Single Malt", type: "Whiskey", tag: "Single Malt", origin: "Speyside, Scotland", rating: 4.8, tasting: "Fresh pear, vanilla oak and a long clean finish with hints of spice.", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=600&q=85", pairing: "Dark Chocolate", body: "Medium Body" },
   { id: 102, brandId: "johnnie-walker", property: "Kennedia Blu", location: "Ghaziabad", name: "Johnnie Walker Black", subtitle: "Blended Scotch", type: "Whiskey", tag: "Blended Scotch", origin: "Scotland", rating: 4.7, tasting: "Dark fruit and vanilla with a rich signature smokiness and malty depth.", image: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=600&q=85", pairing: "Smoked Meat", body: "Full Body" },
