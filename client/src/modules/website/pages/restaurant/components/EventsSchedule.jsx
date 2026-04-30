@@ -607,13 +607,14 @@ export default function EventsSchedule({
             ) : events.length > 0 ? (
               <Swiper
                 modules={[Navigation, Autoplay]}
-                slidesPerView={1.2}
-                spaceBetween={20}
+                slidesPerView={1.06}
+                spaceBetween={12}
+                centeredSlides={false}
                 breakpoints={{
-                  640: { slidesPerView: 1.6 },
-                  768: { slidesPerView: 2.2 },
-                  1024: { slidesPerView: 2.4 },
-                  1200: { slidesPerView: 2.5 }, // 👈 key line
+                  640: { slidesPerView: 1.15, spaceBetween: 14, centeredSlides: false },
+                  768: { slidesPerView: 1.6, spaceBetween: 18, centeredSlides: true },
+                  1024: { slidesPerView: 2, spaceBetween: 20, centeredSlides: false },
+                  1200: { slidesPerView: 2, spaceBetween: 20, centeredSlides: false },
                 }}
                 autoplay={{
                   delay: 5000,
@@ -621,10 +622,10 @@ export default function EventsSchedule({
                   pauseOnMouseEnter: true,
                 }}
                 onSwiper={setSwiper}
-                className="!pb-2"
+                className="!pb-2 w-full min-w-0"
               >
                 {events.map((event, index) => (
-                  <SwiperSlide key={event.id || `${event.title}-${index}`}>
+                  <SwiperSlide key={event.id || `${event.title}-${index}`} className="min-w-0">
                     <EventCard event={event} index={index} />
                   </SwiperSlide>
                 ))}
@@ -921,3 +922,4 @@ export default function EventsSchedule({
     </section>
   );
 }
+

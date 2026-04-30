@@ -5,6 +5,7 @@ import { ChevronDown, LogIn, Calendar } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { BookingSheet } from "./BookingSheet";
 import RestaurantBookingSheet from "./RestaurantBookingSheet";
+import CafeBookingSheet from "./CafeBookingSheet";
 import { ThemeToggle } from "./ThemeToggle";
 
 // import logoHotelDark from "@assets/logo/kb-hotel-dark.png";
@@ -48,7 +49,7 @@ const QUICK_BOOKING_OPTIONS = [
 
 // Quick Book Option Type
 type QuickBookOption =
-  | { label: string; category: "hotel" | "dining" | "delivery" | "restaurant"; href?: never }
+  | { label: string; category: "hotel" | "dining" | "delivery" | "restaurant" | "cafe"; href?: never }
   | { label: string; category?: never; href: string };
 
 // Types
@@ -149,6 +150,7 @@ export default function Navbar({
     "hotel" | "dining" | "delivery" | null
   >(null);
   const [restaurantBookingOpen, setRestaurantBookingOpen] = useState(false);
+  const [cafeBookingOpen, setCafeBookingOpen] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -190,6 +192,9 @@ export default function Navbar({
   const handleQuickBookOption = (option: QuickBookOption) => {
     if (option.category === "restaurant") {
       setRestaurantBookingOpen(true);
+      setActiveDropdown(null);
+    } else if (option.category === "cafe") {
+      setCafeBookingOpen(true);
       setActiveDropdown(null);
     } else if (option.category) {
       openBooking(option.category);
@@ -468,6 +473,11 @@ export default function Navbar({
       <RestaurantBookingSheet
         isOpen={restaurantBookingOpen}
         onOpenChange={setRestaurantBookingOpen}
+      />
+
+      <CafeBookingSheet
+        isOpen={cafeBookingOpen}
+        onOpenChange={setCafeBookingOpen}
       />
     </nav>
   );

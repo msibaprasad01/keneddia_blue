@@ -133,7 +133,12 @@ export default function CafePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
+      <Navbar
+        navItems={CAFE_NAV_ITEMS}
+        logo={siteContent.brand.logo_cafe}
+        showQuickBook={true}
+        quickBookOptions={[{ label: "Reserve Cafe", category: "cafe" }]}
+      />
 
       <main>
         <div id="home" className="relative z-20 shadow-sm">

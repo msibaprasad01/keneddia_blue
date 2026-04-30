@@ -246,7 +246,12 @@ export default function CafeHomepage() {
     >
       <AnimatePresence>{!isPageReady && <PageLoader />}</AnimatePresence>
 
-      <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
+      <Navbar
+        navItems={CAFE_NAV_ITEMS}
+        logo={siteContent.brand.logo_cafe}
+        showQuickBook={true}
+        quickBookOptions={[{ label: "Reserve Cafe", category: "cafe" }]}
+      />
      {/* {isInsecureOrigin && (
         <div className="relative z-[190] border-y border-amber-500/30 bg-amber-50/95 px-4 py-3 text-amber-950 shadow-sm">
           <div className="mx-auto flex max-w-6xl flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
