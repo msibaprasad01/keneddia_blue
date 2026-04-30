@@ -11,6 +11,8 @@ import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
 import Testimonials from "./components/Testimonials";
 import ReservationForm from "./components/ReservationForm";
 import { getAllVerticalCards, getMenuItemsByPropertyId } from "@/Api/RestaurantApi";
+import { getPropertyPetPoojaByPropertyId, fetchPetPoojaMenus } from "@/Api/externalApi";
+import PetPoojaMenu from "./components/shared/PetPoojaMenu";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 import { useSsrData } from "@/ssr/SsrDataContext";
 import {
@@ -261,6 +263,8 @@ function ResturantCategoryPageTemplate() {
   const [galleryData, setGalleryData] = useState(
     ssrCategoryData?.galleryData || [],
   );
+  const [petpoojaCategories, setPetpoojaCategories] = useState([]);
+  const [petpoojaItems, setPetpoojaItems] = useState([]);
   const [loading, setLoading] = useState(ssrCategoryData ? false : true);
   const [notFound, setNotFound] = useState(ssrCategoryData?.notFound || false);
   const [citySlug, setCitySlug] = useState(
@@ -276,6 +280,43 @@ function ResturantCategoryPageTemplate() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [categoryType]);
+
+  // Fetch PetPooja menu — always re-checks showOrderButton live from API
+  // so SSR-cached currentCategory (which may lack the field) is not a problem
+  useEffect(() => {
+    if (!currentCategory?.id || !propertyId) return;
+
+    let cancelled = false;
+    const fetchPetPooja = async () => {
+      try {
+        // Re-fetch the vertical card to get a fresh showOrderButton value
+        const cardsRes = await getAllVerticalCards();
+        const cards = cardsRes?.data || cardsRes || [];
+        const thisCard = cards.find((c) => c.id === currentCategory.id);
+        if (!thisCard?.showOrderButton || cancelled) return;
+
+        const credRes = await getPropertyPetPoojaByPropertyId(propertyId);
+        const creds = credRes?.data?.data ?? credRes?.data ?? credRes ?? null;
+        if (!creds?.active || cancelled) return;
+
+        const ppRes = await fetchPetPoojaMenus({
+          appKey:      creds["app-key"],
+          appSecret:   creds["app-secret"],
+          accessToken: creds["access-token"],
+          restID:      creds.restID,
+        });
+        if (cancelled) return;
+        const raw = ppRes?.data;
+        setPetpoojaCategories(raw?.categories ?? []);
+        setPetpoojaItems(raw?.items ?? []);
+      } catch (err) {
+        console.error("[PetPooja] fetch error:", err);
+      }
+    };
+
+    fetchPetPooja();
+    return () => { cancelled = true; };
+  }, [currentCategory?.id, propertyId]);
 
   useEffect(() => {
     if (!propertyId) return;
@@ -356,6 +397,7 @@ function ResturantCategoryPageTemplate() {
             description: card.description || "",
             image: card.media?.url || "",
             link: card.link || "",
+            showOrderButton: !!card.showOrderButton,
             ctaButtonText: card.showOrderButton ? card.extraText || "" : null,
             // Keep hex for light mode usage
             lightBgColor: card.cardBackgroundColor || null,
@@ -420,6 +462,7 @@ function ResturantCategoryPageTemplate() {
 
           setGalleryData(normalizedGallery);
         }
+
       } catch (err) {
         console.error("[CategoryPage] Error:", err);
         setNotFound(true);
@@ -485,7 +528,13 @@ function ResturantCategoryPageTemplate() {
 
         {/* Menu */}
         <div id="menu">
-          {resolvedMenu.length > 0 ? (
+          {petpoojaCategories.length > 0 ? (
+            <PetPoojaMenu
+              categories={petpoojaCategories}
+              items={petpoojaItems}
+              themeColor={currentCategory.themeColor}
+            />
+          ) : resolvedMenu.length > 0 ? (
             <CategoryMenu
               menu={resolvedMenu}
               themeColor={currentCategory.themeColor}
