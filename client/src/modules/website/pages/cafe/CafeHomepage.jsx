@@ -31,11 +31,11 @@ const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 // Kennedia cafe property cities with fixed coordinates — used for direct distance matching
 const PROPERTY_CITIES = [
-  { name: "Ghaziabad",   lat: 28.6692, lng: 77.4538 },
-  { name: "Noida",       lat: 28.5355, lng: 77.3910 },
-  { name: "Delhi",       lat: 28.7041, lng: 77.1025 },
+  { name: "Ghaziabad", lat: 28.6692, lng: 77.4538 },
+  { name: "Noida", lat: 28.5355, lng: 77.3910 },
+  { name: "Delhi", lat: 28.7041, lng: 77.1025 },
   { name: "Bhubaneswar", lat: 20.2961, lng: 85.8245 },
-  { name: "Bangalore",   lat: 12.9716, lng: 77.5946 },
+  { name: "Bangalore", lat: 12.9716, lng: 77.5946 },
 ];
 
 // Show "nearby property" popup when user is within this km of a property city
@@ -247,7 +247,7 @@ export default function CafeHomepage() {
       <AnimatePresence>{!isPageReady && <PageLoader />}</AnimatePresence>
 
       <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
-     {/* {isInsecureOrigin && (
+      {/* {isInsecureOrigin && (
         <div className="relative z-[190] border-y border-amber-500/30 bg-amber-50/95 px-4 py-3 text-amber-950 shadow-sm">
           <div className="mx-auto flex max-w-6xl flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
             <p className="font-medium">
