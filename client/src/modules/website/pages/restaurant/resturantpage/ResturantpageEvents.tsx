@@ -327,7 +327,7 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Events Cards Container */}
           <div
-            className="lg:w-[60%] grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="lg:w-[60%] grid grid-cols-1 md:grid-cols-2 gap-6 justify-items-center"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
@@ -673,7 +673,7 @@ function EventCard({ event }: { event: ApiEvent }) {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5 }}
-      className="group h-[520px] bg-card border rounded-[2.5rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 cursor-pointer"
+      className="group relative flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
     >
       <div
         className={`relative overflow-hidden transition-all duration-500 ${isBanner ? "h-full" : "h-[280px]"}`}
