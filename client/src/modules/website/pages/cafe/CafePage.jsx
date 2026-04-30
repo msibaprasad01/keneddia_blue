@@ -133,7 +133,12 @@ export default function CafePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
+      <Navbar
+        navItems={CAFE_NAV_ITEMS}
+        logo={siteContent.brand.logo_cafe}
+        showQuickBook={true}
+        quickBookOptions={[{ label: "Reserve Cafe", href: "#reservation" }]}
+      />
 
       <main>
         <div id="home" className="relative z-20 shadow-sm">
@@ -198,7 +203,7 @@ export default function CafePage() {
           <div className="h-4 bg-linear-to-b from-[#F8F8F6] to-[#EFEFEB]" />
           <div className="h-px bg-[#E3E3DF]" />
         </div>
-        <div className="relative z-[5] shadow-sm">
+        <div id="reservation" className="relative z-[5] shadow-sm">
           <CafeReservationForm propertyId={resolvedPropertyId} />
         </div>
       </main>

@@ -216,7 +216,7 @@ export default function ResturantpageOffers({
         </div>
       </div>
 
-      <div className="w-full max-w-full">
+      <div className="w-full max-w-[320px] mx-auto">
         <Swiper
           modules={[Navigation, Autoplay]}
           slidesPerView={1}
@@ -229,7 +229,7 @@ export default function ResturantpageOffers({
             pauseOnMouseEnter: true,
           }}
           onSwiper={setSwiper}
-          className="rounded-[28px]"
+          className="rounded-xl"
         >
           {offers.map((offer, i) => {
             const isBanner = detectBanner(offer.image);
@@ -247,12 +247,12 @@ export default function ResturantpageOffers({
             const showFullImage = isBanner || !hasContent;
 
             return (
-              <SwiperSlide key={offer.id ?? i}>
+              <SwiperSlide key={offer.id ?? i} className="flex justify-center">
                 {/*
                   Fixed h-[520px] frame — mirrors DailyOffers card height exactly.
                   Images/videos never blow out the container regardless of source dimensions.
                 */}
-                <div className="group h-[520px] bg-zinc-900 border border-zinc-100 dark:border-white/5 rounded-[28px] overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl">
+                <div className="group relative flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl border bg-zinc-900 border-zinc-100 dark:border-white/5 shadow-sm transition-all duration-300 hover:shadow-xl">
                   {/* ── MEDIA CONTAINER ────────────────────────────────── */}
                   <div
                     className={`relative overflow-hidden shrink-0 ${

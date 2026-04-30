@@ -218,7 +218,7 @@ export default function HeroBanner({ initialSlides, onReady }) {
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-background h-[90vh]"
+      className="relative w-full overflow-hidden bg-background h-auto md:h-[90vh]"
     >
       {!activeSlide ? (
         <div className="absolute inset-0 hidden items-center justify-center bg-neutral-900 md:flex">
