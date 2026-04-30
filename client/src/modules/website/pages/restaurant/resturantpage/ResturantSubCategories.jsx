@@ -141,6 +141,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
 
       try {
         const cardsRes = await getAllVerticalCards();
+        console.log(cardsRes)
         const cards = cardsRes?.data || cardsRes || [];
         const filtered = cards
           .filter((c) => c.propertyId === propertyId && c.isActive)
