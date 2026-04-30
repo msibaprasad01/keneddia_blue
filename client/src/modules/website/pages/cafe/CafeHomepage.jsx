@@ -31,11 +31,11 @@ const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 // Kennedia cafe property cities with fixed coordinates — used for direct distance matching
 const PROPERTY_CITIES = [
-  { name: "Ghaziabad",   lat: 28.6692, lng: 77.4538 },
-  { name: "Noida",       lat: 28.5355, lng: 77.3910 },
-  { name: "Delhi",       lat: 28.7041, lng: 77.1025 },
+  { name: "Ghaziabad", lat: 28.6692, lng: 77.4538 },
+  { name: "Noida", lat: 28.5355, lng: 77.3910 },
+  { name: "Delhi", lat: 28.7041, lng: 77.1025 },
   { name: "Bhubaneswar", lat: 20.2961, lng: 85.8245 },
-  { name: "Bangalore",   lat: 12.9716, lng: 77.5946 },
+  { name: "Bangalore", lat: 12.9716, lng: 77.5946 },
 ];
 
 // Show "nearby property" popup when user is within this km of a property city
