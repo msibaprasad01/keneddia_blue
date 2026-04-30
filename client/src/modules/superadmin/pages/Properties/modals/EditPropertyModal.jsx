@@ -576,8 +576,7 @@ function EditPropertyModal({
                 />
               </Field>
 
-              {isHotelType && (
-                <Field label="Property Star Rating" icon={Star}>
+              <Field label="Property Star Rating" icon={Star}>
                   <select
                     value={form.propertyRating}
                     onChange={(e) => set("propertyRating", e.target.value)}
@@ -591,7 +590,6 @@ function EditPropertyModal({
                     ))}
                   </select>
                 </Field>
-              )}
 
               {isRestaurantOrCafeType && (
                 <Field label="Service Type" icon={Tag} span={2}>
