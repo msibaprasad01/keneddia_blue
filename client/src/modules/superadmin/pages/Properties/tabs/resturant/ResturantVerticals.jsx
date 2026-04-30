@@ -510,7 +510,7 @@ function VerticalForm({ initial, propertyId, onSave, onCancel }) {
       {/* Toggles */}
       <div className="flex gap-6">
         {[
-          { label: "Show Order Button", key: "showOrderButton" },
+          { label: "Show petpooja menu", key: "showOrderButton" },
           { label: "Active", key: "isActive" },
         ].map(({ label, key }) => (
           <label key={key} className="flex items-center gap-2 cursor-pointer">
