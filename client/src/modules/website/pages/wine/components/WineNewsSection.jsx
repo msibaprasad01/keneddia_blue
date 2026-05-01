@@ -1,47 +1,59 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
+import {
+  ArrowUpRight,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Loader2,
+} from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
-import { siteContent } from "@/data/siteContent";
+import { getAllNews, getPropertyTypes } from "@/Api/Api";
+import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 
 import "swiper/css";
 
-const WineNewsItems = [
-  {
-    id: 1,
-    category: "Wine",
-    title: "Kennedia Launches A New Single-Origin Coffee Program",
-    description: "The Wine introduces rotating beans, guided tasting notes, and brew options designed around a slower specialty format.",
-    dateBadge: "2026-02-21",
-    badgeType: "Press Release",
-    ctaText: "Read Story",
-    ctaLink: "/news/kennedia-single-origin-coffee-program",
-    imageUrl: siteContent.images.cafes.minimalist.src,
-  },
-  {
-    id: 2,
-    category: "Wine",
-    title: "High Tea Lounge Format Expands With Weekend Dessert Service",
-    description: "New tea towers, plated patisserie, and lounge sets extend the Wine into a more elevated afternoon experience.",
-    dateBadge: "2026-01-18",
-    badgeType: "Feature",
-    ctaText: "Read Story",
-    ctaLink: "/news/kennedia-high-tea-lounge-expansion",
-    imageUrl: siteContent.images.cafes.highTea.src,
-  },
-  {
-    id: 3,
-    category: "Wine",
-    title: "Neighbourhood Events Calendar Adds Acoustic Nights And Workshops",
-    description: "Kennedia builds a lighter events rhythm around live sessions, tasting tables, and intimate community gatherings.",
-    dateBadge: "2025-12-09",
-    badgeType: "Update",
-    ctaText: "Read Story",
-    ctaLink: "/news/kennedia-Wine-events-calendar",
-    imageUrl: siteContent.images.cafes.garden.src,
-  },
-];
+const normalize = (value = "") =>
+  String(value).trim().toLowerCase().replace(/\s+/g, " ");
+const isWineType = (value = "") =>
+  ["wine", "wines", "wine and dine", "wine & dine", "winedine"].includes(
+    normalize(value),
+  );
+
+const mapNews = (rawNews, wineTypeId) =>
+  (Array.isArray(rawNews) ? rawNews : [])
+    .filter((item) => {
+      const badgeName =
+        item?.badgeTypeName ||
+        item?.badgeType ||
+        item?.badge?.typeName ||
+        item?.badge?.name ||
+        "";
+      const byName = isWineType(badgeName);
+      const byId = wineTypeId != null && Number(item?.badgeTypeId) === wineTypeId;
+      return item?.active === true && (byName || byId);
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a?.newsDate || a?.dateBadge || a?.createdAt || 0);
+      const dateB = new Date(b?.newsDate || b?.dateBadge || b?.createdAt || 0);
+      return dateB.getTime() - dateA.getTime();
+    })
+    .slice(0, 6)
+    .map((item) => ({
+      id: item?.id,
+      category: item?.category || "NEWS",
+      title: item?.title || "News",
+      description: item?.description || "",
+      dateBadge:
+        item?.newsDate || item?.dateBadge || new Date().toISOString().split("T")[0],
+      badgeType:
+        item?.badgeTypeName || item?.badgeType || item?.badge?.typeName || "Wine",
+      ctaText: item?.ctaText || "Read Story",
+      ctaLink: buildNewsDetailPath(item),
+      imageUrl: item?.imageUrl || item?.image || item?.media?.[0]?.url || "",
+    }));
 
 function NewsCard({ item }) {
   const [expanded, setExpanded] = useState(false);
@@ -111,8 +123,49 @@ function NewsCard({ item }) {
   );
 }
 
-export default function WineNewsSection() {
+export default function WineNewsSection({ initialNews }) {
   const swiperRef = useRef(null);
+  const ssrLoaded = Array.isArray(initialNews) && initialNews.length > 0;
+  const [newsItems, setNewsItems] = useState(ssrLoaded ? initialNews : []);
+  const [loading, setLoading] = useState(!ssrLoaded);
+
+  useEffect(() => {
+    if (ssrLoaded) return;
+
+    const fetchWineNews = async () => {
+      try {
+        setLoading(true);
+        const [typesResponse, newsResponse] = await Promise.all([
+          getPropertyTypes(),
+          getAllNews({ category: "", page: 0, size: 50 }),
+        ]);
+
+        const propertyTypes = typesResponse?.data || typesResponse || [];
+        const wineType = Array.isArray(propertyTypes)
+          ? propertyTypes.find((type) => type?.isActive && isWineType(type?.typeName))
+          : null;
+        const wineTypeId = wineType?.id ? Number(wineType.id) : null;
+
+        const rawNews =
+          newsResponse?.data?.content ||
+          newsResponse?.content ||
+          newsResponse?.data ||
+          newsResponse ||
+          [];
+
+        setNewsItems(mapNews(rawNews, wineTypeId));
+      } catch (error) {
+        console.error("Failed to load wine news", error);
+        setNewsItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWineNews();
+  }, [ssrLoaded]);
+
+  if (!loading && newsItems.length === 0) return null;
 
   return (
     <section id="news" className="relative overflow-hidden bg-[#ECECE8] py-12 md:py-16 dark:bg-background">
@@ -137,27 +190,33 @@ export default function WineNewsSection() {
           </div>
         </div>
 
-        <Swiper
-          modules={[Autoplay, Navigation]}
-          spaceBetween={24}
-          slidesPerView={1}
-          loop={false}
-          autoplay={{ delay: 5000, disableOnInteraction: false }}
-          breakpoints={{
-            640: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-          }}
-          onSwiper={(swiper) => {
-            swiperRef.current = swiper;
-          }}
-          className="w-full pb-4"
-        >
-          {WineNewsItems.map((item) => (
-            <SwiperSlide key={item.id} className="!h-auto">
-              <NewsCard item={item} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        {loading ? (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <Swiper
+            modules={[Autoplay, Navigation]}
+            spaceBetween={24}
+            slidesPerView={1}
+            loop={newsItems.length > 3}
+            autoplay={{ delay: 5000, disableOnInteraction: false }}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+            onSwiper={(swiper) => {
+              swiperRef.current = swiper;
+            }}
+            className="w-full pb-4"
+          >
+            {newsItems.map((item) => (
+              <SwiperSlide key={item.id} className="!h-auto">
+                <NewsCard item={item} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )}
       </div>
     </section>
   );
