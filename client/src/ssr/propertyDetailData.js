@@ -19,6 +19,7 @@ import {
   getMenuItemsByPropertyId,
   getAllRestaurantAbout,
 } from "@/Api/RestaurantApi";
+import { getCafeSectionsByProperty } from "@/Api/CafeApi";
 
 const VERIFIED_REVIEWS_SCALE = 1000000;
 
@@ -234,6 +235,14 @@ const isRestaurantType = (parent, listing) => {
     );
 };
 
+const isCafeType = (parent, listing) => {
+  const parentTypes = parent?.propertyTypes || [];
+  const listingTypes = [listing?.propertyType].filter(Boolean);
+  return [...parentTypes, ...listingTypes]
+    .map((value) => String(value).toLowerCase().trim())
+    .some((value) => value === "cafe");
+};
+
 const mapRooms = (response) => {
   const rawRooms = response?.data || response || [];
 
@@ -409,6 +418,60 @@ const mapRestaurantPageData = async (parent, listing) => {
   };
 };
 
+const mapCafePageData = async (parent, listing) => {
+  const propertyId = parent.id;
+
+  const [galleryRes, cafeSectionsRes, menuItemsRes, aboutRes] = await Promise.all([
+    safeFetch(() => getGalleryByPropertyId(propertyId)),
+    safeFetch(() => getCafeSectionsByProperty(propertyId)),
+    safeFetch(() => getMenuItemsByPropertyId(propertyId)),
+    safeFetch(() => getAllRestaurantAbout()),
+  ]);
+
+  const rawGallery = galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
+  const galleryData = (Array.isArray(rawGallery) ? rawGallery : []).filter(
+    (item) =>
+      item?.isActive &&
+      item?.media?.url &&
+      !item?.vertical &&
+      String(item?.categoryName || "").toLowerCase() !== "3d",
+  );
+
+  const rawCafeSections = cafeSectionsRes?.data?.data || cafeSectionsRes?.data || cafeSectionsRes || [];
+  const cafeSections = Array.isArray(rawCafeSections) ? rawCafeSections : [];
+  const storyData = cafeSections.length > 0 ? cafeSections[0] : null;
+
+  const rawMenuItems = menuItemsRes?.data || menuItemsRes || [];
+  const menuItems = Array.isArray(rawMenuItems) ? rawMenuItems : [];
+
+  const allAbout = aboutRes?.data || aboutRes || [];
+  const aboutSections = (Array.isArray(allAbout) ? allAbout : [])
+    .filter((a) => a.propertyId === propertyId && a.isActive !== false);
+
+  return {
+    propertyData: {
+      ...parent,
+      ...listing,
+      id: propertyId,
+      propertyId,
+      name: listing?.propertyName?.trim() || parent?.propertyName,
+      description: listing?.mainHeading || "",
+      location: listing?.fullAddress || parent?.address,
+      city: listing?.city || parent?.locationName,
+      media: listing?.media?.length > 0 ? listing.media : parent?.media || [],
+      coordinates:
+        parent?.latitude && parent?.longitude
+          ? { lat: Number(parent.latitude), lng: Number(parent.longitude) }
+          : null,
+    },
+    galleryData,
+    storyData,
+    cafeSections,
+    menuItems,
+    aboutSections,
+  };
+};
+
 const mapHotelPageData = async (parent, listing, rawData) => {
   const coords =
     parent?.latitude && parent?.longitude
@@ -548,15 +611,22 @@ export async function fetchPropertyDetailPageData(pathname) {
   }
 
   const { parent, listing } = matched;
-  const propertyType = isRestaurantType(parent, listing)
-    ? "restaurant"
-    : "hotel";
+  const isCafe = isCafeType(parent, listing);
+  const propertyType = isCafe
+    ? "cafe"
+    : isRestaurantType(parent, listing)
+      ? "restaurant"
+      : "hotel";
   const seo = await fetchSeoForProperty(pathname, parent.id);
 
-  const pageData =
-    propertyType === "restaurant"
-      ? await mapRestaurantPageData(parent, listing)
-      : await mapHotelPageData(parent, listing, rawData);
+  let pageData;
+  if (propertyType === "cafe") {
+    pageData = await mapCafePageData(parent, listing);
+  } else if (propertyType === "restaurant") {
+    pageData = await mapRestaurantPageData(parent, listing);
+  } else {
+    pageData = await mapHotelPageData(parent, listing, rawData);
+  }
 
   return {
     propertyId: parent.id,
