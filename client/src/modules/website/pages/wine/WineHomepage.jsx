@@ -6,12 +6,12 @@ import { siteContent } from "@/data/siteContent";
 import { useSsrData } from "@/ssr/SsrDataContext";
 import WineHeroBanner from "./components/WineHeroBanner";
 import WineWhatsAppButton from "./components/WineWhatsAppButton";
+import WineNewsSection from "./components/WineNewsSection";
 import { WineCategoriesSection } from "./winepage/WineSignatureDrinks";
 
 const WineBestSellers = lazy(() => import("./components/WineBestSellers"));
 const WineTopBrands = lazy(() => import("./components/WineTopBrands"));
 const WineAbout = lazy(() => import("./components/WineAbout"));
-const WineShowcaseSlider = lazy(() => import("./components/WineShowcaseSlider"));
 
 const WINE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
@@ -193,14 +193,14 @@ export default function WineHomepage() {
           {/* About */}
           <div id="about" className="bg-[#F5F0EA] dark:bg-[#0D0508]">
             <Suspense fallback={<SectionFallback height="h-80" />}>
-              <WineAbout />
+              <WineAbout initialSections={ssr?.wineAboutSections} />
             </Suspense>
           </div>
 
           {/* News & Press */}
           <div id="news" className="bg-[#EDE7DF] dark:bg-[#0A0407]">
             <Suspense fallback={<SectionFallback height="h-[28rem]" />}>
-              <WineShowcaseSlider />
+              <WineNewsSection initialNews={ssr?.wineNews} />
             </Suspense>
           </div>
         </main>

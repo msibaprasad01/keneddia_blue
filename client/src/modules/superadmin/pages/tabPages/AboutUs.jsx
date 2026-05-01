@@ -23,7 +23,17 @@ import AddUpdateAboutModal from "../../modals/AddUpdateAboutModal";
 import AddUpdateVenturesModal from "../../modals/AddUpdateVenturesModal";
 import AddUpdateRecognitionModal from "../../modals/AddUpdateRecognitionModal";
 
-const ENABLED_PROPERTY_TYPE_TABS = ["hotel", "restaurant", "cafe"];
+const ENABLED_PROPERTY_TYPE_TABS = [
+  "hotel",
+  "restaurant",
+  "resturant",
+  "cafe",
+  "wine",
+  "wines",
+  "winedine",
+  "wine&dine",
+  "wineanddine",
+];
 
 function AboutUs() {
   const [activeTab, setActiveTab] = useState("homepage");
