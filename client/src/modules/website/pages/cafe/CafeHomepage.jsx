@@ -325,6 +325,79 @@ export default function CafeHomepage() {
       </AnimatePresence>
 
       <main>
+        {/* SSR: structured cafe homepage data for crawlers */}
+        <div className="sr-only" aria-hidden="true">
+          {(ssr?.heroSlides || []).map((slide, i) => (
+            <div key={i}>
+              {slide.title && <h2>{slide.title}</h2>}
+              {slide.desc && <p>{slide.desc}</p>}
+              {slide.img && <img src={slide.img} alt={slide.title || "Cafe"} />}
+            </div>
+          ))}
+          {ssr?.coffeeStory && (
+            <div>
+              {ssr.coffeeStory.heading && <h2>{ssr.coffeeStory.heading}</h2>}
+              {ssr.coffeeStory.highlight && <p>{ssr.coffeeStory.highlight}</p>}
+              {ssr.coffeeStory.description && <p>{ssr.coffeeStory.description}</p>}
+            </div>
+          )}
+          {(ssr?.cafeProperties || []).length > 0 && (
+            <ul>
+              {ssr.cafeProperties.map((cafe) => (
+                <li key={cafe.id}>
+                  <h3>{cafe.name}</h3>
+                  <p>{cafe.city}</p>
+                  {cafe.location && <p>{cafe.location}</p>}
+                  {cafe.description && <p>{cafe.description}</p>}
+                  {cafe.image?.src && <img src={cafe.image.src} alt={cafe.image.alt || cafe.name} />}
+                </li>
+              ))}
+            </ul>
+          )}
+          {(ssr?.bestSellers || []).length > 0 && (
+            <ul>
+              {ssr.bestSellers.map((item) => (
+                <li key={item.id}>
+                  <h4>{item.title}</h4>
+                  {item.description && <p>{item.description}</p>}
+                  {item.image && <img src={item.image} alt={item.title} />}
+                </li>
+              ))}
+            </ul>
+          )}
+          {(ssr?.aboutSections || []).map((section, i) => (
+            <div key={i}>
+              {section.sectionTitle && <h2>{section.sectionTitle}</h2>}
+              {section.subTitle && <h3>{section.subTitle}</h3>}
+              {section.description && <p>{section.description}</p>}
+              {section.image && <img src={section.image} alt={section.sectionTitle || "About"} />}
+            </div>
+          ))}
+          {(ssr?.cafeEvents || []).length > 0 && (
+            <ul>
+              {ssr.cafeEvents.map((event) => (
+                <li key={event.id}>
+                  <h4>{event.title}</h4>
+                  {event.description && <p>{event.description}</p>}
+                  {event.date && <span>{event.date}</span>}
+                  {event.image?.url && <img src={event.image.url} alt={event.title} />}
+                </li>
+              ))}
+            </ul>
+          )}
+          {(ssr?.cafeNews || []).length > 0 && (
+            <ul>
+              {ssr.cafeNews.map((news) => (
+                <li key={news.id}>
+                  <h4>{news.title}</h4>
+                  {news.description && <p>{news.description}</p>}
+                  {news.imageUrl && <img src={news.imageUrl} alt={news.title} />}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         <div id="home" className="relative z-20 shadow-sm">
           <CafeHeroBanner initialSlides={ssr?.heroSlides} onReady={handleReady} />
         </div>

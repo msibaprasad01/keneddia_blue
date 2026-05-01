@@ -13,6 +13,7 @@ import CafeGalleryPage from "./cafepage/CafeGalleryPage";
 import CafeReservationForm from "./cafepage/CafeReservationForm";
 import { siteContent } from "@/data/siteContent";
 import { GetAllPropertyDetails, getGalleryByPropertyId } from "@/Api/Api";
+import { useSsrData } from "@/ssr/SsrDataContext";
 
 const CAFE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
@@ -23,23 +24,35 @@ const CAFE_NAV_ITEMS = [
 
 export default function CafePage() {
   const { propertySlug, propertyId: paramPropertyId } = useParams();
-  const [storyData, setStoryData] = useState(null);
-  const [propertyData, setPropertyData] = useState(null);
-  const [galleryData, setGalleryData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { propertyDetail } = useSsrData();
 
-  // Extract propertyId from either paramPropertyId or propertySlug tail
   const resolvedPropertyId = useMemo(() => {
     const slugTail = propertySlug?.split("-").pop() || "";
     return Number(paramPropertyId || slugTail) || null;
   }, [paramPropertyId, propertySlug]);
+
+  const ssrCafeDetail =
+    propertyDetail?.propertyType === "cafe" &&
+    propertyDetail?.propertyId === resolvedPropertyId
+      ? propertyDetail.pageData
+      : null;
+
+  const [storyData, setStoryData] = useState(ssrCafeDetail?.storyData || null);
+  const [propertyData, setPropertyData] = useState(ssrCafeDetail?.propertyData || null);
+  const [galleryData, setGalleryData] = useState(ssrCafeDetail?.galleryData || []);
+  const [loading, setLoading] = useState(!ssrCafeDetail);
+
+  // SSR-seeded section data
+  const ssrMenuItems = ssrCafeDetail?.menuItems || null;
+  const ssrAboutSections = ssrCafeDetail?.aboutSections || null;
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    if (resolvedPropertyId) {
+    if (!resolvedPropertyId) return;
+    if (!ssrCafeDetail) {
       fetchStory();
       fetchData();
     }
@@ -50,7 +63,7 @@ export default function CafePage() {
       const res = await getCafeSectionsByProperty(resolvedPropertyId);
       const data = res?.data?.data || res?.data;
       if (Array.isArray(data) && data.length > 0) {
-        setStoryData(data[0]); // Take first section
+        setStoryData(data[0]);
       } else if (data && !Array.isArray(data)) {
         setStoryData(data);
       }
@@ -141,6 +154,64 @@ export default function CafePage() {
       />
 
       <main>
+        {/* SSR: structured cafe property data for crawlers */}
+        <div className="sr-only" aria-hidden="true">
+          {propertyData && (
+            <div>
+              <h1>{propertyData.propertyName || propertyData.name}</h1>
+              <p>{propertyData.city || propertyData.locationName}</p>
+              {(propertyData.fullAddress || propertyData.address) && (
+                <p>{propertyData.fullAddress || propertyData.address}</p>
+              )}
+              {(propertyData.mainHeading || propertyData.description) && (
+                <p>{propertyData.mainHeading || propertyData.description}</p>
+              )}
+              {(propertyData.media || []).slice(0, 4).map((m, i) => (
+                m?.url && <img key={i} src={m.url} alt={m.alt || propertyData.propertyName || ""} />
+              ))}
+            </div>
+          )}
+          {galleryData.slice(0, 8).map((g, i) => (
+            g?.media?.url && <img key={`g-${i}`} src={g.media.url} alt={g.media.alt || propertyData?.propertyName || ""} />
+          ))}
+          {storyData && (
+            <div>
+              {storyData.heading && <h2>{storyData.heading}</h2>}
+              {storyData.description && <p>{storyData.description}</p>}
+              {storyData.subSections?.map((s, i) => (
+                <div key={i}>
+                  {s.title && <h3>{s.title}</h3>}
+                  {s.description && <p>{s.description}</p>}
+                  {s.media?.url && <img src={s.media.url} alt={s.title || ""} />}
+                </div>
+              ))}
+            </div>
+          )}
+          {(ssrMenuItems || []).length > 0 && (
+            <ul>
+              {ssrMenuItems.map((item) => (
+                <li key={item.id}>
+                  <h4>{item.itemName || item.name}</h4>
+                  {item.description && <p>{item.description}</p>}
+                  {item.price && <span>₹{item.price}</span>}
+                  {item.image?.url && <img src={item.image.url} alt={item.itemName || ""} />}
+                </li>
+              ))}
+            </ul>
+          )}
+          {(ssrAboutSections || []).length > 0 && (
+            <div>
+              {ssrAboutSections.map((a) => (
+                <div key={a.id}>
+                  {a.heading && <h2>{a.heading}</h2>}
+                  {a.description && <p>{a.description}</p>}
+                  {a.media?.url && <img src={a.media.url} alt={a.heading || ""} />}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div id="home" className="relative z-20 shadow-sm">
           <CafeBanner
             propertyData={propertyData}
