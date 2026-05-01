@@ -213,7 +213,7 @@ const PropertyDetail = ({ property, onBack }) => {
     Restaurant: [
       "overview",
       "config",
-      "pet pooja",  
+      // "pet pooja",  
       "gallery",
       "verticals",
       "buffet section",

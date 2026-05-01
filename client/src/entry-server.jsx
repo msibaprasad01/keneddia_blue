@@ -16,10 +16,40 @@ async function getPrettier() {
 }
 
 function formatHtmlFallback(html) {
-  return html
-    .replace(/></g, ">\n<")
-    .replace(/^\s*\n/gm, "")
-    .trim();
+  // Only insert newlines between closing and opening tags at the top level —
+  // NOT inside attribute values (data URIs, SVG href, etc.)
+  // Strategy: split on tag boundaries while respecting quoted attribute values.
+  let result = "";
+  let inTag = false;
+  let inAttr = false;
+  let attrChar = "";
+
+  for (let i = 0; i < html.length; i++) {
+    const ch = html[i];
+
+    if (inTag) {
+      if (inAttr) {
+        result += ch;
+        if (ch === attrChar) inAttr = false;
+      } else if (ch === '"' || ch === "'") {
+        inAttr = true;
+        attrChar = ch;
+        result += ch;
+      } else if (ch === ">") {
+        result += ">\n";
+        inTag = false;
+      } else {
+        result += ch;
+      }
+    } else if (ch === "<") {
+      inTag = true;
+      result += "<";
+    } else {
+      result += ch;
+    }
+  }
+
+  return result.replace(/\n\s*\n/g, "\n").trim();
 }
 
 async function formatHtmlDocument(html) {
@@ -91,25 +121,41 @@ function renderAppToString(app) {
 }
 
 export async function render(url, template) {
-  const initialData = await loadInitialDataForUrl(url);
+  let initialData = {};
+  try {
+    initialData = await loadInitialDataForUrl(url);
+  } catch (err) {
+    console.error("SSR loadInitialData failed:", err?.message || err);
+  }
 
-  const appHtml = await renderAppToString(
-    <StaticRouter location={url}>
-      <App initialData={initialData} />
-    </StaticRouter>,
-  );
+  let appHtml = "";
+  try {
+    appHtml = await renderAppToString(
+      <StaticRouter location={url}>
+        <App initialData={initialData} />
+      </StaticRouter>,
+    );
+  } catch (err) {
+    console.error("SSR renderAppToString failed:", err?.message || err);
+    // Fall through with empty appHtml — client JS will hydrate normally
+  }
 
   if (!template) {
     return { appHtml, initialData };
   }
 
-  const processedTemplate =
-    initialData?.propertyDetail?.seo || initialData?.globalSeo
-      ? injectSeoIntoHtml(
-          template,
-          initialData?.propertyDetail?.seo || initialData?.globalSeo,
-        )
-      : template;
+  let processedTemplate = template;
+  try {
+    processedTemplate =
+      initialData?.propertyDetail?.seo || initialData?.globalSeo
+        ? injectSeoIntoHtml(
+            template,
+            initialData?.propertyDetail?.seo || initialData?.globalSeo,
+          )
+        : template;
+  } catch (err) {
+    console.error("SSR SEO injection failed:", err?.message || err);
+  }
 
   const initialDataScript = `<script>window.__SSR_INITIAL_DATA__=${serializeInitialData(initialData)}</script>`;
   const assembledHtml = processedTemplate
@@ -119,7 +165,12 @@ export async function render(url, template) {
     )
     .replace("</body>", `${initialDataScript}</body>`);
 
-  const html = await formatHtmlDocument(assembledHtml);
+  let html = assembledHtml;
+  try {
+    html = await formatHtmlDocument(assembledHtml);
+  } catch (err) {
+    console.error("SSR formatHtml failed:", err?.message || err);
+  }
 
   return { html, appHtml, initialData };
 }

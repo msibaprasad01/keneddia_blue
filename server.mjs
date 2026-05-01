@@ -115,9 +115,14 @@ const start = async () => {
           path.join(clientDir, "index.html"),
           "utf-8",
         );
-        const { render } = await import(serverEntryPath);
-        const { html } = await render(url, template);
-        sendHtml(res, html);
+        try {
+          const { render } = await import(serverEntryPath);
+          const { html } = await render(url, template);
+          sendHtml(res, html);
+        } catch (ssrErr) {
+          console.error("SSR render failed for", pathname, "— falling back to SPA template:", ssrErr?.message || ssrErr);
+          sendHtml(res, template);
+        }
         return;
       }
 
