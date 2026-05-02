@@ -11,6 +11,7 @@ import { SsrDataProvider, useSsrData } from "./ssr/SsrDataContext";
 import { applySeoToDocument, fetchGlobalSeo } from "@/lib/seo";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import WhatsAppButton from "@/modules/website/components/WhatsAppButton";
 
 function GlobalSeoManager() {
   const location = useLocation();
@@ -54,6 +55,8 @@ function App({ initialData = {} }) {
             <GlobalSeoManager />
             <Toaster />
             <ScrollToTop />
+            <ToastContainer />
+            <WhatsAppButton />
             {mounted && <ToastContainer />}
             <AppRoutes />
           </TooltipProvider>
