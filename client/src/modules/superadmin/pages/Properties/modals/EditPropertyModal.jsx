@@ -11,6 +11,7 @@ import {
   Tag,
   Layers,
   Star,
+  Clock,
   DollarSign,
   Users,
   Percent,
@@ -191,6 +192,8 @@ function EditPropertyModal({
     amenitiesAndFeaturesIds: resolveAmenityIds(),
     mobileNumber: p.mobileNumber || "",
     email: p.email || "",
+    openingTime: p.openingTime || "",
+    closingTime: p.closingTime || "",
 
     // ✅ NEW FIELD
     nearbyLocations:
@@ -448,6 +451,8 @@ function EditPropertyModal({
           : null,
         mobileNumber: form.mobileNumber ? Number(form.mobileNumber) : null,
         email: form.email || "",
+        openingTime: form.openingTime || null,
+        closingTime: form.closingTime || null,
 
         // ✅ CLEAN EMPTY ROWS
         nearbyLocations: form.nearbyLocations.filter(
@@ -798,6 +803,24 @@ function EditPropertyModal({
                     className={`${inputCls} bg-gray-100 cursor-not-allowed`}
                   />
                 )}
+              </Field>
+
+              <Field label="Opening Time" icon={Clock}>
+                <input
+                  type="time"
+                  value={form.openingTime}
+                  onChange={(e) => set("openingTime", e.target.value)}
+                  className={inputCls}
+                />
+              </Field>
+
+              <Field label="Closing Time" icon={Clock}>
+                <input
+                  type="time"
+                  value={form.closingTime}
+                  onChange={(e) => set("closingTime", e.target.value)}
+                  className={inputCls}
+                />
               </Field>
 
               <Field label="Booking Engine URL" icon={LinkIcon} span={2}>

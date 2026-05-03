@@ -60,6 +60,8 @@ function AddPropertyModal({ onClose, onSuccess }) {
     takeaway: false,
     mobileNumber: "",
     email: "",
+    openingTime: "",
+    closingTime: "",
 
     // ✅ NEW FIELD
     nearbyLocations: [
@@ -244,6 +246,8 @@ function AddPropertyModal({ onClose, onSuccess }) {
         ),
         dineIn: Boolean(parentData.dineIn),
         takeaway: Boolean(parentData.takeaway),
+        openingTime: parentData.openingTime || null,
+        closingTime: parentData.closingTime || null,
       };
 
       const parentRes = await createPropertyByType(typeName, parentPayload);
@@ -636,6 +640,32 @@ function AddPropertyModal({ onClose, onSuccess }) {
                   placeholder="hello@gmail.com"
                 />
                 {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
+                  Opening Time
+                </label>
+                <input
+                  type="time"
+                  className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none focus:ring-primary/20"
+                  value={parentData.openingTime}
+                  onChange={(e) =>
+                    setParentData({ ...parentData, openingTime: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
+                  Closing Time
+                </label>
+                <input
+                  type="time"
+                  className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none focus:ring-primary/20"
+                  value={parentData.closingTime}
+                  onChange={(e) =>
+                    setParentData({ ...parentData, closingTime: e.target.value })
+                  }
+                />
               </div>
               <div className="col-span-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">

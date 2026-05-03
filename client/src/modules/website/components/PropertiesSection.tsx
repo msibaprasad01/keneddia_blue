@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Navigation,
+  Clock,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { GetAllPropertyDetails } from "@/Api/Api";
@@ -54,6 +55,8 @@ interface ApiProperty {
   bookingEngineUrl?: string | null;
   mobileNumber?: string | null;
   email?: string | null;
+  openingTime?: string | null;
+  closingTime?: string | null;
 }
 
 const SUBTITLE_LIMIT = 120;
@@ -125,8 +128,8 @@ const CarouselItem = ({
   const subTitle = property.subTitle || "";
   const isLong = subTitle.length > SUBTITLE_LIMIT;
   const isHotel = property.propertyType?.toLowerCase() === "hotel";
-  const hotelStarLabel =
-    isHotel && property.propertyRating ? `${property.propertyRating} Star` : null;
+  const hotelStarCount =
+    isHotel && property.propertyRating ? Math.round(property.propertyRating) : 0;
 
   return (
     <div
@@ -333,7 +336,7 @@ const CarouselItem = ({
                 e.stopPropagation();
                 onDotClick((activeIndex + 1) % total);
               }}
-              className="relative w-20 h-20 mb-6 rounded-full overflow-hidden border-2 border-white/50 shadow-xl hover:border-white/90 hover:scale-105 transition-all cursor-pointer flex-shrink-0"
+              className="relative w-20 h-20 mb-6 rounded-full overflow-hidden border-2 border-white/50 shadow-xl hover:border-white/90 hover:scale-105 transition-all cursor-pointer shrink-0"
               title={`Next: ${nextProperty.propertyName}`}
             >
               <OptimizedImage
@@ -404,6 +407,8 @@ export default function PropertiesSection({
                 bookingEngineUrl: parent?.bookingEngineUrl || null,
                 mobileNumber: parent?.mobileNumber || null,
                 email: parent?.email || null,
+                openingTime: parent?.openingTime || null,
+                closingTime: parent?.closingTime || null,
               }));
           });
           setApiProperties([...formatted].reverse());
@@ -446,10 +451,10 @@ export default function PropertiesSection({
   const _activeType = active?.propertyType?.toLowerCase();
   const isRestaurant = _activeType === "restaurant";
   const isCafe = _activeType === "cafe";
-  const hotelStarLabel =
+  const hotelStarCount =
     !isRestaurant && !isCafe && active?.propertyRating
-      ? `${active.propertyRating} Star`
-      : null;
+      ? Math.round(active.propertyRating)
+      : 0;
   const activePropertyUrls = active
     ? getPropertyUrls(
         active.propertyType,
@@ -642,15 +647,24 @@ transition-all cursor-pointer"
                   )}
                   </div>
 
-                  {!isRestaurant && hotelStarLabel && (
+                  {!isRestaurant && hotelStarCount > 0 && (
                     <div>
                       <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
                         Star Property
                       </p>
-                      <div className="flex items-center gap-1.5">
-                        <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-yellow-400 fill-yellow-400" />
-                        <span className="text-base md:text-lg font-bold text-foreground">
-                          {hotelStarLabel}
+                      <div className="flex items-center gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
+                              i < hotelStarCount
+                                ? "text-yellow-400 fill-yellow-400"
+                                : "text-muted-foreground/30 fill-muted-foreground/10"
+                            }`}
+                          />
+                        ))}
+                        <span className="ml-1.5 text-xs font-semibold text-muted-foreground">
+                          {hotelStarCount}-Star
                         </span>
                       </div>
                     </div>
@@ -695,6 +709,25 @@ transition-all cursor-pointer"
                     </div>
                   )}
 
+                  {/* Opening / Closing time */}
+                  {(active.openingTime || active.closingTime) && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/20 border border-border/50">
+                      <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                        {active.openingTime && (
+                          <span>{active.openingTime}</span>
+                        )}
+                        {active.openingTime && active.closingTime && (
+                          <span className="text-muted-foreground">–</span>
+                        )}
+                        {active.closingTime && (
+                          <span>{active.closingTime}</span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground ml-auto">Hours</span>
+                    </div>
+                  )}
+
                   {/* Amenities OR location fallback */}
                   {hasAmenities ? (
                     <div>
@@ -708,7 +741,7 @@ transition-all cursor-pointer"
                             key={i}
                             className={`flex items-center gap-2 ${i >= 4 ? "hidden md:flex" : ""}`}
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                             <span className="text-xs md:text-sm text-muted-foreground leading-tight">
                               {amenity}
                             </span>
@@ -723,7 +756,7 @@ transition-all cursor-pointer"
                       </p>
                       {active.city && (
                         <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-xl bg-secondary/20 border border-border/50">
-                          <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 shrink-0" />
                           <div>
                             <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
                               City
@@ -739,7 +772,7 @@ transition-all cursor-pointer"
                       )}
                       {active.fullAddress && (
                         <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-xl bg-secondary/20 border border-border/50">
-                          <Navigation className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <Navigation className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 shrink-0" />
                           <div>
                             <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
                               Address
