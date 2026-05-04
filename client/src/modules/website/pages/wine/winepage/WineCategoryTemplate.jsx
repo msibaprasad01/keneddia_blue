@@ -562,7 +562,18 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug, hideBrandFilter
   const availableBrands = useMemo(() => {
     if (hideBrandFilter) return [];
     const brandIds = Array.from(new Set(items.map((d) => d.brandId)));
-    return BRANDS.filter((b) => brandIds.includes(b.id));
+    // Try static brands first
+    const staticMatches = BRANDS.filter((b) => brandIds.includes(b.id));
+    if (staticMatches.length > 0) return staticMatches;
+    // API mode — derive brands directly from items (each item IS a brand on type pages)
+    const seen = new Set();
+    return items
+      .filter((d) => {
+        if (seen.has(d.brandId)) return false;
+        seen.add(d.brandId);
+        return true;
+      })
+      .map((d) => ({ id: d.brandId, name: d.name }));
   }, [items, hideBrandFilter]);
 
   const availableLocations = useMemo(() => {
@@ -1341,7 +1352,6 @@ export default function WineCategoryTemplate() {
             meta={typeMeta}
             citySlug={citySlug}
             propertySlug={propertySlug}
-            hideBrandFilter={isApiMode}
           />
         ) : brand ? (
           <BrandItemsSection items={items} brand={brand} />
