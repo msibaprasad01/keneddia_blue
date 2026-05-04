@@ -125,7 +125,18 @@ export default function CafeAbout({ initialSections }) {
   }, [currentIndex, sections]);
 
   const section = sections[currentIndex] || null;
-  if (!loading && !section) return null;
+  if (!loading && !section) {
+    return (
+      <section id="about" className="bg-white px-6 py-8 transition-colors duration-500 dark:bg-[#050505]">
+        <div className="container mx-auto max-w-7xl">
+          <div className="mb-4">
+            <h3 className="text-primary text-xs font-bold uppercase tracking-widest mb-1.5">Neighbourhood Cafe</h3>
+            <h2 className="text-3xl md:text-4xl font-serif text-foreground leading-tight">Coffee First. Atmosphere Always.</h2>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const recognitions = section?.recognitions?.filter((item) => item?.isActive) || [];
 

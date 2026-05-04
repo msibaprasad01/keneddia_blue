@@ -178,7 +178,15 @@ export default function CafeNewsSection({ initialNews }) {
     fetchCafeNews();
   }, [ssrLoaded]);
 
-  if (!loading && newsItems.length === 0) return null;
+  if (!loading && newsItems.length === 0) {
+    return (
+      <section id="news" className="relative overflow-hidden bg-[#ECECE8] py-12 md:py-16 dark:bg-background">
+        <div className="container mx-auto px-6 lg:px-12">
+          <h2 className="text-2xl font-serif text-foreground md:text-3xl">Cafe News & Press</h2>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="news" className="relative overflow-hidden bg-[#ECECE8] py-12 md:py-16 dark:bg-background">

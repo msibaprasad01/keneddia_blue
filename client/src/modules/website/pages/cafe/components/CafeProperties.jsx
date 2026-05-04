@@ -105,7 +105,7 @@ const mapApiToCafeUI = (item) => {
 export default function CafeProperties({ locationMatch, initialCafes }) {
   const navigate = useNavigate();
   const ssrLoaded = Array.isArray(initialCafes) && initialCafes.length > 0;
-  const [cafes, setCafes] = useState([]);
+  const [cafes, setCafes] = useState(ssrLoaded ? initialCafes : []);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [viewMode, setViewMode] = useState("gallery");
@@ -257,25 +257,30 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
       ];
 
   if (!activeCafe || cafes.length === 0) {
-    if (loading) {
-      return (
-        <div className="container mx-auto mb-12 px-4">
-          <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-            <span className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 animate-pulse" />
-              Loading cafes...
-            </span>
-          </div>
-        </div>
-      );
-    }
-
     return (
-      <div className="container mx-auto mb-12 px-4">
-        <div className="flex h-[300px] items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 text-muted-foreground">
-          <div className="text-center">
-            <Building2 className="mx-auto mb-2 h-8 w-8 opacity-20" />
-            <p>No cafes available at the moment.</p>
+      <div className="container mx-auto mb-12 mt-4 px-4 sm:mt-0">
+        <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-2xl backdrop-blur-md">
+          <div className="flex items-center gap-4 border-b border-border/10 bg-primary/5 p-4 sm:p-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
+              <Search className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-serif font-medium text-foreground sm:text-xl">Explore Our Cafes</h3>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Collection Showcase</p>
+            </div>
+          </div>
+          <div className="flex h-[260px] items-center justify-center text-muted-foreground">
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 animate-pulse" />
+                Loading cafes...
+              </span>
+            ) : (
+              <div className="text-center">
+                <Building2 className="mx-auto mb-2 h-8 w-8 opacity-20" />
+                <p>No cafes available at the moment.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

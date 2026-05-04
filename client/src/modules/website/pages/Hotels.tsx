@@ -346,9 +346,15 @@ export default function Hotels() {
       ) : (
         <div className="container mx-auto px-4 mt-6 md:-mt-10 relative z-30 mb-12">
           <div className="bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-md">
+            <div className="p-6 bg-primary/5 border-b border-border/10 flex items-center gap-4">
+              <div>
+                <h3 className="text-xl font-serif font-medium text-foreground">Find Your Stay</h3>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Best Prices Guaranteed</p>
+              </div>
+            </div>
             <div className="p-8">
               <div className="h-20 flex items-center justify-center text-muted-foreground">
-                Booking tools load after hydration.
+                Loading booking tools...
               </div>
             </div>
           </div>
@@ -375,8 +381,14 @@ export default function Hotels() {
             <HotelCarouselSection initialHotels={ssrHotels?.hotelCollection} />
           </Suspense>
         ) : (
-          <section className="py-6">
+          <section className="py-6 bg-gradient-to-br from-background via-secondary/5 to-background">
             <div className="container mx-auto px-6 lg:px-12">
+              <div className="bg-card border border-border rounded-xl p-4 shadow-sm mb-6">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1 block">Premium Selection</span>
+                  <h2 className="text-xl md:text-2xl font-serif text-foreground">Our Collection</h2>
+                </div>
+              </div>
               {(ssrHotels?.hotelCollection ?? []).length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {(ssrHotels?.hotelCollection ?? []).map((hotel: any) => {

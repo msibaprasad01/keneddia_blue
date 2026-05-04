@@ -329,6 +329,33 @@ export default function CafeHomepage() {
       <main>
         {/* SSR: structured cafe homepage data for crawlers */}
         <div className="sr-only" aria-hidden="true">
+          {/* Static section headers — always present for crawlers */}
+          <h2>Find Your Cafe</h2>
+          <p>Quick Cafe Booking</p>
+
+          {/* Location-based property matching — crawlable text with real city/property data */}
+          <h3>Kennedia Cafe near you!</h3>
+          <p>View Nearby Properties</p>
+          {(ssr?.cafeProperties || []).map((cafe, i) => (
+            <div key={i}>
+              <p>We found a Kennedia Cafe property in {cafe.city || cafe.name}, near your current location.</p>
+              <h4>{cafe.name}</h4>
+              {cafe.city && <p>{cafe.city}</p>}
+              {cafe.location && <p>{cafe.location}</p>}
+              {cafe.description && <p>{cafe.description}</p>}
+            </div>
+          ))}
+
+          <h2>Explore Our Cafes</h2>
+          <p>Collection Showcase</p>
+          <h2>Cafe Menu Spotlight</h2>
+          <h2>Best Seller Coffee Menu</h2>
+          <h2>Coffee First. Atmosphere Always.</h2>
+          <p>Neighbourhood Cafe</p>
+          <h2>Cafe Showcase</h2>
+          <h2>Cafe News & Press</h2>
+          <h2>Guest Impressions</h2>
+
           {(ssr?.heroSlides || []).map((slide, i) => (
             <div key={i}>
               {slide.title && <h2>{slide.title}</h2>}
@@ -412,6 +439,12 @@ export default function CafeHomepage() {
                 </li>
               ))}
             </ul>
+          )}
+          {ssr?.guestExperienceSectionHeader?.sectionTag && (
+            <h2>{ssr.guestExperienceSectionHeader.sectionTag}</h2>
+          )}
+          {ssr?.guestExperienceSectionHeader?.title && (
+            <h2>{ssr.guestExperienceSectionHeader.title}</h2>
           )}
         </div>
 
