@@ -63,8 +63,10 @@ function FormField({ label, children }) {
 const inputCls = "w-full border rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 transition-all";
 const inputStyle = { borderColor: colors.border, color: colors.textPrimary };
 
-function ScopeFields({ form, setForm, propertyTypes, properties }) {
+function ScopeFields({ form, setForm, propertyTypes, properties, allowedScopes = ["main", "propertyType", "property"] }) {
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
+  const filteredOptions = SCOPE_OPTIONS.filter((o) => allowedScopes.includes(o.value));
+
   return (
     <>
       <FormField label="Scope">
@@ -74,7 +76,7 @@ function ScopeFields({ form, setForm, propertyTypes, properties }) {
           value={form.scope}
           onChange={(e) => set("scope", e.target.value)}
         >
-          {SCOPE_OPTIONS.map((o) => (
+          {filteredOptions.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
@@ -867,7 +869,6 @@ function IconTab({ propertyTypes, properties }) {
           <option value="all">All Scopes</option>
           <option value="main">Main Homepage</option>
           <option value="propertyType">Property Type</option>
-          <option value="property">Specific Property</option>
         </select>
         <select
           className={inputCls}
@@ -1094,7 +1095,13 @@ function IconTab({ propertyTypes, properties }) {
                   </button>
                 </div>
               </FormField>
-              <ScopeFields form={form} setForm={setForm} propertyTypes={propertyTypes} properties={properties} />
+              <ScopeFields
+                form={form}
+                setForm={setForm}
+                propertyTypes={propertyTypes}
+                properties={properties}
+                allowedScopes={["main", "propertyType"]}
+              />
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t" style={{ borderColor: colors.border }}>
               <button
