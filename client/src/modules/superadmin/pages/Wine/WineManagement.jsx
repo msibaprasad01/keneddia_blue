@@ -550,7 +550,7 @@ export default function WineManagement() {
                         <td className="px-6 py-4">
                           <div className="flex flex-col">
                             <span className="font-semibold" style={{ color: colors.textPrimary }}>
-                              {item.wineTypeName || item.name || item.title}
+                              {activeTab === "types" ? item.wineTypeName : (activeTab === "brands" ? item.name : item.title)}
                             </span>
                             <span className="text-[10px] max-w-[200px] truncate" style={{ color: colors.textSecondary }}>
                               {item.wineTypeDescription || item.description || "No description"}
