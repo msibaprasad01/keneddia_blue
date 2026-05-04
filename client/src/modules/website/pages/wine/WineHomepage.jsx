@@ -208,7 +208,7 @@ export default function WineHomepage() {
         <div id="contact">
           <Footer />
         </div>
-        <WineWhatsAppButton />
+        {/* <WineWhatsAppButton /> */}
       </div>
     </>
   );

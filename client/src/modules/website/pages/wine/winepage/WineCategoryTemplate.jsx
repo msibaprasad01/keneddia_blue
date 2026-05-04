@@ -1369,7 +1369,7 @@ export default function WineCategoryTemplate() {
         <Footer />
       </div>
 
-      <WineWhatsAppButton />
+      {/* <WineWhatsAppButton /> */}
     </div>
   );
 }
