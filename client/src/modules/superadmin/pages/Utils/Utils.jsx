@@ -69,18 +69,20 @@ function ScopeFields({ form, setForm, propertyTypes, properties, allowedScopes =
 
   return (
     <>
-      <FormField label="Scope">
-        <select
-          className={inputCls}
-          style={inputStyle}
-          value={form.scope}
-          onChange={(e) => set("scope", e.target.value)}
-        >
-          {filteredOptions.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-      </FormField>
+      {filteredOptions.length > 1 && (
+        <FormField label="Scope">
+          <select
+            className={inputCls}
+            style={inputStyle}
+            value={form.scope}
+            onChange={(e) => set("scope", e.target.value)}
+          >
+            {filteredOptions.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </FormField>
+      )}
 
       {form.scope === "propertyType" && (
         <FormField label="Property Type *">
@@ -626,7 +628,7 @@ const ICON_EMPTY = {
   showOnHeader: false,
   showOnFooter: false,
   showOnLightOrDark: false,
-  scope: "main",
+  scope: "propertyType",
   propertyTypeId: "",
   propertyId: "",
 };
@@ -867,7 +869,6 @@ function IconTab({ propertyTypes, properties }) {
           onChange={(e) => { setFilterScope(e.target.value); resetPage(); }}
         >
           <option value="all">All Scopes</option>
-          <option value="main">Main Homepage</option>
           <option value="propertyType">Property Type</option>
         </select>
         <select
@@ -1100,7 +1101,7 @@ function IconTab({ propertyTypes, properties }) {
                 setForm={setForm}
                 propertyTypes={propertyTypes}
                 properties={properties}
-                allowedScopes={["main", "propertyType"]}
+                allowedScopes={["propertyType"]}
               />
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t" style={{ borderColor: colors.border }}>
