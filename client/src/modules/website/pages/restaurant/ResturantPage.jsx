@@ -222,12 +222,9 @@ export default function RestaurantHomepage() {
               ))}
             </ul>
           )}
-          {ssrBuffetHeader && (
-            <div>
-              <h2>{ssrBuffetHeader.headlinePart1} {ssrBuffetHeader.headlinePart2}</h2>
-              {ssrBuffetHeader.description && <p>{ssrBuffetHeader.description}</p>}
-            </div>
-          )}
+          {/* Buffet section header — static fallback ensures it always appears in page source */}
+          <h2>{ssrBuffetHeader?.headlinePart1 || "Buffet"} {ssrBuffetHeader?.headlinePart2 || "Selection"}</h2>
+          {ssrBuffetHeader?.description && <p>{ssrBuffetHeader.description}</p>}
           {(ssrBuffetItems || []).length > 0 && (
             <ul>
               {ssrBuffetItems.map((item) => (
@@ -262,6 +259,24 @@ export default function RestaurantHomepage() {
               ))}
             </div>
           )}
+
+          {/* Menu header — SSR data preferred, static fallback ensures it always appears */}
+          <h2>{ssrMenuHeader?.part1 || "Signature"} <span>{ssrMenuHeader?.part2 || "Masterpieces"}</span></h2>
+          {ssrMenuHeader?.description && <p>{ssrMenuHeader.description}</p>}
+
+          {/* Offer header — SSR data preferred, static fallback always present */}
+          <h3>{ssrOfferHeader?.headLine1 || "Today's"} {ssrOfferHeader?.headLine2 || "Deals"}</h3>
+          {ssrOfferHeader?.description && <p>{ssrOfferHeader.description}</p>}
+
+          {/* Chef's Remark — fetched client-side only, static text always present */}
+          <h2>Chef's Remark</h2>
+
+          {/* Events header — SSR data preferred, static fallback always present */}
+          <h2>{ssrEventsHeader?.header1 || "Events"} {ssrEventsHeader?.header2 || "Celebrations"}</h2>
+          {ssrEventsHeader?.description && <p>{ssrEventsHeader.description}</p>}
+
+          {/* Group Booking — always present, rendered deep inside events component after async load */}
+          <h3>Group Booking</h3>
         </div>
 
         <div id="home">
