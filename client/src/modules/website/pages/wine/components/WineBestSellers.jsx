@@ -309,7 +309,7 @@ export default function WineBestSellers() {
               onChange={setLocation}
             />
             <FilterSelect
-              label="Wine Type"
+              label="Liquor Type"
               value={wineType}
               options={wineTypes}
               onChange={setWineType}

@@ -321,7 +321,7 @@ function TypeHero({ meta, citySlug, propertySlug, heroImageOverride }) {
             >
               <Link to="/" className="hover:text-white transition-colors">Home</Link>
               <ChevronRight className="h-2.5 w-2.5 opacity-50" />
-              <Link to="/wine-homepage" className="hover:text-white transition-colors">Wines</Link>
+              <Link to="/wine-homepage" className="hover:text-white transition-colors">Liquors</Link>
               <ChevronRight className="h-2.5 w-2.5 opacity-50" />
               <span className="text-white/60">{meta.typeKey}</span>
             </motion.nav>
@@ -803,8 +803,8 @@ function GlobalBrandSwitcher({ currentSlug }) {
                 onClick={() => !isActive && navigate(`/wine-categories/${b.id}`)}
                 disabled={isActive}
                 className={`group relative overflow-hidden rounded-[1.25rem] border p-5 text-center transition-all dark:border-white/[0.07] dark:bg-[#1A0C13] ${isActive
-                    ? "border-transparent"
-                    : "cursor-pointer border-stone-200/80 bg-white/90 hover:-translate-y-1 hover:shadow-lg"
+                  ? "border-transparent"
+                  : "cursor-pointer border-stone-200/80 bg-white/90 hover:-translate-y-1 hover:shadow-lg"
                   }`}
                 style={isActive ? { background: `linear-gradient(135deg, ${b.accent}22, ${b.accent}0a)`, borderColor: `${b.accent}50` } : {}}
               >
@@ -870,8 +870,8 @@ function GlobalCategorySwitcher({ currentSlug }) {
                 onMouseLeave={() => setHoveredSlug(null)}
                 onClick={() => !isActive && navigate(`/wine-categories/${slug}`)}
                 className={`group relative flex min-h-[96px] select-none items-center overflow-hidden rounded-[1.5rem] border px-4 py-4 shadow-[0_14px_40px_-28px_rgba(66,28,35,0.35)] transition-all duration-300 ${isActive
-                    ? "border-transparent dark:border-transparent"
-                    : "cursor-pointer border-stone-200/90 bg-white hover:-translate-y-1 hover:shadow-[0_24px_60px_-34px_rgba(66,28,35,0.45)] dark:border-white/[0.07] dark:bg-[#1A0C13]"
+                  ? "border-transparent dark:border-transparent"
+                  : "cursor-pointer border-stone-200/90 bg-white hover:-translate-y-1 hover:shadow-[0_24px_60px_-34px_rgba(66,28,35,0.45)] dark:border-white/[0.07] dark:bg-[#1A0C13]"
                   }`}
                 style={isActive ? { background: `linear-gradient(135deg, ${meta.accent.color}18, ${meta.accent.dot}10)`, borderColor: `${meta.accent.color}40` } : {}}
               >
