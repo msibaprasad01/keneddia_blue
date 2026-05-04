@@ -509,6 +509,7 @@ export default function WinePage() {
         <div id="contact" className="bg-[#EDE7DF] dark:bg-[#0A0407]">
           <Footer />
         </div>
+        {/* <WineWhatsAppButton /> */}
       </div>
     </>
   );

@@ -137,10 +137,22 @@ function KenediaWinesLoader() {
   );
 }
 
-function SectionFallback({ height = "h-40" }) {
+function SectionFallback({ height = "h-40", eyebrow, heading }) {
   return (
-    <div className={`container mx-auto px-4 ${height}`}>
-      <div className="h-full animate-pulse rounded-xl bg-muted/30" />
+    <div className={`container mx-auto px-4 py-10 ${height}`}>
+      {(eyebrow || heading) && (
+        <div className="mb-6 text-center">
+          {eyebrow && (
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1 block">
+              {eyebrow}
+            </span>
+          )}
+          {heading && (
+            <h2 className="text-2xl md:text-3xl font-serif text-foreground">{heading}</h2>
+          )}
+        </div>
+      )}
+      <div className="animate-pulse rounded-xl bg-muted/30" style={{ height: "60%" }} />
     </div>
   );
 }
@@ -177,28 +189,28 @@ export default function WineHomepage() {
 
           {/* Collection */}
           <div id="collection" className="bg-[#FAF8F4] dark:bg-[#0D0508]">
-            <Suspense fallback={<SectionFallback height="h-96" />}>
+            <Suspense fallback={<SectionFallback height="h-96" eyebrow="Wine Collection" heading="Handpicked from the world's finest vineyards" />}>
               <WineBestSellers />
             </Suspense>
           </div>
 
           {/* Brands */}
           <div id="brand" className="bg-[#F0EAE2] dark:bg-[#100609]">
-            <Suspense fallback={<SectionFallback height="h-[24rem]" />}>
+            <Suspense fallback={<SectionFallback height="h-[24rem]" eyebrow="Curated Labels" heading="Top Brands" />}>
               <WineTopBrands clickable globalRoute />
             </Suspense>
           </div>
 
           {/* About */}
           <div id="about" className="bg-[#F5F0EA] dark:bg-[#0D0508]">
-            <Suspense fallback={<SectionFallback height="h-80" />}>
+            <Suspense fallback={<SectionFallback height="h-80" heading="About Us" />}>
               <WineAbout initialSections={ssr?.wineAboutSections} />
             </Suspense>
           </div>
 
           {/* News & Press */}
           <div id="news" className="bg-[#EDE7DF] dark:bg-[#0A0407]">
-            <Suspense fallback={<SectionFallback height="h-[28rem]" />}>
+            <Suspense fallback={<SectionFallback height="h-[28rem]" heading="Wine News & Press" />}>
               <WineNewsSection initialNews={ssr?.wineNews} />
             </Suspense>
           </div>
@@ -207,6 +219,7 @@ export default function WineHomepage() {
         <div id="contact">
           <Footer />
         </div>
+        {/* <WineWhatsAppButton /> */}
       </div>
     </>
   );
