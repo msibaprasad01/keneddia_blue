@@ -138,7 +138,16 @@ function WineCard({ wine, index, typeAccents = {} }) {
                 {wine.name}
               </h3>
               {wine.subtitle && (
-                <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
+                <p 
+                  className="text-[11px] font-medium italic text-stone-400 hover:text-[#8B1A2A] transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const cSlug = generateSlug(wine.locationDisplay || wine.location);
+                    const pSlug = generateSlug(wine.property);
+                    const sSlug = wine.subCategoryId || generateSlug(wine.subtitle);
+                    navigate(`/wine-detail/${cSlug}/${pSlug}/sub/${sSlug}`);
+                  }}
+                >
                   {wine.subtitle}
                 </p>
               )}

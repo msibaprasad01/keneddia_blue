@@ -29,6 +29,10 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
 
+function generateSlug(text) {
+  return text?.toString().toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\w-]+/g, "").replace(/--+/g, "-");
+}
+
 // ─── NAV ─────────────────────────────────────────────────────────────────────
 const WINE_NAV_ITEMS = [
   { type: "link", label: "HOME", href: "#hero" },
@@ -444,6 +448,8 @@ function BrandHero({ brand, citySlug, propertySlug, heroImageOverride }) {
 
 // ─── ITEM CARD ────────────────────────────────────────────────────────────────
 function ItemCard({ drink, index }) {
+  const navigate = useNavigate();
+  const { citySlug, propertySlug } = useParams();
   const [hovered, setHovered] = useState(false);
   const accent = TYPE_ACCENTS[drink.type] || TYPE_ACCENTS.Wine;
 
@@ -481,7 +487,23 @@ function ItemCard({ drink, index }) {
 
             <div className="flex flex-col items-center gap-1">
               <h3 className="font-serif text-[1.4rem] leading-tight text-stone-900 dark:text-stone-100">{drink.name}</h3>
-              {drink.subtitle && <p className="text-[11px] italic text-stone-400">{drink.subtitle}</p>}
+              {drink.subtitle && (
+                <p 
+                  className="text-[11px] italic text-stone-400 hover:text-[#8B1A2A] transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const sSlug = drink.subCategoryId || generateSlug(drink.subtitle);
+                    const isGlobal = !citySlug || !propertySlug;
+                    if (isGlobal) {
+                      navigate(`/wine-subcategory/${sSlug}`);
+                    } else {
+                      navigate(`/wine-detail/${citySlug}/${propertySlug}/sub/${sSlug}`);
+                    }
+                  }}
+                >
+                  {drink.subtitle}
+                </p>
+              )}
             </div>
           </div>
 
