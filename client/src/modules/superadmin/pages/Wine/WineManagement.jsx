@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { colors } from "@/lib/colors/colors";
 import Layout from "@/modules/layout/Layout";
 import {
@@ -11,11 +11,15 @@ import {
   X,
   Check,
   Upload,
-  Search,
   Eye,
   ChevronLeft,
   ChevronRight,
-  FilterX
+  ChevronDown,
+  ChevronRight as ChevronRightIcon,
+  Tag,
+  Layers,
+  Building2,
+  Globe,
 } from "lucide-react";
 import {
   getAllWineTypes, createWineType, updateWineType, toggleWineTypeStatus,
@@ -23,21 +27,21 @@ import {
   getAllWineCategories, createWineCategory, updateWineCategory, toggleWineCategoryStatus,
   getAllWineSubCategories, createWineSubCategory, updateWineSubCategory, toggleWineSubCategoryStatus
 } from "@/Api/WineApi";
-import { GetAllPropertyDetails, getPropertyTypes, uploadMedia, getMediaById } from "@/Api/Api";
+import { GetAllPropertyDetails, getPropertyTypes, uploadMedia } from "@/Api/Api";
 import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: "types", label: "Wine Types", icon: Wine },
-  { id: "brands", label: "Brands", icon: Wine },
-  { id: "categories", label: "Categories", icon: Wine },
-  { id: "subcategories", label: "Subcategories", icon: Wine },
+  { id: "types",         label: "Wine Types",    icon: Wine },
+  { id: "brands",        label: "Brands",         icon: Tag },
+  { id: "categories",    label: "Categories",     icon: Layers },
+  { id: "subcategories", label: "Subcategories",  icon: Layers },
 ];
 
 const SCOPE_OPTIONS = [
   { label: "Property Type Homepage", value: "propertyType" },
-  { label: "Specific Property", value: "property" },
+  { label: "Specific Property",      value: "property" },
 ];
 
 const toList = (res) => {
@@ -69,12 +73,7 @@ function ScopeFields({ form, setForm, propertyTypes, properties }) {
   return (
     <>
       <FormField label="Scope">
-        <select
-          className={inputCls}
-          style={inputStyle}
-          value={form.scope}
-          onChange={(e) => set("scope", e.target.value)}
-        >
+        <select className={inputCls} style={inputStyle} value={form.scope} onChange={(e) => set("scope", e.target.value)}>
           {SCOPE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
@@ -83,12 +82,7 @@ function ScopeFields({ form, setForm, propertyTypes, properties }) {
 
       {form.scope === "propertyType" && (
         <FormField label="Property Type">
-          <select
-            className={inputCls}
-            style={inputStyle}
-            value={form.propertyTypeId}
-            onChange={(e) => set("propertyTypeId", e.target.value)}
-          >
+          <select className={inputCls} style={inputStyle} value={form.propertyTypeId} onChange={(e) => set("propertyTypeId", e.target.value)}>
             <option value="">Select property type</option>
             {propertyTypes.map((pt) => (
               <option key={pt.id} value={pt.id}>{pt.typeName || pt.name}</option>
@@ -99,12 +93,7 @@ function ScopeFields({ form, setForm, propertyTypes, properties }) {
 
       {form.scope === "property" && (
         <FormField label="Property">
-          <select
-            className={inputCls}
-            style={inputStyle}
-            value={form.propertyId}
-            onChange={(e) => set("propertyId", e.target.value)}
-          >
+          <select className={inputCls} style={inputStyle} value={form.propertyId} onChange={(e) => set("propertyId", e.target.value)}>
             <option value="">Select property</option>
             {properties.map((p) => (
               <option key={p.id} value={p.id}>{p.propertyName}</option>
@@ -125,10 +114,7 @@ function StatusBadge({ active }) {
         color: active ? colors.success : colors.error,
       }}
     >
-      <span
-        className="w-1.5 h-1.5 rounded-full mr-1.5"
-        style={{ backgroundColor: active ? colors.success : colors.error }}
-      />
+      <span className="w-1.5 h-1.5 rounded-full mr-1.5" style={{ backgroundColor: active ? colors.success : colors.error }} />
       {active ? "Active" : "Inactive"}
     </span>
   );
@@ -136,25 +122,13 @@ function StatusBadge({ active }) {
 
 function EmptyState({ label, onAdd }) {
   return (
-    <div
-      className="flex flex-col items-center justify-center py-16 rounded-2xl border-2 border-dashed gap-3"
-      style={{ borderColor: colors.border }}
-    >
-      <div
-        className="w-12 h-12 rounded-full flex items-center justify-center"
-        style={{ backgroundColor: colors.mainBg }}
-      >
+    <div className="flex flex-col items-center justify-center py-16 rounded-2xl border-2 border-dashed gap-3" style={{ borderColor: colors.border }}>
+      <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.mainBg }}>
         <Wine size={20} style={{ color: colors.textSecondary }} />
       </div>
-      <p className="text-sm" style={{ color: colors.textSecondary }}>
-        No entries yet. {label}
-      </p>
+      <p className="text-sm" style={{ color: colors.textSecondary }}>No entries yet. {label}</p>
       {onAdd && (
-        <button
-          onClick={onAdd}
-          className="text-sm font-semibold underline"
-          style={{ color: colors.primary }}
-        >
+        <button onClick={onAdd} className="text-sm font-semibold underline" style={{ color: colors.primary }}>
           Add your first one
         </button>
       )}
@@ -162,7 +136,7 @@ function EmptyState({ label, onAdd }) {
   );
 }
 
-function ImageUpload({ mediaId, previewUrl, onUpload, uploading }) {
+function ImageUpload({ mediaId, previewUrl, onUpload, uploading, dimensionHint }) {
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -174,9 +148,7 @@ function ImageUpload({ mediaId, previewUrl, onUpload, uploading }) {
       {previewUrl ? (
         <div className="relative w-full h-36 rounded-xl overflow-hidden border" style={{ borderColor: colors.border }}>
           <img src={previewUrl} alt="preview" className="w-full h-full object-contain bg-gray-50" />
-          <label
-            className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-          >
+          <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
             <div className="flex flex-col items-center gap-1 text-white text-xs">
               <Upload size={18} />
               Replace
@@ -185,22 +157,22 @@ function ImageUpload({ mediaId, previewUrl, onUpload, uploading }) {
           </label>
         </div>
       ) : (
-        <label
-          className="flex flex-col items-center justify-center h-36 rounded-xl border-2 border-dashed cursor-pointer transition-colors hover:bg-gray-50"
-          style={{ borderColor: colors.border }}
-        >
+        <label className="flex flex-col items-center justify-center h-36 rounded-xl border-2 border-dashed cursor-pointer transition-colors hover:bg-gray-50" style={{ borderColor: colors.border }}>
           {uploading ? (
             <Loader2 size={24} className="animate-spin" style={{ color: colors.primary }} />
           ) : (
             <>
               <Upload size={24} style={{ color: colors.textSecondary }} />
-              <span className="mt-2 text-xs" style={{ color: colors.textSecondary }}>
-                Click to upload image
-              </span>
+              <span className="mt-2 text-xs" style={{ color: colors.textSecondary }}>Click to upload image</span>
             </>
           )}
           <input type="file" accept="image/*" className="hidden" onChange={handleFile} disabled={uploading} />
         </label>
+      )}
+      {dimensionHint && (
+        <p className="text-[10px] font-semibold flex items-center gap-1" style={{ color: colors.primary }}>
+          <span style={{ color: colors.textSecondary }}>Recommended size:</span> {dimensionHint}
+        </p>
       )}
       {mediaId && (
         <p className="text-xs" style={{ color: colors.textSecondary }}>
@@ -210,6 +182,386 @@ function ImageUpload({ mediaId, previewUrl, onUpload, uploading }) {
     </div>
   );
 }
+
+// ─── Consolidated Detail Modal ────────────────────────────────────────────────
+
+const CollapsibleSection = memo(function CollapsibleSection({ title, icon: Icon, count, children, defaultOpen = true }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-xl border overflow-hidden" style={{ borderColor: colors.border }}>
+      <button
+        onClick={() => setOpen((p) => !p)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-gray-50"
+        style={{ backgroundColor: colors.mainBg }}
+      >
+        <div className="flex items-center gap-2">
+          {Icon && <Icon size={14} style={{ color: colors.primary }} />}
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.textPrimary }}>{title}</span>
+          {count !== undefined && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ backgroundColor: colors.primary + "18", color: colors.primary }}>
+              {count}
+            </span>
+          )}
+        </div>
+        {open
+          ? <ChevronDown size={14} style={{ color: colors.textSecondary }} />
+          : <ChevronRightIcon size={14} style={{ color: colors.textSecondary }} />}
+      </button>
+      {open && <div className="p-4">{children}</div>}
+    </div>
+  );
+});
+
+const DetailModal = memo(function DetailModal({ item, tab, types, brands, categories, subcategories, properties, propertyTypes, onClose }) {
+  if (!item) return null;
+
+  // Memoize all hierarchy lookups so they don't recompute on every render
+  const { wineType, brandList, categoryList, subList } = useMemo(() => {
+    let wineType = null, brandList = [], categoryList = [], subList = [];
+    if (tab === "types") {
+      wineType = item;
+      brandList = brands.filter((b) => String(b.wineTypeId) === String(item.id));
+      const brandIds = new Set(brandList.map((b) => String(b.id)));
+      categoryList = categories.filter((c) => brandIds.has(String(c.wineBrandId)));
+      const catIds = new Set(categoryList.map((c) => String(c.id)));
+      subList = subcategories.filter((s) => catIds.has(String(s.wineCategoryId)));
+    } else if (tab === "brands") {
+      wineType = types.find((t) => String(t.id) === String(item.wineTypeId)) || null;
+      brandList = [item];
+      categoryList = categories.filter((c) => String(c.wineBrandId) === String(item.id));
+      const catIds = new Set(categoryList.map((c) => String(c.id)));
+      subList = subcategories.filter((s) => catIds.has(String(s.wineCategoryId)));
+    } else if (tab === "categories") {
+      const brand = brands.find((b) => String(b.id) === String(item.wineBrandId));
+      wineType = brand ? types.find((t) => String(t.id) === String(brand.wineTypeId)) || null : null;
+      brandList = brand ? [brand] : [];
+      categoryList = [item];
+      subList = subcategories.filter((s) => String(s.wineCategoryId) === String(item.id));
+    } else if (tab === "subcategories") {
+      const cat = categories.find((c) => String(c.id) === String(item.wineCategoryId));
+      const brand = cat ? brands.find((b) => String(b.id) === String(cat.wineBrandId)) : null;
+      wineType = brand ? types.find((t) => String(t.id) === String(brand.wineTypeId)) || null : null;
+      brandList = brand ? [brand] : [];
+      categoryList = cat ? [cat] : [];
+      subList = [item];
+    }
+    return { wineType, brandList, categoryList, subList };
+  }, [item, tab, types, brands, categories, subcategories]);
+
+  // Memoize scope label lookup map to avoid repeated finds in render
+  const propMap = useMemo(() => new Map(properties.map((p) => [String(p.id), p])), [properties]);
+  const ptMap = useMemo(() => new Map(propertyTypes.map((pt) => [String(pt.id), pt])), [propertyTypes]);
+
+  const scopeLabel = useCallback((entry) => {
+    if (entry.propertyId) {
+      const prop = propMap.get(String(entry.propertyId));
+      return { icon: Building2, label: prop?.propertyName || `Property #${entry.propertyId}`, sub: "Specific Property" };
+    }
+    if (entry.propertyTypeId) {
+      const pt = ptMap.get(String(entry.propertyTypeId));
+      return { icon: Globe, label: pt?.typeName || pt?.name || `Type #${entry.propertyTypeId}`, sub: "Property Type Homepage" };
+    }
+    return { icon: Globe, label: "Global / Unassigned", sub: "" };
+  }, [propMap, ptMap]);
+
+  // Category → subcategory map for fast lookup
+  const catSubMap = useMemo(() => {
+    const m = new Map();
+    for (const s of subList) {
+      const key = String(s.wineCategoryId);
+      if (!m.has(key)) m.set(key, []);
+      m.get(key).push(s);
+    }
+    return m;
+  }, [subList]);
+
+  // Brand → categories map
+  const brandCatMap = useMemo(() => {
+    const m = new Map();
+    for (const c of categoryList) {
+      const key = String(c.wineBrandId);
+      if (!m.has(key)) m.set(key, []);
+      m.get(key).push(c);
+    }
+    return m;
+  }, [categoryList]);
+
+  const itemName = item.wineTypeName || item.name || item.title || "—";
+  const tabLabel = tab === "subcategories" ? "Subcategory" : tab === "categories" ? "Category" : tab === "brands" ? "Brand" : "Wine Type";
+  const itemScope = scopeLabel(item);
+
+  // Collect all assigned-property entries across the full hierarchy
+  const assignedProperties = useMemo(() => {
+    const all = [item, ...brandList.filter((b) => b.id !== item.id), ...categoryList.filter((c) => c.id !== item.id), ...subList.filter((s) => s.id !== item.id)];
+    return all.filter((e) => e.propertyId || e.propertyTypeId).map((e) => ({
+      entry: e,
+      scope: scopeLabel(e),
+      name: e.wineTypeName || e.name || e.title || "Item",
+    }));
+  }, [item, brandList, categoryList, subList, scopeLabel]);
+
+  return (
+    <div className="fixed inset-0 z-110 bg-black/70 backdrop-blur-sm flex" onClick={onClose}>
+      {/* Full-screen panel — slides in from right */}
+      <div
+        className="ml-auto h-full bg-white flex flex-col shadow-2xl"
+        style={{ width: "min(960px, 100vw)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* ── Top bar ── */}
+        <div
+          className="flex items-center justify-between px-8 py-5 border-b shrink-0"
+          style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden"
+              style={{ backgroundColor: colors.primary + "18" }}
+            >
+              {item.media?.url
+                ? <img src={item.media.url} alt="" className="w-full h-full object-cover" />
+                : <Wine size={20} style={{ color: colors.primary }} />}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-xl font-bold truncate" style={{ color: colors.textPrimary }}>{itemName}</h2>
+                <StatusBadge active={item.active} />
+              </div>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <span className="text-xs font-semibold" style={{ color: colors.textSecondary }}>{tabLabel}</span>
+                <span style={{ color: colors.border }}>·</span>
+                <span className="inline-flex items-center gap-1 text-xs" style={{ color: colors.textSecondary }}>
+                  <itemScope.icon size={11} style={{ color: colors.primary }} />
+                  {itemScope.label}
+                  {itemScope.sub && <span className="opacity-60">({itemScope.sub})</span>}
+                </span>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="shrink-0 ml-4 p-2.5 rounded-xl hover:bg-gray-200 transition-colors"
+          >
+            <X size={20} style={{ color: colors.textSecondary }} />
+          </button>
+        </div>
+
+        {/* ── Two-column body — both columns scroll independently ── */}
+        <div className="flex flex-1 min-h-0 divide-x" style={{ borderColor: colors.border }}>
+
+          {/* LEFT: Item info + hierarchy tree — fixed width, scrollable */}
+          <div
+            className="w-72 shrink-0 overflow-y-auto p-5 flex flex-col gap-6"
+            style={{ overscrollBehavior: "contain", backgroundColor: colors.mainBg }}
+          >
+            {/* Description */}
+            {(item.wineTypeDescription || item.description) && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: colors.textSecondary }}>Description</p>
+                <p className="text-sm leading-relaxed" style={{ color: colors.textPrimary }}>
+                  {item.wineTypeDescription || item.description}
+                </p>
+              </div>
+            )}
+
+            {/* Wine Type ancestry */}
+            {wineType && tab !== "types" && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: colors.textSecondary }}>Wine Type</p>
+                <div className="flex items-center gap-2.5 p-3 rounded-xl border" style={{ borderColor: colors.border, backgroundColor: colors.contentBg }}>
+                  <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 flex items-center justify-center" style={{ backgroundColor: colors.primary + "18" }}>
+                    {wineType.media?.url
+                      ? <img src={wineType.media.url} alt="" className="w-full h-full object-cover" />
+                      : <Wine size={13} style={{ color: colors.primary }} />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold truncate" style={{ color: colors.textPrimary }}>{wineType.wineTypeName}</p>
+                    <StatusBadge active={wineType.active} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Summary counts */}
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: colors.textSecondary }}>Hierarchy Summary</p>
+              <div className="flex flex-col gap-1.5">
+                {[
+                  { icon: Tag,    label: "Brands",        count: brandList.length,   show: brandList.length > 0 },
+                  { icon: Layers, label: "Categories",    count: categoryList.length, show: categoryList.length > 0 },
+                  { icon: Layers, label: "Subcategories", count: subList.length,      show: subList.length > 0 },
+                ].filter((r) => r.show).map((row) => (
+                  <div key={row.label} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ backgroundColor: colors.contentBg }}>
+                    <div className="flex items-center gap-2">
+                      <row.icon size={13} style={{ color: colors.primary }} />
+                      <span className="text-xs font-medium" style={{ color: colors.textPrimary }}>{row.label}</span>
+                    </div>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: colors.primary + "18", color: colors.primary }}>{row.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Assigned properties */}
+            {assignedProperties.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: colors.textSecondary }}>
+                  Assigned Properties <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px]" style={{ backgroundColor: colors.primary + "18", color: colors.primary }}>{assignedProperties.length}</span>
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {assignedProperties.map(({ entry, scope: s, name }, i) => (
+                    <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: colors.contentBg }}>
+                      <s.icon size={13} className="shrink-0 mt-0.5" style={{ color: colors.primary }} />
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold truncate" style={{ color: colors.textPrimary }}>{s.label}</p>
+                        <p className="text-[10px] truncate" style={{ color: colors.textSecondary }}>{s.sub} · {name}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT: Full hierarchy — free scrollable, no outer border/frame */}
+          <div
+            className="flex-1 overflow-y-auto p-6 flex flex-col gap-8"
+            style={{ overscrollBehavior: "contain" }}
+          >
+
+            {/* BRANDS */}
+            {brandList.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Tag size={15} style={{ color: colors.primary }} />
+                  <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: colors.textPrimary }}>
+                    Brands <span className="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: colors.primary + "18", color: colors.primary }}>{brandList.length}</span>
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-5">
+                  {brandList.map((b) => {
+                    const bCats = brandCatMap.get(String(b.id)) || [];
+                    const bs = scopeLabel(b);
+                    return (
+                      <div key={b.id}>
+                        {/* Brand row */}
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 flex items-center justify-center border" style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}>
+                            {b.media?.url ? <img src={b.media.url} alt="" className="w-full h-full object-cover" /> : <Tag size={14} style={{ color: colors.textSecondary }} />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-bold" style={{ color: colors.textPrimary }}>{b.name}</span>
+                              <StatusBadge active={b.active} />
+                            </div>
+                            {(b.propertyId || b.propertyTypeId) && (
+                              <span className="text-[10px] flex items-center gap-1 mt-0.5" style={{ color: colors.textSecondary }}>
+                                <bs.icon size={10} style={{ color: colors.primary }} />{bs.label}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Categories under brand */}
+                        {bCats.length > 0 && (
+                          <div className="ml-6 flex flex-col gap-3 border-l-2 pl-4" style={{ borderColor: colors.border }}>
+                            {bCats.map((c) => {
+                              const cSubs = catSubMap.get(String(c.id)) || [];
+                              return (
+                                <div key={c.id}>
+                                  {/* Category row */}
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Layers size={13} style={{ color: colors.primary }} />
+                                    <span className="text-xs font-semibold" style={{ color: colors.textPrimary }}>{c.title}</span>
+                                    <StatusBadge active={c.active} />
+                                    {(c.propertyId || c.propertyTypeId) && (() => {
+                                      const cs = scopeLabel(c);
+                                      return <span className="text-[10px] ml-auto flex items-center gap-0.5" style={{ color: colors.textSecondary }}><cs.icon size={9} />{cs.label}</span>;
+                                    })()}
+                                  </div>
+
+                                  {/* Subcategory chips */}
+                                  {cSubs.length > 0 && (
+                                    <div className="ml-5 flex flex-wrap gap-1.5">
+                                      {cSubs.map((s) => (
+                                        <span
+                                          key={s.id}
+                                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
+                                          style={{ backgroundColor: colors.primary + "12", color: colors.primary }}
+                                        >
+                                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: s.active ? colors.success : colors.error }} />
+                                          {s.title}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* STANDALONE CATEGORIES (category tab) */}
+            {tab === "categories" && categoryList.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Layers size={15} style={{ color: colors.primary }} />
+                  <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: colors.textPrimary }}>Category</h3>
+                </div>
+                {categoryList.map((c) => (
+                  <div key={c.id}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-sm font-bold" style={{ color: colors.textPrimary }}>{c.title}</span>
+                      <StatusBadge active={c.active} />
+                    </div>
+                    {subList.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 ml-1">
+                        {subList.map((s) => (
+                          <span key={s.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium" style={{ backgroundColor: colors.primary + "12", color: colors.primary }}>
+                            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: s.active ? colors.success : colors.error }} />
+                            {s.title}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </section>
+            )}
+
+            {/* STANDALONE SUBCATEGORY */}
+            {tab === "subcategories" && (
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Layers size={15} style={{ color: colors.primary }} />
+                  <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: colors.textPrimary }}>Subcategory</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold" style={{ color: colors.textPrimary }}>{item.title}</span>
+                  <StatusBadge active={item.active} />
+                </div>
+              </section>
+            )}
+
+            {/* Empty right panel */}
+            {brandList.length === 0 && tab !== "categories" && tab !== "subcategories" && (
+              <div className="flex flex-col items-center justify-center flex-1 gap-3 py-16" style={{ color: colors.textSecondary }}>
+                <Layers size={32} className="opacity-20" />
+                <p className="text-sm">No child items linked yet.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
@@ -221,74 +573,46 @@ export default function WineManagement() {
   const [properties, setProperties] = useState([]);
   const [loadingContext, setLoadingContext] = useState(true);
 
-  // Data State
   const [types, setTypes] = useState([]);
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
 
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
-  // Filter / Drill Down State
-  const [drillDown, setDrillDown] = useState({
-    typeId: null,
-    brandId: null,
-    categoryId: null,
-    label: ""
-  });
+  // Detail modal
+  const [detailItem, setDetailItem] = useState(null);
+  const [detailTab, setDetailTab] = useState(null);
 
-  // Modal State
+  // Add/Edit modal
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [toggling, setToggling] = useState({});
 
-  // Form State
   const [form, setForm] = useState({
-    name: "",
-    title: "",
-    description: "",
-    wineTypeId: "",
-    wineBrandId: "",
-    wineCategoryId: "",
-    mediaId: null,
-    previewUrl: "",
-    scope: "propertyType",
-    propertyId: "",
-    propertyTypeId: "",
+    name: "", title: "", description: "",
+    wineTypeId: "", wineBrandId: "", wineCategoryId: "",
+    mediaId: null, previewUrl: "",
+    scope: "propertyType", propertyId: "", propertyTypeId: "",
   });
 
   const resetForm = () => {
-    setForm({
-      name: "",
-      title: "",
-      description: "",
-      wineTypeId: drillDown.typeId || "",
-      wineBrandId: drillDown.brandId || "",
-      wineCategoryId: drillDown.categoryId || "",
-      mediaId: null,
-      previewUrl: "",
-      scope: "propertyType",
-      propertyId: "",
-      propertyTypeId: "",
-    });
+    setForm({ name: "", title: "", description: "", wineTypeId: "", wineBrandId: "", wineCategoryId: "", mediaId: null, previewUrl: "", scope: "propertyType", propertyId: "", propertyTypeId: "" });
     setEditingItem(null);
   };
 
   const fetchContext = useCallback(async () => {
     try {
       const [ptRes, pRes] = await Promise.all([getPropertyTypes(), GetAllPropertyDetails()]);
-      setPropertyTypes(toList(ptRes));
-      // GetAllPropertyDetails returns [{propertyResponseDTO, propertyListingResponseDTOS}]
-      // Extract the flat property object from each wrapper
+      const allTypes = toList(ptRes);
+      const wineTypes = allTypes.filter((pt) => (pt.typeName || pt.name || "").toLowerCase() === "wine");
+      setPropertyTypes(wineTypes.length > 0 ? wineTypes : allTypes.filter((pt) => (pt.typeName || pt.name || "").toLowerCase().includes("wine")));
       const rawList = toList(pRes);
-      const flatProps = rawList
-        .map((item) => item.propertyResponseDTO ?? item)
-        .filter((p) => p && p.isActive === true);
+      const flatProps = rawList.map((item) => item.propertyResponseDTO ?? item).filter((p) => p && p.isActive === true);
       setProperties(flatProps);
     } catch {
       showError("Failed to fetch location context");
@@ -300,18 +624,13 @@ export default function WineManagement() {
   const fetchData = useCallback(async () => {
     setDataLoading(true);
     try {
-      const [t, b, c, s] = await Promise.all([
-        getAllWineTypes(),
-        getAllWineBrands(),
-        getAllWineCategories(),
-        getAllWineSubCategories()
-      ]);
+      const [t, b, c, s] = await Promise.all([getAllWineTypes(), getAllWineBrands(), getAllWineCategories(), getAllWineSubCategories()]);
       setTypes(toList(t));
       setBrands(toList(b));
       setCategories(toList(c));
       setSubcategories(toList(s));
     } catch {
-      showError(`Failed to fetch wine data`);
+      showError("Failed to fetch wine data");
     } finally {
       setDataLoading(false);
     }
@@ -320,31 +639,20 @@ export default function WineManagement() {
   useEffect(() => { fetchContext(); }, [fetchContext]);
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Derived Data with Drill Down filtering
   const filteredData = useMemo(() => {
-    let base = [];
-    if (activeTab === "types") base = types;
-    else if (activeTab === "brands") {
-      base = brands;
-      if (drillDown.typeId) base = base.filter(x => String(x.wineTypeId) === String(drillDown.typeId));
-    } else if (activeTab === "categories") {
-      base = categories;
-      if (drillDown.brandId) base = base.filter(x => String(x.wineBrandId) === String(drillDown.brandId));
-    } else if (activeTab === "subcategories") {
-      base = subcategories;
-      if (drillDown.categoryId) base = base.filter(x => String(x.wineCategoryId) === String(drillDown.categoryId));
-    }
-    return base;
-  }, [activeTab, types, brands, categories, subcategories, drillDown]);
+    if (activeTab === "types") return types;
+    if (activeTab === "brands") return brands;
+    if (activeTab === "categories") return categories;
+    return subcategories;
+  }, [activeTab, types, brands, categories, subcategories]);
 
-  // Pagination Logic
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const currentItems = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredData.slice(start, start + itemsPerPage);
   }, [filteredData, currentPage]);
 
-  useEffect(() => { setCurrentPage(1); }, [activeTab, drillDown]);
+  useEffect(() => { setCurrentPage(1); }, [activeTab]);
 
   const handleUpload = async (file) => {
     setUploading(true);
@@ -363,11 +671,11 @@ export default function WineManagement() {
     }
   };
 
-  const openEdit = async (item) => {
+  const openEdit = (item) => {
     setEditingItem(item);
     setForm({
       name: item.name || item.wineTypeName || "",
-      title: item.title || "",
+      title: item.title || item.name || "",
       description: item.description || item.wineTypeDescription || "",
       wineTypeId: item.wineTypeId || "",
       wineBrandId: item.wineBrandId || "",
@@ -387,7 +695,7 @@ export default function WineManagement() {
     const isCategory = activeTab === "categories";
     const isSub = activeTab === "subcategories";
 
-    const nameVal = isType ? form.name : (isBrand ? form.name : form.title);
+    const nameVal = isType ? form.name : isBrand ? form.name : form.title;
     if (!nameVal?.trim()) return showError(`${isType || isBrand ? "Name" : "Title"} is required`);
 
     const payload = {
@@ -397,19 +705,10 @@ export default function WineManagement() {
       ...(form.scope === "propertyType" && { propertyTypeId: form.propertyTypeId }),
     };
 
-    if (isType) {
-      payload.wineTypeName = form.name.trim();
-      payload.wineTypeDescription = form.description.trim();
-    } else if (isBrand) {
-      payload.name = form.name.trim();
-      payload.wineTypeId = form.wineTypeId;
-    } else if (isCategory) {
-      payload.title = form.title.trim();
-      payload.wineBrandId = form.wineBrandId;
-    } else if (isSub) {
-      payload.title = form.title.trim();
-      payload.wineCategoryId = form.wineCategoryId;
-    }
+    if (isType) { payload.wineTypeName = form.name.trim(); payload.wineTypeDescription = form.description.trim(); }
+    else if (isBrand) { payload.name = form.name.trim(); payload.wineTypeId = form.wineTypeId; }
+    else if (isCategory) { payload.title = form.title.trim(); payload.wineBrandId = form.wineBrandId; }
+    else if (isSub) { payload.name = form.title.trim(); payload.wineCategoryId = form.wineCategoryId; }
 
     setSaving(true);
     try {
@@ -417,7 +716,6 @@ export default function WineManagement() {
       if (isBrand) editingItem ? await updateWineBrand(editingItem.id, payload) : await createWineBrand(payload);
       if (isCategory) editingItem ? await updateWineCategory(editingItem.id, payload) : await createWineCategory(payload);
       if (isSub) editingItem ? await updateWineSubCategory(editingItem.id, payload) : await createWineSubCategory(payload);
-
       showSuccess("Saved successfully");
       setShowModal(false);
       fetchData();
@@ -444,54 +742,38 @@ export default function WineManagement() {
     }
   };
 
-  const handleDrillDown = (item) => {
-    if (activeTab === "types") {
-      setDrillDown({ typeId: item.id, brandId: null, categoryId: null, label: item.wineTypeName });
-      setActiveTab("brands");
-    } else if (activeTab === "brands") {
-      setDrillDown(prev => ({ ...prev, brandId: item.id, categoryId: null, label: item.name }));
-      setActiveTab("categories");
-    } else if (activeTab === "categories") {
-      setDrillDown(prev => ({ ...prev, categoryId: item.id, label: item.title }));
-      setActiveTab("subcategories");
-    }
+  // Parent name helpers for the table
+  const parentName = (item) => {
+    if (activeTab === "brands") return types.find((t) => String(t.id) === String(item.wineTypeId))?.wineTypeName || item.wineTypeName || "—";
+    if (activeTab === "categories") return brands.find((b) => String(b.id) === String(item.wineBrandId))?.name || item.wineBrandName || "—";
+    if (activeTab === "subcategories") return categories.find((c) => String(c.id) === String(item.wineCategoryId))?.title || item.wineCategoryName || "—";
+    return "Top Level";
   };
 
-  const clearDrillDown = () => {
-    setDrillDown({ typeId: null, brandId: null, categoryId: null, label: "" });
+  const childCount = (item) => {
+    if (activeTab === "types") return brands.filter((b) => String(b.wineTypeId) === String(item.id)).length;
+    if (activeTab === "brands") return categories.filter((c) => String(c.wineBrandId) === String(item.id)).length;
+    if (activeTab === "categories") return subcategories.filter((s) => String(s.wineCategoryId) === String(item.id)).length;
+    return null;
   };
 
   return (
     <Layout>
-      <div className="p-6 lg:p-10 flex flex-col gap-8 max-w-[1600px] mx-auto h-full overflow-y-auto">
+      <div className="p-6 lg:p-10 flex flex-col gap-8 max-w-[1600px] mx-auto h-full overflow-y-auto scroll-smooth" style={{ overscrollBehavior: "contain" }}>
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: colors.textPrimary }}>
-              Wine Management
-            </h1>
-            <p className="text-sm mt-1" style={{ color: colors.textSecondary }}>
-              Configure wine types, brands, categories and subcategories.
-            </p>
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: colors.textPrimary }}>Wine Management</h1>
+            <p className="text-sm mt-1" style={{ color: colors.textSecondary }}>Configure wine types, brands, categories and subcategories.</p>
           </div>
-          <div className="flex items-center gap-3">
-            {drillDown.label && (
-              <button
-                onClick={clearDrillDown}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all"
-                style={{ borderColor: colors.error, color: colors.error }}
-              >
-                <FilterX size={16} /> Clear Filter ({drillDown.label})
-              </button>
-            )}
-            <button
-              onClick={() => { resetForm(); setShowModal(true); }}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all active:scale-95"
-              style={{ backgroundColor: colors.primary }}
-            >
-              <Plus size={18} /> Add {activeTab === "categories" ? "Category" : activeTab === "subcategories" ? "Subcategory" : activeTab.slice(0, -1)}
-            </button>
-          </div>
+          <button
+            onClick={() => { resetForm(); setShowModal(true); }}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all active:scale-95"
+            style={{ backgroundColor: colors.primary }}
+          >
+            <Plus size={18} />
+            Add {activeTab === "categories" ? "Category" : activeTab === "subcategories" ? "Subcategory" : activeTab.slice(0, -1)}
+          </button>
         </div>
 
         {/* Tabs */}
@@ -509,114 +791,136 @@ export default function WineManagement() {
             >
               <tab.icon size={16} />
               {tab.label}
+              {/* child count badge */}
+              {(() => {
+                const count = activeTab === tab.id ? null :
+                  tab.id === "brands" ? brands.length :
+                  tab.id === "categories" ? categories.length :
+                  tab.id === "subcategories" ? subcategories.length :
+                  types.length;
+                return count !== null ? (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ backgroundColor: colors.border, color: colors.textSecondary }}>{count}</span>
+                ) : null;
+              })()}
             </button>
           ))}
         </div>
 
-        {/* Content */}
-        <div className="bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col" style={{ borderColor: colors.border }}>
+        {/* Table */}
+        <div className="bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col" style={{ borderColor: colors.border, contain: "layout style" }}>
           {dataLoading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 size={32} className="animate-spin" style={{ color: colors.primary }} />
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain" }}>
+                <table className="w-full text-sm" style={{ tableLayout: "fixed", minWidth: 820 }}>
+                  <colgroup>
+                    <col style={{ width: 56 }} />
+                    <col style={{ width: 64 }} />
+                    <col style={{ width: "22%" }} />
+                    <col style={{ width: "14%" }} />
+                    <col style={{ width: "13%" }} />
+                    <col style={{ width: "14%" }} />
+                    <col style={{ width: 96 }} />
+                    <col style={{ width: 120 }} />
+                  </colgroup>
                   <thead>
                     <tr style={{ backgroundColor: colors.mainBg }}>
                       <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]" style={{ color: colors.textSecondary }}>ID</th>
-                      <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]" style={{ color: colors.textSecondary }}>Avatar</th>
+                      <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]" style={{ color: colors.textSecondary }}>Image</th>
                       <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]" style={{ color: colors.textSecondary }}>Name / Title</th>
                       <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]" style={{ color: colors.textSecondary }}>Parent</th>
+                      <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]" style={{ color: colors.textSecondary }}>Children</th>
                       <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]" style={{ color: colors.textSecondary }}>Scope</th>
                       <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]" style={{ color: colors.textSecondary }}>Status</th>
                       <th className="px-6 py-4 text-right font-bold uppercase tracking-wider text-[10px]" style={{ color: colors.textSecondary }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y" style={{ borderColor: colors.borderLight }}>
-                    {currentItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4 font-mono text-[10px]" style={{ color: colors.textSecondary }}>#{item.id}</td>
-                        <td className="px-6 py-4">
-                          <div className="w-10 h-10 rounded-xl overflow-hidden border bg-gray-50 flex items-center justify-center" style={{ borderColor: colors.border }}>
-                            {item.media?.url ? (
-                              <img src={item.media.url} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <Wine size={16} style={{ color: colors.textSecondary }} />
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <span className="font-semibold" style={{ color: colors.textPrimary }}>
-                              {activeTab === "types" ? item.wineTypeName : (activeTab === "brands" ? item.name : item.title)}
-                            </span>
-                            <span className="text-[10px] max-w-[200px] truncate" style={{ color: colors.textSecondary }}>
-                              {item.wineTypeDescription || item.description || "No description"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-xs font-medium" style={{ color: colors.textSecondary }}>
-                            {activeTab === "brands" && (item.wineTypeName || "N/A")}
-                            {activeTab === "categories" && (item.wineBrandName || "N/A")}
-                            {activeTab === "subcategories" && (item.wineCategoryName || "N/A")}
-                            {activeTab === "types" && "Top Level"}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[10px] font-bold uppercase" style={{ color: colors.primary }}>
-                              {item.propertyId ? "Specific Property" : item.propertyTypeId ? "Property Type" : "Main"}
-                            </span>
-                            <span className="text-xs truncate max-w-[120px]" style={{ color: colors.textSecondary }}>
-                              {item.propertyName || item.propertyTypeName || "-"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <StatusBadge active={item.active} />
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {activeTab !== "subcategories" && (
+                    {currentItems.map((item) => {
+                      const cc = childCount(item);
+                      return (
+                        <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-4 font-mono text-[10px]" style={{ color: colors.textSecondary }}>#{item.id}</td>
+                          <td className="px-6 py-4">
+                            <div className="w-10 h-10 rounded-xl overflow-hidden border bg-gray-50 flex items-center justify-center" style={{ borderColor: colors.border }}>
+                              {item.media?.url
+                                ? <img src={item.media.url} alt="" className="w-full h-full object-cover" />
+                                : <Wine size={16} style={{ color: colors.textSecondary }} />}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="font-semibold" style={{ color: colors.textPrimary }}>
+                                {activeTab === "types" ? item.wineTypeName : activeTab === "brands" ? item.name : item.title}
+                              </span>
+                              <span className="text-[10px] max-w-[200px] truncate" style={{ color: colors.textSecondary }}>
+                                {item.wineTypeDescription || item.description || "No description"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-xs font-medium" style={{ color: colors.textSecondary }}>{parentName(item)}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            {cc !== null ? (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: colors.primary + "12", color: colors.primary }}>
+                                {cc} {activeTab === "types" ? "brands" : activeTab === "brands" ? "categories" : "subcategories"}
+                              </span>
+                            ) : <span className="text-xs" style={{ color: colors.textSecondary }}>—</span>}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] font-bold uppercase" style={{ color: colors.primary }}>
+                                {item.propertyId ? "Specific Property" : item.propertyTypeId ? "Property Type" : "Global"}
+                              </span>
+                              <span className="text-xs truncate max-w-[120px]" style={{ color: colors.textSecondary }}>
+                                {item.propertyName || item.propertyTypeName || "—"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4"><StatusBadge active={item.active} /></td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              {/* Eye → opens consolidated detail modal */}
                               <button
-                                onClick={() => handleDrillDown(item)}
+                                onClick={() => { setDetailItem(item); setDetailTab(activeTab); }}
                                 className="p-2 rounded-lg transition-colors"
                                 style={{ color: colors.primary, backgroundColor: colors.primary + "12" }}
-                                title="View Sub-items"
+                                title="View full hierarchy"
                               >
                                 <Eye size={14} />
                               </button>
-                            )}
-                            <button
-                              onClick={() => openEdit(item)}
-                              className="p-2 rounded-lg transition-colors"
-                              style={{ color: colors.info, backgroundColor: colors.info + "12" }}
-                              title="Edit"
-                            >
-                              <Edit2 size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleToggle(item)}
-                              disabled={toggling[item.id]}
-                              className="p-2 rounded-lg transition-colors"
-                              style={{
-                                color: item.active ? colors.error : colors.success,
-                                backgroundColor: item.active ? colors.error + "12" : colors.success + "12",
-                              }}
-                              title={item.active ? "Deactivate" : "Activate"}
-                            >
-                              {toggling[item.id] ? <Loader2 size={14} className="animate-spin" /> : item.active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              <button
+                                onClick={() => openEdit(item)}
+                                className="p-2 rounded-lg transition-colors"
+                                style={{ color: colors.info, backgroundColor: colors.info + "12" }}
+                                title="Edit"
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleToggle(item)}
+                                disabled={toggling[item.id]}
+                                className="p-2 rounded-lg transition-colors"
+                                style={{
+                                  color: item.active ? colors.error : colors.success,
+                                  backgroundColor: item.active ? colors.error + "12" : colors.success + "12",
+                                }}
+                                title={item.active ? "Deactivate" : "Activate"}
+                              >
+                                {toggling[item.id] ? <Loader2 size={14} className="animate-spin" /> : item.active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                     {currentItems.length === 0 && (
                       <tr>
-                        <td colSpan={7}>
+                        <td colSpan={8}>
                           <EmptyState label={`No ${activeTab} found.`} onAdd={() => { resetForm(); setShowModal(true); }} />
                         </td>
                       </tr>
@@ -625,19 +929,15 @@ export default function WineManagement() {
                 </table>
               </div>
 
-              {/* Pagination UI */}
               {totalPages > 1 && (
                 <div className="px-6 py-4 border-t flex items-center justify-between" style={{ borderColor: colors.borderLight, backgroundColor: colors.mainBg }}>
                   <div className="text-xs font-medium" style={{ color: colors.textSecondary }}>
-                    Showing <span style={{ color: colors.textPrimary }}>{(currentPage - 1) * itemsPerPage + 1}</span> to <span style={{ color: colors.textPrimary }}>{Math.min(currentPage * itemsPerPage, filteredData.length)}</span> of <span style={{ color: colors.textPrimary }}>{filteredData.length}</span> entries
+                    Showing <span style={{ color: colors.textPrimary }}>{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
+                    <span style={{ color: colors.textPrimary }}>{Math.min(currentPage * itemsPerPage, filteredData.length)}</span> of{" "}
+                    <span style={{ color: colors.textPrimary }}>{filteredData.length}</span> entries
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      className="p-2 rounded-lg border transition-all disabled:opacity-30"
-                      style={{ borderColor: colors.border, backgroundColor: colors.contentBg }}
-                    >
+                    <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 rounded-lg border transition-all disabled:opacity-30" style={{ borderColor: colors.border, backgroundColor: colors.contentBg }}>
                       <ChevronLeft size={16} />
                     </button>
                     {[...Array(totalPages)].map((_, i) => (
@@ -645,21 +945,12 @@ export default function WineManagement() {
                         key={i + 1}
                         onClick={() => setCurrentPage(i + 1)}
                         className="w-8 h-8 rounded-lg text-xs font-bold transition-all"
-                        style={{
-                          backgroundColor: currentPage === i + 1 ? colors.primary : colors.contentBg,
-                          color: currentPage === i + 1 ? "white" : colors.textSecondary,
-                          border: currentPage === i + 1 ? "none" : `1px solid ${colors.border}`
-                        }}
+                        style={{ backgroundColor: currentPage === i + 1 ? colors.primary : colors.contentBg, color: currentPage === i + 1 ? "white" : colors.textSecondary, border: currentPage === i + 1 ? "none" : `1px solid ${colors.border}` }}
                       >
                         {i + 1}
                       </button>
                     ))}
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      className="p-2 rounded-lg border transition-all disabled:opacity-30"
-                      style={{ borderColor: colors.border, backgroundColor: colors.contentBg }}
-                    >
+                    <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 rounded-lg border transition-all disabled:opacity-30" style={{ borderColor: colors.border, backgroundColor: colors.contentBg }}>
                       <ChevronRight size={16} />
                     </button>
                   </div>
@@ -670,9 +961,24 @@ export default function WineManagement() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Consolidated Detail Modal */}
+      {detailItem && (
+        <DetailModal
+          item={detailItem}
+          tab={detailTab}
+          types={types}
+          brands={brands}
+          categories={categories}
+          subcategories={subcategories}
+          properties={properties}
+          propertyTypes={propertyTypes}
+          onClose={() => { setDetailItem(null); setDetailTab(null); }}
+        />
+      )}
+
+      {/* Add / Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-8 py-6 border-b" style={{ borderColor: colors.border }}>
               <h2 className="text-xl font-bold" style={{ color: colors.textPrimary }}>
@@ -685,46 +991,52 @@ export default function WineManagement() {
 
             <div className="p-8 flex flex-col gap-6">
               <FormField label="Image">
-                <ImageUpload mediaId={form.mediaId} previewUrl={form.previewUrl} onUpload={handleUpload} uploading={uploading} />
+                <ImageUpload
+                  mediaId={form.mediaId}
+                  previewUrl={form.previewUrl}
+                  onUpload={handleUpload}
+                  uploading={uploading}
+                  dimensionHint={(activeTab === "categories" || activeTab === "subcategories") ? "2736 × 3648 px (portrait)" : undefined}
+                />
               </FormField>
 
               {(activeTab === "types" || activeTab === "brands") ? (
                 <FormField label="Name *">
-                  <input className={inputCls} style={inputStyle} value={form.name} onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Enter name" />
+                  <input className={inputCls} style={inputStyle} value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Enter name" />
                 </FormField>
               ) : (
                 <FormField label="Title *">
-                  <input className={inputCls} style={inputStyle} value={form.title} onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Enter title" />
+                  <input className={inputCls} style={inputStyle} value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="Enter title" />
                 </FormField>
               )}
 
               <FormField label="Description">
-                <textarea className={inputCls} style={inputStyle} rows={3} value={form.description} onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Enter description" />
+                <textarea className={inputCls} style={inputStyle} rows={3} value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Enter description" />
               </FormField>
 
               {activeTab === "brands" && (
                 <FormField label="Wine Type *">
-                  <select className={inputCls} style={inputStyle} value={form.wineTypeId} onChange={(e) => setForm(p => ({ ...p, wineTypeId: e.target.value }))}>
+                  <select className={inputCls} style={inputStyle} value={form.wineTypeId} onChange={(e) => setForm((p) => ({ ...p, wineTypeId: e.target.value }))}>
                     <option value="">Select Wine Type</option>
-                    {types.map(t => <option key={t.id} value={t.id}>{t.wineTypeName}</option>)}
+                    {types.map((t) => <option key={t.id} value={t.id}>{t.wineTypeName}</option>)}
                   </select>
                 </FormField>
               )}
 
               {activeTab === "categories" && (
                 <FormField label="Wine Brand *">
-                  <select className={inputCls} style={inputStyle} value={form.wineBrandId} onChange={(e) => setForm(p => ({ ...p, wineBrandId: e.target.value }))}>
+                  <select className={inputCls} style={inputStyle} value={form.wineBrandId} onChange={(e) => setForm((p) => ({ ...p, wineBrandId: e.target.value }))}>
                     <option value="">Select Brand</option>
-                    {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                   </select>
                 </FormField>
               )}
 
               {activeTab === "subcategories" && (
                 <FormField label="Wine Category *">
-                  <select className={inputCls} style={inputStyle} value={form.wineCategoryId} onChange={(e) => setForm(p => ({ ...p, wineCategoryId: e.target.value }))}>
+                  <select className={inputCls} style={inputStyle} value={form.wineCategoryId} onChange={(e) => setForm((p) => ({ ...p, wineCategoryId: e.target.value }))}>
                     <option value="">Select Category</option>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                    {categories.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
                   </select>
                 </FormField>
               )}

@@ -151,15 +151,17 @@ function WineShowcaseCard({ wine, index }) {
               <h3 className="font-serif text-[1.4rem] leading-tight text-stone-950 dark:text-stone-100">
                 {wine.name}
               </h3>
-              <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
-                {wine.subtitle}
-              </p>
+              {wine.subtitle && (
+                <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
+                  {wine.subtitle}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="mb-3">
-            <span className="rounded-lg border border-[#8B1A2A]/20 bg-[#8B1A2A]/[0.06] px-3 py-1 text-[8px] font-black uppercase tracking-widest text-[#8B1A2A] dark:border-[#C8956A]/20 dark:bg-[#C8956A]/10 dark:text-[#C8956A]">
-              {wine.tag}
+            <span className="rounded-lg border border-[#8B1A2A]/20 bg-[#8B1A2A]/6 px-3 py-1 text-[8px] font-black uppercase tracking-widest text-[#8B1A2A] dark:border-[#C8956A]/20 dark:bg-[#C8956A]/10 dark:text-[#C8956A]">
+              {wine.category || wine.tag}
             </span>
           </div>
 

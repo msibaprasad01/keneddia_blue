@@ -34,12 +34,14 @@ export function getPropertyLocation(propertyId, properties = []) {
   return prop.locationName || prop.city || prop.address || prop.name || null;
 }
 
-function pickImage(brand, typeById, brandCategories = []) {
+// Priority: subcategory image → category image → brand image → type image
+function pickImage(brand, typeById, brandCategories = [], firstSubCat = null, firstCat = null) {
+  if (firstSubCat?.media?.url) return firstSubCat.media.url;
+  if (firstCat?.media?.url) return firstCat.media.url;
   if (brand.media?.url) return brand.media.url;
   const type = brand.wineTypeId ? typeById[brand.wineTypeId] : null;
   if (type?.media?.url) return type.media.url;
-  const catWithImage = brandCategories.find((c) => c.media?.url);
-  return catWithImage?.media?.url ?? null;
+  return null;
 }
 
 /**
@@ -103,8 +105,10 @@ export function generateWineCards({
 
       return {
         id: brand.id,
+        // Brand / distillery label
         name: brand.name || "_",
-        subtitle: firstCat?.title || brand.description || "_",
+        // Specific product detail — subcategory uses `name` field (categories use `title`)
+        subtitle: firstSubCat?.name || "",
         type: typeName || "_",
         tag: typeName || "_",
         property: propertyName || "_",
@@ -114,11 +118,13 @@ export function generateWineCards({
         locationDisplay: resolvedLocation || propertyName || "_",
         tasting:
           brand.description ||
-          firstCat?.description ||
           firstSubCat?.description ||
+          firstCat?.description ||
           "_",
         body: firstSubCat?.description || firstCat?.description || "_",
-        image: pickImage(brand, typeById, brandCategories),
+        // Broad category for badge — categories use `title` field
+        category: firstCat?.title || null,
+        image: pickImage(brand, typeById, brandCategories, firstSubCat, firstCat),
         propertyId: resolvedPropertyId,
         propertyTypeId:
           brand.propertyTypeId ?? firstCat?.propertyTypeId ?? null,

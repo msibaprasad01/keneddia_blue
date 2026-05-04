@@ -137,9 +137,11 @@ function WineCard({ wine, index, typeAccents = {} }) {
               <h3 className="font-serif text-[1.4rem] leading-tight text-stone-950 dark:text-stone-100">
                 {wine.name}
               </h3>
-              <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
-                {wine.subtitle}
-              </p>
+              {wine.subtitle && (
+                <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
+                  {wine.subtitle}
+                </p>
+              )}
             </div>
           </div>
 
@@ -152,7 +154,7 @@ function WineCard({ wine, index, typeAccents = {} }) {
                 border: `1px solid ${accent.color}30`,
               }}
             >
-              {wine.tag || wine.type}
+              {wine.category || wine.tag || wine.type}
             </span>
           </div>
 

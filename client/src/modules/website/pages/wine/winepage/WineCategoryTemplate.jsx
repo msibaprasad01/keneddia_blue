@@ -481,7 +481,7 @@ function ItemCard({ drink, index }) {
 
             <div className="flex flex-col items-center gap-1">
               <h3 className="font-serif text-[1.4rem] leading-tight text-stone-900 dark:text-stone-100">{drink.name}</h3>
-              <p className="text-[11px] italic text-stone-400">{drink.subtitle}</p>
+              {drink.subtitle && <p className="text-[11px] italic text-stone-400">{drink.subtitle}</p>}
             </div>
           </div>
 
@@ -494,7 +494,7 @@ function ItemCard({ drink, index }) {
                 border: `1px solid ${accent.color}30`,
               }}
             >
-              {drink.tag || drink.type}
+              {drink.category || drink.tag || drink.type}
             </span>
           </div>
 
