@@ -78,7 +78,7 @@ export function generateWineCards({
   return subCategories
     .filter((s) => {
       if (!s.active) return false;
-      if (homepageOnly && !s.showOnHomepage) return false;
+      if (!s.showOnHomepage) return false;
       return true;
     })
     .flatMap((sub) => {
