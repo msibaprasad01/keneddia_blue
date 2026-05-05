@@ -597,7 +597,7 @@ const DetailModal = memo(function DetailModal({ item, tab, types, brands, catego
                   <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: colors.textPrimary }}>Subcategory</h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold" style={{ color: colors.textPrimary }}>{item.title}</span>
+                  <span className="text-sm font-bold" style={{ color: colors.textPrimary }}>{item.name || item.title}</span>
                   <StatusBadge active={item.active} />
                 </div>
               </section>
@@ -917,7 +917,7 @@ export default function WineManagement() {
                           <td className="px-6 py-4">
                             <div className="flex flex-col">
                               <span className="font-semibold" style={{ color: colors.textPrimary }}>
-                                {activeTab === "types" ? item.wineTypeName : activeTab === "brands" ? item.name : item.title}
+                                {activeTab === "types" ? item.wineTypeName : activeTab === "brands" ? item.name : activeTab === "subcategories" ? item.name : item.title}
                               </span>
                               <span className="text-[10px] max-w-[200px] truncate" style={{ color: colors.textSecondary }}>
                                 {item.wineTypeDescription || item.description || "No description"}
