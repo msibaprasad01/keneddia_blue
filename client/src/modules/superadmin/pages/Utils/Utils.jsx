@@ -34,8 +34,8 @@ import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SCOPE_OPTIONS = [
-  { label: "Main Homepage", value: "main" },
-  { label: "Property Type Homepage", value: "propertyType" },
+  { label: "Homepage", value: "main" },
+  { label: "Property Type", value: "propertyType" },
   { label: "Specific Property", value: "property" },
 ];
 
@@ -299,7 +299,8 @@ function WhatsAppTab({ propertyTypes, properties }) {
   const fetch = useCallback(async () => {
     setLoading(true);
     try {
-      setItems(toList(await getAllWhatsAppInfo()));
+      const data = toList(await getAllWhatsAppInfo());
+      setItems(data.sort((a, b) => (b.id || 0) - (a.id || 0)));
     } catch {
       showError("Failed to fetch WhatsApp info");
     } finally {
@@ -372,7 +373,7 @@ function WhatsAppTab({ propertyTypes, properties }) {
       const pt = propertyTypes.find((x) => String(x.id) === String(item.propertyTypeId));
       return pt?.typeName || pt?.name || `Type #${item.propertyTypeId}`;
     }
-    return "Main Homepage";
+    return "Homepage";
   };
 
   const scopeKey = (item) => item.propertyId ? "property" : item.propertyTypeId ? "propertyType" : "main";
@@ -444,7 +445,7 @@ function WhatsAppTab({ propertyTypes, properties }) {
           onChange={(e) => { setFilterScope(e.target.value); resetPage(); }}
         >
           <option value="all">All Scopes</option>
-          <option value="main">Main Homepage</option>
+          <option value="main">Homepage</option>
           <option value="propertyType">Property Type</option>
           <option value="property">Specific Property</option>
         </select>
@@ -592,7 +593,13 @@ function WhatsAppTab({ propertyTypes, properties }) {
                   placeholder="Optional description"
                 />
               </FormField>
-              <ScopeFields form={form} setForm={setForm} propertyTypes={propertyTypes} properties={properties} />
+              <ScopeFields
+                form={form}
+                setForm={setForm}
+                propertyTypes={propertyTypes}
+                properties={properties}
+                allowedScopes={["main", "propertyType", "property"]}
+              />
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t" style={{ borderColor: colors.border }}>
               <button
@@ -628,7 +635,7 @@ const ICON_EMPTY = {
   showOnHeader: false,
   showOnFooter: false,
   showOnLightOrDark: false,
-  scope: "propertyType",
+  scope: "main",
   propertyTypeId: "",
   propertyId: "",
 };
@@ -657,7 +664,8 @@ function IconTab({ propertyTypes, properties }) {
   const fetch = useCallback(async () => {
     setLoading(true);
     try {
-      setItems(toList(await getAllIconUploads()));
+      const data = toList(await getAllIconUploads());
+      setItems(data.sort((a, b) => (b.id || 0) - (a.id || 0)));
     } catch {
       showError("Failed to fetch icon uploads");
     } finally {
@@ -685,7 +693,7 @@ function IconTab({ propertyTypes, properties }) {
       showOnHeader: item.showOnHeader || false,
       showOnFooter: item.showOnFooter || false,
       showOnLightOrDark: item.showOnLightOrDark ?? false,
-      scope: "propertyType",
+      scope: item.propertyId ? "property" : item.propertyTypeId ? "propertyType" : "main",
       propertyTypeId: item.propertyTypeId || "",
       propertyId: item.propertyId || "",
     });
@@ -779,7 +787,7 @@ function IconTab({ propertyTypes, properties }) {
       const pt = propertyTypes.find((x) => String(x.id) === String(item.propertyTypeId));
       return pt?.typeName || pt?.name || `Type #${item.propertyTypeId}`;
     }
-    return "Main Homepage";
+    return "Homepage";
   };
 
   const scopeKey = (item) => item.propertyId ? "property" : item.propertyTypeId ? "propertyType" : "main";
@@ -869,6 +877,7 @@ function IconTab({ propertyTypes, properties }) {
           onChange={(e) => { setFilterScope(e.target.value); resetPage(); }}
         >
           <option value="all">All Scopes</option>
+          <option value="main">Homepage</option>
           <option value="propertyType">Property Type</option>
         </select>
         <select
@@ -1101,7 +1110,7 @@ function IconTab({ propertyTypes, properties }) {
                 setForm={setForm}
                 propertyTypes={propertyTypes}
                 properties={properties}
-                allowedScopes={["propertyType"]}
+                allowedScopes={["main", "propertyType"]}
               />
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t" style={{ borderColor: colors.border }}>
