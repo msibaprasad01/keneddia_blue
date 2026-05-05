@@ -9,7 +9,7 @@ import {
   Wine,
   Loader2,
 } from "lucide-react";
-import { getAllGalleries } from "@/Api/Api";
+import { getGalleryByPropertyId } from "@/Api/Api";
 import { getActiveVisualGalleriesHeader } from "@/Api/RestaurantApi";
 
 const FALLBACK_ITEMS = [
@@ -39,9 +39,13 @@ export default function WineGalleryPage({ propertyId }) {
     if (!propertyId) return;
     getActiveVisualGalleriesHeader()
       .then((res) => {
-        const all = res?.data ?? [];
+        const raw = res?.data ?? [];
+        // Response may be a plain array or { content: [] } or { data: [] }
+        const all = Array.isArray(raw) ? raw : (Array.isArray(raw?.content) ? raw.content : (Array.isArray(raw?.data) ? raw.data : []));
+        // Use loose equality to handle string vs number propertyId mismatch
         const latest = all
-          .filter((h) => h.propertyId === propertyId && h.isActive === true)
+          // eslint-disable-next-line eqeqeq
+          .filter((h) => h.propertyId == propertyId)
           .sort((a, b) => b.id - a.id)[0];
         if (latest) {
           setGalleryHeader({
@@ -58,17 +62,17 @@ export default function WineGalleryPage({ propertyId }) {
   useEffect(() => {
     if (!propertyId) { setLoading(false); return; }
     setLoading(true);
-    getAllGalleries({})
+    getGalleryByPropertyId(propertyId)
       .then((res) => {
-        const allContent = res?.data?.content ?? res?.content ?? [];
+        const allContent = Array.isArray(res?.data) ? res.data : [];
         const filtered = allContent
-          .filter((item) => item.propertyId === propertyId && item.isActive && item.media?.url)
+          .filter((item) => item.isActive && item.media?.url)
           .map((item, i) => ({
             id: item.id,
-            title: item.propertyName || item.categoryName || "Gallery",
+            title: item.vertical?.verticalName || item.categoryName || item.propertyName || "Gallery",
             category: item.categoryName
               ? item.categoryName.charAt(0).toUpperCase() + item.categoryName.slice(1).toLowerCase()
-              : "Other",
+              : item.vertical?.verticalName || "Other",
             img: item.media.url,
             isHighlighted: i % 3 === 0,
           }));
