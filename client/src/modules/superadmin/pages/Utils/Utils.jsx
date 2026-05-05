@@ -36,6 +36,7 @@ import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 const SCOPE_OPTIONS = [
   { label: "Homepage", value: "main" },
   { label: "Property Type", value: "propertyType" },
+  { label: "Specific Property", value: "property" },
 ];
 
 const toList = (res) => {
@@ -94,6 +95,22 @@ function ScopeFields({ form, setForm, propertyTypes, properties, allowedScopes =
             <option value="">Select property type</option>
             {propertyTypes.map((pt) => (
               <option key={pt.id} value={pt.id}>{pt.typeName || pt.name}</option>
+            ))}
+          </select>
+        </FormField>
+      )}
+
+      {form.scope === "property" && (
+        <FormField label="Property *">
+          <select
+            className={inputCls}
+            style={inputStyle}
+            value={form.propertyId}
+            onChange={(e) => set("propertyId", e.target.value)}
+          >
+            <option value="">Select property</option>
+            {properties.map((p) => (
+              <option key={p.id} value={p.id}>{p.propertyName}</option>
             ))}
           </select>
         </FormField>
@@ -430,6 +447,7 @@ function WhatsAppTab({ propertyTypes, properties }) {
           <option value="all">All Scopes</option>
           <option value="main">Homepage</option>
           <option value="propertyType">Property Type</option>
+          <option value="property">Specific Property</option>
         </select>
         {(search || filterStatus !== "all" || filterScope !== "all") && (
           <button
@@ -580,7 +598,7 @@ function WhatsAppTab({ propertyTypes, properties }) {
                 setForm={setForm}
                 propertyTypes={propertyTypes}
                 properties={properties}
-                allowedScopes={["main", "propertyType"]}
+                allowedScopes={["main", "propertyType", "property"]}
               />
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t" style={{ borderColor: colors.border }}>
