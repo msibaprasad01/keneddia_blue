@@ -192,41 +192,49 @@ export function WineCategoriesSection() {
           </div>
         ) : (
           <div className="relative group/nav">
-            <Swiper
-              modules={[Navigation, Pagination, Autoplay]}
-              navigation={{
-                prevEl: ".cat-prev",
-                nextEl: ".cat-next",
-              }}
-              pagination={{
-                clickable: true,
-                dynamicBullets: true,
-              }}
-              spaceBetween={16}
-              slidesPerView={1.2}
-              autoplay={{ delay: 5000, disableOnInteraction: false }}
-              breakpoints={{
-                480: { slidesPerView: 1.4, spaceBetween: 16 },
-                640: { slidesPerView: 2.2, spaceBetween: 20 },
-                1024: { slidesPerView: 3, spaceBetween: 24 },
-                1280: { slidesPerView: 4, spaceBetween: 24 },
-              }}
-              className="!pb-10 [--swiper-pagination-color:#8B1A2A] dark:[--swiper-pagination-color:#C8956A] [--swiper-pagination-bullet-inactive-color:#a8a29e] dark:[--swiper-pagination-bullet-inactive-color:#ffffff] dark:[--swiper-pagination-bullet-inactive-opacity:0.3]"
-            >
+            {/* Desktop View: Static Grid (No Slider) */}
+            <div className="hidden lg:grid grid-cols-3 xl:grid-cols-4 gap-6">
               {categories.map((category, i) => (
-                <SwiperSlide key={category.id} className="h-auto">
-                  <CategoryCard category={category} index={i} routeMode="global" />
-                </SwiperSlide>
+                <CategoryCard key={category.id} category={category} index={i} routeMode="global" />
               ))}
-            </Swiper>
+            </div>
 
-            {/* Custom Navigation Buttons */}
-            <button className="cat-prev absolute -left-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-600 shadow-lg backdrop-blur-md transition-all hover:bg-[#8B1A2A] hover:text-white md:-left-4 md:h-12 md:w-12 xl:-left-6">
-              <ChevronLeft size={20} className="md:w-6 md:h-6" />
-            </button>
-            <button className="cat-next absolute -right-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-600 shadow-lg backdrop-blur-md transition-all hover:bg-[#8B1A2A] hover:text-white md:-right-4 md:h-12 md:w-12 xl:-right-6">
-              <ChevronRight size={20} className="md:w-6 md:h-6" />
-            </button>
+            {/* Mobile & Tablet View: Slider */}
+            <div className="lg:hidden">
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay]}
+                navigation={{
+                  prevEl: ".cat-prev",
+                  nextEl: ".cat-next",
+                }}
+                pagination={{
+                  clickable: true,
+                  dynamicBullets: true,
+                }}
+                spaceBetween={16}
+                slidesPerView={1.2}
+                autoplay={{ delay: 5000, disableOnInteraction: false }}
+                breakpoints={{
+                  480: { slidesPerView: 1.4, spaceBetween: 16 },
+                  640: { slidesPerView: 2.2, spaceBetween: 20 },
+                }}
+                className="!pb-10 [--swiper-pagination-color:#8B1A2A] dark:[--swiper-pagination-color:#C8956A] [--swiper-pagination-bullet-inactive-color:#a8a29e] dark:[--swiper-pagination-bullet-inactive-color:#ffffff] dark:[--swiper-pagination-bullet-inactive-opacity:0.3]"
+              >
+                {categories.map((category, i) => (
+                  <SwiperSlide key={category.id} className="h-auto">
+                    <CategoryCard category={category} index={i} routeMode="global" />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+
+              {/* Custom Navigation Buttons (Mobile/Tablet specific if needed, or kept for consistency) */}
+              <button className="cat-prev absolute -left-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-600 shadow-lg backdrop-blur-md transition-all hover:bg-[#8B1A2A] hover:text-white md:-left-4 md:h-12 md:w-12 xl:-left-6">
+                <ChevronLeft size={20} className="md:w-6 md:h-6" />
+              </button>
+              <button className="cat-next absolute -right-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-600 shadow-lg backdrop-blur-md transition-all hover:bg-[#8B1A2A] hover:text-white md:-right-4 md:h-12 md:w-12 xl:-right-6">
+                <ChevronRight size={20} className="md:w-6 md:h-6" />
+              </button>
+            </div>
           </div>
         )}
       </div>
