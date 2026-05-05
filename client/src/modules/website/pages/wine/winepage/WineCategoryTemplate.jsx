@@ -340,15 +340,16 @@ function TypeHero({ meta, citySlug, propertySlug, heroImageOverride }) {
               </h1>
             </motion.div>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="mb-8 max-w-lg text-sm italic leading-relaxed text-white/65 md:text-base"
-            >
-              {meta.description}
-            </motion.p>
-
+            {meta.description && (
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
+                className="mb-8 max-w-lg line-clamp-3 text-sm italic leading-relaxed text-white/65 md:text-base"
+              >
+                {meta.description}
+              </motion.p>
+            )}
 
           </div>
         </div>
@@ -422,7 +423,7 @@ function BrandHero({ brand, citySlug, propertySlug, heroImageOverride }) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45, duration: 0.8 }}
-                className="mb-8 max-w-lg text-sm italic leading-relaxed text-white/65 md:text-base"
+                className="mb-8 max-w-lg line-clamp-3 text-sm italic leading-relaxed text-white/65 md:text-base"
               >
                 {brand.description}
               </motion.p>

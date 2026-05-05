@@ -301,14 +301,16 @@ export default function WineSubCategoryTemplate() {
                   <div className="mt-2 h-px w-32 opacity-60" style={{ background: `linear-gradient(to right, #D4AF37, transparent)` }} />
                 </motion.div>
 
+                {subCategory.description && (
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.8 }}
-                  className="mb-8 max-w-lg text-sm italic leading-relaxed text-white/65 md:text-base"
+                  className="mb-8 max-w-lg line-clamp-3 text-sm italic leading-relaxed text-white/65 md:text-base"
                 >
                   {subCategory.description}
                 </motion.p>
+                )}
               </div>
             </div>
           </div>
