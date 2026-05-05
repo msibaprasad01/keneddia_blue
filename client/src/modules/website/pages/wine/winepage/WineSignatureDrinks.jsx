@@ -45,7 +45,7 @@ function CategoryCard({ category, index, routeMode = "property" }) {
   const generateSlug = (text) => text?.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
 
   const handleExplore = () => {
-    const typeSlug = category.id;
+    const typeSlug = category.typeId || category.id;
     if (routeMode === "global") {
       navigate(`/wine-categories/${typeSlug}?kind=type`);
       return;
@@ -120,20 +120,37 @@ function CategoryCard({ category, index, routeMode = "property" }) {
   );
 }
 
+import { useSsrData } from "@/ssr/SsrDataContext";
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export function WineCategoriesSection() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [headerData, setHeaderData] = useState(null);
+  const { wineHomepage: ssr } = useSsrData();
+  const ssrData = ssr?.allWineData;
+
+  const [categories, setCategories] = useState(() => {
+    if (ssrData?.types) {
+      return ssrData.types.filter(item => item.active).map(item => ({
+        name: item.wineTypeName,
+        id: item.id,
+        image: item.media?.url || "",
+        property: item.propertyName || "",
+        location: item.propertyTypeName || ""
+      }));
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(!ssrData);
+  const [headerData, setHeaderData] = useState(ssr?.headerData || null);
 
   useEffect(() => {
+    if (ssrData) return;
     const fetchAll = async () => {
       try {
         const [typesRes, propTypesRes] = await Promise.all([
           getAllWineTypes(),
           getPropertyTypes()
         ]);
-        
+
         const data = toList(typesRes);
         const mapped = data.filter(item => item.active).map(item => ({
           name: item.wineTypeName,
@@ -160,7 +177,7 @@ export function WineCategoriesSection() {
       }
     };
     fetchAll();
-  }, []);
+  }, [ssrData]);
 
   return (
     <section className="relative overflow-hidden bg-[#F5F0EA] pt-12 pb-12 dark:bg-[#12070A]">
@@ -169,10 +186,10 @@ export function WineCategoriesSection() {
       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
         <div className="mb-10 flex flex-col items-center text-center md:mb-14 md:items-start md:text-left">
           <div className="mb-4 flex items-center gap-3">
-             <div className="h-[1px] w-8 bg-[#8B1A2A]/40 md:w-12" />
-             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#8B1A2A]">
-                Categories
-             </span>
+            <div className="h-[1px] w-8 bg-[#8B1A2A]/40 md:w-12" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#8B1A2A]">
+              Categories
+            </span>
           </div>
           <h2 className="font-serif text-3xl font-medium leading-[1.2] text-stone-900 md:text-5xl dark:text-stone-100">
             {headerData?.part2 || (
@@ -191,50 +208,10 @@ export function WineCategoriesSection() {
             <Loader2 className="animate-spin text-[#8B1A2A]" size={40} />
           </div>
         ) : (
-          <div className="relative group/nav">
-            {/* Desktop View: Static Grid (No Slider) */}
-            <div className="hidden lg:grid grid-cols-3 xl:grid-cols-4 gap-6">
-              {categories.map((category, i) => (
-                <CategoryCard key={category.id} category={category} index={i} routeMode="global" />
-              ))}
-            </div>
-
-            {/* Mobile & Tablet View: Slider */}
-            <div className="lg:hidden">
-              <Swiper
-                modules={[Navigation, Pagination, Autoplay]}
-                navigation={{
-                  prevEl: ".cat-prev",
-                  nextEl: ".cat-next",
-                }}
-                pagination={{
-                  clickable: true,
-                  dynamicBullets: true,
-                }}
-                spaceBetween={16}
-                slidesPerView={1.2}
-                autoplay={{ delay: 5000, disableOnInteraction: false }}
-                breakpoints={{
-                  480: { slidesPerView: 1.4, spaceBetween: 16 },
-                  640: { slidesPerView: 2.2, spaceBetween: 20 },
-                }}
-                className="!pb-10 [--swiper-pagination-color:#8B1A2A] dark:[--swiper-pagination-color:#C8956A] [--swiper-pagination-bullet-inactive-color:#a8a29e] dark:[--swiper-pagination-bullet-inactive-color:#ffffff] dark:[--swiper-pagination-bullet-inactive-opacity:0.3]"
-              >
-                {categories.map((category, i) => (
-                  <SwiperSlide key={category.id} className="h-auto">
-                    <CategoryCard category={category} index={i} routeMode="global" />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-
-              {/* Custom Navigation Buttons (Mobile/Tablet specific if needed, or kept for consistency) */}
-              <button className="cat-prev absolute -left-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-600 shadow-lg backdrop-blur-md transition-all hover:bg-[#8B1A2A] hover:text-white md:-left-4 md:h-12 md:w-12 xl:-left-6">
-                <ChevronLeft size={20} className="md:w-6 md:h-6" />
-              </button>
-              <button className="cat-next absolute -right-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-600 shadow-lg backdrop-blur-md transition-all hover:bg-[#8B1A2A] hover:text-white md:-right-4 md:h-12 md:w-12 xl:-right-6">
-                <ChevronRight size={20} className="md:w-6 md:h-6" />
-              </button>
-            </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {categories.map((category, i) => (
+              <CategoryCard key={category.id} category={category} index={i} routeMode="global" />
+            ))}
           </div>
         )}
       </div>
@@ -243,47 +220,75 @@ export function WineCategoriesSection() {
 }
 
 export default function WineSignatureDrinks({ sectionHeader, propertyId }) {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [headerData, setHeaderData] = useState(null);
+  const { wineHomepage: ssr } = useSsrData();
+  const ssrData = ssr?.allWineData;
+
+  const [categories, setCategories] = useState(() => {
+    if (ssrData?.types) {
+      const activePropId = Number(propertyId);
+      return ssrData.types
+        .filter(item => {
+          if (!item.active) return false;
+          if (!isNaN(activePropId)) {
+            const ids = item.propertyIds && item.propertyIds.length > 0 ? item.propertyIds : [item.propertyId];
+            return ids.map(Number).includes(activePropId);
+          }
+          return true;
+        })
+        .map((item, i) => ({
+          name: item.wineTypeName,
+          id: item.id,
+          image: item.media?.url || "",
+          property: item.propertyNames?.length > 0 ? item.propertyNames.join(", ") : (item.propertyName || ""),
+          location: item.propertyTypeName || "",
+          propertyId: item.propertyIds && item.propertyIds.length > 0 ? item.propertyIds : item.propertyId
+        }));
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(!ssrData);
+  const [headerData, setHeaderData] = useState(ssr?.headerData || null);
 
   // sectionHeader (from Testimonials API, renamed "Wines Menu") takes priority
   const resolvedHeader = sectionHeader
     ? {
-        part1: sectionHeader.testimonialName1 || sectionHeader.header1 || "",
-        part2: sectionHeader.testimonialName2 || sectionHeader.header2 || "",
-        description: sectionHeader.description || "",
-      }
+      part1: sectionHeader.testimonialName1 || sectionHeader.header1 || "",
+      part2: sectionHeader.testimonialName2 || sectionHeader.header2 || "",
+      description: sectionHeader.description || "",
+    }
     : headerData;
 
   useEffect(() => {
+    if (ssrData) return;
     const fetchAll = async () => {
       try {
         const [typesRes, propTypesRes] = await Promise.all([
           getAllWineTypes(),
           getPropertyTypes()
         ]);
-        
+
         const data = toList(typesRes);
         const activePropId = Number(propertyId);
-        
+
         const mapped = data
           .filter(item => {
             if (!item.active) return false;
             // If on a property detail page, filter by that propertyId
             if (!isNaN(activePropId)) {
-              return Number(item.propertyId) === activePropId;
+              const ids = item.propertyIds && item.propertyIds.length > 0 ? item.propertyIds : [item.propertyId];
+              return ids.map(Number).includes(activePropId);
             }
             return true;
           })
-          .map(item => ({
+          .map((item, i) => ({
             name: item.wineTypeName,
             id: item.id,
             image: item.media?.url || "",
-            property: item.propertyName || "",
+            property: item.propertyNames?.length > 0 ? item.propertyNames.join(", ") : (item.propertyName || ""),
             location: item.propertyTypeName || "",
-            propertyId: item.propertyId
+            propertyId: item.propertyIds && item.propertyIds.length > 0 ? item.propertyIds : item.propertyId
           }));
+
         setCategories(mapped);
 
         // Header Integration
@@ -302,79 +307,79 @@ export default function WineSignatureDrinks({ sectionHeader, propertyId }) {
       }
     };
     fetchAll();
-  }, []);
+  }, [ssrData, propertyId]);
 
   return (
     <section className="relative overflow-hidden bg-[#FAF8F4] pt-16 pb-16 dark:bg-[#0D0508]">
-       <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
-       
-       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
-          <div className="mb-12 max-w-2xl text-center md:text-left">
-             <div className="mb-5 flex justify-center md:justify-start items-center gap-3">
-               <div className="h-px w-10 bg-[#8B1A2A]/40" />
-               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#8B1A2A]">
-                 {resolvedHeader?.part1 || "Sommelier Selection"}
-               </span>
-               <div className="h-px w-10 bg-[#8B1A2A]/40 md:hidden" />
-             </div>
-             <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
-               {resolvedHeader?.part2 || (
-                 <>
-                   Signature <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Collections</em>
-                 </>
-               )}
-             </h2>
-             {resolvedHeader?.description && (
-               <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone-500 dark:text-stone-400">
-                 {resolvedHeader.description}
-               </p>
-             )}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
+
+      <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
+        <div className="mb-12 max-w-2xl text-center md:text-left">
+          <div className="mb-5 flex justify-center md:justify-start items-center gap-3">
+            <div className="h-px w-10 bg-[#8B1A2A]/40" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#8B1A2A]">
+              {resolvedHeader?.part1 || "Sommelier Selection"}
+            </span>
+            <div className="h-px w-10 bg-[#8B1A2A]/40 md:hidden" />
           </div>
-
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="animate-spin text-[#8B1A2A]" size={40} />
-            </div>
-          ) : (
-            <div className="relative group/nav">
-              <Swiper
-                modules={[Navigation, Pagination, Autoplay]}
-                navigation={{
-                  prevEl: ".sig-prev",
-                  nextEl: ".sig-next",
-                }}
-                pagination={{
-                  clickable: true,
-                  dynamicBullets: true,
-                }}
-                spaceBetween={16}
-                slidesPerView={1.2}
-                autoplay={{ delay: 6000, disableOnInteraction: false }}
-                breakpoints={{
-                  480: { slidesPerView: 1.4, spaceBetween: 16 },
-                  640: { slidesPerView: 2.2, spaceBetween: 20 },
-                  1024: { slidesPerView: 3, spaceBetween: 24 },
-                  1280: { slidesPerView: 4, spaceBetween: 24 },
-                }}
-                className="!pb-10 [--swiper-pagination-color:#8B1A2A] dark:[--swiper-pagination-color:#C8956A] [--swiper-pagination-bullet-inactive-color:#a8a29e] dark:[--swiper-pagination-bullet-inactive-color:#ffffff] dark:[--swiper-pagination-bullet-inactive-opacity:0.3]"
-              >
-                {categories.map((category, i) => (
-                  <SwiperSlide key={category.id} className="h-auto">
-                    <CategoryCard category={category} index={i} routeMode="property" />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-
-              {/* Custom Navigation Buttons */}
-              <button className="sig-prev absolute -left-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-600 shadow-lg backdrop-blur-md transition-all hover:bg-[#8B1A2A] hover:text-white md:-left-4 md:h-12 md:w-12 xl:-left-6">
-                <ChevronLeft size={20} className="md:w-6 md:h-6" />
-              </button>
-              <button className="sig-next absolute -right-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-600 shadow-lg backdrop-blur-md transition-all hover:bg-[#8B1A2A] hover:text-white md:-right-4 md:h-12 md:w-12 xl:-right-6">
-                <ChevronRight size={20} className="md:w-6 md:h-6" />
-              </button>
-            </div>
+          <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
+            {resolvedHeader?.part2 || (
+              <>
+                Signature <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Collections</em>
+              </>
+            )}
+          </h2>
+          {resolvedHeader?.description && (
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+              {resolvedHeader.description}
+            </p>
           )}
-       </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="animate-spin text-[#8B1A2A]" size={40} />
+          </div>
+        ) : (
+          <div className="relative group/nav">
+            <Swiper
+              modules={[Navigation, Pagination, Autoplay]}
+              navigation={{
+                prevEl: ".sig-prev",
+                nextEl: ".sig-next",
+              }}
+              pagination={{
+                clickable: true,
+                dynamicBullets: true,
+              }}
+              spaceBetween={16}
+              slidesPerView={1.2}
+              autoplay={{ delay: 6000, disableOnInteraction: false }}
+              breakpoints={{
+                480: { slidesPerView: 1.4, spaceBetween: 16 },
+                640: { slidesPerView: 2.2, spaceBetween: 20 },
+                1024: { slidesPerView: 3, spaceBetween: 24 },
+                1280: { slidesPerView: 4, spaceBetween: 24 },
+              }}
+              className="!pb-10 [--swiper-pagination-color:#8B1A2A] dark:[--swiper-pagination-color:#C8956A] [--swiper-pagination-bullet-inactive-color:#a8a29e] dark:[--swiper-pagination-bullet-inactive-color:#ffffff] dark:[--swiper-pagination-bullet-inactive-opacity:0.3]"
+            >
+              {categories.map((category, i) => (
+                <SwiperSlide key={category.id} className="h-auto">
+                  <CategoryCard category={category} index={i} routeMode="property" />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+
+            {/* Custom Navigation Buttons */}
+            <button className="sig-prev absolute -left-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-600 shadow-lg backdrop-blur-md transition-all hover:bg-[#8B1A2A] hover:text-white md:-left-4 md:h-12 md:w-12 xl:-left-6">
+              <ChevronLeft size={20} className="md:w-6 md:h-6" />
+            </button>
+            <button className="sig-next absolute -right-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-600 shadow-lg backdrop-blur-md transition-all hover:bg-[#8B1A2A] hover:text-white md:-right-4 md:h-12 md:w-12 xl:-right-6">
+              <ChevronRight size={20} className="md:w-6 md:h-6" />
+            </button>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

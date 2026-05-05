@@ -29,6 +29,10 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
 
+function generateSlug(text) {
+  return text?.toString().toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\w-]+/g, "").replace(/--+/g, "-");
+}
+
 // ─── NAV ─────────────────────────────────────────────────────────────────────
 const WINE_NAV_ITEMS = [
   { type: "link", label: "HOME", href: "#hero" },
@@ -444,6 +448,8 @@ function BrandHero({ brand, citySlug, propertySlug, heroImageOverride }) {
 
 // ─── ITEM CARD ────────────────────────────────────────────────────────────────
 function ItemCard({ drink, index }) {
+  const navigate = useNavigate();
+  const { citySlug, propertySlug } = useParams();
   const [hovered, setHovered] = useState(false);
   const accent = TYPE_ACCENTS[drink.type] || TYPE_ACCENTS.Wine;
 
@@ -481,7 +487,23 @@ function ItemCard({ drink, index }) {
 
             <div className="flex flex-col items-center gap-1">
               <h3 className="font-serif text-[1.4rem] leading-tight text-stone-900 dark:text-stone-100">{drink.name}</h3>
-              {drink.subtitle && <p className="text-[11px] italic text-stone-400">{drink.subtitle}</p>}
+              {drink.subtitle && (
+                <p 
+                  className="text-[11px] italic text-stone-400 hover:text-[#8B1A2A] transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const sSlug = drink.subCategoryId || generateSlug(drink.subtitle);
+                    const isGlobal = !citySlug || !propertySlug;
+                    if (isGlobal) {
+                      navigate(`/wine-subcategory/${sSlug}`);
+                    } else {
+                      navigate(`/wine-detail/${citySlug}/${propertySlug}/sub/${sSlug}`);
+                    }
+                  }}
+                >
+                  {drink.subtitle}
+                </p>
+              )}
             </div>
           </div>
 
@@ -1168,6 +1190,8 @@ function ApiBrandSwitcher({ currentId, allBrands, citySlug, propertySlug }) {
   );
 }
 
+import { useSsrData } from "@/ssr/SsrDataContext";
+
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function WineCategoryTemplate() {
   const { citySlug, propertySlug, slug } = useParams();
@@ -1177,13 +1201,15 @@ export default function WineCategoryTemplate() {
   const isGlobalPage = !citySlug || !propertySlug;
   const backHref = isGlobalPage ? "/wine-homepage" : `/wine-detail/${citySlug}/${propertySlug}`;
 
+  const { wineCategory } = useSsrData();
+
   // ── API state ────────────────────────────────────────────────────────────────
   const [apiType, setApiType] = useState(null);
   const [apiBrand, setApiBrand] = useState(null);
   const [apiItems, setApiItems] = useState([]);
-  const [apiLoading, setApiLoading] = useState(false);
-  const [allApiTypes, setAllApiTypes] = useState([]);
-  const [allApiBrands, setAllApiBrands] = useState([]);
+  const [apiLoading, setApiLoading] = useState(!wineCategory && Boolean(kind));
+  const [allApiTypes, setAllApiTypes] = useState(wineCategory?.wineTypes || []);
+  const [allApiBrands, setAllApiBrands] = useState(wineCategory?.brands || []);
 
   useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
@@ -1191,6 +1217,55 @@ export default function WineCategoryTemplate() {
     if (!kind || !slug) return;
     const numericId = parseInt(slug, 10);
     if (isNaN(numericId)) return;
+
+    // If we have SSR data, we can derive the current type/brand and items immediately
+    if (wineCategory) {
+      const types = wineCategory.wineTypes || [];
+      const brands = wineCategory.brands || [];
+      const categories = wineCategory.categories || [];
+      const properties = wineCategory.properties || [];
+
+      setAllApiTypes(types.filter((t) => t.active !== false));
+      setAllApiBrands(brands.filter((b) => b.active !== false));
+
+      if (kind === "type") {
+        const type = types.find((t) => t.id === numericId) ?? null;
+        setApiType(type);
+        const filteredBrands = brands.filter((b) => b.wineTypeId === numericId && b.active !== false);
+        const items = filteredBrands.map((b) => ({
+          id: b.id,
+          brandId: b.id,
+          name: b.name || "_",
+          subtitle: b.description || "_",
+          type: b.wineTypeName || type?.wineTypeName || "_",
+          tag: b.wineTypeName || type?.wineTypeName || "_",
+          tasting: b.description || "_",
+          image: b.media?.url ?? null,
+          property: b.propertyName || "_",
+          location: getPropertyLocation(b.propertyId, properties) || b.propertyName || "_",
+        }));
+        setApiItems(items);
+      } else if (kind === "brand") {
+        const brand = brands.find((b) => b.id === numericId) ?? null;
+        setApiBrand(brand);
+        const filteredCats = categories.filter((c) => c.wineBrandId === numericId && c.active !== false);
+        const items = filteredCats.map((c) => ({
+          id: c.id,
+          brandId: numericId,
+          name: c.title || "_",
+          subtitle: c.description || "_",
+          type: brand?.wineTypeName || c.wineBrandName || "_",
+          tag: c.wineBrandName || brand?.wineTypeName || "_",
+          tasting: c.description || "_",
+          image: c.media?.url ?? brand?.media?.url ?? null,
+          property: c.propertyName || brand?.propertyName || "_",
+          location: getPropertyLocation(c.propertyId, properties) || c.propertyName || "_",
+        }));
+        setApiItems(items);
+      }
+      setApiLoading(false);
+      return;
+    }
 
     let cancelled = false;
     setApiLoading(true);
@@ -1263,7 +1338,7 @@ export default function WineCategoryTemplate() {
 
     fetchApiData();
     return () => { cancelled = true; };
-  }, [kind, slug]);
+  }, [kind, slug, wineCategory]);
 
   // ── Static slug resolution (backwards compat for old string slugs) ────────────
   const normalizedSlug = slug?.toLowerCase() ?? "";

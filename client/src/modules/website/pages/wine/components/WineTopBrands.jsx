@@ -86,12 +86,42 @@ function BrandCard({ brand, onClick, clickable }) {
     </article>
   );
 }
+import { useSsrData } from "@/ssr/SsrDataContext";
+
 export default function WineTopBrands({ clickable = false, globalRoute = false, sectionHeader }) {
   const navigate = useNavigate();
   const { citySlug = "ghaziabad", propertySlug = "kennedia-blu" } = useParams();
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [headerData, setHeaderData] = useState(null);
+  const { wineHomepage: ssr } = useSsrData();
+  const ssrData = ssr?.allWineData;
+
+  const [brands, setBrands] = useState(() => {
+    if (ssrData) {
+      const brandsData = ssrData.brands || [];
+      const currentProp = (ssrData.properties || []).find(p => generateSlug(p.propertyName) === propertySlug);
+
+      return brandsData
+        .filter(b => {
+          if (!b.active) return false;
+          if (propertySlug && currentProp && !globalRoute) {
+            const ids = b.propertyIds && b.propertyIds.length > 0 ? b.propertyIds : [b.propertyId];
+            return ids.map(Number).includes(Number(currentProp.id));
+          }
+          return true;
+        })
+        .map((b, i) => ({
+          id: b.id,
+          name: b.name,
+          subLabel: b.wineTypeName || "Premium Selection",
+          accent: ACCENT_COLORS[i % ACCENT_COLORS.length],
+          detail: b.propertyNames?.length > 0 ? b.propertyNames.join(", ") : (b.description || "Harmony"),
+          logo: b.media?.url || "",
+          logoFit: "contain",
+        }));
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(!ssrData);
+  const [headerData, setHeaderData] = useState(ssr?.headerData || null);
 
   // sectionHeader (from Events API, renamed "Brands") takes priority
   const resolvedHeader = sectionHeader
@@ -99,6 +129,8 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
     : headerData;
 
   useEffect(() => {
+    if (ssrData && globalRoute) return; // Already have data for global route
+    
     const fetchBrands = async () => {
       try {
         const [brandsRes, propRes, propTypesRes] = await Promise.all([
@@ -113,7 +145,7 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
         } else {
           const allProps = toList(propRes);
           const currentProp = allProps.find(p => generateSlug(p.propertyName) === propertySlug);
-          
+
           if (currentProp) {
             const res = await getWineBrandsByPropertyId(currentProp.id);
             brandsData = toList(res);
@@ -122,16 +154,29 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
             brandsData = toList(res);
           }
         }
-        
-        const mapped = brandsData.filter(b => b.active).map((b, i) => ({
-          id: b.id,
-          name: b.name,
-          subLabel: b.wineTypeName || "Premium Selection",
-          accent: ACCENT_COLORS[i % ACCENT_COLORS.length],
-          detail: b.description || "Harmony",
-          logo: b.media?.url || "",
-          logoFit: "contain",
-        }));
+
+        const allProps = toList(propRes);
+        const currentProp = allProps.find(p => generateSlug(p.propertyResponseDTO?.propertyName || p.propertyName) === propertySlug);
+
+        const mapped = brandsData
+          .filter(b => {
+            if (!b.active) return false;
+            if (propertySlug && currentProp) {
+              const ids = b.propertyIds && b.propertyIds.length > 0 ? b.propertyIds : [b.propertyId];
+              return ids.map(Number).includes(Number(currentProp.id));
+            }
+            return true;
+          })
+          .map((b, i) => ({
+            id: b.id,
+            name: b.name,
+            subLabel: b.wineTypeName || "Premium Selection",
+            accent: ACCENT_COLORS[i % ACCENT_COLORS.length],
+            detail: b.propertyNames?.length > 0 ? b.propertyNames.join(", ") : (b.description || "Harmony"),
+            logo: b.media?.url || "",
+            logoFit: "contain",
+          }));
+
         setBrands(mapped);
 
         // Header Integration
@@ -150,14 +195,15 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
       }
     };
     fetchBrands();
-  }, [globalRoute, propertySlug]);
+  }, [globalRoute, propertySlug, ssrData]);
 
   const handleBrandClick = (brand) => {
     if (!clickable) return;
+    const targetId = brand.brandId || brand.id;
     if (globalRoute) {
-      navigate(`/wine-categories/${brand.id}?kind=brand`);
+      navigate(`/wine-categories/${targetId}?kind=brand`);
     } else {
-      navigate(`/wine-detail/${citySlug}/${propertySlug}/${brand.id}?kind=brand`);
+      navigate(`/wine-detail/${citySlug}/${propertySlug}/${targetId}?kind=brand`);
     }
   };
 
@@ -184,62 +230,22 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
           <div className="mt-2 h-px w-20 bg-gradient-to-r from-transparent via-[#c9a25a] to-transparent" />
         </div>
 
-        <div className="relative">
-          <button
-            type="button"
-            className="wine-top-brands-prev absolute -left-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-lg backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:bg-[#c9a25a] hover:text-white dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:-left-4 md:h-12 md:w-12 xl:-left-6"
-            aria-label="Previous brands"
-          >
-            <ChevronLeft size={20} className="md:h-6 md:w-6" />
-          </button>
-
-          <button
-            type="button"
-            className="wine-top-brands-next absolute -right-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-lg backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:bg-[#c9a25a] hover:text-white dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:-right-4 md:h-12 md:w-12 xl:-right-6"
-            aria-label="Next brands"
-          >
-            <ChevronRight size={20} className="md:h-6 md:w-6" />
-          </button>
-
-          <div className="group/nav relative mt-4">
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="animate-spin text-[#c9a25a]" size={32} />
-              </div>
-            ) : brands.length > 0 ? (
-              <Swiper
-                modules={[Navigation, Autoplay, Pagination]}
-                navigation={{
-                  prevEl: ".wine-top-brands-prev",
-                  nextEl: ".wine-top-brands-next",
-                }}
-                pagination={{
-                  clickable: true,
-                  dynamicBullets: true,
-                }}
-                autoplay={{ delay: 3500, disableOnInteraction: false }}
-                spaceBetween={12}
-                slidesPerView={1.2}
-                className="!pb-10 [--swiper-pagination-color:#8B1A2A] dark:[--swiper-pagination-color:#c9a25a] [--swiper-pagination-bullet-inactive-color:#a8a29e] dark:[--swiper-pagination-bullet-inactive-color:#57534e]"
-                breakpoints={{
-                  480: { slidesPerView: 1.5, spaceBetween: 14 },
-                  640: { slidesPerView: 2.2, spaceBetween: 16 },
-                  900: { slidesPerView: 3, spaceBetween: 16 },
-                  1200: { slidesPerView: 4.2, spaceBetween: 20 },
-                }}
-              >
-                {brands.map((brand) => (
-                  <SwiperSlide key={brand.id} className="h-auto">
-                    <BrandCard brand={brand} onClick={clickable ? () => handleBrandClick(brand) : undefined} clickable={clickable} />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            ) : (
-              <div className="flex justify-center py-12 text-zinc-500 italic">
-                No brands available at this moment.
-              </div>
-            )}
-          </div>
+        <div className="relative mt-4">
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="animate-spin text-[#c9a25a]" size={32} />
+            </div>
+          ) : brands.length > 0 ? (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {brands.map((brand) => (
+                <BrandCard key={brand.id} brand={brand} onClick={clickable ? () => handleBrandClick(brand) : undefined} clickable={clickable} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex justify-center py-12 text-zinc-500 italic">
+              No brands available at this moment.
+            </div>
+          )}
         </div>
       </div>
     </section>
